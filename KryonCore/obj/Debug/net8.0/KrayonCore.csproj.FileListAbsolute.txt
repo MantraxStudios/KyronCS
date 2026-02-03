@@ -10,3 +10,4 @@ C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KrayonCore
 C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\refint\KrayonCore.dll
 C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KrayonCore.pdb
 C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\ref\KrayonCore.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KrayonCore.sourcelink.json

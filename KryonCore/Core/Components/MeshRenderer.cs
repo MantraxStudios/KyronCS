@@ -200,6 +200,7 @@ namespace KrayonCore
                     material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
+                    material.SetVector3("u_CameraPos", GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position);
                     _model.Draw();
                 }
             }
@@ -215,6 +216,7 @@ namespace KrayonCore
                     material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
+                    material.SetVector3("u_CameraPos", GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position);
                     _model.DrawSubMesh(i);
                 }
             }
