@@ -2,6 +2,7 @@
 using StbImageSharp;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace KrayonCore
 {
@@ -12,6 +13,10 @@ namespace KrayonCore
         private readonly string _path;
         private readonly bool _generateMipmaps;
         private readonly bool _flip;
+
+        private Task<ImageResult> _loadingTask;
+        private ImageResult _imageResult;
+        private bool _imageReady;
 
         public string Name { get; }
         public int TextureId => _textureId;
@@ -33,6 +38,21 @@ namespace KrayonCore
             _path = path ?? throw new ArgumentNullException(nameof(path));
             _generateMipmaps = generateMipmaps;
             _flip = flip;
+
+            // Iniciar la carga automáticamente de forma asíncrona
+            _loadingTask = Task.Run(() => LoadImageFromDisk());
+        }
+
+        private ImageResult LoadImageFromDisk()
+        {
+            if (!File.Exists(_path))
+                throw new FileNotFoundException($"Texture not found: {_path}");
+            else
+                Console.WriteLine($"Texture found: {_path}");
+
+            StbImage.stbi_set_flip_vertically_on_load(_flip ? 1 : 0);
+            using var stream = File.OpenRead(_path);
+            return ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
         }
 
         public void Load()
@@ -40,18 +60,24 @@ namespace KrayonCore
             if (_isLoaded)
                 return;
 
-            if (!File.Exists(_path))
-                throw new FileNotFoundException($"Texture not found: {_path}");
-            else
-                Console.WriteLine($"Texture found: {_path}");
+            // Verificar si la carga asíncrona ya terminó (sin bloquear)
+            if (!_imageReady)
+            {
+                if (_loadingTask.IsCompleted)
+                {
+                    _imageResult = _loadingTask.GetAwaiter().GetResult();
+                    _imageReady = true;
+                }
+                else
+                {
+                    // La imagen aún no está lista, salir sin bloquear
+                    return;
+                }
+            }
 
-            StbImage.stbi_set_flip_vertically_on_load(_flip ? 1 : 0);
-
-            using var stream = File.OpenRead(_path);
-            ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-
-            Width = image.Width;
-            Height = image.Height;
+            // La imagen está lista, subirla a GPU
+            Width = _imageResult.Width;
+            Height = _imageResult.Height;
 
             _textureId = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, _textureId);
@@ -60,12 +86,12 @@ namespace KrayonCore
                 TextureTarget.Texture2D,
                 0,
                 PixelInternalFormat.Rgba,
-                image.Width,
-                image.Height,
+                _imageResult.Width,
+                _imageResult.Height,
                 0,
                 PixelFormat.Rgba,
                 PixelType.UnsignedByte,
-                image.Data
+                _imageResult.Data
             );
 
             if (_generateMipmaps)
@@ -86,15 +112,20 @@ namespace KrayonCore
             GL.BindTexture(TextureTarget.Texture2D, 0);
 
             _isLoaded = true;
+            _loadingTask = null;
+            _imageResult = null; // Liberar memoria
         }
 
         public void Bind(TextureUnit unit = TextureUnit.Texture0)
         {
             if (!_isLoaded)
-                Load();
+                Load(); // Intenta cargar, pero no bloquea si no está lista
 
-            GL.ActiveTexture(unit);
-            GL.BindTexture(TextureTarget.Texture2D, _textureId);
+            if (_isLoaded) // Solo hacer bind si ya está cargada
+            {
+                GL.ActiveTexture(unit);
+                GL.BindTexture(TextureTarget.Texture2D, _textureId);
+            }
         }
 
         public void Unload()
@@ -105,6 +136,8 @@ namespace KrayonCore
             GL.DeleteTexture(_textureId);
             _textureId = 0;
             _isLoaded = false;
+            _imageReady = false;
+            _imageResult = null;
         }
 
         public void Dispose()

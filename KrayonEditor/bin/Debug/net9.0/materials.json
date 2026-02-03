@@ -2,9 +2,40 @@
   "Materials": {
     "basic": {
       "Name": "basic",
-      "AlbedoPath": "textures/test.jpg",
-      "ShaderPath": "shaders\\basic.vert",
-      "GUID": "7c9da436-c807-4de6-91eb-6dcf5ea367a5"
+      "GUID": "070cd4b5-585c-4071-b8c7-f1f93e043c8f",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "textures/Ground080_4K-PNG_Color.png",
+      "NormalPath": "textures/Ground080_4K-PNG_NormalGL.png",
+      "MetallicPath": null,
+      "RoughnessPath": "textures/Ground080_4K-PNG_Roughness.png",
+      "AOPath": "textures/Ground080_4K-PNG_AmbientOcclusion.png",
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.01,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": true,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": true,
+      "UseAOMap": true,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 2.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }

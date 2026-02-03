@@ -118,37 +118,212 @@ namespace KrayonEditor.UI
 
             if (ImGui.CollapsingHeader(componentName, ImGuiTreeNodeFlags.DefaultOpen))
             {
-                PropertyInfo[] properties = componentType.GetProperties(
-                    BindingFlags.Public | BindingFlags.Instance
-                );
-
-                int propertyIndex = 0;
-                foreach (var property in properties)
+                // Caso especial para Rigidbody
+                if (component is KrayonCore.Rigidbody rigidbody)
                 {
-                    if (!property.CanRead || !property.CanWrite)
-                        continue;
-
-                    if (property.Name == "Enabled" && property.PropertyType == typeof(bool))
-                        continue;
-
-                    ImGui.PushID($"Property_{propertyIndex}");
-                    DrawProperty(component, property);
-                    ImGui.PopID();
-                    propertyIndex++;
+                    DrawRigidbodyInspector(rigidbody);
                 }
-
-                FieldInfo[] fields = componentType.GetFields(
-                    BindingFlags.Public | BindingFlags.Instance
-                );
-
-                int fieldIndex = 0;
-                foreach (var field in fields)
+                else
                 {
-                    ImGui.PushID($"Field_{fieldIndex}");
-                    DrawField(component, field);
-                    ImGui.PopID();
-                    fieldIndex++;
+                    // Código existente para otros componentes
+                    PropertyInfo[] properties = componentType.GetProperties(
+                        BindingFlags.Public | BindingFlags.Instance
+                    );
+
+                    int propertyIndex = 0;
+                    foreach (var property in properties)
+                    {
+                        if (!property.CanRead || !property.CanWrite)
+                            continue;
+
+                        if (property.Name == "Enabled" && property.PropertyType == typeof(bool))
+                            continue;
+
+                        ImGui.PushID($"Property_{propertyIndex}");
+                        DrawProperty(component, property);
+                        ImGui.PopID();
+                        propertyIndex++;
+                    }
+
+                    FieldInfo[] fields = componentType.GetFields(
+                        BindingFlags.Public | BindingFlags.Instance
+                    );
+
+                    int fieldIndex = 0;
+                    foreach (var field in fields)
+                    {
+                        ImGui.PushID($"Field_{fieldIndex}");
+                        DrawField(component, field);
+                        ImGui.PopID();
+                        fieldIndex++;
+                    }
                 }
+            }
+        }
+
+        private void DrawRigidbodyInspector(KrayonCore.Rigidbody rigidbody)
+        {
+            // Propiedades principales
+            DrawRigidbodyMainProperties(rigidbody);
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            // Constraints en una sección colapsable
+            if (ImGui.TreeNode("Constraints"))
+            {
+                DrawRigidbodyConstraints(rigidbody);
+                ImGui.TreePop();
+            }
+
+            ImGui.Spacing();
+
+            // Physics Properties en una sección colapsable
+            if (ImGui.TreeNode("Physics Material"))
+            {
+                DrawRigidbodyPhysicsProperties(rigidbody);
+                ImGui.TreePop();
+            }
+        }
+
+        private void DrawRigidbodyMainProperties(KrayonCore.Rigidbody rigidbody)
+        {
+            var rbType = typeof(KrayonCore.Rigidbody);
+
+            // MotionType
+            var motionTypeProperty = rbType.GetProperty("MotionType");
+            if (motionTypeProperty != null)
+            {
+                ImGui.PushID("MotionType");
+                DrawProperty(rigidbody, motionTypeProperty);
+                ImGui.PopID();
+            }
+
+            // IsKinematic
+            bool isKinematic = rigidbody.IsKinematic;
+            if (ImGui.Checkbox("Is Kinematic", ref isKinematic))
+            {
+                rigidbody.IsKinematic = isKinematic;
+            }
+
+            // UseGravity
+            bool useGravity = rigidbody.UseGravity;
+            if (ImGui.Checkbox("Use Gravity", ref useGravity))
+            {
+                rigidbody.UseGravity = useGravity;
+            }
+
+            ImGui.Spacing();
+
+            // Mass
+            float mass = rigidbody.Mass;
+            if (ImGui.DragFloat("Mass", ref mass, 0.1f, 0.01f, 1000f))
+            {
+                rigidbody.Mass = Math.Max(0.01f, mass);
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            // Shape Type
+            var shapeTypeProperty = rbType.GetProperty("ShapeType");
+            if (shapeTypeProperty != null)
+            {
+                ImGui.PushID("ShapeType");
+                DrawProperty(rigidbody, shapeTypeProperty);
+                ImGui.PopID();
+            }
+
+            // Shape Size
+            var shapeSize = rigidbody.ShapeSize;
+            Vector3 shapeSizeVec = new Vector3(shapeSize.X, shapeSize.Y, shapeSize.Z);
+            if (ImGui.DragFloat3("Shape Size", ref shapeSizeVec, 0.1f, 0.01f, 100f))
+            {
+                rigidbody.ShapeSize = new OpenTK.Mathematics.Vector3(
+                    Math.Max(0.01f, shapeSizeVec.X),
+                    Math.Max(0.01f, shapeSizeVec.Y),
+                    Math.Max(0.01f, shapeSizeVec.Z)
+                );
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            // Layer
+            var layerProperty = rbType.GetProperty("Layer");
+            if (layerProperty != null)
+            {
+                ImGui.PushID("Layer");
+                DrawProperty(rigidbody, layerProperty);
+                ImGui.PopID();
+            }
+        }
+
+        private void DrawRigidbodyConstraints(KrayonCore.Rigidbody rigidbody)
+        {
+            ImGui.Text("Freeze Position");
+            bool freezePosX = rigidbody.FreezePositionX;
+            bool freezePosY = rigidbody.FreezePositionY;
+            bool freezePosZ = rigidbody.FreezePositionZ;
+
+            if (ImGui.Checkbox("X##PosX", ref freezePosX))
+                rigidbody.FreezePositionX = freezePosX;
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Y##PosY", ref freezePosY))
+                rigidbody.FreezePositionY = freezePosY;
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Z##PosZ", ref freezePosZ))
+                rigidbody.FreezePositionZ = freezePosZ;
+
+            ImGui.Spacing();
+            ImGui.Text("Freeze Rotation");
+            bool freezeRotX = rigidbody.FreezeRotationX;
+            bool freezeRotY = rigidbody.FreezeRotationY;
+            bool freezeRotZ = rigidbody.FreezeRotationZ;
+
+            if (ImGui.Checkbox("X##RotX", ref freezeRotX))
+                rigidbody.FreezeRotationX = freezeRotX;
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Y##RotY", ref freezeRotY))
+                rigidbody.FreezeRotationY = freezeRotY;
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Z##RotZ", ref freezeRotZ))
+                rigidbody.FreezeRotationZ = freezeRotZ;
+        }
+
+        private void DrawRigidbodyPhysicsProperties(KrayonCore.Rigidbody rigidbody)
+        {
+            // Linear Damping
+            float linearDamping = rigidbody.LinearDamping;
+            if (ImGui.DragFloat("Linear Damping", ref linearDamping, 0.01f, 0f, 1f))
+            {
+                rigidbody.LinearDamping = Math.Max(0f, linearDamping);
+            }
+
+            // Angular Damping
+            float angularDamping = rigidbody.AngularDamping;
+            if (ImGui.DragFloat("Angular Damping", ref angularDamping, 0.01f, 0f, 1f))
+            {
+                rigidbody.AngularDamping = Math.Max(0f, angularDamping);
+            }
+
+            ImGui.Spacing();
+
+            // Friction
+            float friction = rigidbody.Friction;
+            if (ImGui.SliderFloat("Friction", ref friction, 0f, 1f))
+            {
+                rigidbody.Friction = friction;
+            }
+
+            // Restitution (Bounciness)
+            float restitution = rigidbody.Restitution;
+            if (ImGui.SliderFloat("Restitution", ref restitution, 0f, 1f))
+            {
+                rigidbody.Restitution = restitution;
             }
         }
 
@@ -160,6 +335,13 @@ namespace KrayonEditor.UI
             if (propertyType.IsArray)
             {
                 DrawArrayProperty(component, property, value);
+                return;
+            }
+
+            // Soporte para Enums
+            if (propertyType.IsEnum)
+            {
+                DrawEnumProperty(component, property, value);
                 return;
             }
 
@@ -217,6 +399,17 @@ namespace KrayonEditor.UI
                     property.SetValue(component, vec3Value);
                 }
             }
+            else if (propertyType == typeof(OpenTK.Mathematics.Vector3))
+            {
+                var vec3Value = (OpenTK.Mathematics.Vector3)value;
+                Vector3 numericVec = new Vector3(vec3Value.X, vec3Value.Y, vec3Value.Z);
+
+                if (ImGui.InputFloat3(property.Name, ref numericVec))
+                {
+                    var newValue = new OpenTK.Mathematics.Vector3(numericVec.X, numericVec.Y, numericVec.Z);
+                    property.SetValue(component, newValue);
+                }
+            }
             else if (propertyType == typeof(Vector4))
             {
                 Vector4 vec4Value = (Vector4)value;
@@ -234,28 +427,38 @@ namespace KrayonEditor.UI
                     property.SetValue(component, new Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W));
                 }
             }
+            else if (propertyType == typeof(OpenTK.Mathematics.Quaternion))
+            {
+                var quatValue = (OpenTK.Mathematics.Quaternion)value;
+                Vector4 vec4 = new Vector4(quatValue.X, quatValue.Y, quatValue.Z, quatValue.W);
+                if (ImGui.InputFloat4(property.Name, ref vec4))
+                {
+                    var newValue = new OpenTK.Mathematics.Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W);
+                    property.SetValue(component, newValue);
+                }
+            }
             else if (propertyType == typeof(GameObject))
             {
                 GameObject gameObjectValue = (GameObject)value;
                 string displayName = gameObjectValue != null ? gameObjectValue.Name : "None";
-                
+
                 ImGui.Text($"{property.Name}:");
                 ImGui.SameLine();
-                
+
                 if (ImGui.Button($"{displayName}###{property.Name}"))
                 {
                     ImGui.OpenPopup($"SelectGameObject_{property.Name}");
                 }
-                
+
                 if (ImGui.BeginPopup($"SelectGameObject_{property.Name}"))
                 {
                     if (ImGui.MenuItem("None"))
                     {
                         property.SetValue(component, null);
                     }
-                    
+
                     ImGui.Separator();
-                    
+
                     var allObjects = SceneManager.ActiveScene?.GetAllGameObjects() ?? new System.Collections.Generic.List<GameObject>();
                     int objIndex = 0;
                     foreach (var obj in allObjects)
@@ -268,7 +471,7 @@ namespace KrayonEditor.UI
                         ImGui.PopID();
                         objIndex++;
                     }
-                    
+
                     ImGui.EndPopup();
                 }
             }
@@ -276,24 +479,24 @@ namespace KrayonEditor.UI
             {
                 KrayonCore.Material materialValue = (KrayonCore.Material)value;
                 string displayName = materialValue != null ? materialValue.Name : "None";
-                
+
                 ImGui.Text($"{property.Name}:");
                 ImGui.SameLine();
-                
+
                 if (ImGui.Button($"{displayName}###{property.Name}"))
                 {
                     ImGui.OpenPopup($"SelectMaterial_{property.Name}");
                 }
-                
+
                 if (ImGui.BeginPopup($"SelectMaterial_{property.Name}"))
                 {
                     if (ImGui.MenuItem("None"))
                     {
                         property.SetValue(component, null);
                     }
-                    
+
                     ImGui.Separator();
-                    
+
                     var allMaterials = GraphicsEngine.Instance.Materials.GetAll();
                     int matIndex = 0;
                     foreach (var mat in allMaterials)
@@ -306,13 +509,31 @@ namespace KrayonEditor.UI
                         ImGui.PopID();
                         matIndex++;
                     }
-                    
+
                     ImGui.EndPopup();
                 }
             }
             else
             {
                 ImGui.Text($"{property.Name}: {value}");
+            }
+        }
+
+        private void DrawEnumProperty(object component, PropertyInfo property, object? value)
+        {
+            if (value == null)
+            {
+                ImGui.Text($"{property.Name}: null");
+                return;
+            }
+
+            string[] enumNames = Enum.GetNames(property.PropertyType);
+            int currentIndex = Array.IndexOf(enumNames, value.ToString());
+
+            if (ImGui.Combo(property.Name, ref currentIndex, enumNames, enumNames.Length))
+            {
+                object newValue = Enum.Parse(property.PropertyType, enumNames[currentIndex]);
+                property.SetValue(component, newValue);
             }
         }
 
@@ -403,6 +624,15 @@ namespace KrayonEditor.UI
                     array.SetValue(vec3Value, index);
                 }
             }
+            else if (elementType == typeof(OpenTK.Mathematics.Vector3))
+            {
+                var vec3Value = value != null ? (OpenTK.Mathematics.Vector3)value : OpenTK.Mathematics.Vector3.Zero;
+                Vector3 numericVec = new Vector3(vec3Value.X, vec3Value.Y, vec3Value.Z);
+                if (ImGui.InputFloat3($"[{index}]", ref numericVec))
+                {
+                    array.SetValue(new OpenTK.Mathematics.Vector3(numericVec.X, numericVec.Y, numericVec.Z), index);
+                }
+            }
             else if (elementType == typeof(Vector4))
             {
                 Vector4 vec4Value = value != null ? (Vector4)value : Vector4.Zero;
@@ -415,24 +645,24 @@ namespace KrayonEditor.UI
             {
                 GameObject? gameObjectValue = value as GameObject;
                 string displayName = gameObjectValue != null ? gameObjectValue.Name : "None";
-                
+
                 ImGui.Text($"[{index}]:");
                 ImGui.SameLine();
-                
+
                 if (ImGui.Button($"{displayName}###{index}"))
                 {
                     ImGui.OpenPopup($"SelectGameObject_{index}");
                 }
-                
+
                 if (ImGui.BeginPopup($"SelectGameObject_{index}"))
                 {
                     if (ImGui.MenuItem("None"))
                     {
                         array.SetValue(null, index);
                     }
-                    
+
                     ImGui.Separator();
-                    
+
                     var allObjects = SceneManager.ActiveScene?.GetAllGameObjects() ?? new System.Collections.Generic.List<GameObject>();
                     int objIndex = 0;
                     foreach (var obj in allObjects)
@@ -445,7 +675,7 @@ namespace KrayonEditor.UI
                         ImGui.PopID();
                         objIndex++;
                     }
-                    
+
                     ImGui.EndPopup();
                 }
             }
@@ -453,24 +683,24 @@ namespace KrayonEditor.UI
             {
                 KrayonCore.Material? materialValue = value as KrayonCore.Material;
                 string displayName = materialValue != null ? materialValue.Name : "None";
-                
+
                 ImGui.Text($"[{index}]:");
                 ImGui.SameLine();
-                
+
                 if (ImGui.Button($"{displayName}###{index}"))
                 {
                     ImGui.OpenPopup($"SelectMaterial_{index}");
                 }
-                
+
                 if (ImGui.BeginPopup($"SelectMaterial_{index}"))
                 {
                     if (ImGui.MenuItem("None"))
                     {
                         array.SetValue(null, index);
                     }
-                    
+
                     ImGui.Separator();
-                    
+
                     var allMaterials = GraphicsEngine.Instance.Materials.GetAll();
                     int matIndex = 0;
                     foreach (var mat in allMaterials)
@@ -483,7 +713,7 @@ namespace KrayonEditor.UI
                         ImGui.PopID();
                         matIndex++;
                     }
-                    
+
                     ImGui.EndPopup();
                 }
             }
@@ -501,6 +731,13 @@ namespace KrayonEditor.UI
             if (fieldType.IsArray)
             {
                 DrawArrayField(component, field, value);
+                return;
+            }
+
+            // Soporte para Enums
+            if (fieldType.IsEnum)
+            {
+                DrawEnumField(component, field, value);
                 return;
             }
 
@@ -558,6 +795,17 @@ namespace KrayonEditor.UI
                     field.SetValue(component, vec3Value);
                 }
             }
+            else if (fieldType == typeof(OpenTK.Mathematics.Vector3))
+            {
+                var vec3Value = (OpenTK.Mathematics.Vector3)value;
+                Vector3 numericVec = new Vector3(vec3Value.X, vec3Value.Y, vec3Value.Z);
+
+                if (ImGui.InputFloat3(field.Name, ref numericVec))
+                {
+                    var newValue = new OpenTK.Mathematics.Vector3(numericVec.X, numericVec.Y, numericVec.Z);
+                    field.SetValue(component, newValue);
+                }
+            }
             else if (fieldType == typeof(Vector4))
             {
                 Vector4 vec4Value = (Vector4)value;
@@ -575,28 +823,38 @@ namespace KrayonEditor.UI
                     field.SetValue(component, new Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W));
                 }
             }
+            else if (fieldType == typeof(OpenTK.Mathematics.Quaternion))
+            {
+                var quatValue = (OpenTK.Mathematics.Quaternion)value;
+                Vector4 vec4 = new Vector4(quatValue.X, quatValue.Y, quatValue.Z, quatValue.W);
+                if (ImGui.InputFloat4(field.Name, ref vec4))
+                {
+                    var newValue = new OpenTK.Mathematics.Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W);
+                    field.SetValue(component, newValue);
+                }
+            }
             else if (fieldType == typeof(GameObject))
             {
                 GameObject gameObjectValue = (GameObject)value;
                 string displayName = gameObjectValue != null ? gameObjectValue.Name : "None";
-                
+
                 ImGui.Text($"{field.Name}:");
                 ImGui.SameLine();
-                
+
                 if (ImGui.Button($"{displayName}###{field.Name}"))
                 {
                     ImGui.OpenPopup($"SelectGameObject_{field.Name}");
                 }
-                
+
                 if (ImGui.BeginPopup($"SelectGameObject_{field.Name}"))
                 {
                     if (ImGui.MenuItem("None"))
                     {
                         field.SetValue(component, null);
                     }
-                    
+
                     ImGui.Separator();
-                    
+
                     var allObjects = SceneManager.ActiveScene?.GetAllGameObjects() ?? new System.Collections.Generic.List<GameObject>();
                     int objIndex = 0;
                     foreach (var obj in allObjects)
@@ -609,7 +867,7 @@ namespace KrayonEditor.UI
                         ImGui.PopID();
                         objIndex++;
                     }
-                    
+
                     ImGui.EndPopup();
                 }
             }
@@ -617,24 +875,24 @@ namespace KrayonEditor.UI
             {
                 KrayonCore.Material materialValue = (KrayonCore.Material)value;
                 string displayName = materialValue != null ? materialValue.Name : "None";
-                
+
                 ImGui.Text($"{field.Name}:");
                 ImGui.SameLine();
-                
+
                 if (ImGui.Button($"{displayName}###{field.Name}"))
                 {
                     ImGui.OpenPopup($"SelectMaterial_{field.Name}");
                 }
-                
+
                 if (ImGui.BeginPopup($"SelectMaterial_{field.Name}"))
                 {
                     if (ImGui.MenuItem("None"))
                     {
                         field.SetValue(component, null);
                     }
-                    
+
                     ImGui.Separator();
-                    
+
                     var allMaterials = GraphicsEngine.Instance.Materials.GetAll();
                     int matIndex = 0;
                     foreach (var mat in allMaterials)
@@ -647,13 +905,31 @@ namespace KrayonEditor.UI
                         ImGui.PopID();
                         matIndex++;
                     }
-                    
+
                     ImGui.EndPopup();
                 }
             }
             else
             {
                 ImGui.Text($"{field.Name}: {value}");
+            }
+        }
+
+        private void DrawEnumField(object component, FieldInfo field, object? value)
+        {
+            if (value == null)
+            {
+                ImGui.Text($"{field.Name}: null");
+                return;
+            }
+
+            string[] enumNames = Enum.GetNames(field.FieldType);
+            int currentIndex = Array.IndexOf(enumNames, value.ToString());
+
+            if (ImGui.Combo(field.Name, ref currentIndex, enumNames, enumNames.Length))
+            {
+                object newValue = Enum.Parse(field.FieldType, enumNames[currentIndex]);
+                field.SetValue(component, newValue);
             }
         }
 

@@ -19,6 +19,31 @@ namespace KrayonCore
 
         public TextureLoader MainTexture { get; private set; }
 
+        // Referencias a texturas PBR específicas
+        public TextureLoader AlbedoTexture { get; private set; }
+        public TextureLoader NormalTexture { get; private set; }
+        public TextureLoader MetallicTexture { get; private set; }
+        public TextureLoader RoughnessTexture { get; private set; }
+        public TextureLoader AOTexture { get; private set; }
+        public TextureLoader EmissiveTexture { get; private set; }
+
+        public Vector3 AlbedoColor { get; set; } = Vector3.One;
+        public float Metallic { get; set; } = 0.0f;
+        public float Roughness { get; set; } = 0.5f;
+        public float AO { get; set; } = 1.0f;
+        public Vector3 EmissiveColor { get; set; } = Vector3.Zero;
+
+        public bool UseAlbedoMap { get; set; } = false;
+        public bool UseNormalMap { get; set; } = false;
+        public bool UseMetallicMap { get; set; } = false;
+        public bool UseRoughnessMap { get; set; } = false;
+        public bool UseAOMap { get; set; } = false;
+        public bool UseEmissiveMap { get; set; } = false;
+        public float NormalMapIntensity { get; set; } = 1.0f;
+        public Vector3 AmbientLight { get; set; } = new Vector3(0.03f, 0.03f, 0.03f);
+        public float AmbientStrength { get; set; } = 1.0f;
+
+
         public Material(string name, string vertexPath, string fragmentPath)
         {
             Name = name;
@@ -85,12 +110,303 @@ namespace KrayonCore
             }
         }
 
+        public void SetPBRProperties()
+        {
+            SetVector3Cached("u_AlbedoColor", AlbedoColor);
+            SetFloatCached("u_Metallic", Metallic);
+            SetFloatCached("u_Roughness", Roughness);
+            SetFloatCached("u_AO", AO);
+            SetVector3Cached("u_EmissiveColor", EmissiveColor);
+
+            // NUEVO: Propiedades de normal map e iluminación
+            SetFloatCached("u_NormalMapIntensity", NormalMapIntensity);
+            SetVector3Cached("u_AmbientLight", AmbientLight);
+            SetFloatCached("u_AmbientStrength", AmbientStrength);
+
+            SetIntCached("u_UseAlbedoMap", UseAlbedoMap ? 1 : 0);
+            SetIntCached("u_UseNormalMap", UseNormalMap ? 1 : 0);
+            SetIntCached("u_UseMetallicMap", UseMetallicMap ? 1 : 0);
+            SetIntCached("u_UseRoughnessMap", UseRoughnessMap ? 1 : 0);
+            SetIntCached("u_UseAOMap", UseAOMap ? 1 : 0);
+            SetIntCached("u_UseEmissiveMap", UseEmissiveMap ? 1 : 0);
+
+            if (UseAlbedoMap) SetIntCached("u_AlbedoMap", 0);
+            if (UseNormalMap) SetIntCached("u_NormalMap", 1);
+            if (UseMetallicMap) SetIntCached("u_MetallicMap", 2);
+            if (UseRoughnessMap) SetIntCached("u_RoughnessMap", 3);
+            if (UseAOMap) SetIntCached("u_AOMap", 4);
+            if (UseEmissiveMap) SetIntCached("u_EmissiveMap", 5);
+        }
+
+        // ============================================
+        // FUNCIONES PARA CARGAR TEXTURAS INDIVIDUALES
+        // ============================================
+
+        /// <summary>
+        /// Carga la textura principal como Albedo (compatible con sistemas legacy)
+        /// </summary>
         public void LoadMainTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             MainTexture?.Dispose();
             MainTexture = new TextureLoader("mainTexture", path, generateMipmaps, flip);
-            SetTexture("mainTexture", MainTexture, 0);
+
+            // IMPORTANTE: MainTexture debe ser tratada como AlbedoTexture
+            AlbedoTexture?.Dispose();
+            AlbedoTexture = MainTexture;
+
+            SetTexture("u_AlbedoMap", MainTexture, 0);
+            UseAlbedoMap = true;
+
+            Console.WriteLine($"[Material '{Name}'] ✓ Main texture loaded as Albedo: {path}");
+            Console.WriteLine($"[Material '{Name}']   UseAlbedoMap = {UseAlbedoMap}");
         }
+
+        /// <summary>
+        /// Carga la textura de Albedo/Diffuse (Color base)
+        /// </summary>
+        public void LoadAlbedoTexture(string path, bool generateMipmaps = true, bool flip = true)
+        {
+            AlbedoTexture?.Dispose();
+            AlbedoTexture = new TextureLoader("u_AlbedoMap", path, generateMipmaps, flip);
+            SetTexture("u_AlbedoMap", AlbedoTexture, 0);
+            UseAlbedoMap = true;
+            Console.WriteLine($"[Material] Albedo texture loaded: {path}");
+        }
+
+        /// <summary>
+        /// Carga la textura de Normal Map (para detalles de superficie)
+        /// </summary>
+        public void LoadNormalTexture(string path, bool generateMipmaps = true, bool flip = true)
+        {
+            NormalTexture?.Dispose();
+            NormalTexture = new TextureLoader("u_NormalMap", path, generateMipmaps, flip);
+            SetTexture("u_NormalMap", NormalTexture, 1);
+            UseNormalMap = true;
+            Console.WriteLine($"[Material] Normal texture loaded: {path}");
+        }
+
+        /// <summary>
+        /// Carga la textura de Metallic (qué tan metálico es el material)
+        /// </summary>
+        public void LoadMetallicTexture(string path, bool generateMipmaps = true, bool flip = true)
+        {
+            MetallicTexture?.Dispose();
+            MetallicTexture = new TextureLoader("u_MetallicMap", path, generateMipmaps, flip);
+            SetTexture("u_MetallicMap", MetallicTexture, 2);
+            UseMetallicMap = true;
+            Console.WriteLine($"[Material] Metallic texture loaded: {path}");
+        }
+
+        /// <summary>
+        /// Carga la textura de Roughness (qué tan rugoso/suave es el material)
+        /// </summary>
+        public void LoadRoughnessTexture(string path, bool generateMipmaps = true, bool flip = true)
+        {
+            RoughnessTexture?.Dispose();
+            RoughnessTexture = new TextureLoader("u_RoughnessMap", path, generateMipmaps, flip);
+            SetTexture("u_RoughnessMap", RoughnessTexture, 3);
+            UseRoughnessMap = true;
+            Console.WriteLine($"[Material] Roughness texture loaded: {path}");
+        }
+
+        /// <summary>
+        /// Carga la textura de Ambient Occlusion (sombras en cavidades)
+        /// </summary>
+        public void LoadAOTexture(string path, bool generateMipmaps = true, bool flip = true)
+        {
+            AOTexture?.Dispose();
+            AOTexture = new TextureLoader("u_AOMap", path, generateMipmaps, flip);
+            SetTexture("u_AOMap", AOTexture, 4);
+            UseAOMap = true;
+            Console.WriteLine($"[Material] AO texture loaded: {path}");
+        }
+
+        /// <summary>
+        /// Carga la textura de Emissive (áreas que emiten luz)
+        /// </summary>
+        public void LoadEmissiveTexture(string path, bool generateMipmaps = true, bool flip = true)
+        {
+            EmissiveTexture?.Dispose();
+            EmissiveTexture = new TextureLoader("u_EmissiveMap", path, generateMipmaps, flip);
+            SetTexture("u_EmissiveMap", EmissiveTexture, 5);
+            UseEmissiveMap = true;
+            Console.WriteLine($"[Material] Emissive texture loaded: {path}");
+        }
+
+        /// <summary>
+        /// Carga todas las texturas PBR de una sola vez
+        /// </summary>
+        public void LoadPBRTextures(
+            string albedoPath = null,
+            string normalPath = null,
+            string metallicPath = null,
+            string roughnessPath = null,
+            string aoPath = null,
+            string emissivePath = null,
+            bool generateMipmaps = true,
+            bool flip = true)
+        {
+            if (!string.IsNullOrEmpty(albedoPath))
+                LoadAlbedoTexture(albedoPath, generateMipmaps, flip);
+
+            if (!string.IsNullOrEmpty(normalPath))
+                LoadNormalTexture(normalPath, generateMipmaps, flip);
+
+            if (!string.IsNullOrEmpty(metallicPath))
+                LoadMetallicTexture(metallicPath, generateMipmaps, flip);
+
+            if (!string.IsNullOrEmpty(roughnessPath))
+                LoadRoughnessTexture(roughnessPath, generateMipmaps, flip);
+
+            if (!string.IsNullOrEmpty(aoPath))
+                LoadAOTexture(aoPath, generateMipmaps, flip);
+
+            if (!string.IsNullOrEmpty(emissivePath))
+                LoadEmissiveTexture(emissivePath, generateMipmaps, flip);
+
+            SetPBRProperties();
+            Console.WriteLine($"[Material] PBR textures loaded for material: {Name}");
+        }
+
+        /// <summary>
+        /// Configura las propiedades PBR sin texturas (solo valores)
+        /// </summary>
+        public void SetupPBRMaterial(
+            Vector3 albedo,
+            float metallic = 0.0f,
+            float roughness = 0.5f,
+            float ao = 1.0f,
+            Vector3? emissive = null)
+        {
+            AlbedoColor = albedo;
+            Metallic = metallic;
+            Roughness = roughness;
+            AO = ao;
+            EmissiveColor = emissive ?? Vector3.Zero;
+            SetPBRProperties();
+            Console.WriteLine($"[Material] PBR properties set for material: {Name}");
+        }
+
+        /// <summary>
+        /// Ajusta la intensidad del normal map (0 = sin efecto, 1 = efecto completo, >1 = exagerado)
+        /// </summary>
+        public void SetNormalMapIntensity(float intensity)
+        {
+            NormalMapIntensity = Math.Max(0f, intensity);
+            SetFloatCached("u_NormalMapIntensity", NormalMapIntensity);
+        }
+
+        /// <summary>
+        /// Ajusta la luz ambiental global
+        /// </summary>
+        public void SetAmbientLight(Vector3 color)
+        {
+            AmbientLight = color;
+            SetVector3Cached("u_AmbientLight", AmbientLight);
+        }
+
+        /// <summary>
+        /// Ajusta la luz ambiental usando valores RGB (0-255)
+        /// </summary>
+        public void SetAmbientLight(float r, float g, float b)
+        {
+            AmbientLight = new Vector3(r / 255f, g / 255f, b / 255f);
+            SetVector3Cached("u_AmbientLight", AmbientLight);
+        }
+
+        /// <summary>
+        /// Ajusta la intensidad de la luz ambiental
+        /// </summary>
+        public void SetAmbientStrength(float strength)
+        {
+            AmbientStrength = Math.Max(0f, strength);
+            SetFloatCached("u_AmbientStrength", AmbientStrength);
+        }
+
+
+        /// <summary>
+        /// Remueve una textura de Albedo
+        /// </summary>
+        public void RemoveAlbedoTexture()
+        {
+            AlbedoTexture?.Dispose();
+            AlbedoTexture = null;
+            RemoveTexture(0);
+            UseAlbedoMap = false;
+        }
+
+        /// <summary>
+        /// Remueve una textura de Normal
+        /// </summary>
+        public void RemoveNormalTexture()
+        {
+            NormalTexture?.Dispose();
+            NormalTexture = null;
+            RemoveTexture(1);
+            UseNormalMap = false;
+        }
+
+        /// <summary>
+        /// Remueve una textura de Metallic
+        /// </summary>
+        public void RemoveMetallicTexture()
+        {
+            MetallicTexture?.Dispose();
+            MetallicTexture = null;
+            RemoveTexture(2);
+            UseMetallicMap = false;
+        }
+
+        /// <summary>
+        /// Remueve una textura de Roughness
+        /// </summary>
+        public void RemoveRoughnessTexture()
+        {
+            RoughnessTexture?.Dispose();
+            RoughnessTexture = null;
+            RemoveTexture(3);
+            UseRoughnessMap = false;
+        }
+
+        /// <summary>
+        /// Remueve una textura de AO
+        /// </summary>
+        public void RemoveAOTexture()
+        {
+            AOTexture?.Dispose();
+            AOTexture = null;
+            RemoveTexture(4);
+            UseAOMap = false;
+        }
+
+        /// <summary>
+        /// Remueve una textura de Emissive
+        /// </summary>
+        public void RemoveEmissiveTexture()
+        {
+            EmissiveTexture?.Dispose();
+            EmissiveTexture = null;
+            RemoveTexture(5);
+            UseEmissiveMap = false;
+        }
+
+        /// <summary>
+        /// Remueve todas las texturas PBR
+        /// </summary>
+        public void RemoveAllPBRTextures()
+        {
+            RemoveAlbedoTexture();
+            RemoveNormalTexture();
+            RemoveMetallicTexture();
+            RemoveRoughnessTexture();
+            RemoveAOTexture();
+            RemoveEmissiveTexture();
+            Console.WriteLine($"[Material] All PBR textures removed for material: {Name}");
+        }
+
+        // ============================================
+        // FUNCIONES GENÉRICAS (mantener compatibilidad)
+        // ============================================
 
         public void LoadTexture(string uniformName, string path, int slot = 0, bool generateMipmaps = true, bool flip = true)
         {
@@ -107,8 +423,6 @@ namespace KrayonCore
                 _textures[slot].Dispose();
 
             _textures[slot] = texture;
-
-            // Guardar en caché para que se aplique cuando se use el material
             SetIntCached(uniformName, slot);
         }
 
@@ -125,6 +439,10 @@ namespace KrayonCore
                 _textures.Remove(slot);
             }
         }
+
+        // ============================================
+        // UNIFORMS
+        // ============================================
 
         public void SetInt(string name, int value)
         {
@@ -236,9 +554,121 @@ namespace KrayonCore
             _uniformCache.Clear();
         }
 
+        // ============================================
+        // FUNCIONES PARA AJUSTAR PROPIEDADES PBR
+        // ============================================
+
+        /// <summary>
+        /// Ajusta el color base del material (Albedo)
+        /// </summary>
+        public void SetAlbedo(Vector3 color)
+        {
+            AlbedoColor = color;
+            SetVector3Cached("u_AlbedoColor", AlbedoColor);
+        }
+
+        /// <summary>
+        /// Ajusta el color base del material usando valores RGB (0-255)
+        /// </summary>
+        public void SetAlbedo(float r, float g, float b)
+        {
+            AlbedoColor = new Vector3(r / 255f, g / 255f, b / 255f);
+            SetVector3Cached("u_AlbedoColor", AlbedoColor);
+        }
+
+        /// <summary>
+        /// Ajusta qué tan metálico es el material (0 = dieléctrico, 1 = metálico)
+        /// </summary>
+        public void SetMetallic(float value)
+        {
+            Metallic = MathHelper.Clamp(value, 0f, 1f);
+            SetFloatCached("u_Metallic", Metallic);
+        }
+
+        /// <summary>
+        /// Ajusta qué tan rugoso es el material (0 = suave/brillante, 1 = rugoso/mate)
+        /// </summary>
+        public void SetRoughness(float value)
+        {
+            Roughness = MathHelper.Clamp(value, 0f, 1f);
+            SetFloatCached("u_Roughness", Roughness);
+        }
+
+        /// <summary>
+        /// Ajusta el ambient occlusion (0 = completamente ocluido, 1 = sin oclusión)
+        /// </summary>
+        public void SetAO(float value)
+        {
+            AO = MathHelper.Clamp(value, 0f, 1f);
+            SetFloatCached("u_AO", AO);
+        }
+
+        /// <summary>
+        /// Ajusta el color emisivo (luz propia del material)
+        /// </summary>
+        public void SetEmissive(Vector3 color)
+        {
+            EmissiveColor = color;
+            SetVector3Cached("u_EmissiveColor", EmissiveColor);
+        }
+
+        /// <summary>
+        /// Ajusta el color emisivo usando valores RGB (0-255)
+        /// </summary>
+        public void SetEmissive(float r, float g, float b)
+        {
+            EmissiveColor = new Vector3(r / 255f, g / 255f, b / 255f);
+            SetVector3Cached("u_EmissiveColor", EmissiveColor);
+        }
+
+        /// <summary>
+        /// Ajusta la intensidad del emisivo
+        /// </summary>
+        public void SetEmissiveIntensity(float intensity)
+        {
+            EmissiveColor *= intensity;
+            SetVector3Cached("u_EmissiveColor", EmissiveColor);
+        }
+
+        /// <summary>
+        /// Configura todas las propiedades PBR de una vez
+        /// </summary>
+        public void SetPBRValues(
+            Vector3? albedo = null,
+            float? metallic = null,
+            float? roughness = null,
+            float? ao = null,
+            Vector3? emissive = null)
+        {
+            if (albedo.HasValue)
+                AlbedoColor = albedo.Value;
+
+            if (metallic.HasValue)
+                Metallic = MathHelper.Clamp(metallic.Value, 0f, 1f);
+
+            if (roughness.HasValue)
+                Roughness = MathHelper.Clamp(roughness.Value, 0f, 1f);
+
+            if (ao.HasValue)
+                AO = MathHelper.Clamp(ao.Value, 0f, 1f);
+
+            if (emissive.HasValue)
+                EmissiveColor = emissive.Value;
+
+            SetPBRProperties();
+        }
+
+
         public void Dispose()
         {
             MainTexture?.Dispose();
+            AlbedoTexture?.Dispose();
+            NormalTexture?.Dispose();
+            MetallicTexture?.Dispose();
+            RoughnessTexture?.Dispose();
+            AOTexture?.Dispose();
+            EmissiveTexture?.Dispose();
+
             foreach (var texture in _textures.Values)
                 texture.Dispose();
             _textures.Clear();

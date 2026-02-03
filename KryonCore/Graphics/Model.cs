@@ -22,7 +22,7 @@ namespace KrayonCore
             Scene scene = importer.ImportFile(path,
                 PostProcessSteps.Triangulate |
                 PostProcessSteps.FlipUVs |
-                PostProcessSteps.CalculateTangentSpace);
+                PostProcessSteps.CalculateTangentSpace); 
 
             if (scene == null || scene.SceneFlags.HasFlag(SceneFlags.Incomplete) || scene.RootNode == null)
             {
@@ -55,12 +55,12 @@ namespace KrayonCore
             // Procesar vértices
             for (int i = 0; i < mesh.VertexCount; i++)
             {
-                // Posición
+                // Posición (3 floats)
                 vertices.Add(mesh.Vertices[i].X);
                 vertices.Add(mesh.Vertices[i].Y);
                 vertices.Add(mesh.Vertices[i].Z);
 
-                // Normales
+                // Normales (3 floats)
                 if (mesh.HasNormals)
                 {
                     vertices.Add(mesh.Normals[i].X);
@@ -74,7 +74,7 @@ namespace KrayonCore
                     vertices.Add(0f);
                 }
 
-                // UVs
+                // UVs (2 floats)
                 if (mesh.HasTextureCoords(0))
                 {
                     vertices.Add(mesh.TextureCoordinateChannels[0][i].X);
@@ -83,6 +83,34 @@ namespace KrayonCore
                 else
                 {
                     vertices.Add(0f);
+                    vertices.Add(0f);
+                }
+
+                // NUEVO: Tangentes (3 floats)
+                if (mesh.HasTangentBasis)
+                {
+                    vertices.Add(mesh.Tangents[i].X);
+                    vertices.Add(mesh.Tangents[i].Y);
+                    vertices.Add(mesh.Tangents[i].Z);
+                }
+                else
+                {
+                    vertices.Add(1f); // Tangente por defecto
+                    vertices.Add(0f);
+                    vertices.Add(0f);
+                }
+
+                // NUEVO: Bitangentes (3 floats)
+                if (mesh.HasTangentBasis)
+                {
+                    vertices.Add(mesh.BiTangents[i].X);
+                    vertices.Add(mesh.BiTangents[i].Y);
+                    vertices.Add(mesh.BiTangents[i].Z);
+                }
+                else
+                {
+                    vertices.Add(0f); // Bitangente por defecto
+                    vertices.Add(1f);
                     vertices.Add(0f);
                 }
             }
@@ -152,17 +180,28 @@ namespace KrayonCore
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
+            // ACTUALIZADO: Ahora son 14 floats por vértice (3+3+2+3+3)
+            int stride = 14 * sizeof(float);
+
             // Posición (location = 0)
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
             GL.EnableVertexAttribArray(0);
 
             // Normal (location = 1)
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
 
             // UV (location = 2)
-            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
             GL.EnableVertexAttribArray(2);
+
+            // NUEVO: Tangente (location = 3)
+            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, stride, 8 * sizeof(float));
+            GL.EnableVertexAttribArray(3);
+
+            // NUEVO: Bitangente (location = 4)
+            GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, stride, 11 * sizeof(float));
+            GL.EnableVertexAttribArray(4);
 
             GL.BindVertexArray(0);
         }

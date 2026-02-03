@@ -191,16 +191,24 @@ namespace KrayonCore
                 return;
             }
 
+            // Obtener posición de cámara una sola vez
+            Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
+
             if (_materials.Length == 1)
             {
                 var material = _materials[0];
                 if (material != null)
                 {
+                    // IMPORTANTE: SetPBRProperties antes de Use()
+                    material.SetPBRProperties();
                     material.Use();
+
+                    // Pasar matrices y posición de cámara
                     material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
-                    material.SetVector3("u_CameraPos", GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position);
+                    material.SetVector3("u_CameraPos", cameraPos);
+
                     _model.Draw();
                 }
             }
@@ -212,11 +220,16 @@ namespace KrayonCore
                     if (material == null)
                         continue;
 
+                    // IMPORTANTE: SetPBRProperties antes de Use()
+                    material.SetPBRProperties();
                     material.Use();
+
+                    // Pasar matrices y posición de cámara
                     material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
-                    material.SetVector3("u_CameraPos", GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position);
+                    material.SetVector3("u_CameraPos", cameraPos);
+
                     _model.DrawSubMesh(i);
                 }
             }

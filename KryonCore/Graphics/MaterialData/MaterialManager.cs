@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using KrayonCore.Core.Attributes;
-using Newtonsoft;
 using Newtonsoft.Json.Linq;
+using OpenTK.Mathematics;
 
 namespace KrayonCore
 {
@@ -67,7 +67,6 @@ namespace KrayonCore
                 Console.WriteLine($"[MaterialManager] Error creating material '{name}': {ex.Message}");
                 return null;
             }
-
         }
 
         public Material Create(string name, string shaderBasePath)
@@ -169,10 +168,52 @@ namespace KrayonCore
                 Material MT = kvp.Value;
                 JObject mat = new JObject
                 {
-                    ["Name"] = kvp.Value.Name,
-                    ["AlbedoPath"] = MT.MainTexture.GetTexturePath,
+                    ["Name"] = MT.Name,
+                    ["GUID"] = MT.Guid,
                     ["ShaderPath"] = MT.Shader.VertexPath,
-                    ["GUID"] = MT.Guid
+
+                    // Texturas PBR
+                    ["AlbedoPath"] = MT.AlbedoTexture?.GetTexturePath,
+                    ["NormalPath"] = MT.NormalTexture?.GetTexturePath,
+                    ["MetallicPath"] = MT.MetallicTexture?.GetTexturePath,
+                    ["RoughnessPath"] = MT.RoughnessTexture?.GetTexturePath,
+                    ["AOPath"] = MT.AOTexture?.GetTexturePath,
+                    ["EmissivePath"] = MT.EmissiveTexture?.GetTexturePath,
+
+                    // Propiedades PBR
+                    ["AlbedoColor"] = new JObject
+                    {
+                        ["X"] = MT.AlbedoColor.X,
+                        ["Y"] = MT.AlbedoColor.Y,
+                        ["Z"] = MT.AlbedoColor.Z
+                    },
+                    ["Metallic"] = MT.Metallic,
+                    ["Roughness"] = MT.Roughness,
+                    ["AO"] = MT.AO,
+                    ["EmissiveColor"] = new JObject
+                    {
+                        ["X"] = MT.EmissiveColor.X,
+                        ["Y"] = MT.EmissiveColor.Y,
+                        ["Z"] = MT.EmissiveColor.Z
+                    },
+
+                    // Flags de uso de texturas
+                    ["UseAlbedoMap"] = MT.UseAlbedoMap,
+                    ["UseNormalMap"] = MT.UseNormalMap,
+                    ["UseMetallicMap"] = MT.UseMetallicMap,
+                    ["UseRoughnessMap"] = MT.UseRoughnessMap,
+                    ["UseAOMap"] = MT.UseAOMap,
+                    ["UseEmissiveMap"] = MT.UseEmissiveMap,
+
+                    // Propiedades adicionales
+                    ["NormalMapIntensity"] = MT.NormalMapIntensity,
+                    ["AmbientLight"] = new JObject
+                    {
+                        ["X"] = MT.AmbientLight.X,
+                        ["Y"] = MT.AmbientLight.Y,
+                        ["Z"] = MT.AmbientLight.Z
+                    },
+                    ["AmbientStrength"] = MT.AmbientStrength
                 };
 
                 materialsObj[kvp.Key] = mat;
@@ -181,18 +222,25 @@ namespace KrayonCore
             data["Materials"] = materialsObj;
 
             File.WriteAllText("materials.json", data.ToString());
+            Console.WriteLine($"[MaterialManager] Saved {_materials.Count} materials to materials.json");
         }
 
         public void LoadMaterialsData()
         {
             if (!File.Exists("materials.json"))
+            {
+                Console.WriteLine("[MaterialManager] materials.json not found");
                 return;
+            }
 
             JObject root = JObject.Parse(File.ReadAllText("materials.json"));
             JObject materialsObj = (JObject)root["Materials"];
 
             if (materialsObj == null)
+            {
+                Console.WriteLine("[MaterialManager] No materials found in JSON");
                 return;
+            }
 
             _materials.Clear();
 
@@ -202,8 +250,13 @@ namespace KrayonCore
                 JObject matJson = (JObject)matProp.Value;
 
                 string name = matJson["Name"]?.ToString();
-                string albedoPath = matJson["AlbedoPath"]?.ToString();
                 string fragPath = matJson["ShaderPath"]?.ToString();
+
+                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(fragPath))
+                {
+                    Console.WriteLine($"[MaterialManager] Skipping invalid material entry: {key}");
+                    continue;
+                }
 
                 string shaderBasePath = Path.Combine(
                     Path.GetDirectoryName(fragPath) ?? "",
@@ -212,27 +265,101 @@ namespace KrayonCore
 
                 Material material = Create(name, shaderBasePath);
 
-                // VERIFICAR SI EL MATERIAL SE CREÓ CORRECTAMENTE
                 if (material == null)
                 {
                     Console.WriteLine($"[MaterialManager] Failed to create material '{name}' during load. Skipping.");
                     continue;
                 }
 
-                var guidToken = matJson?["GUID"];
+                // Cargar GUID
+                var guidToken = matJson["GUID"];
                 var guidString = guidToken?.ToString();
                 if (!string.IsNullOrEmpty(guidString) && Guid.TryParse(guidString, out var guid))
                 {
                     material.Guid = guid;
                 }
 
+                // Cargar texturas PBR
+                string albedoPath = matJson["AlbedoPath"]?.ToString();
+                string normalPath = matJson["NormalPath"]?.ToString();
+                string metallicPath = matJson["MetallicPath"]?.ToString();
+                string roughnessPath = matJson["RoughnessPath"]?.ToString();
+                string aoPath = matJson["AOPath"]?.ToString();
+                string emissivePath = matJson["EmissivePath"]?.ToString();
+
                 if (!string.IsNullOrEmpty(albedoPath))
+                    material.LoadAlbedoTexture(albedoPath);
+
+                if (!string.IsNullOrEmpty(normalPath))
+                    material.LoadNormalTexture(normalPath);
+
+                if (!string.IsNullOrEmpty(metallicPath))
+                    material.LoadMetallicTexture(metallicPath);
+
+                if (!string.IsNullOrEmpty(roughnessPath))
+                    material.LoadRoughnessTexture(roughnessPath);
+
+                if (!string.IsNullOrEmpty(aoPath))
+                    material.LoadAOTexture(aoPath);
+
+                if (!string.IsNullOrEmpty(emissivePath))
+                    material.LoadEmissiveTexture(emissivePath);
+
+                // Cargar propiedades PBR
+                var albedoColorObj = matJson["AlbedoColor"] as JObject;
+                if (albedoColorObj != null)
                 {
-                    material.LoadMainTexture(albedoPath);
+                    material.AlbedoColor = new Vector3(
+                        albedoColorObj["X"]?.Value<float>() ?? 1f,
+                        albedoColorObj["Y"]?.Value<float>() ?? 1f,
+                        albedoColorObj["Z"]?.Value<float>() ?? 1f
+                    );
                 }
 
-                Console.WriteLine($"*********** Material '{name}' Cargado");
+                material.Metallic = matJson["Metallic"]?.Value<float>() ?? 0f;
+                material.Roughness = matJson["Roughness"]?.Value<float>() ?? 0.5f;
+                material.AO = matJson["AO"]?.Value<float>() ?? 1f;
+
+                var emissiveColorObj = matJson["EmissiveColor"] as JObject;
+                if (emissiveColorObj != null)
+                {
+                    material.EmissiveColor = new Vector3(
+                        emissiveColorObj["X"]?.Value<float>() ?? 0f,
+                        emissiveColorObj["Y"]?.Value<float>() ?? 0f,
+                        emissiveColorObj["Z"]?.Value<float>() ?? 0f
+                    );
+                }
+
+                // Cargar flags de uso de texturas
+                material.UseAlbedoMap = matJson["UseAlbedoMap"]?.Value<bool>() ?? false;
+                material.UseNormalMap = matJson["UseNormalMap"]?.Value<bool>() ?? false;
+                material.UseMetallicMap = matJson["UseMetallicMap"]?.Value<bool>() ?? false;
+                material.UseRoughnessMap = matJson["UseRoughnessMap"]?.Value<bool>() ?? false;
+                material.UseAOMap = matJson["UseAOMap"]?.Value<bool>() ?? false;
+                material.UseEmissiveMap = matJson["UseEmissiveMap"]?.Value<bool>() ?? false;
+
+                // Cargar propiedades adicionales
+                material.NormalMapIntensity = matJson["NormalMapIntensity"]?.Value<float>() ?? 1f;
+
+                var ambientLightObj = matJson["AmbientLight"] as JObject;
+                if (ambientLightObj != null)
+                {
+                    material.AmbientLight = new Vector3(
+                        ambientLightObj["X"]?.Value<float>() ?? 0.03f,
+                        ambientLightObj["Y"]?.Value<float>() ?? 0.03f,
+                        ambientLightObj["Z"]?.Value<float>() ?? 0.03f
+                    );
+                }
+
+                material.AmbientStrength = matJson["AmbientStrength"]?.Value<float>() ?? 1f;
+
+                // Aplicar todas las propiedades PBR
+                material.SetPBRProperties();
+
+                Console.WriteLine($"[MaterialManager] ✓ Material '{name}' loaded successfully");
             }
+
+            Console.WriteLine($"[MaterialManager] Loaded {_materials.Count} materials from materials.json");
         }
     }
 }

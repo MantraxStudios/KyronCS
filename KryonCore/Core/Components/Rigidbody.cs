@@ -13,14 +13,106 @@ namespace KrayonCore
         private Body _body;
         private bool _isInitialized = false;
 
+        // Valores previos para detectar cambios
+        private MotionType _previousMotionType;
+        private bool _previousIsKinematic;
+        private ShapeType _previousShapeType;
+        private Vector3 _previousShapeSize;
+        private ObjectLayer _previousLayer;
+
         // Propiedades de configuración
-        [ToStorage] public MotionType MotionType { get; set; } = MotionType.Dynamic;
-        [ToStorage] public ObjectLayer Layer { get; set; } = WorldPhysic.Layers.Moving;
-        [ToStorage] public ShapeType ShapeType { get; set; } = ShapeType.Box;
-        [ToStorage] public Vector3 ShapeSize { get; set; } = Vector3.One;
+        private MotionType _motionType = MotionType.Dynamic;
+        [ToStorage]
+        public MotionType MotionType
+        {
+            get => _motionType;
+            set
+            {
+                if (_motionType != value)
+                {
+                    _motionType = value;
+                    if (_isInitialized && !_isKinematic)
+                    {
+                        RecreatePhysicsBody();
+                    }
+                }
+            }
+        }
+
+        private ObjectLayer _layer = WorldPhysic.Layers.Moving;
+        [ToStorage]
+        public ObjectLayer Layer
+        {
+            get => _layer;
+            set
+            {
+                if (_layer != value)
+                {
+                    _layer = value;
+                    if (_isInitialized)
+                    {
+                        RecreatePhysicsBody();
+                    }
+                }
+            }
+        }
+
+        private ShapeType _shapeType = ShapeType.Box;
+        [ToStorage]
+        public ShapeType ShapeType
+        {
+            get => _shapeType;
+            set
+            {
+                if (_shapeType != value)
+                {
+                    _shapeType = value;
+                    if (_isInitialized)
+                    {
+                        RecreatePhysicsBody();
+                    }
+                }
+            }
+        }
+
+        private Vector3 _shapeSize = Vector3.One;
+        [ToStorage]
+        public Vector3 ShapeSize
+        {
+            get => _shapeSize;
+            set
+            {
+                if (_shapeSize != value)
+                {
+                    _shapeSize = value;
+                    if (_isInitialized)
+                    {
+                        RecreatePhysicsBody();
+                    }
+                }
+            }
+        }
+
         [ToStorage] public float Mass { get; set; } = 1.0f;
         [ToStorage] public bool UseGravity { get; set; } = true;
-        [ToStorage] public bool IsKinematic { get; set; } = false;
+
+        private bool _isKinematic = false;
+        [ToStorage]
+        public bool IsKinematic
+        {
+            get => _isKinematic;
+            set
+            {
+                if (_isKinematic != value)
+                {
+                    _isKinematic = value;
+                    if (_isInitialized)
+                    {
+                        RecreatePhysicsBody();
+                    }
+                }
+            }
+        }
 
         // Restricciones de movimiento
         [ToStorage] public bool FreezePositionX { get; set; } = false;
@@ -50,6 +142,15 @@ namespace KrayonCore
             if (_isInitialized || GameObject?.Scene?.PhysicsWorld == null)
                 return;
 
+            CreatePhysicsBody();
+            _isInitialized = true;
+        }
+
+        private void CreatePhysicsBody()
+        {
+            if (GameObject?.Scene?.PhysicsWorld == null)
+                return;
+
             var physicsWorld = GameObject.Scene.PhysicsWorld;
             var transform = GameObject.Transform;
 
@@ -58,40 +159,40 @@ namespace KrayonCore
             System.Numerics.Quaternion rotation = ToNumerics(transform.Rotation);
 
             // Determinar el MotionType final
-            MotionType finalMotionType = IsKinematic ? MotionType.Kinematic : MotionType;
+            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
 
             // Crear el cuerpo físico según el tipo de forma
-            switch (ShapeType)
+            switch (_shapeType)
             {
                 case ShapeType.Box:
-                    System.Numerics.Vector3 halfExtent = ToNumerics(ShapeSize * 0.5f);
+                    System.Numerics.Vector3 halfExtent = ToNumerics(_shapeSize * 0.5f);
                     _body = physicsWorld.CreateBox(
                         halfExtent,
                         position,
                         rotation,
                         finalMotionType,
-                        Layer
+                        _layer
                     );
                     break;
 
                 case ShapeType.Sphere:
                     _body = physicsWorld.CreateSphere(
-                        ShapeSize.X * 0.5f,  // Radio
+                        _shapeSize.X * 0.5f,  // Radio
                         position,
                         rotation,
                         finalMotionType,
-                        Layer
+                        _layer
                     );
                     break;
 
                 case ShapeType.Capsule:
                     _body = physicsWorld.CreateCapsule(
-                        ShapeSize.Y * 0.5f,  // Half height
-                        ShapeSize.X * 0.5f,  // Radio
+                        _shapeSize.Y * 0.5f,  // Half height
+                        _shapeSize.X * 0.5f,  // Radio
                         position,
                         rotation,
                         finalMotionType,
-                        Layer
+                        _layer
                     );
                     break;
             }
@@ -111,9 +212,61 @@ namespace KrayonCore
                     // Desactivar gravedad
                     // bodyInterface.SetGravityFactor(_body.ID, 0.0f);
                 }
+
+                // Si es cinemático, asegurarse de que no se mueva por física
+                if (finalMotionType == MotionType.Kinematic)
+                {
+                    bodyInterface.SetLinearVelocity(_body.ID, System.Numerics.Vector3.Zero);
+                    bodyInterface.SetAngularVelocity(_body.ID, System.Numerics.Vector3.Zero);
+                }
             }
 
-            _isInitialized = true;
+            // Guardar valores actuales
+            _previousMotionType = finalMotionType;
+            _previousIsKinematic = _isKinematic;
+            _previousShapeType = _shapeType;
+            _previousShapeSize = _shapeSize;
+            _previousLayer = _layer;
+        }
+
+        private void RecreatePhysicsBody()
+        {
+            if (!_isInitialized || GameObject?.Scene?.PhysicsWorld == null)
+                return;
+
+            // Guardar velocidades si era dinámico
+            System.Numerics.Vector3 linearVelocity = System.Numerics.Vector3.Zero;
+            System.Numerics.Vector3 angularVelocity = System.Numerics.Vector3.Zero;
+
+            if (_body != null && _previousMotionType == MotionType.Dynamic)
+            {
+                var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
+                linearVelocity = bodyInterface.GetLinearVelocity(_body.ID);
+                angularVelocity = bodyInterface.GetAngularVelocity(_body.ID);
+            }
+
+            // Eliminar el cuerpo anterior
+            if (_body != null)
+            {
+                GameObject.Scene.PhysicsWorld.RemoveBody(_body);
+                _body = null;
+            }
+
+            // Crear el nuevo cuerpo
+            CreatePhysicsBody();
+
+            // Restaurar velocidades si el nuevo cuerpo es dinámico
+            if (_body != null)
+            {
+                MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
+
+                if (finalMotionType == MotionType.Dynamic && _previousMotionType == MotionType.Dynamic)
+                {
+                    var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
+                    bodyInterface.SetLinearVelocity(_body.ID, linearVelocity);
+                    bodyInterface.SetAngularVelocity(_body.ID, angularVelocity);
+                }
+            }
         }
 
         public override void Update(float deltaTime)
@@ -128,6 +281,11 @@ namespace KrayonCore
         internal void SyncFromPhysics()
         {
             if (_body == null || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
+                return;
+
+            // Si es cinemático, no sincronizar desde física (el transform controla la física)
+            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
+            if (finalMotionType == MotionType.Kinematic || finalMotionType == MotionType.Static)
                 return;
 
             var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
@@ -153,7 +311,6 @@ namespace KrayonCore
             {
                 GameObject.Transform.Rotation = rotation;
             }
-
         }
 
         /// <summary>
@@ -166,17 +323,32 @@ namespace KrayonCore
 
             var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
 
-            bodyInterface.SetPosition(
-                _body.ID,
-                ToNumerics(GameObject.Transform.Position),
-                Activation.Activate
-            );
+            // Si es cinemático, usar MoveKinematic
+            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
 
-            bodyInterface.SetRotation(
-                _body.ID,
-                ToNumerics(GameObject.Transform.Rotation),
-                Activation.Activate
-            );
+            if (finalMotionType == MotionType.Kinematic)
+            {
+                bodyInterface.MoveKinematic(
+                    _body.ID,
+                    ToNumerics(GameObject.Transform.Position),
+                    ToNumerics(GameObject.Transform.Rotation),
+                    0.016f // deltaTime
+                );
+            }
+            else
+            {
+                bodyInterface.SetPosition(
+                    _body.ID,
+                    ToNumerics(GameObject.Transform.Position),
+                    Activation.Activate
+                );
+
+                bodyInterface.SetRotation(
+                    _body.ID,
+                    ToNumerics(GameObject.Transform.Rotation),
+                    Activation.Activate
+                );
+            }
         }
 
         // ============================================================

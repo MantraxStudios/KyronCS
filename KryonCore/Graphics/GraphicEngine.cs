@@ -42,7 +42,12 @@ namespace KrayonCore
 
             if (textureMaterial != null)
             {
-                textureMaterial.LoadMainTexture("textures/test.jpg", generateMipmaps: true, flip: true);
+                textureMaterial.LoadMainTexture("textures/Ground080_4K-PNG_Color.png", generateMipmaps: true, flip: true);
+                textureMaterial.LoadNormalTexture("textures/Ground080_4K-PNG_NormalGL.png", generateMipmaps: true, flip: true);
+                textureMaterial.LoadAOTexture("textures/Ground080_4K-PNG_AmbientOcclusion.png", generateMipmaps: true, flip: true);
+                textureMaterial.LoadRoughnessTexture("textures/Ground080_4K-PNG_Roughness.png", generateMipmaps: true, flip: true);
+                textureMaterial.SetRoughness(0.01f);
+                textureMaterial.SetNormalMapIntensity(2.0f);
             }
         }
 
@@ -93,7 +98,7 @@ namespace KrayonCore
 
             _materials.LoadMaterialsData();
 
-            //CreateDefaultMaterials();
+            CreateDefaultMaterials();
 
             _sceneFrameBuffer = new FrameBuffer(1280, 720);
             _sceneRenderer.Initialize();
