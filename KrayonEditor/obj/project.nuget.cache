@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "J8bb0UxRAWU=",
+  "dgSpecHash": "SVBmzrUrdHc=",
   "success": true,
   "projectFilePath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\KrayonEditor.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,8 @@
     "C:\\Users\\tupap\\.nuget\\packages\\assimpnet\\4.1.0\\assimpnet.4.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\imgui.net\\1.91.6.1\\imgui.net.1.91.6.1.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\jint\\4.5.0\\jint.4.5.0.nupkg.sha512",
+    "C:\\Users\\tupap\\.nuget\\packages\\joltphysics.native\\1.0.9\\joltphysics.native.1.0.9.nupkg.sha512",
+    "C:\\Users\\tupap\\.nuget\\packages\\joltphysicssharp\\2.20.1\\joltphysicssharp.2.20.1.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.win32.primitives\\4.3.0\\microsoft.win32.primitives.4.3.0.nupkg.sha512",

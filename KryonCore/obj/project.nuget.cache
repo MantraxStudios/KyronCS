@@ -1,12 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "IGvQDA2h4mI=",
+  "dgSpecHash": "gVi8L4Q+QW0=",
   "success": true,
   "projectFilePath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tupap\\.nuget\\packages\\acornima\\1.2.0\\acornima.1.2.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\assimpnet\\4.1.0\\assimpnet.4.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\jint\\4.5.0\\jint.4.5.0.nupkg.sha512",
+    "C:\\Users\\tupap\\.nuget\\packages\\joltphysics.native\\1.0.9\\joltphysics.native.1.0.9.nupkg.sha512",
+    "C:\\Users\\tupap\\.nuget\\packages\\joltphysicssharp\\2.20.1\\joltphysicssharp.2.20.1.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.win32.primitives\\4.3.0\\microsoft.win32.primitives.4.3.0.nupkg.sha512",
