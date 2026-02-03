@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KrayonCore.Physics;
 
 namespace KrayonCore
 {
@@ -14,6 +15,10 @@ namespace KrayonCore
         private List<GameObject> _gameObjectsList;
         private List<GameObject> _toDestroy;
 
+        // Sistema de física
+        private WorldPhysic _physicsWorld;
+        public WorldPhysic PhysicsWorld => _physicsWorld;
+
         public GameScene(string name)
         {
             Id = Guid.NewGuid();
@@ -22,6 +27,9 @@ namespace KrayonCore
             _gameObjectsList = new List<GameObject>();
             _toDestroy = new List<GameObject>();
             IsLoaded = false;
+
+            // Inicializar el mundo de física
+            _physicsWorld = new WorldPhysic();
         }
 
         public GameObject CreateGameObject(string name = "GameObject")
@@ -105,12 +113,51 @@ namespace KrayonCore
 
         internal void Update(float deltaTime)
         {
+            // Actualizar componentes
             foreach (var go in _gameObjectsList)
             {
                 go.UpdateComponents(deltaTime);
             }
 
+            // Actualizar física
+            UpdatePhysics(deltaTime);
+
+            // Procesar destrucciones
             ProcessDestructions();
+        }
+
+        /// <summary>
+        /// Actualiza la simulación de física
+        /// </summary>
+        private void UpdatePhysics(float deltaTime)
+        {
+            if (_physicsWorld != null)
+            {
+                // Actualizar la simulación de física
+                _physicsWorld.Update(deltaTime);
+
+                // Sincronizar GameObjects con sus cuerpos físicos
+                SyncPhysicsToGameObjects();
+            }
+        }
+
+        /// <summary>
+        /// Sincroniza las posiciones de los cuerpos físicos con los GameObjects
+        /// </summary>
+        private void SyncPhysicsToGameObjects()
+        {
+            // Recorrer todos los GameObjects que tienen componentes de física
+            var physicsObjects = FindGameObjectsWithComponent<Rigidbody>();
+
+            foreach (var go in physicsObjects)
+            {
+                var rigidbody = go.GetComponent<Rigidbody>();
+                if (rigidbody != null && rigidbody.Body != null)
+                {
+                    // Sincronizar posición y rotación desde el motor de física
+                    rigidbody.SyncFromPhysics();
+                }
+            }
         }
 
         private void ProcessDestructions()
@@ -133,9 +180,24 @@ namespace KrayonCore
             {
                 go.DestroyComponents();
             }
+
             _gameObjects.Clear();
             _gameObjectsList.Clear();
             _toDestroy.Clear();
+
+            // Limpiar el mundo de física
+            _physicsWorld?.Dispose();
+            _physicsWorld = new WorldPhysic();
+        }
+
+        /// <summary>
+        /// Libera los recursos de la escena
+        /// </summary>
+        public void Dispose()
+        {
+            Clear();
+            _physicsWorld?.Dispose();
+            _physicsWorld = null;
         }
     }
 }
