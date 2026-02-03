@@ -52,3 +52,4 @@ C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net8.0\NAudio.
 C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net8.0\NAudio.WinMM.dll
 C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net8.0\StbImageWriteSharp.dll
 C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\obj\Debug\net8.0\KrayonEditor.sourcelink.json

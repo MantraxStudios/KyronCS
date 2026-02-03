@@ -2,14 +2,14 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "4c22c816-d798-42e7-86c7-01618451c31d",
+      "Id": "a06b8bdf-5c35-433a-9f82-1721416fcd1a",
       "Name": "MainCamera",
       "Tag": "MainCamera",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b2599a13-1205-4709-bb1c-3c39535b2984",
+          "ComponentId": "68f49b3a-47c0-4ad8-9dc6-f0504b1d13e3",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -35,7 +35,7 @@
         },
         {
           "TypeName": "KrayonCore.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "209ad0f4-40bc-4676-9dc1-f8cddd9d974e",
+          "ComponentId": "6a53a29e-7b2e-4866-9374-6b8f93743c6c",
           "Enabled": true,
           "SerializedFields": {
             "_yaw": -97.19991,
@@ -51,14 +51,14 @@
       ]
     },
     {
-      "Id": "c513e8a2-0446-46f2-a67c-b362fdc148f9",
+      "Id": "aab532a6-0857-4f8f-92c8-543c57587c36",
       "Name": "Cube_1",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9ab93856-22d6-428a-b118-8e737d227633",
+          "ComponentId": "148df3da-c144-480a-bb66-e8f96507d9a0",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -84,7 +84,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "99daf35c-8263-487b-b3d5-1a4fe745a912",
+          "ComponentId": "f46f124a-8eae-441c-96e9-27a52f645987",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "models/Cube.fbx",
@@ -96,6 +96,300 @@
                 "",
                 "",
                 ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "6ebf5800-e614-4983-97a6-cbd8f0a2cf8d",
+      "Name": "Cube_2",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "5e6204bb-034d-47ed-af81-ffe920abdaf8",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 2,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "9b2c4564-e46d-421a-88cb-fc323cdbdb20",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "9d5b908c-3d9b-467c-827c-3eec436b35ae",
+      "Name": "Cube_3",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "5ad1504c-8d91-4fa2-8a8f-8b1fc488bee0",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 2,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "bf2d53e8-a681-4e3f-ac65-473880b9d05d",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "273e47a7-c964-440e-9397-e7fac00749a0",
+      "Name": "Cube_4",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "a466ca76-84e1-45cc-88c0-d3818956f9ec",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -2,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "59ddd48f-9b7e-4a77-b202-f182711f5192",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "db85f860-4af2-46bc-a2ae-ebb2e4772f79",
+      "Name": "Cube_5",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "9f2dd20f-8dea-4c57-be02-3f14ab83cb65",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -4,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "25332769-0296-4e78-896b-929c231a0c54",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "f20c1045-eeb1-4cf1-be08-a7c4a50e31ec",
+      "Name": "Cube_6",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "57e624db-5b4b-4f39-b775-280734b6c1f0",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -2,
+              "y": 4,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": -0.38268346,
+              "w": 0.9238795
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "5073afa3-8ca1-4053-b112-3b4f623c64b0",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "efdf6703-08e6-475b-bbd9-b3c61d963332",
+      "Name": "Cube_7",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "c14e1160-24c4-4781-a395-8a21026b5295",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 2
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7b276091-ca70-4b23-85f7-d4fb10e86d73",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
               ]
             }
           }
