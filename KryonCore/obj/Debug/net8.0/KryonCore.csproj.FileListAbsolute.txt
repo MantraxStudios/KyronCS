@@ -1,0 +1,12 @@
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\bin\Debug\net8.0\KryonCore.deps.json
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\bin\Debug\net8.0\KryonCore.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\bin\Debug\net8.0\KryonCore.pdb
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.csproj.AssemblyReference.cache
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.AssemblyInfoInputs.cache
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.AssemblyInfo.cs
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.csproj.CoreCompileInputs.cache
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\refint\KryonCore.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\KryonCore.pdb
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KryonCore\obj\Debug\net8.0\ref\KryonCore.dll
