@@ -25,7 +25,7 @@ namespace KrayonEditor.UI
 
         public static void Draw(
             GraphicsEngine? engine,
-            CameraComponent? mainCamera,
+            Camera? mainCamera,
             GameObject? selectedObject,
             bool isPlaying,
             float editorCameraSpeed,

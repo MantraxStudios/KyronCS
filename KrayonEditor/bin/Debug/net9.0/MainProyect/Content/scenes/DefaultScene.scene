@@ -1,0 +1,111 @@
+{
+  "SceneName": "DefaultScene",
+  "GameObjects": [
+    {
+      "Id": "fd4e98c8-d593-4d17-84a6-45e08484e6ae",
+      "Name": "MainCamera",
+      "Tag": "MainCamera",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "ca6f71c7-e830-45fa-a2e5-ed6125b3994a",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -2.214655,
+              "y": 0.31618223,
+              "z": -0.43925875
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "35793261-7c14-4085-8599-fd7ef52708b9",
+          "Enabled": true,
+          "SerializedFields": {
+            "_yaw": 358.51016,
+            "_pitch": -23.099247,
+            "Fov": 45,
+            "AspectRatio": 2.2340426,
+            "NearPlane": 0.1,
+            "FarPlane": 100,
+            "MovementSpeed": 2.5,
+            "MouseSensitivity": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "Id": "c0c3954a-8ef3-412a-a8ca-78a4a806b7e3",
+      "Name": "Cube_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "3559c613-1da2-48ba-8209-83136138e681",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0.32410747,
+              "y": -2.5,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "77a3a6f8-d5e3-4f39-8228-cdbc6f710ac8",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.GameScript, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "4d271b5f-7313-4cbb-acd0-88e3de04b8d2",
+          "Enabled": true,
+          "SerializedFields": {
+            "ScriptPath": "scripts/game.js"
+          }
+        }
+      ]
+    }
+  ]
+}

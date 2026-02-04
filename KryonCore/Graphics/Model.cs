@@ -1,13 +1,13 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using Assimp;
-
 using GLPrimitiveType = OpenTK.Graphics.OpenGL4.PrimitiveType;
 using AssimpPrimitiveType = Assimp.PrimitiveType;
 using KrayonCore.Core.Attributes;
 
 namespace KrayonCore
 {
-    public class Model : AssetData, IDisposable
+    public class Model : IDisposable
     {
         private List<Mesh> _meshes = new();
         private bool _disposed = false;
@@ -18,11 +18,13 @@ namespace KrayonCore
         {
             var model = new Model();
 
+            path = AssetManager.BasePath + path;
+
             AssimpContext importer = new AssimpContext();
             Scene scene = importer.ImportFile(path,
                 PostProcessSteps.Triangulate |
                 PostProcessSteps.FlipUVs |
-                PostProcessSteps.CalculateTangentSpace); 
+                PostProcessSteps.CalculateTangentSpace);
 
             if (scene == null || scene.SceneFlags.HasFlag(SceneFlags.Incomplete) || scene.RootNode == null)
             {
@@ -52,15 +54,12 @@ namespace KrayonCore
             List<float> vertices = new List<float>();
             List<uint> indices = new List<uint>();
 
-            // Procesar vértices
             for (int i = 0; i < mesh.VertexCount; i++)
             {
-                // Posición (3 floats)
                 vertices.Add(mesh.Vertices[i].X);
                 vertices.Add(mesh.Vertices[i].Y);
                 vertices.Add(mesh.Vertices[i].Z);
 
-                // Normales (3 floats)
                 if (mesh.HasNormals)
                 {
                     vertices.Add(mesh.Normals[i].X);
@@ -74,7 +73,6 @@ namespace KrayonCore
                     vertices.Add(0f);
                 }
 
-                // UVs (2 floats)
                 if (mesh.HasTextureCoords(0))
                 {
                     vertices.Add(mesh.TextureCoordinateChannels[0][i].X);
@@ -86,7 +84,6 @@ namespace KrayonCore
                     vertices.Add(0f);
                 }
 
-                // NUEVO: Tangentes (3 floats)
                 if (mesh.HasTangentBasis)
                 {
                     vertices.Add(mesh.Tangents[i].X);
@@ -95,12 +92,11 @@ namespace KrayonCore
                 }
                 else
                 {
-                    vertices.Add(1f); // Tangente por defecto
+                    vertices.Add(1f);
                     vertices.Add(0f);
                     vertices.Add(0f);
                 }
 
-                // NUEVO: Bitangentes (3 floats)
                 if (mesh.HasTangentBasis)
                 {
                     vertices.Add(mesh.BiTangents[i].X);
@@ -109,13 +105,12 @@ namespace KrayonCore
                 }
                 else
                 {
-                    vertices.Add(0f); // Bitangente por defecto
+                    vertices.Add(0f);
                     vertices.Add(1f);
                     vertices.Add(0f);
                 }
             }
 
-            // Procesar índices
             for (int i = 0; i < mesh.FaceCount; i++)
             {
                 Face face = mesh.Faces[i];
@@ -180,26 +175,25 @@ namespace KrayonCore
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-            // ACTUALIZADO: Ahora son 14 floats por vértice (3+3+2+3+3)
             int stride = 14 * sizeof(float);
 
-            // Posición (location = 0)
+            // Position
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
             GL.EnableVertexAttribArray(0);
 
-            // Normal (location = 1)
+            // Normal
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
 
-            // UV (location = 2)
+            // TexCoords
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
             GL.EnableVertexAttribArray(2);
 
-            // NUEVO: Tangente (location = 3)
+            // Tangent
             GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, stride, 8 * sizeof(float));
             GL.EnableVertexAttribArray(3);
 
-            // NUEVO: Bitangente (location = 4)
+            // BiTangent
             GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, stride, 11 * sizeof(float));
             GL.EnableVertexAttribArray(4);
 

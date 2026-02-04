@@ -7,7 +7,7 @@ namespace KrayonEditor.UI
 {
     public class StatsUI : UIBehaviour
     {
-        public CameraComponent? MainCamera { get; set; }
+        public Camera? MainCamera { get; set; }
         public double CurrentFps { get; set; }
         public double CurrentFrameTime { get; set; }
 

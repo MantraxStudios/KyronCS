@@ -7,7 +7,7 @@ namespace KrayonEditor.UI
 {
     internal static class EditorGizmos
     {
-        public static void DrawOrientationGizmo(Vector2 viewportPos, Vector2 viewportSize, CameraComponent? mainCamera)
+        public static void DrawOrientationGizmo(Vector2 viewportPos, Vector2 viewportSize, Camera? mainCamera)
         {
             if (mainCamera == null) return;
 

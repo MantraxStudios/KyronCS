@@ -8,24 +8,14 @@ namespace KrayonCore
     public class SceneRenderer
     {
         private Camera _camera;
-        private CameraComponent? _mainCamera;
 
         public void Initialize()
         {
-            _camera = new Camera(new Vector3(0, 0, 5), WindowConfig.Width / WindowConfig.Height);
+            _camera = new Camera(new Vector3(0, 0, 5), WindowConfig.Width / (float)WindowConfig.Height);
         }
 
         public void Render()
         {
-            if (_mainCamera != null)
-            {
-                _camera.Position = _mainCamera.Position;
-                _camera.Yaw = _mainCamera.Yaw;
-                _camera.Pitch = _mainCamera.Pitch;
-                _camera.Fov = _mainCamera.Fov;
-                _camera.AspectRatio = _mainCamera.AspectRatio;
-            }
-
             Matrix4 view = _camera.GetViewMatrix();
             Matrix4 projection = _camera.GetProjectionMatrix();
 
@@ -46,7 +36,6 @@ namespace KrayonCore
                                 renderer.AddMaterial(basicMaterial);
                             }
                         }
-
                         renderer.Render(view, projection);
                     }
                 }
@@ -56,17 +45,7 @@ namespace KrayonCore
         public void Resize(int width, int height)
         {
             GL.Viewport(0, 0, width, height);
-            _camera.AspectRatio = (float)width / height;
-            if (_mainCamera != null)
-            {
-                _mainCamera.AspectRatio = (float)width / height;
-            }
-        }
-
-        public void SetCamera(CameraComponent camera)
-        {
-            _mainCamera = camera;
-            _camera = new Camera(camera.Position, camera.AspectRatio);
+            _camera.UpdateAspectRatio(width, height);
         }
 
         public void Update(float deltaTime)

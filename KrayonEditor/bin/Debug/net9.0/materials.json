@@ -2,13 +2,12 @@
   "Materials": {
     "basic": {
       "Name": "basic",
-      "GUID": "070cd4b5-585c-4071-b8c7-f1f93e043c8f",
-      "ShaderPath": "shaders/basic.vert",
-      "AlbedoPath": "textures/Ground080_4K-PNG_Color.png",
-      "NormalPath": "textures/Ground080_4K-PNG_NormalGL.png",
+      "ShaderPath": "MainProyect/Content/shaders/basic.vert",
+      "AlbedoPath": "MainProyect/Content/textures/sprites/Environment/dirt.png",
+      "NormalPath": null,
       "MetallicPath": null,
-      "RoughnessPath": "textures/Ground080_4K-PNG_Roughness.png",
-      "AOPath": "textures/Ground080_4K-PNG_AmbientOcclusion.png",
+      "RoughnessPath": null,
+      "AOPath": null,
       "EmissivePath": null,
       "AlbedoColor": {
         "X": 1.0,
@@ -16,7 +15,7 @@
         "Z": 1.0
       },
       "Metallic": 0.0,
-      "Roughness": 0.01,
+      "Roughness": 0.5,
       "AO": 1.0,
       "EmissiveColor": {
         "X": 0.0,
@@ -24,12 +23,12 @@
         "Z": 0.0
       },
       "UseAlbedoMap": true,
-      "UseNormalMap": true,
+      "UseNormalMap": false,
       "UseMetallicMap": false,
-      "UseRoughnessMap": true,
-      "UseAOMap": true,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
       "UseEmissiveMap": false,
-      "NormalMapIntensity": 2.0,
+      "NormalMapIntensity": 1.0,
       "AmbientLight": {
         "X": 0.03,
         "Y": 0.03,

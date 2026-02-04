@@ -18,7 +18,7 @@ namespace KrayonEditor.UI
         private static double _currentFrameTime = 0.0;
 
         private static ImGuiController? _imguiController;
-        private static CameraComponent? _mainCamera;
+        private static Camera? _editorCamera;
         private static SceneRenderer? _renderer;
         private static GraphicsEngine? _engine;
 
@@ -68,15 +68,14 @@ namespace KrayonEditor.UI
 
             _engine.UpdateEvent += dt =>
             {
-                if (_mainCamera == null || window == null) return;
-
+                if (_editorCamera == null || window == null) return;
 
                 HandleInput(dt);
                 UpdateFPS(dt);
 
                 _imguiController?.Update(window, (float)dt);
 
-                EditorUI.Draw(_engine, _mainCamera, _selectedObject, _isPlaying, _editorCameraSpeed,
+                EditorUI.Draw(_engine, _editorCamera, _selectedObject, _isPlaying, _editorCameraSpeed,
                     _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages,
                     out _selectedObject, out _isPlaying, out _editorCameraSpeed, out _lastSceneViewportSize);
 
@@ -105,7 +104,7 @@ namespace KrayonEditor.UI
 
         private static void HandleInput(float dt)
         {
-            if (_engine == null || _mainCamera == null) return;
+            if (_engine == null || _editorCamera == null) return;
 
             var keyboard = _engine.GetKeyboardState();
             var mouse = _engine.GetMouseState();
@@ -132,41 +131,37 @@ namespace KrayonEditor.UI
             if (keyboard.IsKeyPressed(Keys.D1))
             {
                 SceneManager.LoadScene("Scene1");
-                SetupCamera();
                 LogMessage("Loaded Scene1");
             }
             if (keyboard.IsKeyPressed(Keys.D2))
             {
                 SceneManager.LoadScene("Scene2");
-                SetupCamera();
                 LogMessage("Loaded Scene2");
             }
             if (keyboard.IsKeyPressed(Keys.D3))
             {
                 SceneManager.LoadScene("Scene3");
-                SetupCamera();
                 LogMessage("Loaded Scene3");
             }
 
             if (mouse.IsButtonDown(MouseButton.Right))
-            if (!_isPlaying || true)
             {
                 float speed = _editorCameraSpeed;
                 if (keyboard.IsKeyDown(Keys.LeftControl))
                     speed *= 2.0f;
 
                 if (keyboard.IsKeyDown(Keys.W))
-                    _mainCamera.Move(CameraMovement.Forward, dt * speed / 2.5f);
+                    _editorCamera.Move(CameraMovement.Forward, dt * speed / 2.5f);
                 if (keyboard.IsKeyDown(Keys.S))
-                    _mainCamera.Move(CameraMovement.Backward, dt * speed / 2.5f);
+                    _editorCamera.Move(CameraMovement.Backward, dt * speed / 2.5f);
                 if (keyboard.IsKeyDown(Keys.A))
-                    _mainCamera.Move(CameraMovement.Left, dt * speed / 2.5f);
+                    _editorCamera.Move(CameraMovement.Left, dt * speed / 2.5f);
                 if (keyboard.IsKeyDown(Keys.D))
-                    _mainCamera.Move(CameraMovement.Right, dt * speed / 2.5f);
+                    _editorCamera.Move(CameraMovement.Right, dt * speed / 2.5f);
                 if (keyboard.IsKeyDown(Keys.Space))
-                    _mainCamera.Move(CameraMovement.Up, dt * speed / 2.5f);
+                    _editorCamera.Move(CameraMovement.Up, dt * speed / 2.5f);
                 if (keyboard.IsKeyDown(Keys.LeftShift))
-                    _mainCamera.Move(CameraMovement.Down, dt * speed / 2.5f);
+                    _editorCamera.Move(CameraMovement.Down, dt * speed / 2.5f);
             }
 
             if (_firstMouse)
@@ -184,12 +179,12 @@ namespace KrayonEditor.UI
 
             if (mouse.IsButtonDown(MouseButton.Right))
             {
-                _mainCamera.Rotate(xOffset, yOffset);
+                _editorCamera.Rotate(xOffset, yOffset);
             }
 
             if (mouse.ScrollDelta.Y != 0)
             {
-                _mainCamera.Zoom(mouse.ScrollDelta.Y);
+                _editorCamera.Zoom(mouse.ScrollDelta.Y);
             }
         }
 
@@ -209,26 +204,13 @@ namespace KrayonEditor.UI
 
         private static void SetupCamera()
         {
-            if (SceneManager.ActiveScene == null || _renderer == null)
+            if (_renderer == null)
                 return;
 
-            var cameraObject = SceneManager.ActiveScene.FindGameObjectWithTag("MainCamera");
-
-            if (cameraObject == null)
-            {
-                cameraObject = SceneManager.ActiveScene.CreateGameObject("MainCamera");
-                cameraObject.Tag = "MainCamera";
-                cameraObject.Transform.SetPosition(0, 2, 5);
-
-                _mainCamera = cameraObject.AddComponent<CameraComponent>();
-                _mainCamera.AspectRatio = 1280f / 800f;
-            }
-            else
-            {
-                _mainCamera = cameraObject.GetComponent<CameraComponent>();
-            }
-
-            _renderer.SetCamera(_mainCamera);
+            // Crear cámara de editor independiente
+            _editorCamera = _renderer.GetCamera();
+            _editorCamera.Position = new OpenTK.Mathematics.Vector3(0, 2, 5);
+            _editorCamera.AspectRatio = 1280f / 800f;
         }
 
         public static void LogMessage(string message)

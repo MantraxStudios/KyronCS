@@ -19,6 +19,7 @@ namespace KrayonCore
         public virtual void Start() { }
         public virtual void Update(float deltaTime) { }
         public virtual void OnDestroy() { }
+        public virtual void OnReloadComponent() { }
 
         public T GetComponent<T>() where T : Component
         {

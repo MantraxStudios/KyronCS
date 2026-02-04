@@ -9,11 +9,10 @@ namespace KrayonCore
 {
     public class MeshRenderer : Component
     {
-        [ToStorage] public string ModelPath { get; set; } = "";
+        [ToStorage] public string ModelPath { get; set; } = "models/Box.fbx";
         [ToStorage] public string[] MaterialPaths { get; set; } = new string[0];
 
         private Material[] _materials = new Material[0];
-
         private Model? _model;
 
         public Model? Model
@@ -102,6 +101,7 @@ namespace KrayonCore
                 if (_model != null)
                 {
                     Console.WriteLine($"[MeshRenderer] ✓ Modelo cargado exitosamente: {path}");
+                    Console.WriteLine($"[MeshRenderer]   SubMeshes: {_model.SubMeshCount}");
                 }
                 else
                 {
@@ -184,14 +184,14 @@ namespace KrayonCore
             if (transform == null)
                 return;
 
-            Matrix4 model = CalculateModelMatrix(transform);
+            // CAMBIO PRINCIPAL: Usar GetWorldMatrix() del Transform
+            Matrix4 model = transform.GetWorldMatrix();
 
             if (_materials.Length == 0)
             {
                 return;
             }
 
-            // Obtener posición de cámara una sola vez
             Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
 
             if (_materials.Length == 1)
@@ -199,11 +199,9 @@ namespace KrayonCore
                 var material = _materials[0];
                 if (material != null)
                 {
-                    // IMPORTANTE: SetPBRProperties antes de Use()
                     material.SetPBRProperties();
                     material.Use();
 
-                    // Pasar matrices y posición de cámara
                     material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
@@ -220,11 +218,9 @@ namespace KrayonCore
                     if (material == null)
                         continue;
 
-                    // IMPORTANTE: SetPBRProperties antes de Use()
                     material.SetPBRProperties();
                     material.Use();
 
-                    // Pasar matrices y posición de cámara
                     material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
@@ -235,16 +231,8 @@ namespace KrayonCore
             }
         }
 
-        private Matrix4 CalculateModelMatrix(Transform transform)
-        {
-            Matrix4 translation = Matrix4.CreateTranslation(transform.X, transform.Y, transform.Z);
-            Matrix4 rotationX = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(transform.RotationX));
-            Matrix4 rotationY = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(transform.RotationY));
-            Matrix4 rotationZ = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(transform.RotationZ));
-            Matrix4 rotation = rotationZ * rotationY * rotationX;
-            Matrix4 scale = Matrix4.CreateScale(transform.ScaleX, transform.ScaleY, transform.ScaleZ);
-            return scale * rotation * translation;
-        }
+        // ELIMINADO: Ya no necesitamos este método
+        // private Matrix4 CalculateModelMatrix(Transform transform)
 
         public override void OnDestroy()
         {

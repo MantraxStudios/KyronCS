@@ -4,6 +4,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Mathematics;
+using KrayonCore.Core.Attributes;
 
 namespace KrayonCore
 {
@@ -42,12 +43,7 @@ namespace KrayonCore
 
             if (textureMaterial != null)
             {
-                textureMaterial.LoadMainTexture("textures/Ground080_4K-PNG_Color.png", generateMipmaps: true, flip: true);
-                textureMaterial.LoadNormalTexture("textures/Ground080_4K-PNG_NormalGL.png", generateMipmaps: true, flip: true);
-                textureMaterial.LoadAOTexture("textures/Ground080_4K-PNG_AmbientOcclusion.png", generateMipmaps: true, flip: true);
-                textureMaterial.LoadRoughnessTexture("textures/Ground080_4K-PNG_Roughness.png", generateMipmaps: true, flip: true);
-                textureMaterial.SetRoughness(0.01f);
-                textureMaterial.SetNormalMapIntensity(2.0f);
+                textureMaterial.LoadMainTexture("textures/sprites/Environment/dirt.png", generateMipmaps: true, flip: true);
             }
         }
 
@@ -90,6 +86,8 @@ namespace KrayonCore
 
         public void InternalLoad()
         {
+            AssetManager.Initialize ();
+
             if (SceneManager.ActiveScene == null)
             {
                 var defaultScene = SceneManager.CreateScene("DefaultScene");

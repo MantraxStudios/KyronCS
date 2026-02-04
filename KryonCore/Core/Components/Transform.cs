@@ -32,11 +32,25 @@ namespace KrayonCore
         // Rotación en ángulos de Euler (en grados) para conveniencia
         public Vector3 EulerAngles
         {
-            get => Rotation.ToEulerAngles() * (180f / MathF.PI); // Convertir a grados
+            get
+            {
+                // Extraer ángulos de Euler del quaternion
+                var angles = Rotation.ToEulerAngles();
+                // Convertir de radianes a grados
+                return new Vector3(
+                    angles.X * (180f / MathF.PI),
+                    angles.Y * (180f / MathF.PI),
+                    angles.Z * (180f / MathF.PI)
+                );
+            }
             set
             {
                 // Convertir de grados a radianes y crear quaternion
-                Vector3 radians = value * (MathF.PI / 180f);
+                Vector3 radians = new Vector3(
+                    value.X * (MathF.PI / 180f),
+                    value.Y * (MathF.PI / 180f),
+                    value.Z * (MathF.PI / 180f)
+                );
                 Rotation = Quaternion.FromEulerAngles(radians);
             }
         }
@@ -176,21 +190,29 @@ namespace KrayonCore
 
         public void Rotate(float x, float y, float z)
         {
-            Vector3 euler = EulerAngles;
-            euler.X += x;
-            euler.Y += y;
-            euler.Z += z;
-            EulerAngles = euler;
+            // Convertir ángulos de Euler (grados) a radianes
+            Vector3 radians = new Vector3(
+                x * (MathF.PI / 180f),
+                y * (MathF.PI / 180f),
+                z * (MathF.PI / 180f)
+            );
+
+            // Crear quaternion de la rotación incremental
+            Quaternion deltaRotation = Quaternion.FromEulerAngles(radians);
+
+            // Aplicar la rotación incremental (multiplicar a la derecha para rotación local)
+            Rotation = Quaternion.Normalize(Rotation * deltaRotation);
         }
 
         public void Rotate(Vector3 eulerAngles)
         {
-            EulerAngles += eulerAngles;
+            Rotate(eulerAngles.X, eulerAngles.Y, eulerAngles.Z);
         }
 
         public void Rotate(Quaternion rotation)
         {
-            Rotation = rotation * Rotation;
+            // Aplicar rotación quaternion directamente (multiplicar a la derecha para rotación local)
+            Rotation = Quaternion.Normalize(Rotation * rotation);
         }
 
         public void SetScale(float x, float y, float z)
@@ -210,6 +232,8 @@ namespace KrayonCore
 
         public Matrix4 GetLocalMatrix()
         {
+            // Orden: S * R * T
+            // Se aplica de derecha a izquierda cuando se multiplica con un vector
             return Matrix4.CreateScale(Scale) *
                    Matrix4.CreateFromQuaternion(Rotation) *
                    Matrix4.CreateTranslation(Position);
@@ -221,6 +245,7 @@ namespace KrayonCore
             {
                 return GetLocalMatrix() * Parent.GetWorldMatrix();
             }
+
             return GetLocalMatrix();
         }
     }

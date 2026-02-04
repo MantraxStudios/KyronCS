@@ -8,7 +8,7 @@ namespace KrayonEditor.UI
     public class SceneViewUI : UIBehaviour
     {
         public GraphicsEngine? Engine { get; set; }
-        public CameraComponent? MainCamera { get; set; }
+        public Camera? MainCamera { get; set; }
         public GameObject? SelectedObject { get; set; }
         public bool IsPlaying { get; set; }
         public float EditorCameraSpeed { get; set; } = 5.0f;

@@ -1,0 +1,796 @@
+{
+  "Assets": [
+    {
+      "Guid": "29acfe7a-104d-4e4a-9c2c-c015254a6086",
+      "Path": "audio.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "3d361d14-7340-48cd-b35c-0968515455a0",
+      "Path": "models/Cube.fbx",
+      "Type": "Model"
+    },
+    {
+      "Guid": "e6de4674-1ba4-48e9-b777-8ebd76a39cb4",
+      "Path": "models/Walk.fbx",
+      "Type": "Model"
+    },
+    {
+      "Guid": "e0407f46-e317-4a81-a35c-c8a04e216480",
+      "Path": "scenes/DefaultScene.scene",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "8d4563a4-0f27-4ba9-a151-8212885d4be2",
+      "Path": "shaders/animated.frag",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "9fb0e068-c66c-42ed-93c9-5618fe3a545e",
+      "Path": "shaders/animated.vert",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "Path": "shaders/basic.frag",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "Path": "shaders/basic.vert",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "ac7795b5-7c74-4d3a-9ce1-ee1b713ef01e",
+      "Path": "shaders/lit.frag",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "06ea7a96-a5fa-488a-afee-65a1abb75337",
+      "Path": "shaders/lit.vert",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "2e9034a5-9d50-4283-9d8c-8e0aa7eca275",
+      "Path": "shaders/textured.frag",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "9eaed12f-0f81-44d4-b014-bf4db0d81d7d",
+      "Path": "shaders/textured.vert",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "60b106e4-a183-4273-873a-5c6a249db63b",
+      "Path": "runtimes/models/NewFile.js",
+      "Type": "GameScript"
+    },
+    {
+      "Guid": "d4dae2d4-d528-4c8b-8a91-60e899f1288b",
+      "Path": "runtimes/models/NewFile.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "67048397-19e7-41ec-ba83-1cc1f14d0104",
+      "Path": "runtimes/android-arm/native/libjoltc.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "bef060aa-06ee-4e3f-a494-da9ef4156a3b",
+      "Path": "runtimes/android-arm64/native/libjoltc.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "74822672-e017-420d-98d4-4d685cdcbaf1",
+      "Path": "runtimes/android-x64/native/libjoltc.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "ea51a2f1-e841-4d63-85bd-2e7ba506facf",
+      "Path": "runtimes/linux-arm64/native/libjoltc.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "3e8de738-46f5-4e9b-98bf-2279b6bb927d",
+      "Path": "runtimes/linux-x64/native/libassimp.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "d49b8a5a-39a6-45d0-8810-c7ef55db3a3a",
+      "Path": "runtimes/linux-x64/native/libcimgui.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "c603de1e-829a-4387-9b3d-e8d1d99f1534",
+      "Path": "runtimes/linux-x64/native/libglfw.so.3",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "adc66337-68d6-40a6-8edb-57f035eebb21",
+      "Path": "runtimes/linux-x64/native/libjoltc.so",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "53e7d4bf-b4bc-4190-a4b4-46220b87872e",
+      "Path": "runtimes/osx/native/libcimgui.dylib",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "c0019d07-cf9a-48db-ad03-231425439ac7",
+      "Path": "runtimes/osx/native/libjoltc.dylib",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "a969a8b5-0d9a-4995-8b52-269da539cf7b",
+      "Path": "runtimes/osx-arm64/native/libglfw.3.dylib",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "df3b97ff-aa41-42fd-b0ee-8e191bea07e5",
+      "Path": "runtimes/osx-x64/native/libassimp.dylib",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "3de355eb-eca6-4a58-86bf-7fa988fbfff9",
+      "Path": "runtimes/osx-x64/native/libglfw.3.dylib",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "585b4bae-07aa-4f91-9ba8-4521d984093e",
+      "Path": "runtimes/win-arm64/native/cimgui.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "b62cc904-bd68-41ea-b0be-73a5151fa16b",
+      "Path": "runtimes/win-arm64/native/joltc.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "8fed60b4-7c99-4c37-a3c9-3fd90e9adebd",
+      "Path": "runtimes/win-arm64/native/joltc_double.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "672832cd-1217-402a-a7a5-ffd099192483",
+      "Path": "runtimes/win-x64/native/assimp.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "0a1d064a-45db-4403-b417-95b27683cdca",
+      "Path": "runtimes/win-x64/native/cimgui.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "1b58ff11-5170-480a-9a84-0dde707f5e06",
+      "Path": "runtimes/win-x64/native/glfw3.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "49dc342d-5cec-49f7-8460-c5e2209f58a6",
+      "Path": "runtimes/win-x64/native/joltc.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "489164ab-46b0-4461-a7aa-e95d81ef433a",
+      "Path": "runtimes/win-x64/native/joltc_double.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "49bbe5bd-ae28-49b6-a27e-1c7b18b6f2d4",
+      "Path": "runtimes/win-x86/native/assimp.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "624bbb8e-58b3-4ad1-8d2e-a0adad8bb15b",
+      "Path": "runtimes/win-x86/native/cimgui.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "27dd2226-4285-4b19-a923-31e27b0a69d9",
+      "Path": "runtimes/win-x86/native/glfw3.dll",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "9e4da544-e3d2-4c91-be23-e73341729dff",
+      "Path": "textures/sprites/Bullets/bulletBeige.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7829d7fd-32e2-4787-a80f-08962c91a258",
+      "Path": "textures/sprites/Bullets/bulletBeigeSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "80075a7a-993d-44af-8a07-55b5d68cd441",
+      "Path": "textures/sprites/Bullets/bulletBeigeSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "20b62c44-2820-4ce5-9afd-ff44ee7f5865",
+      "Path": "textures/sprites/Bullets/bulletBeige_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c80a603e-832f-4979-a02f-6eff2afd622d",
+      "Path": "textures/sprites/Bullets/bulletBlue.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "6c715ce0-8ce5-4a6e-8f12-5ddaa996e2c2",
+      "Path": "textures/sprites/Bullets/bulletBlueSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e8cc05d8-c4b2-42d5-aa3d-ff81d887ac9b",
+      "Path": "textures/sprites/Bullets/bulletBlueSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8dfbd522-9240-487f-bfed-3d8ad59423c3",
+      "Path": "textures/sprites/Bullets/bulletBlue_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3f1aa381-8bfa-4cd5-9c08-e47afbcbe639",
+      "Path": "textures/sprites/Bullets/bulletGreen.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "cae24972-05bb-4314-9446-b228d59fc095",
+      "Path": "textures/sprites/Bullets/bulletGreenSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3a670023-c0ec-4f5c-aa22-925fa3b6c495",
+      "Path": "textures/sprites/Bullets/bulletGreenSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d8713b69-8d74-4beb-b797-ca3de7eb19a3",
+      "Path": "textures/sprites/Bullets/bulletGreen_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0d26ce02-8b26-4d91-a7e0-c06f1d97516d",
+      "Path": "textures/sprites/Bullets/bulletRed.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5e41d1c6-f8cb-45e2-814a-b6c8116ba3af",
+      "Path": "textures/sprites/Bullets/bulletRedSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1c6c1371-2f2f-4115-b1d6-5b2a6efd33cd",
+      "Path": "textures/sprites/Bullets/bulletRedSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "41d29b84-fb8c-4691-aded-d5f3b46437a9",
+      "Path": "textures/sprites/Bullets/bulletRed_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "51633a79-3ad0-46ee-8683-b895b91effe4",
+      "Path": "textures/sprites/Bullets/bulletSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "50f98dd5-e3bf-4088-9709-db3e218367eb",
+      "Path": "textures/sprites/Bullets/bulletSilverSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7fa65e64-7c64-4c19-b7e9-6154f33ee9f7",
+      "Path": "textures/sprites/Bullets/bulletSilverSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1424fa47-667e-47bf-a27c-990fff305233",
+      "Path": "textures/sprites/Bullets/bulletSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f05a0c27-5620-4769-a863-f87a55c12dad",
+      "Path": "textures/sprites/Bullets/bulletYellow.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f3631fb8-1381-4cbf-b977-9cce5d39ee14",
+      "Path": "textures/sprites/Bullets/bulletYellowSilver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c0cb1766-7d6e-4349-86c2-9682cc1f1a94",
+      "Path": "textures/sprites/Bullets/bulletYellowSilver_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "6b2ae9c4-7104-45c7-b29a-651d7b47680a",
+      "Path": "textures/sprites/Bullets/bulletYellow_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "96d7c6e1-486b-44a4-a16f-ec7519874c22",
+      "Path": "textures/sprites/Environment/dirt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "2c830811-222e-4b2b-9822-9dfd234bd5c1",
+      "Path": "textures/sprites/Environment/grass.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e11ddd75-22da-483f-bfa9-2bf80b0df75e",
+      "Path": "textures/sprites/Environment/sand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "de1d7c6e-d73e-4708-81d3-19fa45276114",
+      "Path": "textures/sprites/Environment/treeLarge.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "9bfc2dde-a5d4-4af2-b6db-57cb103b5da2",
+      "Path": "textures/sprites/Environment/treeSmall.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c49e27db-3928-444f-a187-3691e458eef9",
+      "Path": "textures/sprites/Obstacles/barrelGreen_side.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "55e1bed9-272e-46fd-a416-36c5ed0d6bf8",
+      "Path": "textures/sprites/Obstacles/barrelGreen_side_damaged.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5c92d95b-47a7-44ca-9931-115fa8703b38",
+      "Path": "textures/sprites/Obstacles/barrelGreen_up.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f6d19fc5-41a2-4055-b98e-924b54bec2f5",
+      "Path": "textures/sprites/Obstacles/barrelGrey_sde_rust.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1498ff11-dfe5-4ac5-b35b-00b0f7b14ace",
+      "Path": "textures/sprites/Obstacles/barrelGrey_side.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "083fbedf-05f8-43a5-8952-1c0d2cc6b193",
+      "Path": "textures/sprites/Obstacles/barrelGrey_up.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "a7f4fd0f-728c-49cf-bf04-ae4d9cb3034d",
+      "Path": "textures/sprites/Obstacles/barrelRed_side.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "db778b47-b64f-4096-9ff4-2bf3ab18ff22",
+      "Path": "textures/sprites/Obstacles/barrelRed_up.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "4750ea9b-1536-41df-815f-212f21c81354",
+      "Path": "textures/sprites/Obstacles/oil.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "fc48997e-58db-427a-9e9d-663a203e6262",
+      "Path": "textures/sprites/Obstacles/sandbagBeige.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "fa520a2e-3860-4cf3-8af1-8cbba28e017c",
+      "Path": "textures/sprites/Obstacles/sandbagBrown.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "08240658-6987-4e3c-950e-752df5b39211",
+      "Path": "textures/sprites/Smoke/smokeGrey0.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c4cca2e4-e16a-4f6c-a463-d801637a54f8",
+      "Path": "textures/sprites/Smoke/smokeGrey1.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "090ca4e7-5a86-42ab-b1bc-604f0a088675",
+      "Path": "textures/sprites/Smoke/smokeGrey2.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "66b939c7-f84c-4249-bc23-0364ce317701",
+      "Path": "textures/sprites/Smoke/smokeGrey3.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "daec8d34-2d17-4b93-a16e-01a21ab54930",
+      "Path": "textures/sprites/Smoke/smokeGrey4.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0daa65c8-6b1f-4d95-9fb6-ed6cce6cd1a7",
+      "Path": "textures/sprites/Smoke/smokeGrey5.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ee6d8a1f-c4cc-4c0a-8fa1-843555988427",
+      "Path": "textures/sprites/Smoke/smokeOrange0.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "302c5f84-58e8-464a-9143-d9848a0ba60c",
+      "Path": "textures/sprites/Smoke/smokeOrange1.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "033dcce1-6e62-4b6b-8464-0199699484f1",
+      "Path": "textures/sprites/Smoke/smokeOrange2.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e57dd602-09d7-424a-9e24-3e604a3752da",
+      "Path": "textures/sprites/Smoke/smokeOrange3.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e0adcd94-0ec6-49b9-9415-f3e971727967",
+      "Path": "textures/sprites/Smoke/smokeOrange4.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "60fa22f6-0c25-46eb-bfbe-c129c9555ecc",
+      "Path": "textures/sprites/Smoke/smokeOrange5.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "b42b0c80-1bd5-4842-a963-f6d4a45fdcaf",
+      "Path": "textures/sprites/Smoke/smokeWhite0.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "2c123d40-a15f-4f3d-99ce-a75a19634809",
+      "Path": "textures/sprites/Smoke/smokeWhite1.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d65cd301-f982-4fc6-ace8-359a75ed5f33",
+      "Path": "textures/sprites/Smoke/smokeWhite2.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "78610c89-a943-4ed5-ad40-11821b503693",
+      "Path": "textures/sprites/Smoke/smokeWhite3.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5d6a98e5-efdd-43eb-8c5c-6b46427f5a1f",
+      "Path": "textures/sprites/Smoke/smokeWhite4.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ee74c6d7-6110-412e-9c85-2064c1ac2b4a",
+      "Path": "textures/sprites/Smoke/smokeWhite5.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1de48221-5fc5-4884-b122-a54f94bb9c29",
+      "Path": "textures/sprites/Smoke/smokeYellow0.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "56bb1ea9-f419-4dc5-a5fc-64b34ff3a563",
+      "Path": "textures/sprites/Smoke/smokeYellow1.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0692e6cc-15fe-46c6-bdb5-081a47de7762",
+      "Path": "textures/sprites/Smoke/smokeYellow2.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "822f362b-97e5-493e-b119-7fd0daf99853",
+      "Path": "textures/sprites/Smoke/smokeYellow3.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8a2b8df3-8f57-48af-b9a3-cff60acb4274",
+      "Path": "textures/sprites/Smoke/smokeYellow4.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "861c2dc7-dc09-4377-b289-afdefed08bd5",
+      "Path": "textures/sprites/Smoke/smokeYellow5.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "476e87b9-fcf8-463c-b4c9-1eb3412a9488",
+      "Path": "textures/sprites/Tanks/barrelBeige.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "813b55ce-5fa8-4980-8bd6-402dea6b4f5c",
+      "Path": "textures/sprites/Tanks/barrelBeige_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8c09cb7c-e4bd-46e8-8f1b-521db7cad14e",
+      "Path": "textures/sprites/Tanks/barrelBlack.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ee6371a3-65a6-47b2-b0ba-0db24465b05e",
+      "Path": "textures/sprites/Tanks/barrelBlack_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0bd13071-2626-46a3-9103-b6f29c96cc62",
+      "Path": "textures/sprites/Tanks/barrelBlue.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0eb1aff4-e303-494c-87e2-90ce092a4d01",
+      "Path": "textures/sprites/Tanks/barrelBlue_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1144f72b-1965-432d-a645-6c530f3f69df",
+      "Path": "textures/sprites/Tanks/barrelGreen.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "29a8bc48-aa1d-4706-b7cb-61ddb775a637",
+      "Path": "textures/sprites/Tanks/barrelGreen_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8708047b-7745-47cd-af90-750ddbb0e441",
+      "Path": "textures/sprites/Tanks/barrelRed.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8d86e245-87bd-4cec-bc7a-4e0738ff57f0",
+      "Path": "textures/sprites/Tanks/barrelRed_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d889e91b-38fe-4d9a-a4dd-9531cab5772d",
+      "Path": "textures/sprites/Tanks/tankBeige.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "209019c4-e8dd-4c1f-9d76-baa4ed141589",
+      "Path": "textures/sprites/Tanks/tankBeige_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "289b8d95-ecc7-4325-bd18-66d823ba29ca",
+      "Path": "textures/sprites/Tanks/tankBlack.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "6b5843f1-0ab9-4968-86ed-eba724d6bfa9",
+      "Path": "textures/sprites/Tanks/tankBlack_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ecdcaa72-23f6-4bf3-83da-93e92e44a6d6",
+      "Path": "textures/sprites/Tanks/tankBlue.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3d1b1d0e-ae27-417c-9d95-cfe6e4046fc9",
+      "Path": "textures/sprites/Tanks/tankBlue_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "91f269c1-7468-4926-8494-2690be9bfb3c",
+      "Path": "textures/sprites/Tanks/tankGreen.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "fd627441-b643-45cc-841b-d9a2af11a1c3",
+      "Path": "textures/sprites/Tanks/tankGreen_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "22af8fc6-8d9f-43fd-97e6-de006ff809b3",
+      "Path": "textures/sprites/Tanks/tankRed.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7c164b4e-6e7d-4d98-9646-ba3c08a3957c",
+      "Path": "textures/sprites/Tanks/tankRed_outline.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "af9901cf-4f25-4922-8b1a-fe86242bbb52",
+      "Path": "textures/sprites/Tanks/tracksLarge.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "00b4c0e8-23b5-4c57-a5f9-c280d87a61d3",
+      "Path": "textures/sprites/Tanks/tracksSmall.png",
+      "Type": "Texture"
+    }
+  ],
+  "Folders": [
+    {
+      "Guid": "a6c77cb0-4d79-401d-8208-2028fa006b29",
+      "Path": "models",
+      "CreatedAt": "2026-02-03T23:13:18.682377-03:00"
+    },
+    {
+      "Guid": "70f4174f-1de5-44df-9516-299a7af54360",
+      "Path": "runtimes",
+      "CreatedAt": "2026-02-03T23:13:18.6828736-03:00"
+    },
+    {
+      "Guid": "3c9216f3-1dbe-4587-9bac-56b43c35df9c",
+      "Path": "scenes",
+      "CreatedAt": "2026-02-03T23:13:18.682927-03:00"
+    },
+    {
+      "Guid": "bc7f6582-192a-4615-a2ef-6065cb997763",
+      "Path": "shaders",
+      "CreatedAt": "2026-02-03T23:13:18.6830224-03:00"
+    },
+    {
+      "Guid": "38b450b9-d9d5-4cc5-88cb-7846db6ef95e",
+      "Path": "textures",
+      "CreatedAt": "2026-02-03T23:13:18.6830647-03:00"
+    },
+    {
+      "Guid": "41c3f032-cb28-47de-901f-122163cd68ba",
+      "Path": "runtimes/android-arm",
+      "CreatedAt": "2026-02-03T23:13:18.6830933-03:00"
+    },
+    {
+      "Guid": "45b8b6ab-163c-4963-9d10-43d0c8de6f28",
+      "Path": "runtimes/android-arm64",
+      "CreatedAt": "2026-02-03T23:13:18.6831236-03:00"
+    },
+    {
+      "Guid": "21886884-47a2-4970-a84f-a5ce56570824",
+      "Path": "runtimes/android-x64",
+      "CreatedAt": "2026-02-03T23:13:18.6831582-03:00"
+    },
+    {
+      "Guid": "2e46f43c-3a9a-41d5-9b7f-e095385b99bb",
+      "Path": "runtimes/linux-arm64",
+      "CreatedAt": "2026-02-03T23:13:18.6831838-03:00"
+    },
+    {
+      "Guid": "149dd6e9-2f14-431d-ae07-fb76ba87b26e",
+      "Path": "runtimes/linux-x64",
+      "CreatedAt": "2026-02-03T23:13:18.6832093-03:00"
+    },
+    {
+      "Guid": "9d1f2ae3-1213-4785-91ef-bd1b3d05fbcb",
+      "Path": "runtimes/models",
+      "CreatedAt": "2026-02-03T23:13:18.6833467-03:00"
+    },
+    {
+      "Guid": "83486e05-72a3-4df5-8d3d-5ed9b5922055",
+      "Path": "runtimes/osx",
+      "CreatedAt": "2026-02-03T23:13:18.6833913-03:00"
+    },
+    {
+      "Guid": "5fda50c1-636a-40ce-ba11-d4dbdb6777e6",
+      "Path": "runtimes/osx-arm64",
+      "CreatedAt": "2026-02-03T23:13:18.683425-03:00"
+    },
+    {
+      "Guid": "846863d9-c127-4186-a663-26106e08c80b",
+      "Path": "runtimes/osx-x64",
+      "CreatedAt": "2026-02-03T23:13:18.6834604-03:00"
+    },
+    {
+      "Guid": "a69b68b6-293d-49da-ac7c-6e2a67c6227f",
+      "Path": "runtimes/win-arm64",
+      "CreatedAt": "2026-02-03T23:13:18.6834851-03:00"
+    },
+    {
+      "Guid": "0aa3f5a0-d691-43f1-903b-5a35b1573327",
+      "Path": "runtimes/win-x64",
+      "CreatedAt": "2026-02-03T23:13:18.6835152-03:00"
+    },
+    {
+      "Guid": "d48eab19-f23d-4008-93d5-872c93cc8780",
+      "Path": "runtimes/win-x86",
+      "CreatedAt": "2026-02-03T23:13:18.683545-03:00"
+    },
+    {
+      "Guid": "3c7acc47-2b54-4e3e-b9cc-4d6a573cd319",
+      "Path": "runtimes/android-arm/native",
+      "CreatedAt": "2026-02-03T23:13:18.6835697-03:00"
+    },
+    {
+      "Guid": "9a864773-ba20-482b-9635-a2cd075de765",
+      "Path": "runtimes/android-arm64/native",
+      "CreatedAt": "2026-02-03T23:13:18.683595-03:00"
+    },
+    {
+      "Guid": "114f08dc-4f21-45bb-a0d0-ef4f45242b32",
+      "Path": "runtimes/android-x64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6836196-03:00"
+    },
+    {
+      "Guid": "c2817411-effa-40fc-8dd0-070aded1c52b",
+      "Path": "runtimes/linux-arm64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6836437-03:00"
+    },
+    {
+      "Guid": "d977eff3-b9a1-44af-b9ff-67dd1f38b6c9",
+      "Path": "runtimes/linux-x64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6836681-03:00"
+    },
+    {
+      "Guid": "9be2a999-5652-46ae-8e76-503c2abbde63",
+      "Path": "runtimes/osx/native",
+      "CreatedAt": "2026-02-03T23:13:18.6836881-03:00"
+    },
+    {
+      "Guid": "c34b7200-572e-4604-bc4b-5223405930c0",
+      "Path": "runtimes/osx-arm64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6837084-03:00"
+    },
+    {
+      "Guid": "dff7e1f5-bf2e-4dcd-b293-0e4fc64783d0",
+      "Path": "runtimes/osx-x64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6837284-03:00"
+    },
+    {
+      "Guid": "50acbfe5-e707-44bb-80e1-6a2804023abb",
+      "Path": "runtimes/win-arm64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6837638-03:00"
+    },
+    {
+      "Guid": "c013f330-87b2-4ac7-b4c9-42de6e51bcb5",
+      "Path": "runtimes/win-x64/native",
+      "CreatedAt": "2026-02-03T23:13:18.6837909-03:00"
+    },
+    {
+      "Guid": "535fdfe3-bc7c-4841-96a7-432a1a0e3dce",
+      "Path": "runtimes/win-x86/native",
+      "CreatedAt": "2026-02-03T23:13:18.6838126-03:00"
+    },
+    {
+      "Guid": "d2a4c742-1f32-4f2c-9cd3-2813f9665ace",
+      "Path": "textures/sprites",
+      "CreatedAt": "2026-02-04T03:58:11.8259829-03:00"
+    },
+    {
+      "Guid": "30847347-8e01-4724-b42a-3fb51d6d74ce",
+      "Path": "textures/sprites/Bullets",
+      "CreatedAt": "2026-02-04T03:58:11.826085-03:00"
+    },
+    {
+      "Guid": "1a87c943-8c15-495e-9307-0f1d89536e68",
+      "Path": "textures/sprites/Environment",
+      "CreatedAt": "2026-02-04T03:58:11.826131-03:00"
+    },
+    {
+      "Guid": "bf5bc281-c622-4da0-ab88-25cc9aea2af8",
+      "Path": "textures/sprites/Obstacles",
+      "CreatedAt": "2026-02-04T03:58:11.8261758-03:00"
+    },
+    {
+      "Guid": "cd2e91e9-c39b-4348-b73c-f64f5f2e94f4",
+      "Path": "textures/sprites/Smoke",
+      "CreatedAt": "2026-02-04T03:58:11.8262492-03:00"
+    },
+    {
+      "Guid": "3902437d-aa28-42b8-9505-e8d90080ef58",
+      "Path": "textures/sprites/Tanks",
+      "CreatedAt": "2026-02-04T03:58:11.8262897-03:00"
+    }
+  ]
+}

@@ -29,12 +29,13 @@ namespace KrayonCore
             _materials[name] = material;
             Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
 
-            AssetManager.Register(material);
             return material;
         }
 
         public Material Create(string name, string vertexPath, string fragmentPath)
         {
+            vertexPath = AssetManager.BasePath + vertexPath;
+            fragmentPath = AssetManager.BasePath + fragmentPath;
             if (_materials.ContainsKey(name))
             {
                 Console.WriteLine($"[MaterialManager] Material '{name}' already exists. Returning existing material.");
@@ -59,7 +60,6 @@ namespace KrayonCore
                 _materials[name] = material;
                 Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
 
-                AssetManager.Register(material);
                 return material;
             }
             catch (Exception ex)
@@ -71,6 +71,8 @@ namespace KrayonCore
 
         public Material Create(string name, string shaderBasePath)
         {
+            shaderBasePath = AssetManager.BasePath + shaderBasePath;
+
             if (_materials.ContainsKey(name))
             {
                 Console.WriteLine($"[MaterialManager] Material '{name}' already exists. Returning existing material.");
@@ -98,7 +100,6 @@ namespace KrayonCore
                 _materials[name] = material;
                 Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
 
-                AssetManager.Register(material);
                 return material;
             }
             catch (Exception ex)
@@ -169,7 +170,6 @@ namespace KrayonCore
                 JObject mat = new JObject
                 {
                     ["Name"] = MT.Name,
-                    ["GUID"] = MT.Guid,
                     ["ShaderPath"] = MT.Shader.VertexPath,
 
                     // Texturas PBR
@@ -271,13 +271,6 @@ namespace KrayonCore
                     continue;
                 }
 
-                // Cargar GUID
-                var guidToken = matJson["GUID"];
-                var guidString = guidToken?.ToString();
-                if (!string.IsNullOrEmpty(guidString) && Guid.TryParse(guidString, out var guid))
-                {
-                    material.Guid = guid;
-                }
 
                 // Cargar texturas PBR
                 string albedoPath = matJson["AlbedoPath"]?.ToString();

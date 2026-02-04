@@ -22,7 +22,7 @@ namespace KrayonEditor.UI
         private int _selectedSceneIndex = 0;
 
         private const string SCENES_DIRECTORY = "scenes";
-        private const string MATERIALS_DIRECTORY = "materials"; // Carpeta global de materiales
+        private const string MATERIALS_DIRECTORY = "materials";
         private const string PREF_LAST_SCENE = "LastOpenedScene";
         private const int MAX_RECENT_SCENES = 10;
 
@@ -146,8 +146,6 @@ namespace KrayonEditor.UI
 
                 var cameraObj = scene.CreateGameObject("Main Camera");
                 cameraObj.Tag = "MainCamera";
-                var camera = cameraObj.AddComponent<CameraComponent>();
-                camera.Position = new OpenTK.Mathematics.Vector3(0, 1, 5);
 
                 EngineEditor.LogMessage($"Nueva escena creada: {sceneName}");
 
