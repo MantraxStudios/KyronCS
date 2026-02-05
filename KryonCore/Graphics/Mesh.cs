@@ -8,9 +8,11 @@ namespace KrayonCore
         private int _vao, _vbo, _ebo, _instanceVBO;
         private int _indexCount;
         private bool _disposed = false;
+        private float[] _vertices; // Guardamos los vértices para calcular AABB
 
         public Mesh(float[] vertices, uint[] indices)
         {
+            _vertices = vertices; // Guardar los vértices
             _indexCount = indices.Length;
 
             _vao = GL.GenVertexArray();
@@ -91,6 +93,29 @@ namespace KrayonCore
             GL.BindVertexArray(0);
         }
 
+        public Box3 GetAABB()
+        {
+            if (_vertices == null || _vertices.Length == 0)
+            {
+                return new Box3(Vector3.Zero, Vector3.Zero);
+            }
+
+            Vector3 min = new Vector3(float.MaxValue);
+            Vector3 max = new Vector3(float.MinValue);
+
+            // Los vértices están en formato: pos(3) + normal(3) + uv(2) + tangent(3) + bitangent(3) = 14 floats
+            int stride = 14;
+
+            for (int i = 0; i < _vertices.Length; i += stride)
+            {
+                Vector3 position = new Vector3(_vertices[i], _vertices[i + 1], _vertices[i + 2]);
+                min = Vector3.ComponentMin(min, position);
+                max = Vector3.ComponentMax(max, position);
+            }
+
+            return new Box3(min, max);
+        }
+
         public void Dispose()
         {
             if (!_disposed)
@@ -102,6 +127,7 @@ namespace KrayonCore
                 {
                     GL.DeleteBuffer(_instanceVBO);
                 }
+                _vertices = null; // Liberar la referencia
                 _disposed = true;
             }
         }

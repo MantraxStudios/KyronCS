@@ -9,8 +9,22 @@ namespace KrayonCore
     {
         private List<Mesh> _meshes = new();
         private bool _disposed = false;
+        private Box3 _aabb;
+        private bool _aabbCalculated = false;
 
         public int SubMeshCount => _meshes.Count;
+
+        public Box3 AABB
+        {
+            get
+            {
+                if (!_aabbCalculated)
+                {
+                    CalculateAABB();
+                }
+                return _aabb;
+            }
+        }
 
         public static Model Load(string path)
         {
@@ -29,6 +43,7 @@ namespace KrayonCore
             }
 
             model.ProcessNode(scene.RootNode, scene);
+            model.CalculateAABB();
             return model;
         }
 
@@ -118,6 +133,62 @@ namespace KrayonCore
             }
 
             return new Mesh(vertices.ToArray(), indices.ToArray());
+        }
+
+        private void CalculateAABB()
+        {
+            if (_meshes.Count == 0)
+            {
+                _aabb = new Box3(Vector3.Zero, Vector3.Zero);
+                _aabbCalculated = true;
+                return;
+            }
+
+            Vector3 min = new Vector3(float.MaxValue);
+            Vector3 max = new Vector3(float.MinValue);
+
+            foreach (var mesh in _meshes)
+            {
+                Box3 meshAABB = mesh.GetAABB();
+                min = Vector3.ComponentMin(min, meshAABB.Min);
+                max = Vector3.ComponentMax(max, meshAABB.Max);
+            }
+
+            _aabb = new Box3(min, max);
+            _aabbCalculated = true;
+        }
+
+        public Box3 GetTransformedAABB(Matrix4 transform)
+        {
+            if (!_aabbCalculated)
+            {
+                CalculateAABB();
+            }
+
+            // Transformar las 8 esquinas del AABB
+            Vector3[] corners = new Vector3[8]
+            {
+                new Vector3(_aabb.Min.X, _aabb.Min.Y, _aabb.Min.Z),
+                new Vector3(_aabb.Max.X, _aabb.Min.Y, _aabb.Min.Z),
+                new Vector3(_aabb.Min.X, _aabb.Max.Y, _aabb.Min.Z),
+                new Vector3(_aabb.Max.X, _aabb.Max.Y, _aabb.Min.Z),
+                new Vector3(_aabb.Min.X, _aabb.Min.Y, _aabb.Max.Z),
+                new Vector3(_aabb.Max.X, _aabb.Min.Y, _aabb.Max.Z),
+                new Vector3(_aabb.Min.X, _aabb.Max.Y, _aabb.Max.Z),
+                new Vector3(_aabb.Max.X, _aabb.Max.Y, _aabb.Max.Z)
+            };
+
+            Vector3 min = new Vector3(float.MaxValue);
+            Vector3 max = new Vector3(float.MinValue);
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 transformed = (new Vector4(corners[i], 1.0f) * transform).Xyz;
+                min = Vector3.ComponentMin(min, transformed);
+                max = Vector3.ComponentMax(max, transformed);
+            }
+
+            return new Box3(min, max);
         }
 
         public void SetupInstancing(Matrix4[] instanceMatrices)
