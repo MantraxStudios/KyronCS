@@ -60,6 +60,7 @@ namespace KrayonCore
         public KeyboardState GetKeyboardState() => _window?.KeyboardState ?? default;
         public MouseState GetMouseState() => _window?.MouseState ?? default;
         public SceneRenderer GetSceneRenderer() => _sceneRenderer;
+
         public GameWindow GetWindow() => _window;
 
         public FrameBuffer GetSceneFrameBuffer()

@@ -2,14 +2,14 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "ba3444f6-41b4-4e5a-a09b-91ef1d52f153",
-      "Name": "Cube_0",
+      "Id": "f7235829-4ce6-46c7-88e2-e09a13fe5e43",
+      "Name": "GameObject_0",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ea2b2987-f2e5-4136-89d0-ee25404dd66f",
+          "ComponentId": "7b83058b-9ea2-45fc-abd2-eda2ddaa9913",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -34,310 +34,3328 @@
           }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "21319c1b-edc8-4481-b0f3-3ddcb8bbc457",
+          "TypeName": "KrayonCore.Graphics.TileRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "c0ab4ad7-d04f-4880-b642-acbe83f55695",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+            "_tiles": {
+              "__type": "List",
+              "elementType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "values": [
-                "basic"
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 0,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 2,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 4,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 6,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 8,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 10,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 12,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 14,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 16,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 0
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 2
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 4
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 6
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 8
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 10
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 12
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 14
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 16
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.Graphics.Tile, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Transform": {
+                      "__type": "CustomObject",
+                      "objectType": "KrayonCore.Graphics.TileTransform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "fields": {
+                        "_Pos": {
+                          "__type": "Vector3",
+                          "x": 18,
+                          "y": 0,
+                          "z": 18
+                        },
+                        "_Rot": {
+                          "__type": "Quaternion",
+                          "x": 0,
+                          "y": 0,
+                          "z": 0,
+                          "w": 1
+                        },
+                        "_Scale": {
+                          "__type": "Vector3",
+                          "x": 1,
+                          "y": 1,
+                          "z": 1
+                        }
+                      }
+                    },
+                    "MaterialIndex": 0,
+                    "ModelIndex": 0
+                  }
+                }
               ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "c6c8da1c-1b1b-41ed-8fed-5d125212b1f4",
-      "Name": "Cube_1",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "82bc6da9-8116-4aed-a1bc-29585e544e62",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 2,
-              "y": 0,
-              "z": 0
             },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "63104674-e531-4a67-b8cb-6c2bde2c2bb1",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
-            "MaterialPaths": {
+            "ModelPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
               "values": [
-                "basic"
+                "models/Cube.fbx"
               ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "d43a3a80-57f4-4236-b94f-e4fe0d55e268",
-      "Name": "Cube_2",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4ba50e42-97c5-4689-8f65-963ac0bc6288",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -2,
-              "y": 0,
-              "z": 0
             },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "81ca0d83-0625-4586-b130-fd449c3dda07",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
               "values": [
-                "basic"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "b7482473-3ca8-4268-bd4d-140a95a8cce5",
-      "Name": "Cube_3",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8ffacbe8-5a22-43d4-ab86-7df67e26a0bd",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -4,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "dd7d0cb3-b613-4865-95cd-0b8f3df99df6",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "dafd3f25-e208-4ca4-b5de-5ea4ff57d505",
-      "Name": "Cube_4",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5a224455-61c7-40de-b7fe-94921dcdf235",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 4,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "31bf206a-537f-4e73-a99c-2679bcd5ff52",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "7532c4b6-9835-4208-803d-00137bd650e6",
-      "Name": "Cube_5",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "007c7273-a085-459c-b320-569be2efd14c",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -4,
-              "y": 2,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2a8b9f61-e77d-4eca-999d-2db32ecac975",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "3b536fea-2050-4e27-b07e-700c165cbb0e",
-      "Name": "Cube_6",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "83cd06c4-b59f-4a2d-b47c-1b3de54c5b2b",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -2,
-              "y": 2,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f32e19e7-07b4-4bff-a54d-422d480d5192",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "models/Box.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
+                "Floor"
               ]
             }
           }

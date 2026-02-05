@@ -1,0 +1,12 @@
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\bin\Debug\net9.0\Engine.Scripting.deps.json
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\bin\Debug\net9.0\Engine.Scripting.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\bin\Debug\net9.0\Engine.Scripting.pdb
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.AssemblyInfoInputs.cache
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.AssemblyInfo.cs
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.csproj.CoreCompileInputs.cache
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.sourcelink.json
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\refint\Engine.Scripting.dll
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\Engine.Scripting.pdb
+C:\Users\tupap\OneDrive\Escritorio\KyronCS\KrayonEditor\bin\Debug\net9.0\MainProyect\Engine.Scripting\obj\Debug\net9.0\ref\Engine.Scripting.dll

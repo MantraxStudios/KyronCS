@@ -9,7 +9,7 @@ namespace KrayonCore
 {
     public class MeshRenderer : Component
     {
-        [ToStorage] public string ModelPath { get; set; } = "models/Box.fbx";
+        [ToStorage] public string ModelPath { get; set; } = "models/Cube.fbx";
         [ToStorage] public string[] MaterialPaths { get; set; } = new string[0];
 
         private Material[] _materials = new Material[0];
@@ -184,7 +184,6 @@ namespace KrayonCore
             if (transform == null)
                 return;
 
-            // CAMBIO PRINCIPAL: Usar GetWorldMatrix() del Transform
             Matrix4 model = transform.GetWorldMatrix();
 
             if (_materials.Length == 0)
@@ -230,9 +229,6 @@ namespace KrayonCore
                 }
             }
         }
-
-        // ELIMINADO: Ya no necesitamos este método
-        // private Matrix4 CalculateModelMatrix(Transform transform)
 
         public override void OnDestroy()
         {

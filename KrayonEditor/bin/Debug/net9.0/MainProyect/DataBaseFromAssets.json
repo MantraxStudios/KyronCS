@@ -191,434 +191,964 @@
       "Type": "Unknown"
     },
     {
-      "Guid": "9e4da544-e3d2-4c91-be23-e73341729dff",
-      "Path": "textures/sprites/Bullets/bulletBeige.png",
+      "Guid": "ae6aa5f2-35d8-41d3-bd75-2da7a87dcdd2",
+      "Path": "textures/World/Items/apple.png",
       "Type": "Texture"
     },
     {
-      "Guid": "7829d7fd-32e2-4787-a80f-08962c91a258",
-      "Path": "textures/sprites/Bullets/bulletBeigeSilver.png",
+      "Guid": "d64731c5-8543-4594-82b0-8c4e6f59b155",
+      "Path": "textures/World/Items/arrow.png",
       "Type": "Texture"
     },
     {
-      "Guid": "80075a7a-993d-44af-8a07-55b5d68cd441",
-      "Path": "textures/sprites/Bullets/bulletBeigeSilver_outline.png",
+      "Guid": "9769a7f7-ff1d-4608-b301-01760d1034b2",
+      "Path": "textures/World/Items/axe_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "20b62c44-2820-4ce5-9afd-ff44ee7f5865",
-      "Path": "textures/sprites/Bullets/bulletBeige_outline.png",
+      "Guid": "db093d52-0fa2-4828-a205-e8ee782b761e",
+      "Path": "textures/World/Items/axe_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "c80a603e-832f-4979-a02f-6eff2afd622d",
-      "Path": "textures/sprites/Bullets/bulletBlue.png",
+      "Guid": "3a579511-b063-4943-8dfb-f3fd2cec9fb9",
+      "Path": "textures/World/Items/axe_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "6c715ce0-8ce5-4a6e-8f12-5ddaa996e2c2",
-      "Path": "textures/sprites/Bullets/bulletBlueSilver.png",
+      "Guid": "4b8709b9-3417-4e7c-a5d6-0a8c00580198",
+      "Path": "textures/World/Items/axe_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "e8cc05d8-c4b2-42d5-aa3d-ff81d887ac9b",
-      "Path": "textures/sprites/Bullets/bulletBlueSilver_outline.png",
+      "Guid": "bc7498f4-c6fc-4579-abb1-4768a63b87d1",
+      "Path": "textures/World/Items/axe_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "8dfbd522-9240-487f-bfed-3d8ad59423c3",
-      "Path": "textures/sprites/Bullets/bulletBlue_outline.png",
+      "Guid": "2d6d9187-8025-4919-a025-e46dd3e08559",
+      "Path": "textures/World/Items/boat.png",
       "Type": "Texture"
     },
     {
-      "Guid": "3f1aa381-8bfa-4cd5-9c08-e47afbcbe639",
-      "Path": "textures/sprites/Bullets/bulletGreen.png",
+      "Guid": "8a98017f-12b3-4384-bf86-971b5e492eed",
+      "Path": "textures/World/Items/bow.png",
       "Type": "Texture"
     },
     {
-      "Guid": "cae24972-05bb-4314-9446-b228d59fc095",
-      "Path": "textures/sprites/Bullets/bulletGreenSilver.png",
+      "Guid": "2175821d-4bf9-4e63-b2b3-2e4b7b83afaf",
+      "Path": "textures/World/Items/bowArrow.png",
       "Type": "Texture"
     },
     {
-      "Guid": "3a670023-c0ec-4f5c-aa22-925fa3b6c495",
-      "Path": "textures/sprites/Bullets/bulletGreenSilver_outline.png",
+      "Guid": "9e2f8304-21f6-420b-a701-c7d6283a8b31",
+      "Path": "textures/World/Items/bowl.png",
       "Type": "Texture"
     },
     {
-      "Guid": "d8713b69-8d74-4beb-b797-ca3de7eb19a3",
-      "Path": "textures/sprites/Bullets/bulletGreen_outline.png",
+      "Guid": "94bb7d41-23a7-4d15-bce5-cd9e7e0b6a8f",
+      "Path": "textures/World/Items/fish.png",
       "Type": "Texture"
     },
     {
-      "Guid": "0d26ce02-8b26-4d91-a7e0-c06f1d97516d",
-      "Path": "textures/sprites/Bullets/bulletRed.png",
+      "Guid": "a6c611c6-f8ba-4595-b2cb-a1a372d48330",
+      "Path": "textures/World/Items/fishingPole.png",
       "Type": "Texture"
     },
     {
-      "Guid": "5e41d1c6-f8cb-45e2-814a-b6c8116ba3af",
-      "Path": "textures/sprites/Bullets/bulletRedSilver.png",
+      "Guid": "65f2e4d8-8cfc-42c3-8b46-26dc76919ab6",
+      "Path": "textures/World/Items/fish_cooked.png",
       "Type": "Texture"
     },
     {
-      "Guid": "1c6c1371-2f2f-4115-b1d6-5b2a6efd33cd",
-      "Path": "textures/sprites/Bullets/bulletRedSilver_outline.png",
+      "Guid": "746a459d-66e5-483b-ae4d-c06af83a91d9",
+      "Path": "textures/World/Items/flail_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "41d29b84-fb8c-4691-aded-d5f3b46437a9",
-      "Path": "textures/sprites/Bullets/bulletRed_outline.png",
+      "Guid": "4a86fdbb-0b69-40ab-8430-53de2e19408d",
+      "Path": "textures/World/Items/flail_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "51633a79-3ad0-46ee-8683-b895b91effe4",
-      "Path": "textures/sprites/Bullets/bulletSilver.png",
+      "Guid": "5e323405-e26a-4be9-9418-f42199eb69d0",
+      "Path": "textures/World/Items/flail_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "50f98dd5-e3bf-4088-9709-db3e218367eb",
-      "Path": "textures/sprites/Bullets/bulletSilverSilver.png",
+      "Guid": "4d260f41-72ed-466b-8598-58c7ba9e9d8b",
+      "Path": "textures/World/Items/flail_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "7fa65e64-7c64-4c19-b7e9-6154f33ee9f7",
-      "Path": "textures/sprites/Bullets/bulletSilverSilver_outline.png",
+      "Guid": "f7ab9f5e-1762-479d-b914-701e4c516609",
+      "Path": "textures/World/Items/flail_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "1424fa47-667e-47bf-a27c-990fff305233",
-      "Path": "textures/sprites/Bullets/bulletSilver_outline.png",
+      "Guid": "b031b5bd-bdcd-42ea-98eb-1d0d308bf135",
+      "Path": "textures/World/Items/hammer_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "f05a0c27-5620-4769-a863-f87a55c12dad",
-      "Path": "textures/sprites/Bullets/bulletYellow.png",
+      "Guid": "1c361651-51dc-42f6-b317-a0eae5803ab7",
+      "Path": "textures/World/Items/hammer_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "f3631fb8-1381-4cbf-b977-9cce5d39ee14",
-      "Path": "textures/sprites/Bullets/bulletYellowSilver.png",
+      "Guid": "31c61162-1e9e-444d-a434-6bec006107b5",
+      "Path": "textures/World/Items/hammer_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "c0cb1766-7d6e-4349-86c2-9682cc1f1a94",
-      "Path": "textures/sprites/Bullets/bulletYellowSilver_outline.png",
+      "Guid": "ac1b690a-6d0f-485f-b1ce-3ce1943b87f0",
+      "Path": "textures/World/Items/hammer_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "6b2ae9c4-7104-45c7-b29a-651d7b47680a",
-      "Path": "textures/sprites/Bullets/bulletYellow_outline.png",
+      "Guid": "ae7f7f3d-21ae-41c9-bbcc-1ba7e8ddaafd",
+      "Path": "textures/World/Items/hammer_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "96d7c6e1-486b-44a4-a16f-ec7519874c22",
-      "Path": "textures/sprites/Environment/dirt.png",
+      "Guid": "561f6c4f-c068-4b86-b2c8-e3d217f4a338",
+      "Path": "textures/World/Items/hoe_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "2c830811-222e-4b2b-9822-9dfd234bd5c1",
-      "Path": "textures/sprites/Environment/grass.png",
+      "Guid": "8867b709-f20b-483b-858a-0b94fda458ad",
+      "Path": "textures/World/Items/hoe_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "e11ddd75-22da-483f-bfa9-2bf80b0df75e",
-      "Path": "textures/sprites/Environment/sand.png",
+      "Guid": "d045fb64-35d9-41f1-9ba9-6ab465c79579",
+      "Path": "textures/World/Items/hoe_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "de1d7c6e-d73e-4708-81d3-19fa45276114",
-      "Path": "textures/sprites/Environment/treeLarge.png",
+      "Guid": "9d25d2cb-87db-4073-915e-859722b7278a",
+      "Path": "textures/World/Items/hoe_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "9bfc2dde-a5d4-4af2-b6db-57cb103b5da2",
-      "Path": "textures/sprites/Environment/treeSmall.png",
+      "Guid": "28c6964d-2144-473d-a6d5-f3f35df58327",
+      "Path": "textures/World/Items/hoe_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "c49e27db-3928-444f-a187-3691e458eef9",
-      "Path": "textures/sprites/Obstacles/barrelGreen_side.png",
+      "Guid": "18b89b9d-c7c9-4b3e-bcad-5f3a2c0d91a0",
+      "Path": "textures/World/Items/minecart.png",
       "Type": "Texture"
     },
     {
-      "Guid": "55e1bed9-272e-46fd-a416-36c5ed0d6bf8",
-      "Path": "textures/sprites/Obstacles/barrelGreen_side_damaged.png",
+      "Guid": "97313333-3e71-45f3-b958-d84829364d9a",
+      "Path": "textures/World/Items/ore_coal.png",
       "Type": "Texture"
     },
     {
-      "Guid": "5c92d95b-47a7-44ca-9931-115fa8703b38",
-      "Path": "textures/sprites/Obstacles/barrelGreen_up.png",
+      "Guid": "104c0107-9159-489a-896b-a1d26afdcdb9",
+      "Path": "textures/World/Items/ore_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "f6d19fc5-41a2-4055-b98e-924b54bec2f5",
-      "Path": "textures/sprites/Obstacles/barrelGrey_sde_rust.png",
+      "Guid": "07f7c27c-8fee-436a-ae46-eb0668c3a58c",
+      "Path": "textures/World/Items/ore_emerald.png",
       "Type": "Texture"
     },
     {
-      "Guid": "1498ff11-dfe5-4ac5-b35b-00b0f7b14ace",
-      "Path": "textures/sprites/Obstacles/barrelGrey_side.png",
+      "Guid": "2a18aa66-dbb9-4459-9b6d-40f34182d163",
+      "Path": "textures/World/Items/ore_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "083fbedf-05f8-43a5-8952-1c0d2cc6b193",
-      "Path": "textures/sprites/Obstacles/barrelGrey_up.png",
+      "Guid": "017b024b-a72b-416f-8deb-27a7d7382998",
+      "Path": "textures/World/Items/ore_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "a7f4fd0f-728c-49cf-bf04-ae4d9cb3034d",
-      "Path": "textures/sprites/Obstacles/barrelRed_side.png",
+      "Guid": "65948522-b5bf-4e21-a501-e4d999539e96",
+      "Path": "textures/World/Items/ore_ironAlt.png",
       "Type": "Texture"
     },
     {
-      "Guid": "db778b47-b64f-4096-9ff4-2bf3ab18ff22",
-      "Path": "textures/sprites/Obstacles/barrelRed_up.png",
+      "Guid": "ea0cc56e-33bb-43b5-b309-5d93dc167d55",
+      "Path": "textures/World/Items/ore_ruby.png",
       "Type": "Texture"
     },
     {
-      "Guid": "4750ea9b-1536-41df-815f-212f21c81354",
-      "Path": "textures/sprites/Obstacles/oil.png",
+      "Guid": "f9d9d2a8-4bfd-4001-a31f-2d72fa5d6d88",
+      "Path": "textures/World/Items/ore_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "fc48997e-58db-427a-9e9d-663a203e6262",
-      "Path": "textures/sprites/Obstacles/sandbagBeige.png",
+      "Guid": "0ea75fde-5d26-475d-b5b4-a685386acd4e",
+      "Path": "textures/World/Items/pick_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "fa520a2e-3860-4cf3-8af1-8cbba28e017c",
-      "Path": "textures/sprites/Obstacles/sandbagBrown.png",
+      "Guid": "92993e0b-87e2-4973-a363-29bb8cf27869",
+      "Path": "textures/World/Items/pick_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "08240658-6987-4e3c-950e-752df5b39211",
-      "Path": "textures/sprites/Smoke/smokeGrey0.png",
+      "Guid": "4aa9259b-7342-4b41-93df-78c746f79f28",
+      "Path": "textures/World/Items/pick_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "c4cca2e4-e16a-4f6c-a463-d801637a54f8",
-      "Path": "textures/sprites/Smoke/smokeGrey1.png",
+      "Guid": "24c170ae-dc8e-43ce-a048-22d9a025927c",
+      "Path": "textures/World/Items/pick_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "090ca4e7-5a86-42ab-b1bc-604f0a088675",
-      "Path": "textures/sprites/Smoke/smokeGrey2.png",
+      "Guid": "17919b66-8236-4fd8-8d6e-2e263ba39eda",
+      "Path": "textures/World/Items/pick_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "66b939c7-f84c-4249-bc23-0364ce317701",
-      "Path": "textures/sprites/Smoke/smokeGrey3.png",
+      "Guid": "429750b9-fb7f-494a-9c89-89fd247bfa1e",
+      "Path": "textures/World/Items/seed.png",
       "Type": "Texture"
     },
     {
-      "Guid": "daec8d34-2d17-4b93-a16e-01a21ab54930",
-      "Path": "textures/sprites/Smoke/smokeGrey4.png",
+      "Guid": "ccf78a40-612e-43fe-a725-cfeb9292c397",
+      "Path": "textures/World/Items/shovel_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "0daa65c8-6b1f-4d95-9fb6-ed6cce6cd1a7",
-      "Path": "textures/sprites/Smoke/smokeGrey5.png",
+      "Guid": "a508a3b9-35e0-4f1b-9d5f-7c0eb88c8bc6",
+      "Path": "textures/World/Items/shovel_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "ee6d8a1f-c4cc-4c0a-8fa1-843555988427",
-      "Path": "textures/sprites/Smoke/smokeOrange0.png",
+      "Guid": "1ed5b014-0462-44ef-93c3-11ee4776993c",
+      "Path": "textures/World/Items/shovel_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "302c5f84-58e8-464a-9143-d9848a0ba60c",
-      "Path": "textures/sprites/Smoke/smokeOrange1.png",
+      "Guid": "7f80c566-2152-4953-a300-7177c9183187",
+      "Path": "textures/World/Items/shovel_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "033dcce1-6e62-4b6b-8464-0199699484f1",
-      "Path": "textures/sprites/Smoke/smokeOrange2.png",
+      "Guid": "90d20945-46f5-4269-bcbd-150ad9b738f8",
+      "Path": "textures/World/Items/shovel_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "e57dd602-09d7-424a-9e24-3e604a3752da",
-      "Path": "textures/sprites/Smoke/smokeOrange3.png",
+      "Guid": "c01eda4c-832b-44df-bae1-8c75466e7f1e",
+      "Path": "textures/World/Items/stew.png",
       "Type": "Texture"
     },
     {
-      "Guid": "e0adcd94-0ec6-49b9-9415-f3e971727967",
-      "Path": "textures/sprites/Smoke/smokeOrange4.png",
+      "Guid": "fd7fd7fb-36df-431e-85e1-af035124755f",
+      "Path": "textures/World/Items/sword_bronze.png",
       "Type": "Texture"
     },
     {
-      "Guid": "60fa22f6-0c25-46eb-bfbe-c129c9555ecc",
-      "Path": "textures/sprites/Smoke/smokeOrange5.png",
+      "Guid": "ce2420b5-151c-41e9-acfa-0a43ef7b951d",
+      "Path": "textures/World/Items/sword_diamond.png",
       "Type": "Texture"
     },
     {
-      "Guid": "b42b0c80-1bd5-4842-a963-f6d4a45fdcaf",
-      "Path": "textures/sprites/Smoke/smokeWhite0.png",
+      "Guid": "95065e7e-bf03-4cd5-a1e9-770907cab8d3",
+      "Path": "textures/World/Items/sword_gold.png",
       "Type": "Texture"
     },
     {
-      "Guid": "2c123d40-a15f-4f3d-99ce-a75a19634809",
-      "Path": "textures/sprites/Smoke/smokeWhite1.png",
+      "Guid": "1cbe3f7c-fad1-4337-9734-768387073b9d",
+      "Path": "textures/World/Items/sword_iron.png",
       "Type": "Texture"
     },
     {
-      "Guid": "d65cd301-f982-4fc6-ace8-359a75ed5f33",
-      "Path": "textures/sprites/Smoke/smokeWhite2.png",
+      "Guid": "5f4ced2d-7795-4737-a50a-b43bb20c2f56",
+      "Path": "textures/World/Items/sword_silver.png",
       "Type": "Texture"
     },
     {
-      "Guid": "78610c89-a943-4ed5-ad40-11821b503693",
-      "Path": "textures/sprites/Smoke/smokeWhite3.png",
+      "Guid": "4d60c49d-36e5-475d-b3b8-53e6d7dda1dc",
+      "Path": "textures/World/Items/wheat.png",
       "Type": "Texture"
     },
     {
-      "Guid": "5d6a98e5-efdd-43eb-8c5c-6b46427f5a1f",
-      "Path": "textures/sprites/Smoke/smokeWhite4.png",
+      "Guid": "64449951-fbaf-4271-a87d-bd36b52ace83",
+      "Path": "textures/World/Other/clouds.png",
       "Type": "Texture"
     },
     {
-      "Guid": "ee74c6d7-6110-412e-9c85-2064c1ac2b4a",
-      "Path": "textures/sprites/Smoke/smokeWhite5.png",
+      "Guid": "103ac8d1-87e3-4687-8094-af7f00b16626",
+      "Path": "textures/World/Other/moon.png",
       "Type": "Texture"
     },
     {
-      "Guid": "1de48221-5fc5-4884-b122-a54f94bb9c29",
-      "Path": "textures/sprites/Smoke/smokeYellow0.png",
+      "Guid": "2bc5c613-b40a-4117-9ad9-64cf957cfdcc",
+      "Path": "textures/World/Other/skybox_bottom.png",
       "Type": "Texture"
     },
     {
-      "Guid": "56bb1ea9-f419-4dc5-a5fc-64b34ff3a563",
-      "Path": "textures/sprites/Smoke/smokeYellow1.png",
+      "Guid": "9aa11ae1-f2c8-4255-8a8b-6495faae788c",
+      "Path": "textures/World/Other/skybox_side.png",
       "Type": "Texture"
     },
     {
-      "Guid": "0692e6cc-15fe-46c6-bdb5-081a47de7762",
-      "Path": "textures/sprites/Smoke/smokeYellow2.png",
+      "Guid": "8a10196a-0e22-47d2-8486-dd8e36111844",
+      "Path": "textures/World/Other/skybox_sideClouds.png",
       "Type": "Texture"
     },
     {
-      "Guid": "822f362b-97e5-493e-b119-7fd0daf99853",
-      "Path": "textures/sprites/Smoke/smokeYellow3.png",
+      "Guid": "1de89455-9a39-446c-9b98-2fbafbb39ca9",
+      "Path": "textures/World/Other/skybox_sideHills.png",
       "Type": "Texture"
     },
     {
-      "Guid": "8a2b8df3-8f57-48af-b9a3-cff60acb4274",
-      "Path": "textures/sprites/Smoke/smokeYellow4.png",
+      "Guid": "b26fe12c-77d4-4d55-8de1-66ec73eb196b",
+      "Path": "textures/World/Other/skybox_top.png",
       "Type": "Texture"
     },
     {
-      "Guid": "861c2dc7-dc09-4377-b289-afdefed08bd5",
-      "Path": "textures/sprites/Smoke/smokeYellow5.png",
+      "Guid": "78749a15-56d9-4a68-894f-8f0a18ee76ed",
+      "Path": "textures/World/Other/sun.png",
       "Type": "Texture"
     },
     {
-      "Guid": "476e87b9-fcf8-463c-b4c9-1eb3412a9488",
-      "Path": "textures/sprites/Tanks/barrelBeige.png",
+      "Guid": "2f2377b6-8fa9-41bc-b1da-b8f14ae7c11c",
+      "Path": "textures/World/Particles/square_blue.png",
       "Type": "Texture"
     },
     {
-      "Guid": "813b55ce-5fa8-4980-8bd6-402dea6b4f5c",
-      "Path": "textures/sprites/Tanks/barrelBeige_outline.png",
+      "Guid": "e5575612-5d51-41c6-8e31-b29946bdb5d4",
+      "Path": "textures/World/Particles/square_orange.png",
       "Type": "Texture"
     },
     {
-      "Guid": "8c09cb7c-e4bd-46e8-8f1b-521db7cad14e",
-      "Path": "textures/sprites/Tanks/barrelBlack.png",
+      "Guid": "e270e315-ca29-4999-8f52-2f2df444e15d",
+      "Path": "textures/World/Particles/square_red.png",
       "Type": "Texture"
     },
     {
-      "Guid": "ee6371a3-65a6-47b2-b0ba-0db24465b05e",
-      "Path": "textures/sprites/Tanks/barrelBlack_outline.png",
+      "Guid": "a1fafb16-1119-44c8-a423-a9bf0e8e22fc",
+      "Path": "textures/World/Particles/square_white.png",
       "Type": "Texture"
     },
     {
-      "Guid": "0bd13071-2626-46a3-9103-b6f29c96cc62",
-      "Path": "textures/sprites/Tanks/barrelBlue.png",
+      "Guid": "8d17e13f-e6ff-4405-b170-1e0f14af5f91",
+      "Path": "textures/World/Particles/swirl_blue.png",
       "Type": "Texture"
     },
     {
-      "Guid": "0eb1aff4-e303-494c-87e2-90ce092a4d01",
-      "Path": "textures/sprites/Tanks/barrelBlue_outline.png",
+      "Guid": "e0c6ba02-28ac-4784-b10f-1f61c24d5c86",
+      "Path": "textures/World/Particles/swirl_orange.png",
       "Type": "Texture"
     },
     {
-      "Guid": "1144f72b-1965-432d-a645-6c530f3f69df",
-      "Path": "textures/sprites/Tanks/barrelGreen.png",
+      "Guid": "080075c7-7b4a-4447-87ec-8de590c239e3",
+      "Path": "textures/World/Particles/swirl_red.png",
       "Type": "Texture"
     },
     {
-      "Guid": "29a8bc48-aa1d-4706-b7cb-61ddb775a637",
-      "Path": "textures/sprites/Tanks/barrelGreen_outline.png",
+      "Guid": "03f5c300-f00c-4a1a-b875-dc2f82f0b349",
+      "Path": "textures/World/Particles/swirl_white.png",
       "Type": "Texture"
     },
     {
-      "Guid": "8708047b-7745-47cd-af90-750ddbb0e441",
-      "Path": "textures/sprites/Tanks/barrelRed.png",
+      "Guid": "bf831791-1bc2-4b1d-b702-7fa614fdb0fa",
+      "Path": "textures/World/Tiles/brick_grey.png",
       "Type": "Texture"
     },
     {
-      "Guid": "8d86e245-87bd-4cec-bc7a-4e0738ff57f0",
-      "Path": "textures/sprites/Tanks/barrelRed_outline.png",
+      "Guid": "7e0c556d-03b3-4282-9f86-782e19a36614",
+      "Path": "textures/World/Tiles/brick_red.png",
       "Type": "Texture"
     },
     {
-      "Guid": "d889e91b-38fe-4d9a-a4dd-9531cab5772d",
-      "Path": "textures/sprites/Tanks/tankBeige.png",
+      "Guid": "fe025817-7a80-4419-94be-3b0b81b67a44",
+      "Path": "textures/World/Tiles/cactus_inside.png",
       "Type": "Texture"
     },
     {
-      "Guid": "209019c4-e8dd-4c1f-9d76-baa4ed141589",
-      "Path": "textures/sprites/Tanks/tankBeige_outline.png",
+      "Guid": "9a7881f3-b46a-4edf-9ecb-65862df80f7e",
+      "Path": "textures/World/Tiles/cactus_side.png",
       "Type": "Texture"
     },
     {
-      "Guid": "289b8d95-ecc7-4325-bd18-66d823ba29ca",
-      "Path": "textures/sprites/Tanks/tankBlack.png",
+      "Guid": "6b10c1d1-8fe5-40a4-b424-924c72c349af",
+      "Path": "textures/World/Tiles/cactus_top.png",
       "Type": "Texture"
     },
     {
-      "Guid": "6b5843f1-0ab9-4968-86ed-eba724d6bfa9",
-      "Path": "textures/sprites/Tanks/tankBlack_outline.png",
+      "Guid": "030f0304-0e99-4a0d-af52-5c7cc1e80a2a",
+      "Path": "textures/World/Tiles/cotton_blue.png",
       "Type": "Texture"
     },
     {
-      "Guid": "ecdcaa72-23f6-4bf3-83da-93e92e44a6d6",
-      "Path": "textures/sprites/Tanks/tankBlue.png",
+      "Guid": "3951c696-780c-4f26-bae3-1f7f85880e8c",
+      "Path": "textures/World/Tiles/cotton_green.png",
       "Type": "Texture"
     },
     {
-      "Guid": "3d1b1d0e-ae27-417c-9d95-cfe6e4046fc9",
-      "Path": "textures/sprites/Tanks/tankBlue_outline.png",
+      "Guid": "c7e879c9-9c04-4b9c-949a-f15b913d3e0d",
+      "Path": "textures/World/Tiles/cotton_red.png",
       "Type": "Texture"
     },
     {
-      "Guid": "91f269c1-7468-4926-8494-2690be9bfb3c",
-      "Path": "textures/sprites/Tanks/tankGreen.png",
+      "Guid": "648f6002-ce1d-483d-809e-1ec0ffade92e",
+      "Path": "textures/World/Tiles/cotton_tan.png",
       "Type": "Texture"
     },
     {
-      "Guid": "fd627441-b643-45cc-841b-d9a2af11a1c3",
-      "Path": "textures/sprites/Tanks/tankGreen_outline.png",
+      "Guid": "5c63d93f-30e8-44c3-a659-dd06d4efae7f",
+      "Path": "textures/World/Tiles/dirt.png",
       "Type": "Texture"
     },
     {
-      "Guid": "22af8fc6-8d9f-43fd-97e6-de006ff809b3",
-      "Path": "textures/sprites/Tanks/tankRed.png",
+      "Guid": "ef3ccc83-570b-48fb-8943-9b7c6329241d",
+      "Path": "textures/World/Tiles/dirt_grass.png",
       "Type": "Texture"
     },
     {
-      "Guid": "7c164b4e-6e7d-4d98-9646-ba3c08a3957c",
-      "Path": "textures/sprites/Tanks/tankRed_outline.png",
+      "Guid": "592ae3f7-94e5-48a6-b781-5875b5e71d14",
+      "Path": "textures/World/Tiles/dirt_sand.png",
       "Type": "Texture"
     },
     {
-      "Guid": "af9901cf-4f25-4922-8b1a-fe86242bbb52",
-      "Path": "textures/sprites/Tanks/tracksLarge.png",
+      "Guid": "cba933fc-7607-4fb1-b7e5-64e45934c30c",
+      "Path": "textures/World/Tiles/dirt_snow.png",
       "Type": "Texture"
     },
     {
-      "Guid": "00b4c0e8-23b5-4c57-a5f9-c280d87a61d3",
-      "Path": "textures/sprites/Tanks/tracksSmall.png",
+      "Guid": "9dcc5716-1ec5-44fa-a754-b16ee8f8c2fe",
+      "Path": "textures/World/Tiles/fence_stone.png",
       "Type": "Texture"
+    },
+    {
+      "Guid": "c9cff025-4a09-43b5-a813-87e29c28166b",
+      "Path": "textures/World/Tiles/fence_wood.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "032c2363-4140-43b1-bb02-bc170f1ad156",
+      "Path": "textures/World/Tiles/glass.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ffb5ae7f-5fbc-402b-99e3-402ecfd832b6",
+      "Path": "textures/World/Tiles/glass_frame.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "4fb1c82f-6fcf-45ea-adbd-ea33a49bef86",
+      "Path": "textures/World/Tiles/grass1.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f3ceb451-ef42-4bf0-ad83-11ed3582a293",
+      "Path": "textures/World/Tiles/grass2.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "231ef858-0dc3-44b6-863c-02caa9cc1452",
+      "Path": "textures/World/Tiles/grass3.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e21cdda0-c77b-428d-8541-ac7ecc1c283e",
+      "Path": "textures/World/Tiles/grass4.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "04a5fd61-8835-4d2f-a000-8ba8ced94995",
+      "Path": "textures/World/Tiles/grass_brown.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "60a9c5e2-1538-452a-9068-bdb86eba208f",
+      "Path": "textures/World/Tiles/grass_tan.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f005a459-4a7b-4f28-884a-77a5b39830e0",
+      "Path": "textures/World/Tiles/grass_top.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "efebe003-b4d4-46d8-9c29-d3df0ba08d44",
+      "Path": "textures/World/Tiles/gravel_dirt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "6e01f2fc-cc69-43a4-a48a-bb5062bbac57",
+      "Path": "textures/World/Tiles/gravel_stone.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5c3fdaae-365d-4d82-a379-8b5ab2701b8f",
+      "Path": "textures/World/Tiles/greysand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "bebe0431-08de-4196-9b06-648abcb11302",
+      "Path": "textures/World/Tiles/greystone.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7a376c56-29dd-46eb-b6ac-d04e406c9990",
+      "Path": "textures/World/Tiles/greystone_ruby.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0d8dc5cf-09da-467e-a63d-e4ee67bf7ea3",
+      "Path": "textures/World/Tiles/greystone_ruby_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1661a350-ea0f-4dbf-8d6d-cf10347ee515",
+      "Path": "textures/World/Tiles/greystone_sand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "a7078d63-e4a6-4fb9-9064-31bda97b43db",
+      "Path": "textures/World/Tiles/ice.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "67757afe-61e0-4c7b-bf7f-1f848cf61a50",
+      "Path": "textures/World/Tiles/lava.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "32b3fc40-7490-4076-b430-10e1994ac383",
+      "Path": "textures/World/Tiles/leaves.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "975d234b-1bf4-4906-be0a-2154d6a7a838",
+      "Path": "textures/World/Tiles/leaves_orange.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1d036f44-61a4-4df9-9918-53a8614e2f95",
+      "Path": "textures/World/Tiles/leaves_orange_transparent.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "bd6bc9df-1280-48cf-a0da-2f3d749f7fe9",
+      "Path": "textures/World/Tiles/leaves_transparent.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3a7f8b74-65cd-4e1e-8702-a65da8b7fb32",
+      "Path": "textures/World/Tiles/mushroom_brown.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1ffc29ac-d489-4622-bbd5-f21d18a41faa",
+      "Path": "textures/World/Tiles/mushroom_red.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f2b75496-9e53-48e3-bb29-a159fa9ccc9a",
+      "Path": "textures/World/Tiles/mushroom_tan.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "769b53f3-2665-4f0e-bfdc-97d17ebf50e1",
+      "Path": "textures/World/Tiles/oven.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "dc376236-65e5-40cd-bae0-b3283e70ec33",
+      "Path": "textures/World/Tiles/redsand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7580fc8e-1a4b-414d-87b7-1f022aff77ed",
+      "Path": "textures/World/Tiles/redstone.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e371e248-b2a8-4873-8a91-5768ba7be2e5",
+      "Path": "textures/World/Tiles/redstone_emerald.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5c0580ee-2464-4622-a936-36d620ed355f",
+      "Path": "textures/World/Tiles/redstone_emerald_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "fbe42ee7-1f7f-4b15-b8f5-7ca178cf5218",
+      "Path": "textures/World/Tiles/redstone_sand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "9d2a2c20-779f-4986-a012-dc25f4b16ac9",
+      "Path": "textures/World/Tiles/rock.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "dc2d9289-4683-4ba8-bbf1-e65509b6e338",
+      "Path": "textures/World/Tiles/rock_moss.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "99598e5b-fd98-406f-bfbe-9b1cdce348fa",
+      "Path": "textures/World/Tiles/sand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "665762b8-dfc0-412e-9c08-f717f268f8f4",
+      "Path": "textures/World/Tiles/snow.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ddfa29b2-5d5b-4e54-9f28-fb28873b4351",
+      "Path": "textures/World/Tiles/stone.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "442199f6-be0c-4d1a-bd06-b827b3996dcd",
+      "Path": "textures/World/Tiles/stone_browniron.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7e8da46b-5fc3-4238-9d73-763c9b3e5643",
+      "Path": "textures/World/Tiles/stone_browniron_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "b2c7341f-9724-455a-8fb7-c50c56dfeb46",
+      "Path": "textures/World/Tiles/stone_coal.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7ec8c93b-5d00-4eaf-9462-ad1394db824d",
+      "Path": "textures/World/Tiles/stone_coal_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d51005d8-dd51-4fcd-831c-65665dc5348e",
+      "Path": "textures/World/Tiles/stone_diamond.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5106b0f1-9e73-4656-b400-2e8fb6bffaae",
+      "Path": "textures/World/Tiles/stone_diamond_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "254e78aa-4d71-4218-98bc-0926719f33c4",
+      "Path": "textures/World/Tiles/stone_dirt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "52024956-ec6c-4cd0-93e2-c36c8a5e3d35",
+      "Path": "textures/World/Tiles/stone_gold.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "86cf24ab-b84a-4434-8593-aeba6fd50fec",
+      "Path": "textures/World/Tiles/stone_gold_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "63af6ffb-f458-4b29-a778-68eb42df3345",
+      "Path": "textures/World/Tiles/stone_grass.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "378c6fc6-f9ba-439e-83a3-8fa5f1b95554",
+      "Path": "textures/World/Tiles/stone_iron.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ed59069c-7816-49c0-b2ac-35025d492a4c",
+      "Path": "textures/World/Tiles/stone_iron_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "cb51dbc3-efd2-40e9-bd20-d7ba1fcabf51",
+      "Path": "textures/World/Tiles/stone_sand.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "6bd4e876-c758-4c1b-aeb6-bd4373b0616b",
+      "Path": "textures/World/Tiles/stone_silver.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ed217e56-9013-4a8f-a4ee-4b8593258df2",
+      "Path": "textures/World/Tiles/stone_silver_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1de22cfc-c90c-4d92-81cf-0eef07fede79",
+      "Path": "textures/World/Tiles/stone_snow.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1da1976d-5917-4bec-89b0-3b1473e40649",
+      "Path": "textures/World/Tiles/table.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8a0ea8d8-eccd-4c0a-bc96-d820b1ec8ac0",
+      "Path": "textures/World/Tiles/track_corner.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "71575c1f-cc19-4342-a030-21d451c96257",
+      "Path": "textures/World/Tiles/track_corner_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "1ba5d460-1593-4112-9446-b0e440f75de8",
+      "Path": "textures/World/Tiles/track_straight.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7893bab8-e0d8-4dfa-b5d4-616a20cafb94",
+      "Path": "textures/World/Tiles/track_straight_alt.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "71e1d638-ca97-41ad-8267-11069daa75d2",
+      "Path": "textures/World/Tiles/trunk_bottom.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "aa2bcceb-3283-4011-9a01-8121a9b24e17",
+      "Path": "textures/World/Tiles/trunk_mid.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5f20bf39-fd85-4384-8238-4d396863fb5d",
+      "Path": "textures/World/Tiles/trunk_side.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3757e352-6882-4cb2-895b-ec29796033e0",
+      "Path": "textures/World/Tiles/trunk_top.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "b69fbda6-3acb-48cb-8970-4a153b49daf3",
+      "Path": "textures/World/Tiles/trunk_white_side.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "4b157978-42ca-49af-b6e4-d14c75202858",
+      "Path": "textures/World/Tiles/trunk_white_top.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "13df498c-1971-4e52-8159-1e0b0576d131",
+      "Path": "textures/World/Tiles/water.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c912540f-079c-4c11-a0ca-1007693cef10",
+      "Path": "textures/World/Tiles/wheat_stage1.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "22538bb4-8c61-4f78-91fb-7585a59b33fb",
+      "Path": "textures/World/Tiles/wheat_stage2.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "81a2b051-5801-4785-9b2c-7c27162d9916",
+      "Path": "textures/World/Tiles/wheat_stage3.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3bdba56c-e4a3-41a5-9e10-4549387107de",
+      "Path": "textures/World/Tiles/wheat_stage4.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "9f83ea39-aa0d-4570-8ad7-fb69d6c6bccb",
+      "Path": "textures/World/Tiles/wood.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c3b657e0-222b-418b-a31a-80820aa066da",
+      "Path": "textures/World/Tiles/wood_red.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "2679f432-d366-4099-8344-c7710aecfa4f",
+      "Path": "textures/World/Characters/Alien/alien_arm.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f61d468a-92a4-400c-ac1d-3dab6ac38a87",
+      "Path": "textures/World/Characters/Alien/alien_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "83cd9ce3-b862-4bb9-89bf-245eb917219d",
+      "Path": "textures/World/Characters/Alien/alien_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "628c6634-a022-4e5a-9dc6-9c81eb1472f0",
+      "Path": "textures/World/Characters/Alien/alien_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "4367875a-ad20-4428-8e57-7dee82302d7b",
+      "Path": "textures/World/Characters/Boar/boar_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "04ed083e-a80b-4a6d-a23f-91dcf693177d",
+      "Path": "textures/World/Characters/Boar/boar_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d93f109f-7e66-47e4-b97c-a8991e9d9528",
+      "Path": "textures/World/Characters/Boar/boar_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7129d574-3433-4ef1-9a50-408a5cb6dcfe",
+      "Path": "textures/World/Characters/Boar/boar_tail.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5b77d4e6-be2e-41f9-9d30-eccc9a355b1f",
+      "Path": "textures/World/Characters/Fox/fox_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "b4e906b5-e60e-445c-b2ae-0cef0c4a0cc7",
+      "Path": "textures/World/Characters/Fox/fox_ear.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7e0c666a-ad29-4ca3-8006-c66de6900e2b",
+      "Path": "textures/World/Characters/Fox/fox_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "744e0671-740d-4017-8bdb-434e83ac0c8f",
+      "Path": "textures/World/Characters/Fox/fox_tail.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "4d149031-f319-40ca-a7bf-e3e908b7bf47",
+      "Path": "textures/World/Characters/Gnome/gnome_arm.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "81bc1013-98e8-4755-940c-1e8952517a27",
+      "Path": "textures/World/Characters/Gnome/gnome_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "31548b3f-0341-4fd9-9aa5-908d96f90d7c",
+      "Path": "textures/World/Characters/Gnome/gnome_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "90865f73-c5ed-46ad-a11f-650b7a156f12",
+      "Path": "textures/World/Characters/Gnome/gnome_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "bdd9b2ed-f48d-43d6-922d-41640c33808d",
+      "Path": "textures/World/Characters/Hedgehog/hedgehog_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "a44cc8cf-9e46-46ee-bbca-836d3454c67c",
+      "Path": "textures/World/Characters/Player female/female_arm.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e8d9a2e6-23f7-4230-ab8c-ed07a328e1d5",
+      "Path": "textures/World/Characters/Player female/female_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5702f3de-c963-4d0f-9959-08ba1b1bd0f7",
+      "Path": "textures/World/Characters/Player female/female_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7e3c2ebc-3b3a-4bd8-a7c8-1d62cd870288",
+      "Path": "textures/World/Characters/Player female/female_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "f2788809-a9c4-4258-93d0-33f29ef0f052",
+      "Path": "textures/World/Characters/Player male/male_arm.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "9c575615-c408-4765-82ef-bd82a81e1fd6",
+      "Path": "textures/World/Characters/Player male/male_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "866526d0-97fd-4908-9478-9480542444be",
+      "Path": "textures/World/Characters/Player male/male_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "58fe01be-876f-4e5f-9f59-cd9d815e1da7",
+      "Path": "textures/World/Characters/Player male/male_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c084e256-b01d-470c-b35d-c670f9cda054",
+      "Path": "textures/World/Characters/Skeleton/skeleton_arm.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "7fcdca00-9ce4-484a-8d97-57f2dc636673",
+      "Path": "textures/World/Characters/Skeleton/skeleton_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "621f63a9-f0b8-4628-903b-8561b6d8ec0e",
+      "Path": "textures/World/Characters/Skeleton/skeleton_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "306893e5-c77c-4c14-a0e5-1a54e2908a8f",
+      "Path": "textures/World/Characters/Skeleton/skeleton_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ebcd577e-1153-472f-92ed-931a8dc358bf",
+      "Path": "textures/World/Characters/Zombie/zombie_arm.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0e7fc093-8491-45df-b8d0-5b23e60bb4e4",
+      "Path": "textures/World/Characters/Zombie/zombie_body.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "11cad8b8-0660-4bad-ba1d-bc6aacfd1f28",
+      "Path": "textures/World/Characters/Zombie/zombie_head.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "02d5326a-0b05-4618-9e89-cee562980d57",
+      "Path": "textures/World/Characters/Zombie/zombie_leg.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0c8aa8df-62c7-4b2b-b95e-a9e734afe75e",
+      "Path": "shaders/sprite.frag",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "9695ae29-7417-4c18-8b05-04a3852e14c5",
+      "Path": "shaders/sprite.vert",
+      "Type": "Shader"
     }
   ],
   "Folders": [
@@ -763,34 +1293,79 @@
       "CreatedAt": "2026-02-03T23:13:18.6838126-03:00"
     },
     {
-      "Guid": "d2a4c742-1f32-4f2c-9cd3-2813f9665ace",
-      "Path": "textures/sprites",
-      "CreatedAt": "2026-02-04T03:58:11.8259829-03:00"
+      "Guid": "27f1e878-965f-4547-8105-52c988277a4d",
+      "Path": "textures/World",
+      "CreatedAt": "2026-02-04T18:46:04.7666637-03:00"
     },
     {
-      "Guid": "30847347-8e01-4724-b42a-3fb51d6d74ce",
-      "Path": "textures/sprites/Bullets",
-      "CreatedAt": "2026-02-04T03:58:11.826085-03:00"
+      "Guid": "dca01022-e053-43d6-968a-941976b48776",
+      "Path": "textures/World/Characters",
+      "CreatedAt": "2026-02-04T18:46:04.7667397-03:00"
     },
     {
-      "Guid": "1a87c943-8c15-495e-9307-0f1d89536e68",
-      "Path": "textures/sprites/Environment",
-      "CreatedAt": "2026-02-04T03:58:11.826131-03:00"
+      "Guid": "83dcbaa7-81e1-41ba-827c-bd43be6ff962",
+      "Path": "textures/World/Items",
+      "CreatedAt": "2026-02-04T18:46:04.7667825-03:00"
     },
     {
-      "Guid": "bf5bc281-c622-4da0-ab88-25cc9aea2af8",
-      "Path": "textures/sprites/Obstacles",
-      "CreatedAt": "2026-02-04T03:58:11.8261758-03:00"
+      "Guid": "160f59cd-8bc1-4ad4-b821-b28e275347a0",
+      "Path": "textures/World/Other",
+      "CreatedAt": "2026-02-04T18:46:04.7668253-03:00"
     },
     {
-      "Guid": "cd2e91e9-c39b-4348-b73c-f64f5f2e94f4",
-      "Path": "textures/sprites/Smoke",
-      "CreatedAt": "2026-02-04T03:58:11.8262492-03:00"
+      "Guid": "fea16046-ac67-411a-bb85-9fe3d6ddb72b",
+      "Path": "textures/World/Particles",
+      "CreatedAt": "2026-02-04T18:46:04.766862-03:00"
     },
     {
-      "Guid": "3902437d-aa28-42b8-9505-e8d90080ef58",
-      "Path": "textures/sprites/Tanks",
-      "CreatedAt": "2026-02-04T03:58:11.8262897-03:00"
+      "Guid": "b5ab8cfb-0c98-4a52-b171-e565931f2906",
+      "Path": "textures/World/Tiles",
+      "CreatedAt": "2026-02-04T18:46:04.7669025-03:00"
+    },
+    {
+      "Guid": "0c9edfe6-07f3-42a5-8aab-d4d755ee479b",
+      "Path": "textures/World/Characters/Alien",
+      "CreatedAt": "2026-02-04T18:46:04.7669274-03:00"
+    },
+    {
+      "Guid": "ebb3601e-e54e-4072-abca-9fcd8755839b",
+      "Path": "textures/World/Characters/Boar",
+      "CreatedAt": "2026-02-04T18:46:04.7669638-03:00"
+    },
+    {
+      "Guid": "500177ef-33f7-41d3-8b95-393d7fb1db10",
+      "Path": "textures/World/Characters/Fox",
+      "CreatedAt": "2026-02-04T18:46:04.7670117-03:00"
+    },
+    {
+      "Guid": "916d56e3-e497-49a1-8cd3-43ea27d09e7b",
+      "Path": "textures/World/Characters/Gnome",
+      "CreatedAt": "2026-02-04T18:46:04.7670417-03:00"
+    },
+    {
+      "Guid": "3a0fd260-5dcb-4ab4-b471-843c8c597524",
+      "Path": "textures/World/Characters/Hedgehog",
+      "CreatedAt": "2026-02-04T18:46:04.7670883-03:00"
+    },
+    {
+      "Guid": "ec83ec91-b855-427a-bfae-1543b9a5b992",
+      "Path": "textures/World/Characters/Player female",
+      "CreatedAt": "2026-02-04T18:46:04.7671341-03:00"
+    },
+    {
+      "Guid": "0cdb4223-91a3-4f6e-bf9b-712f8eae3742",
+      "Path": "textures/World/Characters/Player male",
+      "CreatedAt": "2026-02-04T18:46:04.7671643-03:00"
+    },
+    {
+      "Guid": "71f24c03-47d7-4cbb-ab40-637c6c741030",
+      "Path": "textures/World/Characters/Skeleton",
+      "CreatedAt": "2026-02-04T18:46:04.7671881-03:00"
+    },
+    {
+      "Guid": "a2426a59-e88b-4288-9acd-4ad4463ad4f2",
+      "Path": "textures/World/Characters/Zombie",
+      "CreatedAt": "2026-02-04T18:46:04.7672149-03:00"
     }
   ]
 }

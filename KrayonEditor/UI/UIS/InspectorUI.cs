@@ -125,7 +125,7 @@ namespace KrayonEditor.UI
                 }
                 else
                 {
-                    // Código existente para otros componentes
+                    // Dibujar propiedades
                     PropertyInfo[] properties = componentType.GetProperties(
                         BindingFlags.Public | BindingFlags.Instance
                     );
@@ -139,12 +139,17 @@ namespace KrayonEditor.UI
                         if (property.Name == "Enabled" && property.PropertyType == typeof(bool))
                             continue;
 
+                        // Verificar atributo NoSerializeToInspector
+                        if (property.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null)
+                            continue;
+
                         ImGui.PushID($"Property_{propertyIndex}");
                         DrawProperty(component, property);
                         ImGui.PopID();
                         propertyIndex++;
                     }
 
+                    // Dibujar campos
                     FieldInfo[] fields = componentType.GetFields(
                         BindingFlags.Public | BindingFlags.Instance
                     );
@@ -152,11 +157,86 @@ namespace KrayonEditor.UI
                     int fieldIndex = 0;
                     foreach (var field in fields)
                     {
+                        // Verificar atributo NoSerializeToInspector
+                        if (field.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null)
+                            continue;
+
                         ImGui.PushID($"Field_{fieldIndex}");
                         DrawField(component, field);
                         ImGui.PopID();
                         fieldIndex++;
                     }
+
+                    // Dibujar métodos con CallEvent
+                    DrawCallEventMethods(component, componentType);
+                }
+            }
+        }
+
+        private void DrawCallEventMethods(object component, Type componentType)
+        {
+            MethodInfo[] methods = componentType.GetMethods(
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly
+            );
+
+            bool hasCallEventMethods = false;
+            foreach (var method in methods)
+            {
+                var callEventAttr = method.GetCustomAttribute<CallEventAttribute>();
+                if (callEventAttr != null)
+                {
+                    hasCallEventMethods = true;
+                    break;
+                }
+            }
+
+            if (hasCallEventMethods)
+            {
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Text("Events");
+                ImGui.Spacing();
+
+                int methodIndex = 0;
+                foreach (var method in methods)
+                {
+                    var callEventAttr = method.GetCustomAttribute<CallEventAttribute>();
+                    if (callEventAttr == null)
+                        continue;
+
+                    // Obtener el nombre a mostrar
+                    string displayName = method.Name;
+
+                    if (!string.IsNullOrEmpty(callEventAttr.DisplayName))
+                    {
+                        displayName = callEventAttr.DisplayName;
+                    }
+
+                    ImGui.PushID($"Method_{methodIndex}");
+
+                    if (ImGui.Button(displayName, new Vector2(-1, 25)))
+                    {
+                        try
+                        {
+                            // Verificar que el método no tenga parámetros
+                            if (method.GetParameters().Length == 0)
+                            {
+                                method.Invoke(component, null);
+                                EngineEditor.LogMessage($"Executed: {displayName}");
+                            }
+                            else
+                            {
+                                EngineEditor.LogMessage($"Error: Method {method.Name} requires parameters");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            EngineEditor.LogMessage($"Error executing {displayName}: {ex.Message}");
+                        }
+                    }
+
+                    ImGui.PopID();
+                    methodIndex++;
                 }
             }
         }

@@ -34,8 +34,6 @@ namespace KrayonCore
 
         public Material Create(string name, string vertexPath, string fragmentPath)
         {
-            vertexPath = AssetManager.BasePath + vertexPath;
-            fragmentPath = AssetManager.BasePath + fragmentPath;
             if (_materials.ContainsKey(name))
             {
                 Console.WriteLine($"[MaterialManager] Material '{name}' already exists. Returning existing material.");
@@ -71,8 +69,6 @@ namespace KrayonCore
 
         public Material Create(string name, string shaderBasePath)
         {
-            shaderBasePath = AssetManager.BasePath + shaderBasePath;
-
             if (_materials.ContainsKey(name))
             {
                 Console.WriteLine($"[MaterialManager] Material '{name}' already exists. Returning existing material.");
@@ -81,18 +77,6 @@ namespace KrayonCore
 
             string vertPath = $"{shaderBasePath}.vert";
             string fragPath = $"{shaderBasePath}.frag";
-
-            if (!File.Exists(vertPath))
-            {
-                Console.WriteLine($"[MaterialManager] Cannot create material '{name}': vertex shader not found at {vertPath}");
-                return null;
-            }
-
-            if (!File.Exists(fragPath))
-            {
-                Console.WriteLine($"[MaterialManager] Cannot create material '{name}': fragment shader not found at {fragPath}");
-                return null;
-            }
 
             try
             {

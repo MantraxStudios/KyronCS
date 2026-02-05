@@ -17,6 +17,7 @@ namespace KrayonEditor.UI
         private static StatsUI _stats = new StatsUI();
         private static AssetsUI _assets = new AssetsUI();
         private static MaterialUI _materials = new MaterialUI();
+        private static TileEditor _TileEditor = new TileEditor();
 
         public static void Initialize()
         {
@@ -69,6 +70,7 @@ namespace KrayonEditor.UI
             _stats.OnDrawUI();
             _assets.OnDrawUI();
             _materials.OnDrawUI();
+            _TileEditor.OnDrawUI();
 
             // Sincronizar visibilidad de vuelta al menú
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;

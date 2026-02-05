@@ -11,4 +11,19 @@ namespace KrayonCore
     public sealed class NoSerializeToInspectorAttribute : Attribute
     {
     }
+
+    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    public sealed class CallEventAttribute : Attribute
+    {
+        public string? DisplayName { get; set; }
+
+        public CallEventAttribute()
+        {
+        }
+
+        public CallEventAttribute(string displayName)
+        {
+            DisplayName = displayName;
+        }
+    }
 }

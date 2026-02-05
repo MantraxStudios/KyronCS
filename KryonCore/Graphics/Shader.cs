@@ -24,16 +24,16 @@ namespace KrayonCore
 
         public void LoadFromFile(string vertexPath, string fragmentPath)
         {
-            if (!File.Exists(vertexPath))
+            if (!File.Exists(AssetManager.BasePath + vertexPath))
                 throw new FileNotFoundException($"Vertex shader not found: {vertexPath}");
-            if (!File.Exists(fragmentPath))
+            if (!File.Exists(AssetManager.BasePath + fragmentPath))
                 throw new FileNotFoundException($"Fragment shader not found: {fragmentPath}");
 
             VertexPath = vertexPath;
             FragmentPath = fragmentPath;
 
-            string vertexSource = File.ReadAllText(vertexPath);
-            string fragmentSource = File.ReadAllText(fragmentPath);
+            string vertexSource = File.ReadAllText(AssetManager.BasePath + vertexPath);
+            string fragmentSource = File.ReadAllText(AssetManager.BasePath + fragmentPath);
 
             Compile(vertexSource, fragmentSource);
         }

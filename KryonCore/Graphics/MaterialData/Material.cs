@@ -147,7 +147,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadMainTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             MainTexture?.Dispose();
             MainTexture = new TextureLoader("mainTexture", path, generateMipmaps, flip);
 
@@ -167,7 +166,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadAlbedoTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             AlbedoTexture?.Dispose();
             AlbedoTexture = new TextureLoader("u_AlbedoMap", path, generateMipmaps, flip);
             SetTexture("u_AlbedoMap", AlbedoTexture, 0);
@@ -180,7 +178,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadNormalTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             NormalTexture?.Dispose();
             NormalTexture = new TextureLoader("u_NormalMap", path, generateMipmaps, flip);
             SetTexture("u_NormalMap", NormalTexture, 1);
@@ -193,7 +190,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadMetallicTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             MetallicTexture?.Dispose();
             MetallicTexture = new TextureLoader("u_MetallicMap", path, generateMipmaps, flip);
             SetTexture("u_MetallicMap", MetallicTexture, 2);
@@ -206,7 +202,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadRoughnessTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             RoughnessTexture?.Dispose();
             RoughnessTexture = new TextureLoader("u_RoughnessMap", path, generateMipmaps, flip);
             SetTexture("u_RoughnessMap", RoughnessTexture, 3);
@@ -219,7 +214,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadAOTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             AOTexture?.Dispose();
             AOTexture = new TextureLoader("u_AOMap", path, generateMipmaps, flip);
             SetTexture("u_AOMap", AOTexture, 4);
@@ -232,7 +226,6 @@ namespace KrayonCore
         /// </summary>
         public void LoadEmissiveTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
-            path = AssetManager.BasePath + path;
             EmissiveTexture?.Dispose();
             EmissiveTexture = new TextureLoader("u_EmissiveMap", path, generateMipmaps, flip);
             SetTexture("u_EmissiveMap", EmissiveTexture, 5);
