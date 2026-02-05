@@ -110,6 +110,13 @@ namespace KrayonEditor.UI
                 TransformGizmo.SnapEnabled = snapEnabled;
             }
 
+            ImGui.SameLine();
+
+            if (ImGui.Button("Camera Mode"))
+            {
+                GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ToggleProjectionMode();
+            }
+
             if (ImGui.IsItemHovered())
             {
                 string snapInfo = $"Position: {TransformGizmo.TranslateSnapValue}\n" +

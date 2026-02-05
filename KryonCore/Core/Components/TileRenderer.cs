@@ -2,6 +2,8 @@
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace KrayonCore.Graphics
 {
@@ -53,11 +55,27 @@ namespace KrayonCore.Graphics
         [NoSerializeToInspector, ToStorage]
         private List<Tile> _tiles = new List<Tile>();
 
-        // Propiedades para el Inspector
+        private bool _isGenerating = false;
+        private CancellationTokenSource _generationCancellation;
+        private int _tilesGeneratedCount = 0;
+        private int _totalTilesToGenerate = 0;
+        private object _tilesLock = new object();
+
+        private bool _instanceDataDirty = true;
+        private Dictionary<(int modelIndex, int materialIndex), List<Matrix4>> _instanceGroups = new Dictionary<(int, int), List<Matrix4>>();
+
         public int TileCount => _tiles.Count;
         public int GridSizeX { get; set; } = 10;
         public int GridSizeZ { get; set; } = 10;
         public float TileSpacing { get; set; } = 1.0f;
+
+        public int BatchSize { get; set; } = 100;
+        public int DelayBetweenBatchesMs { get; set; } = 1;
+
+        public bool IsGenerating => _isGenerating;
+        public float GenerationProgress => _totalTilesToGenerate > 0
+            ? (float)_tilesGeneratedCount / _totalTilesToGenerate
+            : 0f;
 
         public Model[] Models
         {
@@ -82,7 +100,6 @@ namespace KrayonCore.Graphics
         {
             Console.WriteLine($"[TileRenderer] Awake llamado en {GameObject?.Name ?? "Unknown"}");
 
-            // Cargar modelos
             if (ModelPaths != null && ModelPaths.Length > 0)
             {
                 _models = new Model[ModelPaths.Length];
@@ -96,7 +113,6 @@ namespace KrayonCore.Graphics
                 }
             }
 
-            // Cargar materiales desde MaterialPaths (igual que MeshRenderer)
             for (int i = 0; i < MaterialPaths.Length; i++)
             {
                 SetMaterial(i, GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]));
@@ -167,13 +183,11 @@ namespace KrayonCore.Graphics
             }
         }
 
-        // Método para sincronizar MaterialPaths (igual que MeshRenderer.SaveMaterialPaths)
         public void SaveMaterialPaths(string[] paths)
         {
             MaterialPaths = paths ?? new string[0];
         }
 
-        // Gestión de Materiales (igual que MeshRenderer)
         public void SetMaterial(int index, Material material)
         {
             if (index < 0) return;
@@ -184,9 +198,6 @@ namespace KrayonCore.Graphics
             }
 
             _materials[index] = material;
-
-            // NO sincronizar MaterialPaths aquí - se hace solo desde el Inspector
-            // (igual que MeshRenderer)
         }
 
         public Material GetMaterial(int index)
@@ -225,7 +236,6 @@ namespace KrayonCore.Graphics
 
         public int MaterialCount => _materials.Length;
 
-        // Gestión de Modelos
         public void SetModel(int index, string path)
         {
             if (index < 0) return;
@@ -263,7 +273,6 @@ namespace KrayonCore.Graphics
 
         public int ModelCount => _models.Length;
 
-        // Gestión de Tiles (métodos base)
         public void AddTile(Vector3 position, int materialIndex = 0, int modelIndex = 0)
         {
             var tile = new Tile
@@ -278,8 +287,11 @@ namespace KrayonCore.Graphics
                 ModelIndex = modelIndex
             };
 
-            _tiles.Add(tile);
-            Console.WriteLine($"[TileRenderer] Tile añadido en posición {position}. Total tiles: {_tiles.Count}");
+            lock (_tilesLock)
+            {
+                _tiles.Add(tile);
+                _instanceDataDirty = true;
+            }
         }
 
         public void AddTile(Vector3 position, Quaternion rotation, Vector3 scale, int materialIndex = 0, int modelIndex = 0)
@@ -296,66 +308,180 @@ namespace KrayonCore.Graphics
                 ModelIndex = modelIndex
             };
 
-            _tiles.Add(tile);
-            Console.WriteLine($"[TileRenderer] Tile personalizado añadido. Total tiles: {_tiles.Count}");
+            lock (_tilesLock)
+            {
+                _tiles.Add(tile);
+                _instanceDataDirty = true;
+            }
         }
 
         public void AddCustomTile(Tile tile)
         {
-            _tiles.Add(tile);
+            lock (_tilesLock)
+            {
+                _tiles.Add(tile);
+                _instanceDataDirty = true;
+            }
         }
 
         public void RemoveTile(int index)
         {
-            if (index >= 0 && index < _tiles.Count)
+            lock (_tilesLock)
             {
-                _tiles.RemoveAt(index);
-                Console.WriteLine($"[TileRenderer] Tile removido en índice {index}. Total tiles: {_tiles.Count}");
+                if (index >= 0 && index < _tiles.Count)
+                {
+                    _tiles.RemoveAt(index);
+                    _instanceDataDirty = true;
+                    Console.WriteLine($"[TileRenderer] Tile removido en índice {index}. Total tiles: {_tiles.Count}");
+                }
             }
         }
 
-        // Métodos de Inspector con CallEvent
+        private async Task GenerateTilesAsync(List<Tile> tilesToGenerate, CancellationToken cancellationToken)
+        {
+            _isGenerating = true;
+            _tilesGeneratedCount = 0;
+            _totalTilesToGenerate = tilesToGenerate.Count;
+
+            Console.WriteLine($"[TileRenderer] Iniciando generación asíncrona de {_totalTilesToGenerate} tiles");
+            Console.WriteLine($"[TileRenderer] Batch size: {BatchSize}, Delay: {DelayBetweenBatchesMs}ms");
+
+            try
+            {
+                for (int i = 0; i < tilesToGenerate.Count; i += BatchSize)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        Console.WriteLine($"[TileRenderer] Generación cancelada en tile {i}");
+                        break;
+                    }
+
+                    int batchEnd = Math.Min(i + BatchSize, tilesToGenerate.Count);
+
+                    lock (_tilesLock)
+                    {
+                        for (int j = i; j < batchEnd; j++)
+                        {
+                            _tiles.Add(tilesToGenerate[j]);
+                        }
+                        _instanceDataDirty = true;
+                    }
+
+                    _tilesGeneratedCount = batchEnd;
+
+                    if (_tilesGeneratedCount % 1000 == 0 || _tilesGeneratedCount == _totalTilesToGenerate)
+                    {
+                        Console.WriteLine($"[TileRenderer] Progreso: {_tilesGeneratedCount}/{_totalTilesToGenerate} tiles ({GenerationProgress:P1})");
+                    }
+
+                    if (DelayBetweenBatchesMs > 0 && batchEnd < tilesToGenerate.Count)
+                    {
+                        await Task.Delay(DelayBetweenBatchesMs, cancellationToken);
+                    }
+                }
+
+                Console.WriteLine($"[TileRenderer] ✓ Generación completada: {_tiles.Count} tiles totales");
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine($"[TileRenderer] Generación cancelada por el usuario");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TileRenderer] Error durante generación: {ex.Message}");
+            }
+            finally
+            {
+                _isGenerating = false;
+                _tilesGeneratedCount = 0;
+                _totalTilesToGenerate = 0;
+            }
+        }
+
+        public void CancelGeneration()
+        {
+            if (_isGenerating && _generationCancellation != null)
+            {
+                Console.WriteLine($"[TileRenderer] Cancelando generación...");
+                _generationCancellation.Cancel();
+            }
+        }
+
         [CallEvent("Add Single Tile at Origin")]
         public void AddSingleTile()
         {
             AddTile(Vector3.Zero, 0, 0);
+            Console.WriteLine($"[TileRenderer] Tile añadido. Total tiles: {_tiles.Count}");
         }
 
         [CallEvent("Generate Grid")]
-        public void GenerateGrid()
+        public async void GenerateGrid()
         {
+            if (_isGenerating)
+            {
+                Console.WriteLine($"[TileRenderer] Ya hay una generación en progreso");
+                return;
+            }
+
             ClearTiles();
+
+            int totalTiles = GridSizeX * GridSizeZ;
+            Console.WriteLine($"[TileRenderer] Preparando grid {GridSizeX}x{GridSizeZ} = {totalTiles} tiles");
+
+            var tilesToGenerate = new List<Tile>(totalTiles);
 
             for (int x = 0; x < GridSizeX; x++)
             {
                 for (int z = 0; z < GridSizeZ; z++)
                 {
                     Vector3 position = new Vector3(x * TileSpacing, 0, z * TileSpacing);
-                    AddTile(position, 0, 0);
+
+                    var tile = new Tile
+                    {
+                        Transform = new TileTransform
+                        {
+                            _Pos = position,
+                            _Rot = Quaternion.Identity,
+                            _Scale = Vector3.One
+                        },
+                        MaterialIndex = 0,
+                        ModelIndex = 0
+                    };
+
+                    tilesToGenerate.Add(tile);
                 }
             }
 
-            Console.WriteLine($"[TileRenderer] Grid generado: {GridSizeX}x{GridSizeZ} = {_tiles.Count} tiles");
+            _generationCancellation = new CancellationTokenSource();
+            await GenerateTilesAsync(tilesToGenerate, _generationCancellation.Token);
         }
 
         [CallEvent("Clear All Tiles")]
         public void ClearTiles()
         {
-            int count = _tiles.Count;
-            _tiles.Clear();
-            Console.WriteLine($"[TileRenderer] {count} tiles eliminados");
+            CancelGeneration();
+
+            lock (_tilesLock)
+            {
+                int count = _tiles.Count;
+                _tiles.Clear();
+                _instanceDataDirty = true;
+                Console.WriteLine($"[TileRenderer] {count} tiles eliminados");
+            }
         }
 
         [CallEvent("Add Tile at X=1")]
         public void AddTileAtX1()
         {
             AddTile(new Vector3(1, 0, 0), 0, 0);
+            Console.WriteLine($"[TileRenderer] Tile añadido en X=1. Total tiles: {_tiles.Count}");
         }
 
         [CallEvent("Add Tile at Z=1")]
         public void AddTileAtZ1()
         {
             AddTile(new Vector3(0, 0, 1), 0, 0);
+            Console.WriteLine($"[TileRenderer] Tile añadido en Z=1. Total tiles: {_tiles.Count}");
         }
 
         [CallEvent("Generate Line X (10 tiles)")]
@@ -380,23 +506,49 @@ namespace KrayonCore.Graphics
             Console.WriteLine($"[TileRenderer] Línea Z generada: 10 tiles");
         }
 
-        public Tile GetTile(int index)
+        [CallEvent("Generate Large Grid (100x100)")]
+        public async void GenerateLargeGrid()
         {
-            if (index >= 0 && index < _tiles.Count)
-                return _tiles[index];
-            return null;
+            GridSizeX = 100;
+            GridSizeZ = 100;
+            await Task.Run(() => GenerateGrid());
         }
 
-        // Renderizado
-        public void Render(Matrix4 view, Matrix4 projection)
+        [CallEvent("Generate Huge Grid (500x500)")]
+        public async void GenerateHugeGrid()
         {
-            if (!Enabled || _tiles.Count == 0)
+            GridSizeX = 500;
+            GridSizeZ = 500;
+            await Task.Run(() => GenerateGrid());
+        }
+
+        [CallEvent("Cancel Generation")]
+        public void CancelGenerationButton()
+        {
+            CancelGeneration();
+        }
+
+        public Tile GetTile(int index)
+        {
+            lock (_tilesLock)
+            {
+                if (index >= 0 && index < _tiles.Count)
+                    return _tiles[index];
+                return null;
+            }
+        }
+
+        private void UpdateInstanceData()
+        {
+            if (!_instanceDataDirty)
                 return;
 
-            if (_models.Length == 0 || _materials.Length == 0)
+            _instanceGroups.Clear();
+
+            Tile[] tilesSnapshot;
+            lock (_tilesLock)
             {
-                Console.WriteLine($"[TileRenderer] No se puede renderizar: Modelos={_models.Length}, Materiales={_materials.Length}");
-                return;
+                tilesSnapshot = _tiles.ToArray();
             }
 
             var transform = GetComponent<Transform>();
@@ -404,41 +556,85 @@ namespace KrayonCore.Graphics
                 return;
 
             Matrix4 parentMatrix = transform.GetWorldMatrix();
-            Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
 
-            foreach (var tile in _tiles)
+            foreach (var tile in tilesSnapshot)
             {
-                // Validar índices
                 if (tile.ModelIndex < 0 || tile.ModelIndex >= _models.Length)
                     continue;
                 if (tile.MaterialIndex < 0 || tile.MaterialIndex >= _materials.Length)
                     continue;
 
-                var model = _models[tile.ModelIndex];
-                var material = _materials[tile.MaterialIndex];
+                var key = (tile.ModelIndex, tile.MaterialIndex);
+
+                if (!_instanceGroups.ContainsKey(key))
+                {
+                    _instanceGroups[key] = new List<Matrix4>();
+                }
+
+                Matrix4 tileLocalMatrix = tile.Transform.GetMatrix();
+                Matrix4 finalMatrix = tileLocalMatrix * parentMatrix;
+                _instanceGroups[key].Add(finalMatrix);
+            }
+
+            foreach (var kvp in _instanceGroups)
+            {
+                int modelIndex = kvp.Key.modelIndex;
+                if (modelIndex >= 0 && modelIndex < _models.Length && _models[modelIndex] != null)
+                {
+                    _models[modelIndex].SetupInstancing(kvp.Value.ToArray());
+                }
+            }
+
+            _instanceDataDirty = false;
+        }
+
+        public void Render(Matrix4 view, Matrix4 projection)
+        {
+            if (!Enabled)
+                return;
+
+            if (_models.Length == 0 || _materials.Length == 0)
+                return;
+
+            UpdateInstanceData();
+
+            Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
+
+            foreach (var kvp in _instanceGroups)
+            {
+                int modelIndex = kvp.Key.modelIndex;
+                int materialIndex = kvp.Key.materialIndex;
+                int instanceCount = kvp.Value.Count;
+
+                if (instanceCount == 0)
+                    continue;
+
+                var model = _models[modelIndex];
+                var material = _materials[materialIndex];
 
                 if (model == null || material == null)
                     continue;
 
-                // Combinar transformación del padre con la del tile
-                Matrix4 tileLocalMatrix = tile.Transform.GetMatrix();
-                Matrix4 finalModelMatrix = tileLocalMatrix * parentMatrix;
-
                 material.SetPBRProperties();
                 material.Use();
 
-                material.SetMatrix4("model", finalModelMatrix);
                 material.SetMatrix4("view", view);
                 material.SetMatrix4("projection", projection);
                 material.SetVector3("u_CameraPos", cameraPos);
 
-                model.Draw();
+                model.DrawInstanced(instanceCount);
             }
         }
 
         public override void OnDestroy()
         {
-            _tiles.Clear();
+            CancelGeneration();
+
+            lock (_tilesLock)
+            {
+                _tiles.Clear();
+            }
+
             _models = new Model[0];
             _materials = new Material[0];
         }

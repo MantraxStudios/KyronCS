@@ -10,10 +10,14 @@ namespace KrayonCore
     public class MeshRenderer : Component
     {
         [ToStorage] public string ModelPath { get; set; } = "models/Cube.fbx";
-        [ToStorage] public string[] MaterialPaths { get; set; } = new string[0];
+        [ToStorage, NoSerializeToInspector] public string[] MaterialPaths { get; set; } = new string[0];
 
         private Material[] _materials = new Material[0];
         private Model? _model;
+
+        // Instanced rendering support
+        private Matrix4[] _instanceMatrices = null;
+        private bool _instanceDataDirty = false;
 
         public Model? Model
         {
@@ -26,6 +30,8 @@ namespace KrayonCore
             get => _materials;
             set => _materials = value ?? new Material[0];
         }
+
+        public int InstanceCount => _instanceMatrices?.Length ?? 0;
 
         public MeshRenderer()
         {
@@ -175,57 +181,119 @@ namespace KrayonCore
 
         public int MaterialCount => _materials.Length;
 
+        // Instanced rendering methods
+        public void SetInstanceMatrices(Matrix4[] matrices)
+        {
+            _instanceMatrices = matrices;
+            _instanceDataDirty = true;
+        }
+
+        public void SetInstanceMatrices(List<Matrix4> matrices)
+        {
+            SetInstanceMatrices(matrices?.ToArray());
+        }
+
+        public void AddInstance(Matrix4 matrix)
+        {
+            if (_instanceMatrices == null)
+            {
+                _instanceMatrices = new Matrix4[] { matrix };
+            }
+            else
+            {
+                Array.Resize(ref _instanceMatrices, _instanceMatrices.Length + 1);
+                _instanceMatrices[_instanceMatrices.Length - 1] = matrix;
+            }
+
+            _instanceDataDirty = true;
+        }
+
+        public void ClearInstances()
+        {
+            _instanceMatrices = null;
+            _instanceDataDirty = false;
+        }
+
+        private void UpdateInstanceData()
+        {
+            if (!_instanceDataDirty || _model == null || _instanceMatrices == null)
+                return;
+
+            _model.SetupInstancing(_instanceMatrices);
+            _instanceDataDirty = false;
+        }
+
         public void Render(Matrix4 view, Matrix4 projection)
         {
             if (_model == null || !Enabled)
                 return;
 
-            var transform = GetComponent<Transform>();
-            if (transform == null)
-                return;
-
-            Matrix4 model = transform.GetWorldMatrix();
-
             if (_materials.Length == 0)
-            {
                 return;
-            }
 
             Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
 
-            if (_materials.Length == 1)
+            // Instanced rendering (cuando hay matrices de instancia)
+            if (_instanceMatrices != null && _instanceMatrices.Length > 0)
             {
+                UpdateInstanceData();
+
                 var material = _materials[0];
                 if (material != null)
                 {
                     material.SetPBRProperties();
                     material.Use();
 
-                    material.SetMatrix4("model", model);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
                     material.SetVector3("u_CameraPos", cameraPos);
 
-                    _model.Draw();
+                    _model.DrawInstanced(_instanceMatrices.Length);
                 }
             }
+            // Normal rendering (sin instancing)
             else
             {
-                for (int i = 0; i < _materials.Length && i < _model.SubMeshCount; i++)
+                var transform = GetComponent<Transform>();
+                if (transform == null)
+                    return;
+
+                Matrix4 model = transform.GetWorldMatrix();
+
+                if (_materials.Length == 1)
                 {
-                    var material = _materials[i];
-                    if (material == null)
-                        continue;
+                    var material = _materials[0];
+                    if (material != null)
+                    {
+                        material.SetPBRProperties();
+                        material.Use();
 
-                    material.SetPBRProperties();
-                    material.Use();
+                        material.SetMatrix4("model", model);
+                        material.SetMatrix4("view", view);
+                        material.SetMatrix4("projection", projection);
+                        material.SetVector3("u_CameraPos", cameraPos);
 
-                    material.SetMatrix4("model", model);
-                    material.SetMatrix4("view", view);
-                    material.SetMatrix4("projection", projection);
-                    material.SetVector3("u_CameraPos", cameraPos);
+                        _model.Draw();
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < _materials.Length && i < _model.SubMeshCount; i++)
+                    {
+                        var material = _materials[i];
+                        if (material == null)
+                            continue;
 
-                    _model.DrawSubMesh(i);
+                        material.SetPBRProperties();
+                        material.Use();
+
+                        material.SetMatrix4("model", model);
+                        material.SetMatrix4("view", view);
+                        material.SetMatrix4("projection", projection);
+                        material.SetVector3("u_CameraPos", cameraPos);
+
+                        _model.DrawSubMesh(i);
+                    }
                 }
             }
         }
@@ -234,6 +302,7 @@ namespace KrayonCore
         {
             _model = null;
             _materials = new Material[0];
+            _instanceMatrices = null;
         }
     }
 }

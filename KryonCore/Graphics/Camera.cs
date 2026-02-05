@@ -57,7 +57,7 @@ namespace KrayonCore
 
         public float OrthoSize { get; set; } = 10.0f;
         public float OrthoNear { get; set; } = 0.1f;
-        public float OrthoFar { get; set; } = 100.0f;
+        public float OrthoFar { get; set; } = 1000.0f;
 
         public float MovementSpeed { get; set; } = 2.5f;
         public float MouseSensitivity { get; set; } = 0.1f;
