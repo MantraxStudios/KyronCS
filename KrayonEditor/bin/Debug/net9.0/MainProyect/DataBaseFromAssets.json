@@ -1149,6 +1149,196 @@
       "Guid": "9695ae29-7417-4c18-8b05-04a3852e14c5",
       "Path": "shaders/sprite.vert",
       "Type": "Shader"
+    },
+    {
+      "Guid": "0c09a7aa-27a5-4663-9607-b605478b6828",
+      "Path": "models/source/fnaf.fbx",
+      "Type": "Model"
+    },
+    {
+      "Guid": "9bfebd1e-96c3-4c13-8d61-afb7c654e851",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_BaseColor.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "27ef6f1f-f4dc-4bdc-9142-d834302ffb8f",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_BaseColor.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8d1b74af-9a3c-4a6b-a9c6-4acc0190e489",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Emissive.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3b65e723-22bf-46a3-93e4-f6ca04a2e6b7",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Metallic.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "dd7d8649-9f20-4763-88a1-797df09f75dc",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Normal.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "3f1cf29f-4740-46dc-8c83-b125ef8e662d",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Occlusion.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "8ea6adb9-a598-4adc-b706-bf2af138a4a6",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_OcclusionRo.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "38430fde-444a-4d34-a244-2e466344ef03",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Roughness.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "97f213c5-b028-42eb-a3bb-859892db38e0",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Metallic.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "227fc621-628c-4152-b155-f3ad767a8378",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Normal.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ee148bac-cd6a-467e-900f-b828175c660f",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Occlusion.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "9f9a7429-fa47-448e-9779-84c96363208c",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_OcclusionRoughne.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "822cea1c-a6a5-4fc7-a62c-2f52a1526d55",
+      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Roughness.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5273c621-3b04-4c73-a28f-9768db50cfe1",
+      "Path": "Cute_Fantasy_Free/read_me.txt",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "c8f36f08-d1d9-4065-a2ed-7b3a757794b8",
+      "Path": "Cute_Fantasy_Free/Enemies/Skeleton.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "32f943ec-312e-46da-b241-8d7865ddc061",
+      "Path": "Cute_Fantasy_Free/Enemies/Slime_Green.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "28d6161a-1b3e-4ee8-901d-d473be9bab3b",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/Bridge_Wood.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "25145617-16b3-4672-b3f3-ff7e82078d13",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/Chest.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "81f2e9ca-a394-4f2f-bbe5-102172f53d9c",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/Fences.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "ad6c40da-4b19-4113-abe4-8a0e77cdad00",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/House_1_Wood_Base_Blue.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "81d32b68-2bf4-454a-8968-fd0a14758242",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/Oak_Tree.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "56aa1e64-6e09-4b28-91bd-61720a9c4df8",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/Oak_Tree_Small.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "cd841da0-700a-4c50-a9e4-28a1c529b5e8",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration/Outdoor_Decor_Free.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "acf558dc-3b77-44c5-8697-4ad4fbd030e7",
+      "Path": "Cute_Fantasy_Free/Player/Player.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0ff4fff7-b9a2-4af7-abc0-ef53f608c04e",
+      "Path": "Cute_Fantasy_Free/Player/Player_Actions.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "386c3a5e-1ea4-4d32-b2ed-ed1b50357748",
+      "Path": "Cute_Fantasy_Free/Tiles/Beach_Tile.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "4b5e3b41-b1d2-4f8b-ac95-436b080d1400",
+      "Path": "Cute_Fantasy_Free/Tiles/Cliff_Tile.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "60d5e0d2-1469-467d-82b9-6169400e22a1",
+      "Path": "Cute_Fantasy_Free/Tiles/FarmLand_Tile.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "5bd6505d-5a17-4ee6-b78f-ffd42172dc68",
+      "Path": "Cute_Fantasy_Free/Tiles/Grass_Middle.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "39d16d58-30ff-4e0f-9e5a-eb669a7c5d84",
+      "Path": "Cute_Fantasy_Free/Tiles/Path_Middle.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c3e0ece0-9a98-4897-a7d1-8983ddf68207",
+      "Path": "Cute_Fantasy_Free/Tiles/Path_Tile.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "b721e887-2953-4dd3-812f-341e151a9ade",
+      "Path": "Cute_Fantasy_Free/Tiles/Water_Middle.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "191d3b93-9808-4968-8ef5-6e8366ada81d",
+      "Path": "Cute_Fantasy_Free/Tiles/Water_Tile.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "e0089dbc-7741-40a8-b8c1-e0e6c6a11a2a",
+      "Path": "Cute_Fantasy_Free/Animals/Chicken/Chicken.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "c8c3bb7d-3659-42a4-8a78-bce246dbe141",
+      "Path": "Cute_Fantasy_Free/Animals/Cow/Cow.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d563de23-461d-47b2-b254-4a2ee3363969",
+      "Path": "Cute_Fantasy_Free/Animals/Pig/Pig.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "77baf0bf-3b3a-4e08-80b8-49444d92ee86",
+      "Path": "Cute_Fantasy_Free/Animals/Sheep/Sheep.png",
+      "Type": "Texture"
     }
   ],
   "Folders": [
@@ -1366,6 +1556,66 @@
       "Guid": "a2426a59-e88b-4288-9acd-4ad4463ad4f2",
       "Path": "textures/World/Characters/Zombie",
       "CreatedAt": "2026-02-04T18:46:04.7672149-03:00"
+    },
+    {
+      "Guid": "615e47ba-e51b-4d2f-8e1c-3e4192f3424d",
+      "Path": "models/source",
+      "CreatedAt": "2026-02-06T14:07:15.3921616-03:00"
+    },
+    {
+      "Guid": "b66c40cf-0b7f-4761-ba07-e881a30f1e3e",
+      "Path": "models/textures",
+      "CreatedAt": "2026-02-06T14:07:15.3922466-03:00"
+    },
+    {
+      "Guid": "f58f4ffa-44fc-4a6d-8bec-76d0731a503b",
+      "Path": "Cute_Fantasy_Free",
+      "CreatedAt": "2026-02-06T16:16:32.6651127-03:00"
+    },
+    {
+      "Guid": "4b011fa0-c8ea-4cff-8f01-7e2d8cbe350a",
+      "Path": "Cute_Fantasy_Free/Animals",
+      "CreatedAt": "2026-02-06T16:16:32.6652468-03:00"
+    },
+    {
+      "Guid": "7ba8237f-84a2-4945-9628-5bc77a515838",
+      "Path": "Cute_Fantasy_Free/Enemies",
+      "CreatedAt": "2026-02-06T16:16:32.6652961-03:00"
+    },
+    {
+      "Guid": "26b03ed9-7504-4056-97fb-30e0952c7a89",
+      "Path": "Cute_Fantasy_Free/Outdoor decoration",
+      "CreatedAt": "2026-02-06T16:16:32.6653593-03:00"
+    },
+    {
+      "Guid": "2ef9190c-d8fb-45ab-a8c4-4c6c28401080",
+      "Path": "Cute_Fantasy_Free/Player",
+      "CreatedAt": "2026-02-06T16:16:32.6653984-03:00"
+    },
+    {
+      "Guid": "145f0e91-1404-4e08-a092-f1f7f6ac0b02",
+      "Path": "Cute_Fantasy_Free/Tiles",
+      "CreatedAt": "2026-02-06T16:16:32.6655683-03:00"
+    },
+    {
+      "Guid": "d45f14ed-480b-4756-af66-8965604179a6",
+      "Path": "Cute_Fantasy_Free/Animals/Chicken",
+      "CreatedAt": "2026-02-06T16:16:32.6656436-03:00"
+    },
+    {
+      "Guid": "2633adc8-d0ad-47ea-9d2a-6a65c1172e1b",
+      "Path": "Cute_Fantasy_Free/Animals/Cow",
+      "CreatedAt": "2026-02-06T16:16:32.6656719-03:00"
+    },
+    {
+      "Guid": "3c3c341d-9c19-4efa-abdb-4e3081a936b4",
+      "Path": "Cute_Fantasy_Free/Animals/Pig",
+      "CreatedAt": "2026-02-06T16:16:32.6657037-03:00"
+    },
+    {
+      "Guid": "06ad0fe8-e2d2-44a0-9d54-b231d83d76b9",
+      "Path": "Cute_Fantasy_Free/Animals/Sheep",
+      "CreatedAt": "2026-02-06T16:16:32.6657279-03:00"
     }
   ]
 }

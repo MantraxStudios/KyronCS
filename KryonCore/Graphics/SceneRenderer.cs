@@ -12,10 +12,13 @@ namespace KrayonCore
     public class SceneRenderer
     {
         private Camera _camera;
-        private LightManager _lightManager; // NUEVO
+        private LightManager _lightManager;
 
         // Cache para instanced rendering de MeshRenderers
         private Dictionary<(Model model, Material material), List<Matrix4>> _meshInstanceGroups = new Dictionary<(Model, Material), List<Matrix4>>();
+
+        // Cache para instanced rendering de SpriteRenderers
+        private Dictionary<(Model model, Material material), List<Matrix4>> _spriteInstanceGroups = new Dictionary<(Model, Material), List<Matrix4>>();
 
         // Modo de renderizado
         public bool WireframeMode { get; set; } = false;
@@ -23,8 +26,6 @@ namespace KrayonCore
         public void Initialize()
         {
             _camera = new Camera(new Vector3(0, 0, 5), WindowConfig.Width / (float)WindowConfig.Height);
-
-            // NUEVO: Inicializar LightManager
             _lightManager = new LightManager();
         }
 
@@ -46,6 +47,9 @@ namespace KrayonCore
 
             // Renderizar MeshRenderers usando instanced rendering
             RenderMeshRenderers(view, projection, cameraPos);
+
+            // Renderizar SpriteRenderers usando instanced rendering
+            RenderSpriteRenderers(view, projection, cameraPos);
 
             // Renderizar TileRenderers
             RenderTileRenderers(view, projection, cameraPos);
@@ -146,7 +150,83 @@ namespace KrayonCore
                 material.SetMatrix4("projection", projection);
                 material.SetVector3("u_CameraPos", cameraPos);
 
-                // NUEVO: Aplicar luces al shader
+                // Aplicar luces al shader
+                _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
+
+                // Dibujar todas las instancias de una vez
+                model.DrawInstanced(matrices.Count);
+            }
+        }
+
+        private void RenderSpriteRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
+        {
+            var spriteRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<SpriteRenderer>();
+            if (spriteRenderers == null)
+                return;
+
+            // Limpiar grupos de instancias
+            _spriteInstanceGroups.Clear();
+
+            // PASO 1: Agrupar todos los SpriteRenderers por modelo y material
+            foreach (var go in spriteRenderers)
+            {
+                var renderer = go.GetComponent<SpriteRenderer>();
+                if (renderer == null || !renderer.Enabled)
+                    continue;
+
+                // Asignar material básico si no tiene
+                if (renderer.Material == null)
+                {
+                    var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
+                    if (basicMaterial != null)
+                    {
+                        basicMaterial.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
+                        renderer.SetMaterial(basicMaterial);
+                    }
+                }
+
+                // Verificar que tenga modelo y material
+                if (renderer.QuadModel == null || renderer.Material == null)
+                    continue;
+
+                var transform = go.GetComponent<Transform>();
+                if (transform == null)
+                    continue;
+
+                Matrix4 worldMatrix = transform.GetWorldMatrix();
+
+                var key = (renderer.QuadModel, renderer.Material);
+
+                if (!_spriteInstanceGroups.ContainsKey(key))
+                {
+                    _spriteInstanceGroups[key] = new List<Matrix4>();
+                }
+
+                _spriteInstanceGroups[key].Add(worldMatrix);
+            }
+
+            // PASO 2: Renderizar cada grupo usando instanced rendering
+            foreach (var kvp in _spriteInstanceGroups)
+            {
+                var model = kvp.Key.model;
+                var material = kvp.Key.material;
+                var matrices = kvp.Value;
+
+                if (matrices.Count == 0)
+                    continue;
+
+                // Setup instancing en el modelo
+                model.SetupInstancing(matrices.ToArray());
+
+                // Configurar material
+                material.SetPBRProperties();
+                material.Use();
+
+                material.SetMatrix4("view", view);
+                material.SetMatrix4("projection", projection);
+                material.SetVector3("u_CameraPos", cameraPos);
+
+                // Aplicar luces al shader
                 _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
 
                 // Dibujar todas las instancias de una vez
@@ -209,7 +289,7 @@ namespace KrayonCore
                     material.SetMatrix4("projection", projection);
                     material.SetVector3("u_CameraPos", cameraPos);
 
-                    // NUEVO: Aplicar luces al shader
+                    // Aplicar luces al shader
                     _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
 
                     model.DrawInstanced(instanceCount);
@@ -245,7 +325,6 @@ namespace KrayonCore
 
         public Camera GetCamera() => _camera;
 
-        // NUEVO: Obtener el LightManager
         public LightManager GetLightManager() => _lightManager;
     }
 }

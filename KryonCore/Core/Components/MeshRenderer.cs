@@ -9,11 +9,27 @@ namespace KrayonCore
 {
     public class MeshRenderer : Component
     {
-        [ToStorage] public string ModelPath { get; set; } = "models/Cube.fbx";
+        private string _modelPath = "models/Cube.fbx";
+
+        [ToStorage]
+        public string ModelPath
+        {
+            get => _modelPath;
+            set
+            {
+                if (_modelPath != value)
+                {
+                    _modelPath = value;
+                    OnModelPathChanged();
+                }
+            }
+        }
+
         [ToStorage, NoSerializeToInspector] public string[] MaterialPaths { get; set; } = new string[0];
 
         private Material[] _materials = new Material[0];
         private Model? _model;
+        private bool _isInitialized = false;
 
         public Model? Model
         {
@@ -52,6 +68,8 @@ namespace KrayonCore
             {
                 SetMaterial(i, GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]));
             }
+
+            _isInitialized = true;
         }
 
         public override void Start()
@@ -70,16 +88,34 @@ namespace KrayonCore
             Console.WriteLine($"[MeshRenderer] Start completado - Modelo: {(_model != null ? "OK" : "NULL")}, Materiales: {_materials.Length}");
         }
 
+        private void OnModelPathChanged()
+        {
+            // Solo recargar si ya está inicializado (después de Awake)
+            if (_isInitialized)
+            {
+                Console.WriteLine($"[MeshRenderer] ModelPath cambió a: {ModelPath}");
+
+                if (!string.IsNullOrEmpty(ModelPath))
+                {
+                    LoadModelFromPath(ModelPath);
+                }
+                else
+                {
+                    _model = null;
+                    Console.WriteLine($"[MeshRenderer] ModelPath vacío, modelo eliminado");
+                }
+            }
+        }
+
         public void SetModel(string path)
         {
-            ModelPath = path;
-            LoadModelFromPath(path);
+            ModelPath = path; // Esto ahora disparará automáticamente OnModelPathChanged
         }
 
         public void SetModelDirect(Model model)
         {
             _model = model;
-            ModelPath = "";
+            _modelPath = ""; // Usa el backing field para evitar disparar el evento
         }
 
         protected virtual void LoadModelFromPath(string path)

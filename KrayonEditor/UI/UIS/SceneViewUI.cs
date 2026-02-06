@@ -1,5 +1,7 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.EventSystem;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
 using Vector4 = System.Numerics.Vector4;
 
@@ -330,7 +332,6 @@ namespace KrayonEditor.UI
                 if (frameBuffer != null)
                 {
                     Vector2 cursorPos = ImGui.GetCursorScreenPos();
-
                     ImGui.Image(
                         frameBuffer.TextureId,
                         viewportSize,
@@ -338,8 +339,32 @@ namespace KrayonEditor.UI
                         new Vector2(1, 0)
                     );
 
-                    bool isHovered = ImGui.IsItemHovered();
+                    if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left))
+                    {
+                        // Obtener posición del mouse global (System.Numerics.Vector2)
+                        System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
 
+                        // Convertir a posición relativa al viewport
+                        System.Numerics.Vector2 relativeMousePos = new System.Numerics.Vector2(
+                            globalMousePos.X - cursorPos.X,
+                            globalMousePos.Y - cursorPos.Y
+                        );
+
+                        // Verificar que el click esté dentro del viewport
+                        if (relativeMousePos.X >= 0 && relativeMousePos.X <= viewportSize.X &&
+                            relativeMousePos.Y >= 0 && relativeMousePos.Y <= viewportSize.Y)
+                        {
+                            // Convertir a OpenTK.Mathematics.Vector2
+                            OpenTK.Mathematics.Vector2 openTKMousePos = new OpenTK.Mathematics.Vector2(
+                                relativeMousePos.X,
+                                relativeMousePos.Y
+                            );
+
+                            EventSystem.OnClickObject(openTKMousePos);
+                        }
+                    }
+
+                    bool isHovered = ImGui.IsItemHovered();
                     EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, MainCamera);
 
                     if (SelectedObject != null && MainCamera != null)

@@ -5,6 +5,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Mathematics;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Core;
 
 namespace KrayonCore
 {

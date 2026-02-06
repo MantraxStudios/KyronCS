@@ -3,7 +3,7 @@
     "basic": {
       "Name": "basic",
       "ShaderPath": "shaders\\basic.vert",
-      "AlbedoPath": "textures/sprites/Environment/dirt.png",
+      "AlbedoPath": "Cute_Fantasy_Free/Tiles/Water_Tile.png",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,

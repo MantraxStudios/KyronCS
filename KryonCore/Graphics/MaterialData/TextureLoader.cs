@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 
 namespace KrayonCore
 {
+    public enum TextureFilterMode
+    {
+        Point,          // Nearest - Sin filtro, pixelado (ideal para pixel art)
+        Bilinear,       // Linear - Filtro suave
+        Trilinear       // Linear con mipmaps - Filtro suave con mipmaps
+    }
+
     public sealed class TextureLoader : IDisposable
     {
         private int _textureId;
@@ -15,6 +22,7 @@ namespace KrayonCore
         private readonly bool _generateMipmaps;
         private readonly bool _flip;
         private readonly bool _useAbsolutePath;
+        private readonly TextureFilterMode _filterMode;
 
         private Task<ImageResult> _loadingTask;
         private ImageResult _imageResult;
@@ -27,6 +35,7 @@ namespace KrayonCore
         public bool IsLoaded => _isLoaded;
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public TextureFilterMode FilterMode => _filterMode;
 
         public string GetTexturePath
         {
@@ -37,17 +46,23 @@ namespace KrayonCore
         }
 
         public TextureLoader(string name, string path, bool generateMipmaps = true, bool flip = true)
-            : this(name, path, generateMipmaps, flip, false)
+            : this(name, path, generateMipmaps, flip, TextureFilterMode.Point, false)
         {
         }
 
-        public TextureLoader(string name, string path, bool generateMipmaps, bool flip, bool useAbsolutePath)
+        public TextureLoader(string name, string path, bool generateMipmaps, bool flip, TextureFilterMode filterMode)
+            : this(name, path, generateMipmaps, flip, filterMode, false)
+        {
+        }
+
+        private TextureLoader(string name, string path, bool generateMipmaps, bool flip, TextureFilterMode filterMode, bool useAbsolutePath)
         {
             Name = name;
             _path = path;
             _generateMipmaps = generateMipmaps;
             _flip = flip;
             _useAbsolutePath = useAbsolutePath;
+            _filterMode = filterMode;
 
             if (string.IsNullOrEmpty(name))
             {
@@ -70,18 +85,34 @@ namespace KrayonCore
         /// <summary>
         /// Crea un TextureLoader desde una ruta absoluta (sin usar AssetManager)
         /// </summary>
-        public static TextureLoader FromAbsolutePath(string name, string absolutePath, bool generateMipmaps = true, bool flip = true)
+        public static TextureLoader FromAbsolutePath(string name, string absolutePath, bool generateMipmaps = true, bool flip = true, TextureFilterMode filterMode = TextureFilterMode.Trilinear)
         {
-            return new TextureLoader(name, absolutePath, generateMipmaps, flip, useAbsolutePath: true);
+            return new TextureLoader(name, absolutePath, generateMipmaps, flip, filterMode, useAbsolutePath: true);
         }
 
         /// <summary>
         /// Crea un TextureLoader desde una ruta relativa al directorio de ejecución
         /// </summary>
-        public static TextureLoader FromRelativePath(string name, string relativePath, bool generateMipmaps = true, bool flip = true)
+        public static TextureLoader FromRelativePath(string name, string relativePath, bool generateMipmaps = true, bool flip = true, TextureFilterMode filterMode = TextureFilterMode.Trilinear)
         {
             string absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath);
-            return new TextureLoader(name, absolutePath, generateMipmaps, flip, useAbsolutePath: true);
+            return new TextureLoader(name, absolutePath, generateMipmaps, flip, filterMode, useAbsolutePath: true);
+        }
+
+        /// <summary>
+        /// Crea un TextureLoader optimizado para pixel art (sin filtro, sin mipmaps)
+        /// </summary>
+        public static TextureLoader ForPixelArt(string name, string path, bool flip = true)
+        {
+            return new TextureLoader(name, path, generateMipmaps: false, flip: flip, TextureFilterMode.Point, useAbsolutePath: false);
+        }
+
+        /// <summary>
+        /// Crea un TextureLoader optimizado para sprites 2D (sin mipmaps, filtro bilinear)
+        /// </summary>
+        public static TextureLoader ForSprites(string name, string path, bool flip = true)
+        {
+            return new TextureLoader(name, path, generateMipmaps: false, flip: flip, TextureFilterMode.Bilinear, useAbsolutePath: false);
         }
 
         private ImageResult LoadImageFromDisk()
@@ -164,17 +195,7 @@ namespace KrayonCore
                 textureData
             );
 
-            if (_generateMipmaps)
-            {
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            }
-            else
-            {
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            }
+            ApplyTextureFilters();
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
@@ -186,6 +207,40 @@ namespace KrayonCore
             _loadFailed = false;
 
             Console.WriteLine($"Fallback texture created for: {_path ?? "null"}");
+        }
+
+        private void ApplyTextureFilters()
+        {
+            switch (_filterMode)
+            {
+                case TextureFilterMode.Point:
+                    // Sin filtro - Nearest neighbor (pixelado, ideal para pixel art)
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                    break;
+
+                case TextureFilterMode.Bilinear:
+                    // Filtro bilinear - Suave, sin mipmaps
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                    break;
+
+                case TextureFilterMode.Trilinear:
+                    // Filtro trilinear - Suave con mipmaps
+                    if (_generateMipmaps)
+                    {
+                        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                    }
+                    else
+                    {
+                        // Si no hay mipmaps, usar bilinear
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                    }
+                    break;
+            }
         }
 
         public void Load()
@@ -243,17 +298,7 @@ namespace KrayonCore
                     _imageResult.Data
                 );
 
-                if (_generateMipmaps)
-                {
-                    GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                }
-                else
-                {
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                }
+                ApplyTextureFilters();
 
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
@@ -264,7 +309,7 @@ namespace KrayonCore
                 _loadingTask = null;
                 _imageResult = null; // Liberar memoria
 
-                Console.WriteLine($"Texture loaded successfully: {_path}");
+                Console.WriteLine($"Texture loaded successfully: {_path} (Filter: {_filterMode})");
             }
             catch (Exception ex)
             {
