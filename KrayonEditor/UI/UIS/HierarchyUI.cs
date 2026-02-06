@@ -27,7 +27,6 @@ namespace KrayonEditor.UI
 
             if (SceneManager.ActiveScene != null)
             {
-                // TreeNode para la escena
                 bool sceneOpen = ImGui.TreeNodeEx(
                     $"{SceneManager.ActiveScene.Name}##{SceneManager.ActiveScene.GetHashCode()}",
                     ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.OpenOnDoubleClick
@@ -40,23 +39,19 @@ namespace KrayonEditor.UI
                     {
                         bool isSelected = SelectedObject == go;
 
-                        // Usar TreeNodeEx con la bandera Leaf para objetos sin hijos
                         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.Leaf |
                                                    ImGuiTreeNodeFlags.NoTreePushOnOpen |
                                                    ImGuiTreeNodeFlags.SpanAvailWidth;
-
                         if (isSelected)
                             flags |= ImGuiTreeNodeFlags.Selected;
 
                         ImGui.TreeNodeEx($"{go.Name}##{go.GetHashCode()}", flags);
 
-                        // Detectar clic en el objeto
                         if (ImGui.IsItemClicked())
                         {
                             SelectedObject = go;
                         }
 
-                        // Menú contextual
                         if (ImGui.BeginPopupContextItem($"context_{go.GetHashCode()}"))
                         {
                             if (ImGui.MenuItem("Duplicate"))
@@ -72,9 +67,45 @@ namespace KrayonEditor.UI
                             ImGui.EndPopup();
                         }
                     }
-
                     ImGui.TreePop();
                 }
+            }
+
+            if (ImGui.BeginPopupContextWindow("hierarchy_context"))
+            {
+                if (ImGui.MenuItem("Empty GameObject"))
+                {
+                    EditorActions.CreateEmptyGameObject();
+                }
+
+                if (ImGui.BeginMenu("Light"))
+                {
+                    if (ImGui.MenuItem("Directional Light"))
+                    {
+                        EditorActions.CreateDirectionalLight();
+                    }
+                    if (ImGui.MenuItem("Point Light"))
+                    {
+                        EditorActions.CreatePointLight();
+                    }
+                    if (ImGui.MenuItem("Spot Light"))
+                    {
+                        EditorActions.CreateSpotLight();
+                    }
+                    ImGui.EndMenu();
+                }
+
+                if (ImGui.MenuItem("Model"))
+                {
+                    EditorActions.CreateModelGameObject();
+                }
+
+                if (ImGui.MenuItem("TileRenderer"))
+                {
+                    EditorActions.CreateTileRendererGameObject();
+                }
+
+                ImGui.EndPopup();
             }
 
             ImGui.End();

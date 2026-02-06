@@ -2,20 +2,20 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "7241773e-5187-4f7f-aaa1-8da018e3ae86",
-      "Name": "GameObject_0",
+      "Id": "0460fbe7-67d2-4c40-a4d6-4beb6e9ec248",
+      "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "701b78b0-ad84-42aa-8cdc-feef516ae511",
+          "ComponentId": "98366397-e43b-4720-a5f5-9fd7b8bc4449",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
-              "y": 2.7934675,
+              "y": -1.424079,
               "z": 0
             },
             "Rotation": {
@@ -27,54 +27,82 @@
             },
             "Scale": {
               "__type": "Vector3",
-              "x": 1,
+              "x": 5,
               "y": 1,
-              "z": 1
+              "z": 5
             }
           }
         },
         {
-          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c85ede18-3112-4b37-9f88-58beb3f8422c",
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "227a0318-69d2-4aff-982d-bc9feb1c04e1",
           "Enabled": true,
           "SerializedFields": {
-            "Type": {
+            "ModelPath": "models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "1d3cd719-7d53-4d0f-a41e-0cda74de2dd0",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
               "__type": "Enum",
-              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Point"
+              "enumType": "JoltPhysicsSharp.MotionType, JoltPhysicsSharp, Version=2.20.1.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Dynamic"
             },
-            "Color": {
+            "Layer": "1",
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
               "__type": "Vector3",
-              "x": 1,
+              "x": 5,
               "y": 1,
-              "z": 1
+              "z": 5
             },
-            "Intensity": 11.2,
-            "Constant": 0.53,
-            "Linear": 0.09,
-            "Quadratic": 0.032,
-            "InnerCutOffDegrees": 12.5,
-            "OuterCutOffDegrees": 17.5
+            "Mass": 1,
+            "UseGravity": false,
+            "IsKinematic": true,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": false,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": false,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
           }
         }
       ]
     },
     {
-      "Id": "3f4729f2-1092-45cc-8de7-5a164ae7d5b0",
+      "Id": "17518be1-f614-40e9-a956-dfa96dad7a3f",
       "Name": "Cube_1",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4b4befab-5a07-4c95-aa6c-fc525ab8e664",
+          "ComponentId": "00dd0fba-1a52-4682-aa4b-5f6e5e915729",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 0,
-              "y": 0,
-              "z": 0
+              "x": 3.3446267E-07,
+              "y": 4.1235123,
+              "z": 3.31697E-06
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -93,7 +121,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3179455b-aec0-402c-8950-5caf4c9bfc74",
+          "ComponentId": "0fb31a5d-f18a-48fe-8837-cec035e4252d",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "models/Cube.fbx",
@@ -104,6 +132,43 @@
                 "basic"
               ]
             }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "20e02a72-0350-46bd-b647-926cf5e7eb41",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
+              "__type": "Enum",
+              "enumType": "JoltPhysicsSharp.MotionType, JoltPhysicsSharp, Version=2.20.1.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Dynamic"
+            },
+            "Layer": "1",
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Mass": 1,
+            "UseGravity": false,
+            "IsKinematic": true,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": false,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": false,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
           }
         }
       ]

@@ -56,7 +56,7 @@ namespace KrayonCore
         public float Fov { get; set; } = 45.0f;
         public float AspectRatio { get; set; }
         public float NearPlane { get; set; } = 0.1f;
-        public float FarPlane { get; set; } = 100.0f;
+        public float FarPlane { get; set; } = 1000.0f;
 
         public float OrthoSize { get; set; } = 10.0f;
         public float OrthoNear { get; set; } = 0.1f;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using KrayonCore.Physics;
 
 namespace KrayonCore
@@ -15,17 +16,14 @@ namespace KrayonCore
         private List<GameObject> _gameObjectsList;
         private List<GameObject> _toDestroy;
 
-        // Sistema de física
         private WorldPhysic _physicsWorld;
         public WorldPhysic PhysicsWorld => _physicsWorld;
 
-        // Eventos para notificar cambios en la escena
         public event Action OnSceneChanged;
         public event Action<GameObject> OnGameObjectAdded;
         public event Action<GameObject> OnGameObjectRemoved;
         public event Action OnSceneCleared;
 
-        // Nuevos eventos para componentes (para invalidar cache del renderer)
         public event Action OnComponentAdded;
         public event Action OnComponentRemoved;
 
@@ -38,7 +36,6 @@ namespace KrayonCore
             _toDestroy = new List<GameObject>();
             IsLoaded = false;
 
-            // Inicializar el mundo de física
             _physicsWorld = new WorldPhysic();
         }
 
@@ -57,11 +54,9 @@ namespace KrayonCore
                 _gameObjects[gameObject.Id] = gameObject;
                 _gameObjectsList.Add(gameObject);
 
-                // Suscribirse a eventos de componentes del GameObject
                 gameObject.OnComponentAdded += NotifyComponentAdded;
                 gameObject.OnComponentRemoved += NotifyComponentRemoved;
 
-                // Notificar que se agregó un GameObject
                 OnGameObjectAdded?.Invoke(gameObject);
                 OnSceneChanged?.Invoke();
             }
@@ -114,11 +109,41 @@ namespace KrayonCore
         public void OnLoad()
         {
             IsLoaded = true;
+            ReinitializePhysics();
         }
 
         public void OnUnload()
         {
             IsLoaded = false;
+            CleanupPhysics();
+        }
+
+        private void ReinitializePhysics()
+        {
+            var physicsObjects = FindGameObjectsWithComponent<Rigidbody>();
+
+            foreach (var go in physicsObjects)
+            {
+                var rigidbody = go.GetComponent<Rigidbody>();
+                if (rigidbody != null)
+                {
+                    rigidbody.ForceReinitialize();
+                }
+            }
+        }
+
+        private void CleanupPhysics()
+        {
+            var physicsObjects = FindGameObjectsWithComponent<Rigidbody>();
+
+            foreach (var go in physicsObjects)
+            {
+                var rigidbody = go.GetComponent<Rigidbody>();
+                if (rigidbody != null)
+                {
+                    rigidbody.CleanupPhysics();
+                }
+            }
         }
 
         internal void Start()
@@ -131,40 +156,27 @@ namespace KrayonCore
 
         internal void Update(float deltaTime)
         {
-            // Actualizar componentes
             foreach (var go in _gameObjectsList)
             {
                 go.UpdateComponents(deltaTime);
             }
 
-            // Actualizar física
             UpdatePhysics(deltaTime);
 
-            // Procesar destrucciones
             ProcessDestructions();
         }
 
-        /// <summary>
-        /// Actualiza la simulación de física
-        /// </summary>
         private void UpdatePhysics(float deltaTime)
         {
             if (_physicsWorld != null)
             {
-                // Actualizar la simulación de física
                 _physicsWorld.Update(deltaTime);
-
-                // Sincronizar GameObjects con sus cuerpos físicos
                 SyncPhysicsToGameObjects();
             }
         }
 
-        /// <summary>
-        /// Sincroniza las posiciones de los cuerpos físicos con los GameObjects
-        /// </summary>
         private void SyncPhysicsToGameObjects()
         {
-            // Recorrer todos los GameObjects que tienen componentes de física
             var physicsObjects = FindGameObjectsWithComponent<Rigidbody>();
 
             foreach (var go in physicsObjects)
@@ -172,7 +184,6 @@ namespace KrayonCore
                 var rigidbody = go.GetComponent<Rigidbody>();
                 if (rigidbody != null && rigidbody.Body != null)
                 {
-                    // Sincronizar posición y rotación desde el motor de física
                     rigidbody.SyncFromPhysics();
                 }
             }
@@ -184,7 +195,6 @@ namespace KrayonCore
             {
                 foreach (var go in _toDestroy)
                 {
-                    // Desuscribirse de eventos antes de destruir
                     go.OnComponentAdded -= NotifyComponentAdded;
                     go.OnComponentRemoved -= NotifyComponentRemoved;
 
@@ -192,29 +202,21 @@ namespace KrayonCore
                     _gameObjects.Remove(go.Id);
                     _gameObjectsList.Remove(go);
 
-                    // Notificar que se eliminó un GameObject
                     OnGameObjectRemoved?.Invoke(go);
                 }
 
                 _toDestroy.Clear();
 
-                // Notificar cambio en la escena después de las destrucciones
                 OnSceneChanged?.Invoke();
             }
         }
 
-        /// <summary>
-        /// Notifica que se agregó un componente (propagado desde GameObject)
-        /// </summary>
         internal void NotifyComponentAdded()
         {
             OnComponentAdded?.Invoke();
             OnSceneChanged?.Invoke();
         }
 
-        /// <summary>
-        /// Notifica que se eliminó un componente (propagado desde GameObject)
-        /// </summary>
         internal void NotifyComponentRemoved()
         {
             OnComponentRemoved?.Invoke();
@@ -223,7 +225,9 @@ namespace KrayonCore
 
         public void Clear()
         {
-            // Desuscribirse de todos los eventos antes de limpiar
+            CleanupPhysics();
+            _physicsWorld?.ClearAllBodies();
+
             foreach (var go in _gameObjectsList)
             {
                 go.OnComponentAdded -= NotifyComponentAdded;
@@ -235,18 +239,10 @@ namespace KrayonCore
             _gameObjectsList.Clear();
             _toDestroy.Clear();
 
-            // Limpiar el mundo de física
-            _physicsWorld?.Dispose();
-            _physicsWorld = new WorldPhysic();
-
-            // Notificar que la escena fue limpiada
             OnSceneCleared?.Invoke();
             OnSceneChanged?.Invoke();
         }
 
-        /// <summary>
-        /// Libera los recursos de la escena
-        /// </summary>
         public void Dispose()
         {
             Clear();

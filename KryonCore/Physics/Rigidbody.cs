@@ -5,22 +5,18 @@ using KrayonCore.Physics;
 
 namespace KrayonCore
 {
-    /// <summary>
-    /// Componente que agrega física a un GameObject
-    /// </summary>
     public class Rigidbody : Component
     {
         private Body _body;
         private bool _isInitialized = false;
 
-        // Valores previos para detectar cambios
         private MotionType _previousMotionType;
         private bool _previousIsKinematic;
         private ShapeType _previousShapeType;
         private Vector3 _previousShapeSize;
         private ObjectLayer _previousLayer;
+        private Vector3 _previousScale;
 
-        // Propiedades de configuración
         private MotionType _motionType = MotionType.Dynamic;
         [ToStorage]
         public MotionType MotionType
@@ -40,7 +36,6 @@ namespace KrayonCore
         }
 
         private ObjectLayer _layer = WorldPhysic.Layers.Moving;
-        [ToStorage]
         public ObjectLayer Layer
         {
             get => _layer;
@@ -114,7 +109,6 @@ namespace KrayonCore
             }
         }
 
-        // Restricciones de movimiento
         [ToStorage] public bool FreezePositionX { get; set; } = false;
         [ToStorage] public bool FreezePositionY { get; set; } = false;
         [ToStorage] public bool FreezePositionZ { get; set; } = false;
@@ -122,16 +116,20 @@ namespace KrayonCore
         [ToStorage] public bool FreezeRotationY { get; set; } = false;
         [ToStorage] public bool FreezeRotationZ { get; set; } = false;
 
-        // Propiedades físicas
         [ToStorage] public float LinearDamping { get; set; } = 0.05f;
         [ToStorage] public float AngularDamping { get; set; } = 0.05f;
         [ToStorage] public float Friction { get; set; } = 0.5f;
         [ToStorage] public float Restitution { get; set; } = 0.0f;
 
-        // Referencia al cuerpo de física
         public Body Body => _body;
 
         public override void Awake()
+        {
+            base.Awake();
+            CleanupPhysics();
+        }
+
+        public override void Start()
         {
             base.Start();
             InitializePhysics();
@@ -146,6 +144,34 @@ namespace KrayonCore
             _isInitialized = true;
         }
 
+        public void ForceReinitialize()
+        {
+            CleanupPhysics();
+            InitializePhysics();
+        }
+
+        public void CleanupPhysics()
+        {
+            _body = null;
+            _isInitialized = false;
+        }
+
+        private Vector3 GetCurrentScale()
+        {
+            var transform = GameObject.Transform;
+            return new Vector3(transform.ScaleX, transform.ScaleY, transform.ScaleZ);
+        }
+
+        private Vector3 GetFinalShapeSize()
+        {
+            Vector3 scale = GetCurrentScale();
+            return new Vector3(
+                _shapeSize.X * scale.X,
+                _shapeSize.Y * scale.Y,
+                _shapeSize.Z * scale.Z
+            );
+        }
+
         private void CreatePhysicsBody()
         {
             if (GameObject?.Scene?.PhysicsWorld == null)
@@ -154,18 +180,17 @@ namespace KrayonCore
             var physicsWorld = GameObject.Scene.PhysicsWorld;
             var transform = GameObject.Transform;
 
-            // Convertir de OpenTK a System.Numerics para JoltPhysics
             System.Numerics.Vector3 position = ToNumerics(transform.Position);
             System.Numerics.Quaternion rotation = ToNumerics(transform.Rotation);
 
-            // Determinar el MotionType final
             MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
 
-            // Crear el cuerpo físico según el tipo de forma
+            Vector3 finalSize = GetFinalShapeSize();
+
             switch (_shapeType)
             {
                 case ShapeType.Box:
-                    System.Numerics.Vector3 halfExtent = ToNumerics(_shapeSize * 0.5f);
+                    System.Numerics.Vector3 halfExtent = ToNumerics(finalSize);
                     _body = physicsWorld.CreateBox(
                         halfExtent,
                         position,
@@ -177,7 +202,7 @@ namespace KrayonCore
 
                 case ShapeType.Sphere:
                     _body = physicsWorld.CreateSphere(
-                        _shapeSize.X * 0.5f,  // Radio
+                        finalSize.X,
                         position,
                         rotation,
                         finalMotionType,
@@ -187,8 +212,8 @@ namespace KrayonCore
 
                 case ShapeType.Capsule:
                     _body = physicsWorld.CreateCapsule(
-                        _shapeSize.Y * 0.5f,  // Half height
-                        _shapeSize.X * 0.5f,  // Radio
+                        finalSize.Y,
+                        finalSize.X,
                         position,
                         rotation,
                         finalMotionType,
@@ -201,32 +226,42 @@ namespace KrayonCore
             {
                 var bodyInterface = physicsWorld.BodyInterface;
 
-                // Configurar propiedades físicas
-                // Nota: Algunas propiedades pueden variar según la versión de JoltPhysicsSharp
-                // bodyInterface.SetFriction(_body.ID, Friction);
-                // bodyInterface.SetRestitution(_body.ID, Restitution);
+                bodyInterface.SetFriction(_body.ID, Friction);
+                bodyInterface.SetRestitution(_body.ID, Restitution);
 
-                // Configurar gravedad
-                if (!UseGravity && finalMotionType == MotionType.Dynamic)
+                if (finalMotionType == MotionType.Dynamic || finalMotionType == MotionType.Kinematic)
                 {
-                    // Desactivar gravedad
-                    // bodyInterface.SetGravityFactor(_body.ID, 0.0f);
+                    var motionProps = _body.MotionProperties;
+                    if (motionProps != null)
+                    {
+                        motionProps.LinearDamping = LinearDamping;
+                        motionProps.AngularDamping = AngularDamping;
+
+                        if (!UseGravity && finalMotionType == MotionType.Dynamic)
+                        {
+                            bodyInterface.SetGravityFactor(_body.ID, 0.0f);
+                        }
+                    }
                 }
 
-                // Si es cinemático, asegurarse de que no se mueva por física
                 if (finalMotionType == MotionType.Kinematic)
                 {
                     bodyInterface.SetLinearVelocity(_body.ID, System.Numerics.Vector3.Zero);
                     bodyInterface.SetAngularVelocity(_body.ID, System.Numerics.Vector3.Zero);
                 }
+
+                if (finalMotionType == MotionType.Dynamic)
+                {
+                    bodyInterface.ActivateBody(_body.ID);
+                }
             }
 
-            // Guardar valores actuales
             _previousMotionType = finalMotionType;
             _previousIsKinematic = _isKinematic;
             _previousShapeType = _shapeType;
             _previousShapeSize = _shapeSize;
             _previousLayer = _layer;
+            _previousScale = GetCurrentScale();
         }
 
         private void RecreatePhysicsBody()
@@ -234,7 +269,6 @@ namespace KrayonCore
             if (!_isInitialized || GameObject?.Scene?.PhysicsWorld == null)
                 return;
 
-            // Guardar velocidades si era dinámico
             System.Numerics.Vector3 linearVelocity = System.Numerics.Vector3.Zero;
             System.Numerics.Vector3 angularVelocity = System.Numerics.Vector3.Zero;
 
@@ -245,17 +279,14 @@ namespace KrayonCore
                 angularVelocity = bodyInterface.GetAngularVelocity(_body.ID);
             }
 
-            // Eliminar el cuerpo anterior
             if (_body != null)
             {
                 GameObject.Scene.PhysicsWorld.RemoveBody(_body);
                 _body = null;
             }
 
-            // Crear el nuevo cuerpo
             CreatePhysicsBody();
 
-            // Restaurar velocidades si el nuevo cuerpo es dinámico
             if (_body != null)
             {
                 MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
@@ -272,50 +303,59 @@ namespace KrayonCore
         public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
-            // La sincronización se hace en GameScene.SyncPhysicsToGameObjects()
+
+            if (!_isInitialized && GameObject?.Scene?.PhysicsWorld != null)
+            {
+                InitializePhysics();
+            }
+
+            if (_body == null || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
+                return;
+
+            Vector3 currentScale = GetCurrentScale();
+            if (currentScale != _previousScale)
+            {
+                RecreatePhysicsBody();
+            }
+
+            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
+
+            if (finalMotionType == MotionType.Static || finalMotionType == MotionType.Kinematic)
+            {
+                SyncToPhysics();
+            }
         }
 
-        /// <summary>
-        /// Sincroniza la posición y rotación desde el motor de física al Transform
-        /// </summary>
         internal void SyncFromPhysics()
         {
             if (_body == null || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
                 return;
 
-            // Si es cinemático, no sincronizar desde física (el transform controla la física)
             MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
+
             if (finalMotionType == MotionType.Kinematic || finalMotionType == MotionType.Static)
                 return;
 
             var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
 
-            // Obtener posición y rotación del cuerpo físico
             System.Numerics.Vector3 physicsPosition = bodyInterface.GetPosition(_body.ID);
             System.Numerics.Quaternion physicsRotation = bodyInterface.GetRotation(_body.ID);
 
-            // Convertir de System.Numerics a OpenTK
             Vector3 position = ToOpenTK(physicsPosition);
             Quaternion rotation = ToOpenTK(physicsRotation);
 
-            // Aplicar restricciones de posición
             if (FreezePositionX) position.X = GameObject.Transform.Position.X;
             if (FreezePositionY) position.Y = GameObject.Transform.Position.Y;
             if (FreezePositionZ) position.Z = GameObject.Transform.Position.Z;
 
-            // Actualizar el Transform
             GameObject.Transform.Position = position;
 
-            // Solo actualizar rotación si no está completamente congelada
             if (!FreezeRotationX || !FreezeRotationY || !FreezeRotationZ)
             {
                 GameObject.Transform.Rotation = rotation;
             }
         }
 
-        /// <summary>
-        /// Sincroniza la posición y rotación desde el Transform al motor de física
-        /// </summary>
         public void SyncToPhysics()
         {
             if (_body == null || GameObject?.Scene?.PhysicsWorld == null)
@@ -323,7 +363,6 @@ namespace KrayonCore
 
             var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
 
-            // Si es cinemático, usar MoveKinematic
             MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
 
             if (finalMotionType == MotionType.Kinematic)
@@ -332,32 +371,25 @@ namespace KrayonCore
                     _body.ID,
                     ToNumerics(GameObject.Transform.Position),
                     ToNumerics(GameObject.Transform.Rotation),
-                    0.016f // deltaTime
+                    0.016f
                 );
             }
-            else
+            else if (finalMotionType == MotionType.Static)
             {
                 bodyInterface.SetPosition(
                     _body.ID,
                     ToNumerics(GameObject.Transform.Position),
-                    Activation.Activate
+                    Activation.DontActivate
                 );
 
                 bodyInterface.SetRotation(
                     _body.ID,
                     ToNumerics(GameObject.Transform.Rotation),
-                    Activation.Activate
+                    Activation.DontActivate
                 );
             }
         }
 
-        // ============================================================
-        // Métodos de física
-        // ============================================================
-
-        /// <summary>
-        /// Aplica una fuerza continua al cuerpo
-        /// </summary>
         public void AddForce(Vector3 force)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -369,9 +401,6 @@ namespace KrayonCore
             }
         }
 
-        /// <summary>
-        /// Aplica un impulso instantáneo al cuerpo
-        /// </summary>
         public void AddImpulse(Vector3 impulse)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -383,9 +412,6 @@ namespace KrayonCore
             }
         }
 
-        /// <summary>
-        /// Aplica torque (rotación) al cuerpo
-        /// </summary>
         public void AddTorque(Vector3 torque)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -397,9 +423,6 @@ namespace KrayonCore
             }
         }
 
-        /// <summary>
-        /// Establece la velocidad lineal del cuerpo
-        /// </summary>
         public void SetVelocity(Vector3 velocity)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -411,9 +434,6 @@ namespace KrayonCore
             }
         }
 
-        /// <summary>
-        /// Obtiene la velocidad lineal del cuerpo
-        /// </summary>
         public Vector3 GetVelocity()
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -425,9 +445,6 @@ namespace KrayonCore
             return Vector3.Zero;
         }
 
-        /// <summary>
-        /// Establece la velocidad angular del cuerpo
-        /// </summary>
         public void SetAngularVelocity(Vector3 angularVelocity)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -439,9 +456,6 @@ namespace KrayonCore
             }
         }
 
-        /// <summary>
-        /// Obtiene la velocidad angular del cuerpo
-        /// </summary>
         public Vector3 GetAngularVelocity()
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -453,9 +467,6 @@ namespace KrayonCore
             return Vector3.Zero;
         }
 
-        /// <summary>
-        /// Mueve el cuerpo a una posición específica (solo para cuerpos cinemáticos)
-        /// </summary>
         public void MovePosition(Vector3 position)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -464,14 +475,11 @@ namespace KrayonCore
                     _body.ID,
                     ToNumerics(position),
                     ToNumerics(GameObject.Transform.Rotation),
-                    0.016f // deltaTime por defecto
+                    0.016f
                 );
             }
         }
 
-        /// <summary>
-        /// Rota el cuerpo a una rotación específica (solo para cuerpos cinemáticos)
-        /// </summary>
         public void MoveRotation(Quaternion rotation)
         {
             if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
@@ -480,7 +488,7 @@ namespace KrayonCore
                     _body.ID,
                     ToNumerics(GameObject.Transform.Position),
                     ToNumerics(rotation),
-                    0.016f // deltaTime por defecto
+                    0.016f
                 );
             }
         }
@@ -497,10 +505,6 @@ namespace KrayonCore
 
             _isInitialized = false;
         }
-
-        // ============================================================
-        // Métodos de conversión entre OpenTK y System.Numerics
-        // ============================================================
 
         private static System.Numerics.Vector3 ToNumerics(Vector3 v)
         {
@@ -523,9 +527,6 @@ namespace KrayonCore
         }
     }
 
-    /// <summary>
-    /// Tipos de formas disponibles para colisiones
-    /// </summary>
     public enum ShapeType
     {
         Box,
