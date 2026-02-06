@@ -14,6 +14,7 @@ namespace KrayonCore
         private readonly string _path;
         private readonly bool _generateMipmaps;
         private readonly bool _flip;
+        private readonly bool _useAbsolutePath;
 
         private Task<ImageResult> _loadingTask;
         private ImageResult _imageResult;
@@ -36,11 +37,17 @@ namespace KrayonCore
         }
 
         public TextureLoader(string name, string path, bool generateMipmaps = true, bool flip = true)
+            : this(name, path, generateMipmaps, flip, false)
+        {
+        }
+
+        public TextureLoader(string name, string path, bool generateMipmaps, bool flip, bool useAbsolutePath)
         {
             Name = name;
             _path = path;
             _generateMipmaps = generateMipmaps;
             _flip = flip;
+            _useAbsolutePath = useAbsolutePath;
 
             if (string.IsNullOrEmpty(name))
             {
@@ -60,11 +67,28 @@ namespace KrayonCore
             _loadingTask = Task.Run(() => LoadImageFromDisk());
         }
 
+        /// <summary>
+        /// Crea un TextureLoader desde una ruta absoluta (sin usar AssetManager)
+        /// </summary>
+        public static TextureLoader FromAbsolutePath(string name, string absolutePath, bool generateMipmaps = true, bool flip = true)
+        {
+            return new TextureLoader(name, absolutePath, generateMipmaps, flip, useAbsolutePath: true);
+        }
+
+        /// <summary>
+        /// Crea un TextureLoader desde una ruta relativa al directorio de ejecución
+        /// </summary>
+        public static TextureLoader FromRelativePath(string name, string relativePath, bool generateMipmaps = true, bool flip = true)
+        {
+            string absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath);
+            return new TextureLoader(name, absolutePath, generateMipmaps, flip, useAbsolutePath: true);
+        }
+
         private ImageResult LoadImageFromDisk()
         {
             try
             {
-                string fullPath = AssetManager.BasePath + _path;
+                string fullPath = _useAbsolutePath ? _path : AssetManager.BasePath + _path;
 
                 if (!File.Exists(fullPath))
                 {

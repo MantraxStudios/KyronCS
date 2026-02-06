@@ -4,52 +4,36 @@ layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aTexCoord;
 layout(location = 3) in vec3 aTangent;
-layout(location = 4) in vec3 aBitangent;
-layout(location = 5) in ivec4 aBoneIds;
-layout(location = 6) in vec4 aBoneWeights;
-
-const int MAX_BONES = 100;
-uniform mat4 u_BoneMatrices[MAX_BONES];
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+layout(location = 4) in vec3 aBiTangent;
+layout(location = 5) in vec4 aInstanceMatrix0;
+layout(location = 6) in vec4 aInstanceMatrix1;
+layout(location = 7) in vec4 aInstanceMatrix2;
+layout(location = 8) in vec4 aInstanceMatrix3;
 
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoord;
 out mat3 TBN;
 
+uniform mat4 view;
+uniform mat4 projection;
+
 void main()
 {
-    mat4 boneTransform = mat4(0.0);
+    mat4 aInstanceMatrix = mat4(aInstanceMatrix0, aInstanceMatrix1, aInstanceMatrix2, aInstanceMatrix3);
     
-    for(int i = 0; i < 4; i++)
-    {
-        if(aBoneIds[i] >= 0)
-        {
-            boneTransform += u_BoneMatrices[aBoneIds[i]] * aBoneWeights[i];
-        }
-    }
+    vec4 worldPos = aInstanceMatrix * vec4(aPosition, 1.0);
+    FragPos = worldPos.xyz;
     
-    if(boneTransform == mat4(0.0))
-    {
-        boneTransform = mat4(1.0);
-    }
-    
-    vec4 localPosition = boneTransform * vec4(aPosition, 1.0);
-    vec4 worldPosition = model * localPosition;
-    
-    FragPos = worldPosition.xyz;
-    gl_Position = projection * view * worldPosition;
-    
-    mat3 normalMatrix = transpose(inverse(mat3(model * boneTransform)));
+    mat3 normalMatrix = transpose(inverse(mat3(aInstanceMatrix)));
     Normal = normalize(normalMatrix * aNormal);
+    
+    vec3 T = normalize(normalMatrix * aTangent);
+    vec3 B = normalize(normalMatrix * aBiTangent);
+    vec3 N = Normal;
+    TBN = mat3(T, B, N);
     
     TexCoord = aTexCoord;
     
-    vec3 T = normalize(normalMatrix * aTangent);
-    vec3 B = normalize(normalMatrix * aBitangent);
-    vec3 N = Normal;
-    TBN = mat3(T, B, N);
+    gl_Position = projection * view * worldPos;
 }

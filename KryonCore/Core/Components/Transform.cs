@@ -29,6 +29,58 @@ namespace KrayonCore
             set => Position = new Vector3(Position.X, Position.Y, value);
         }
 
+        // ========== VECTORES DIRECCIONALES ==========
+
+        /// <summary>
+        /// Vector Forward (frente) del transform. En OpenGL: -Z por defecto
+        /// </summary>
+        public Vector3 Forward
+        {
+            get => Vector3.Transform(-Vector3.UnitZ, Rotation);
+        }
+
+        /// <summary>
+        /// Vector Right (derecha) del transform. En OpenGL: +X por defecto
+        /// </summary>
+        public Vector3 Right
+        {
+            get => Vector3.Transform(Vector3.UnitX, Rotation);
+        }
+
+        /// <summary>
+        /// Vector Up (arriba) del transform. En OpenGL: +Y por defecto
+        /// </summary>
+        public Vector3 Up
+        {
+            get => Vector3.Transform(Vector3.UnitY, Rotation);
+        }
+
+        /// <summary>
+        /// Vector Back (atrás) del transform. Opuesto a Forward
+        /// </summary>
+        public Vector3 Back
+        {
+            get => -Forward;
+        }
+
+        /// <summary>
+        /// Vector Left (izquierda) del transform. Opuesto a Right
+        /// </summary>
+        public Vector3 Left
+        {
+            get => -Right;
+        }
+
+        /// <summary>
+        /// Vector Down (abajo) del transform. Opuesto a Up
+        /// </summary>
+        public Vector3 Down
+        {
+            get => -Up;
+        }
+
+        // ========== ROTACIÓN EN EULER ==========
+
         // Rotación en ángulos de Euler (en grados) para conveniencia
         public Vector3 EulerAngles
         {
@@ -228,6 +280,52 @@ namespace KrayonCore
         public void SetScale(float uniformScale)
         {
             Scale = new Vector3(uniformScale, uniformScale, uniformScale);
+        }
+
+        // ========== MÉTODOS DE ORIENTACIÓN ==========
+
+        /// <summary>
+        /// Hace que el transform mire hacia un punto específico
+        /// </summary>
+        public void LookAt(Vector3 target)
+        {
+            Vector3 direction = Vector3.Normalize(target - Position);
+            LookDirection(direction);
+        }
+
+        /// <summary>
+        /// Hace que el transform mire en una dirección específica
+        /// </summary>
+        public void LookDirection(Vector3 direction)
+        {
+            if (direction.LengthSquared < 0.0001f)
+                return;
+
+            direction = Vector3.Normalize(direction);
+
+            // Calcular rotación usando LookAt
+            // En OpenGL, forward es -Z
+            Vector3 up = Vector3.UnitY;
+
+            // Evitar gimbal lock cuando la dirección es paralela al up
+            if (MathF.Abs(Vector3.Dot(direction, up)) > 0.999f)
+            {
+                up = Vector3.UnitX;
+            }
+
+            Matrix4 lookMatrix = Matrix4.LookAt(Vector3.Zero, -direction, up);
+            Rotation = Quaternion.FromMatrix(new Matrix3(lookMatrix));
+        }
+
+        /// <summary>
+        /// Hace que el transform mire hacia otro transform
+        /// </summary>
+        public void LookAt(Transform target)
+        {
+            if (target != null)
+            {
+                LookAt(target.Position);
+            }
         }
 
         public Matrix4 GetLocalMatrix()

@@ -14,6 +14,11 @@ namespace KrayonEditor.UI
         public float EditorCameraSpeed { get; set; } = 5.0f;
         public Vector2 LastViewportSize { get; set; }
 
+        public SceneViewUI()
+        {
+            IconManager.Initialize();
+        }
+
         public override void OnDrawUI()
         {
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
@@ -29,29 +34,44 @@ namespace KrayonEditor.UI
         private void DrawToolbar()
         {
             ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(4, 4));
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(8, 4));
             ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.125f, 0.125f, 0.125f, 1.0f));
-            ImGui.BeginChild("SceneToolbar", new Vector2(0, 40), ImGuiChildFlags.Borders);
+            ImGui.BeginChild("SceneToolbar", new Vector2(0, 46), ImGuiChildFlags.Borders);
+
+            ImGui.SetCursorPosY(7);
 
             DrawTransformButtons();
-            ImGui.SameLine();
-            ImGui.Dummy(new Vector2(10, 0));
-            ImGui.SameLine();
+            DrawVerticalSeparator();
 
             DrawSpaceButton();
-            ImGui.SameLine();
-            ImGui.Dummy(new Vector2(10, 0));
-            ImGui.SameLine();
+            DrawVerticalSeparator();
+
+            DrawViewButtons();
+            DrawVerticalSeparator();
 
             DrawSnapControls();
-            ImGui.SameLine();
-            ImGui.Dummy(new Vector2(10, 0));
-            ImGui.SameLine();
+            DrawVerticalSeparator();
 
             DrawCameraSpeed();
 
             ImGui.EndChild();
             ImGui.PopStyleColor();
-            ImGui.PopStyleVar();
+            ImGui.PopStyleVar(2);
+        }
+
+        private void DrawVerticalSeparator()
+        {
+            ImGui.SameLine();
+            float cursorY = ImGui.GetCursorPosY();
+            ImGui.SetCursorPosY(4);
+
+            ImGui.PushStyleColor(ImGuiCol.Separator, new Vector4(0.4f, 0.4f, 0.4f, 1.0f));
+            ImGui.Dummy(new Vector2(1, 38));
+            ImGui.SameLine();
+            ImGui.PopStyleColor();
+
+            ImGui.SetCursorPosY(cursorY);
+            ImGui.SameLine();
         }
 
         private void DrawTransformButtons()
@@ -60,41 +80,96 @@ namespace KrayonEditor.UI
             bool isRotate = TransformGizmo.CurrentMode == GizmoMode.Rotate;
             bool isScale = TransformGizmo.CurrentMode == GizmoMode.Scale;
 
-            if (isTranslate) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
-            if (ImGui.Button("Move (Q)", new Vector2(80, 0)))
+            Vector2 buttonSize = new Vector2(32, 32);
+            Vector2 iconSize = new Vector2(20, 20);
+
+            // Botón Move
+            if (isTranslate)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.4f, 0.6f, 0.9f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.2f, 0.4f, 0.7f, 1.0f));
+            }
+
+            IntPtr moveIcon = IconManager.GetIcon("move");
+            if (ImGui.ImageButton("##Move", moveIcon, iconSize))
             {
                 TransformGizmo.SetMode(GizmoMode.Translate);
             }
-            if (isTranslate) ImGui.PopStyleColor();
+
+            if (isTranslate) ImGui.PopStyleColor(3);
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Move (Q)");
+            }
 
             ImGui.SameLine();
-            if (isRotate) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
-            if (ImGui.Button("Rotate (E)", new Vector2(80, 0)))
+
+            // Botón Rotate
+            if (isRotate)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.4f, 0.6f, 0.9f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.2f, 0.4f, 0.7f, 1.0f));
+            }
+
+            IntPtr rotateIcon = IconManager.GetIcon("rotate");
+            if (ImGui.ImageButton("##Rotate", rotateIcon, iconSize))
             {
                 TransformGizmo.SetMode(GizmoMode.Rotate);
             }
-            if (isRotate) ImGui.PopStyleColor();
+
+            if (isRotate) ImGui.PopStyleColor(3);
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Rotate (E)");
+            }
 
             ImGui.SameLine();
-            if (isScale) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
-            if (ImGui.Button("Scale (R)", new Vector2(80, 0)))
+
+            // Botón Scale
+            if (isScale)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.4f, 0.6f, 0.9f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.2f, 0.4f, 0.7f, 1.0f));
+            }
+
+            IntPtr scaleIcon = IconManager.GetIcon("scale");
+            if (ImGui.ImageButton("##Scale", scaleIcon, iconSize))
             {
                 TransformGizmo.SetMode(GizmoMode.Scale);
             }
-            if (isScale) ImGui.PopStyleColor();
+
+            if (isScale) ImGui.PopStyleColor(3);
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Scale (R)");
+            }
         }
 
         private void DrawSpaceButton()
         {
             bool isWorld = TransformGizmo.CurrentSpace == GizmoSpace.World;
-            string spaceText = isWorld ? "World (X)" : "Local (X)";
+            Vector2 buttonSize = new Vector2(80, 32);
 
-            if (!isWorld) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.5f, 0.3f, 0.8f, 1.0f));
-            if (ImGui.Button(spaceText, new Vector2(90, 0)))
+            if (!isWorld)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.5f, 0.3f, 0.8f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.6f, 0.4f, 0.9f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.4f, 0.2f, 0.7f, 1.0f));
+            }
+
+            string text = isWorld ? "World (X)" : "Local (X)";
+            if (ImGui.Button(text, buttonSize))
             {
                 TransformGizmo.ToggleSpace();
             }
-            if (!isWorld) ImGui.PopStyleColor();
+
+            if (!isWorld) ImGui.PopStyleColor(3);
 
             if (ImGui.IsItemHovered())
             {
@@ -102,31 +177,73 @@ namespace KrayonEditor.UI
             }
         }
 
-        private void DrawSnapControls()
+        private void DrawViewButtons()
         {
-            bool snapEnabled = TransformGizmo.SnapEnabled;
-            if (ImGui.Checkbox("Snap (Ctrl)", ref snapEnabled))
-            {
-                TransformGizmo.SnapEnabled = snapEnabled;
-            }
+            Vector2 buttonSize = new Vector2(75, 32);
+            bool wireframeEnabled = GraphicsEngine.Instance.GetSceneRenderer().WireframeMode;
 
-            ImGui.SameLine();
-
-            if (ImGui.Button("Camera Mode"))
+            // Botón Camera Mode
+            if (ImGui.Button("Camera", buttonSize))
             {
                 GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ToggleProjectionMode();
             }
 
             if (ImGui.IsItemHovered())
             {
-                string snapInfo = $"Position: {TransformGizmo.TranslateSnapValue}\n" +
-                                 $"Rotation: {TransformGizmo.RotateSnapValue}°\n" +
-                                 $"Scale: {TransformGizmo.ScaleSnapValue}";
-                ImGui.SetTooltip($"Enable/Disable Snapping\nHold Ctrl to toggle temporarily\n\n{snapInfo}");
+                var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+                string mode = camera.IsPerspective ? "Perspective" : "Orthographic";
+                ImGui.SetTooltip($"{mode}\nClick to toggle");
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("⚙", new Vector2(25, 0)))
+
+            // Botón Wireframe
+            if (wireframeEnabled)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.4f, 0.6f, 0.9f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.2f, 0.4f, 0.7f, 1.0f));
+            }
+
+            if (ImGui.Button("Wireframe", buttonSize))
+            {
+                GraphicsEngine.Instance.GetSceneRenderer().ToggleWireframe();
+            }
+
+            if (wireframeEnabled) ImGui.PopStyleColor(3);
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip(wireframeEnabled ? "Wireframe ON\nClick to disable" : "Wireframe OFF\nClick to enable");
+            }
+        }
+
+        private void DrawSnapControls()
+        {
+            bool snapEnabled = TransformGizmo.SnapEnabled;
+
+            Vector4 snapColor = snapEnabled ? new Vector4(0.3f, 0.8f, 0.3f, 1.0f) : new Vector4(0.6f, 0.6f, 0.6f, 1.0f);
+            ImGui.PushStyleColor(ImGuiCol.Text, snapColor);
+
+            if (ImGui.Checkbox("Snap", ref snapEnabled))
+            {
+                TransformGizmo.SnapEnabled = snapEnabled;
+            }
+
+            ImGui.PopStyleColor();
+
+            if (ImGui.IsItemHovered())
+            {
+                string snapInfo = $"Position: {TransformGizmo.TranslateSnapValue}\n" +
+                                 $"Rotation: {TransformGizmo.RotateSnapValue}°\n" +
+                                 $"Scale: {TransformGizmo.ScaleSnapValue}\n\n" +
+                                 "Hold Ctrl to toggle temporarily";
+                ImGui.SetTooltip(snapInfo);
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Settings", new Vector2(70, 0)))
             {
                 ImGui.OpenPopup("SnapSettings");
             }
@@ -184,7 +301,6 @@ namespace KrayonEditor.UI
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(80);
 
-                // Usar variable local para pasar por referencia
                 float speed = EditorCameraSpeed;
                 if (ImGui.DragFloat("##speed", ref speed, 0.1f, 0.1f, 10.0f, "%.1f"))
                 {

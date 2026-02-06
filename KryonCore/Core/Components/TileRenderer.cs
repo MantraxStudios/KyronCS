@@ -133,12 +133,6 @@ namespace KrayonCore.Graphics
                 }
             }
 
-            if (_materials.Length == 0 && MaterialPaths != null && MaterialPaths.Length > 0)
-            {
-                Console.WriteLine($"[TileRenderer] Info: Hay {MaterialPaths.Length} rutas de materiales guardadas");
-                Console.WriteLine($"[TileRenderer] Los materiales deben ser asignados manualmente después de cargar la escena");
-            }
-
             Console.WriteLine($"[TileRenderer] Start completado - Modelos: {_models.Length}, Materiales: {_materials.Length}, Tiles: {_tiles.Count}");
         }
 
@@ -198,6 +192,8 @@ namespace KrayonCore.Graphics
             }
 
             _materials[index] = material;
+
+            Console.WriteLine("Material updated");
         }
 
         public Material GetMaterial(int index)
@@ -332,7 +328,6 @@ namespace KrayonCore.Graphics
                 {
                     _tiles.RemoveAt(index);
                     _instanceDataDirty = true;
-                    Console.WriteLine($"[TileRenderer] Tile removido en índice {index}. Total tiles: {_tiles.Count}");
                 }
             }
         }
@@ -344,7 +339,6 @@ namespace KrayonCore.Graphics
             _totalTilesToGenerate = tilesToGenerate.Count;
 
             Console.WriteLine($"[TileRenderer] Iniciando generación asíncrona de {_totalTilesToGenerate} tiles");
-            Console.WriteLine($"[TileRenderer] Batch size: {BatchSize}, Delay: {DelayBetweenBatchesMs}ms");
 
             try
             {
@@ -368,11 +362,6 @@ namespace KrayonCore.Graphics
                     }
 
                     _tilesGeneratedCount = batchEnd;
-
-                    if (_tilesGeneratedCount % 1000 == 0 || _tilesGeneratedCount == _totalTilesToGenerate)
-                    {
-                        Console.WriteLine($"[TileRenderer] Progreso: {_tilesGeneratedCount}/{_totalTilesToGenerate} tiles ({GenerationProgress:P1})");
-                    }
 
                     if (DelayBetweenBatchesMs > 0 && batchEnd < tilesToGenerate.Count)
                     {
@@ -402,7 +391,6 @@ namespace KrayonCore.Graphics
         {
             if (_isGenerating && _generationCancellation != null)
             {
-                Console.WriteLine($"[TileRenderer] Cancelando generación...");
                 _generationCancellation.Cancel();
             }
         }
@@ -411,7 +399,6 @@ namespace KrayonCore.Graphics
         public void AddSingleTile()
         {
             AddTile(Vector3.Zero, 0, 0);
-            Console.WriteLine($"[TileRenderer] Tile añadido. Total tiles: {_tiles.Count}");
         }
 
         [CallEvent("Generate Grid")]
@@ -426,8 +413,6 @@ namespace KrayonCore.Graphics
             ClearTiles();
 
             int totalTiles = GridSizeX * GridSizeZ;
-            Console.WriteLine($"[TileRenderer] Preparando grid {GridSizeX}x{GridSizeZ} = {totalTiles} tiles");
-
             var tilesToGenerate = new List<Tile>(totalTiles);
 
             for (int x = 0; x < GridSizeX; x++)
@@ -463,10 +448,8 @@ namespace KrayonCore.Graphics
 
             lock (_tilesLock)
             {
-                int count = _tiles.Count;
                 _tiles.Clear();
                 _instanceDataDirty = true;
-                Console.WriteLine($"[TileRenderer] {count} tiles eliminados");
             }
         }
 
@@ -474,14 +457,12 @@ namespace KrayonCore.Graphics
         public void AddTileAtX1()
         {
             AddTile(new Vector3(1, 0, 0), 0, 0);
-            Console.WriteLine($"[TileRenderer] Tile añadido en X=1. Total tiles: {_tiles.Count}");
         }
 
         [CallEvent("Add Tile at Z=1")]
         public void AddTileAtZ1()
         {
             AddTile(new Vector3(0, 0, 1), 0, 0);
-            Console.WriteLine($"[TileRenderer] Tile añadido en Z=1. Total tiles: {_tiles.Count}");
         }
 
         [CallEvent("Generate Line X (10 tiles)")]
@@ -492,7 +473,6 @@ namespace KrayonCore.Graphics
             {
                 AddTile(new Vector3(i * TileSpacing, 0, 0), 0, 0);
             }
-            Console.WriteLine($"[TileRenderer] Línea X generada: 10 tiles");
         }
 
         [CallEvent("Generate Line Z (10 tiles)")]
@@ -503,7 +483,6 @@ namespace KrayonCore.Graphics
             {
                 AddTile(new Vector3(0, 0, i * TileSpacing), 0, 0);
             }
-            Console.WriteLine($"[TileRenderer] Línea Z generada: 10 tiles");
         }
 
         [CallEvent("Generate Large Grid (100x100)")]
@@ -511,7 +490,7 @@ namespace KrayonCore.Graphics
         {
             GridSizeX = 100;
             GridSizeZ = 100;
-            await Task.Run(() => GenerateGrid());
+            await Task.Run(GenerateGrid);
         }
 
         [CallEvent("Generate Huge Grid (500x500)")]
@@ -519,7 +498,7 @@ namespace KrayonCore.Graphics
         {
             GridSizeX = 500;
             GridSizeZ = 500;
-            await Task.Run(() => GenerateGrid());
+            await Task.Run(GenerateGrid);
         }
 
         [CallEvent("Cancel Generation")]
@@ -538,7 +517,8 @@ namespace KrayonCore.Graphics
             }
         }
 
-        private void UpdateInstanceData()
+        // Método interno para actualizar datos de instancias
+        internal void UpdateInstanceData()
         {
             if (!_instanceDataDirty)
                 return;
@@ -588,43 +568,8 @@ namespace KrayonCore.Graphics
             _instanceDataDirty = false;
         }
 
-        public void Render(Matrix4 view, Matrix4 projection)
-        {
-            if (!Enabled)
-                return;
-
-            if (_models.Length == 0 || _materials.Length == 0)
-                return;
-
-            UpdateInstanceData();
-
-            Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
-
-            foreach (var kvp in _instanceGroups)
-            {
-                int modelIndex = kvp.Key.modelIndex;
-                int materialIndex = kvp.Key.materialIndex;
-                int instanceCount = kvp.Value.Count;
-
-                if (instanceCount == 0)
-                    continue;
-
-                var model = _models[modelIndex];
-                var material = _materials[materialIndex];
-
-                if (model == null || material == null)
-                    continue;
-
-                material.SetPBRProperties();
-                material.Use();
-
-                material.SetMatrix4("view", view);
-                material.SetMatrix4("projection", projection);
-                material.SetVector3("u_CameraPos", cameraPos);
-
-                model.DrawInstanced(instanceCount);
-            }
-        }
+        // Propiedades públicas para que SceneRenderer acceda
+        public Dictionary<(int modelIndex, int materialIndex), List<Matrix4>> InstanceGroups => _instanceGroups;
 
         public override void OnDestroy()
         {

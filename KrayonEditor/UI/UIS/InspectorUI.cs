@@ -431,6 +431,9 @@ namespace KrayonEditor.UI
                 return;
             }
 
+            // Verificar si tiene el atributo Range de KrayonCore
+            var rangeAttr = property.GetCustomAttribute<KrayonCore.RangeAttribute>();
+
             if (propertyType == typeof(bool))
             {
                 bool boolValue = (bool)value;
@@ -442,17 +445,43 @@ namespace KrayonEditor.UI
             else if (propertyType == typeof(float))
             {
                 float floatValue = (float)value;
-                if (ImGui.InputFloat(property.Name, ref floatValue))
+
+                if (rangeAttr != null)
                 {
-                    property.SetValue(component, floatValue);
+                    // Usar DragFloat con rango
+                    if (ImGui.DragFloat(property.Name, ref floatValue, 0.01f, rangeAttr.Min, rangeAttr.Max))
+                    {
+                        property.SetValue(component, floatValue);
+                    }
+                }
+                else
+                {
+                    // InputFloat normal
+                    if (ImGui.InputFloat(property.Name, ref floatValue))
+                    {
+                        property.SetValue(component, floatValue);
+                    }
                 }
             }
             else if (propertyType == typeof(int))
             {
                 int intValue = (int)value;
-                if (ImGui.InputInt(property.Name, ref intValue))
+
+                if (rangeAttr != null)
                 {
-                    property.SetValue(component, intValue);
+                    // Usar DragInt con rango
+                    if (ImGui.DragInt(property.Name, ref intValue, 1f, (int)rangeAttr.Min, (int)rangeAttr.Max))
+                    {
+                        property.SetValue(component, intValue);
+                    }
+                }
+                else
+                {
+                    // InputInt normal
+                    if (ImGui.InputInt(property.Name, ref intValue))
+                    {
+                        property.SetValue(component, intValue);
+                    }
                 }
             }
             else if (propertyType == typeof(string))
@@ -827,6 +856,9 @@ namespace KrayonEditor.UI
                 return;
             }
 
+            // Verificar si tiene el atributo Range de KrayonCore
+            var rangeAttr = field.GetCustomAttribute<KrayonCore.RangeAttribute>();
+
             if (fieldType == typeof(bool))
             {
                 bool boolValue = (bool)value;
@@ -838,17 +870,43 @@ namespace KrayonEditor.UI
             else if (fieldType == typeof(float))
             {
                 float floatValue = (float)value;
-                if (ImGui.InputFloat(field.Name, ref floatValue))
+
+                if (rangeAttr != null)
                 {
-                    field.SetValue(component, floatValue);
+                    // Usar DragFloat con rango
+                    if (ImGui.DragFloat(field.Name, ref floatValue, 0.01f, rangeAttr.Min, rangeAttr.Max))
+                    {
+                        field.SetValue(component, floatValue);
+                    }
+                }
+                else
+                {
+                    // InputFloat normal
+                    if (ImGui.InputFloat(field.Name, ref floatValue))
+                    {
+                        field.SetValue(component, floatValue);
+                    }
                 }
             }
             else if (fieldType == typeof(int))
             {
                 int intValue = (int)value;
-                if (ImGui.InputInt(field.Name, ref intValue))
+
+                if (rangeAttr != null)
                 {
-                    field.SetValue(component, intValue);
+                    // Usar DragInt con rango
+                    if (ImGui.DragInt(field.Name, ref intValue, 1f, (int)rangeAttr.Min, (int)rangeAttr.Max))
+                    {
+                        field.SetValue(component, intValue);
+                    }
+                }
+                else
+                {
+                    // InputInt normal
+                    if (ImGui.InputInt(field.Name, ref intValue))
+                    {
+                        field.SetValue(component, intValue);
+                    }
                 }
             }
             else if (fieldType == typeof(string))
@@ -1065,7 +1123,7 @@ namespace KrayonEditor.UI
                     ImGui.PushID($"ComponentType_{componentIndex}");
                     if (ImGui.MenuItem(componentType.Name))
                     {
-                        SelectedObject!.AddComponent(componentType);
+                        SelectedObject!.AddComponent(componentType).Start();
                         EngineEditor.LogMessage($"Added {componentType.Name} to {SelectedObject.Name}");
                     }
                     ImGui.PopID();

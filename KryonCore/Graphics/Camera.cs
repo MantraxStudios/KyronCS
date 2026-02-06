@@ -50,6 +50,9 @@ namespace KrayonCore
 
         public ProjectionMode ProjectionMode { get; set; } = ProjectionMode.Orthographic;
 
+        // Propiedad helper
+        public bool IsPerspective => ProjectionMode == ProjectionMode.Perspective;
+
         public float Fov { get; set; } = 45.0f;
         public float AspectRatio { get; set; }
         public float NearPlane { get; set; } = 0.1f;

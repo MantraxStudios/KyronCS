@@ -38,7 +38,7 @@ namespace KrayonCore
         private void CreateDefaultMaterials()
         {
 
-            var textureMaterial = _materials.Create("basic", "shaders/basic_instanced");
+            var textureMaterial = _materials.Create("basic", "shaders/basic");
             textureMaterial?.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
 
             if (textureMaterial != null)

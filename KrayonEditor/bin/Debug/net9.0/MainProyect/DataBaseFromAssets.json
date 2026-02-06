@@ -1149,16 +1149,6 @@
       "Guid": "9695ae29-7417-4c18-8b05-04a3852e14c5",
       "Path": "shaders/sprite.vert",
       "Type": "Shader"
-    },
-    {
-      "Guid": "cd340f64-3354-41f7-bd64-428c5de02dea",
-      "Path": "shaders/basic_instanced.frag",
-      "Type": "Shader"
-    },
-    {
-      "Guid": "98ff429f-e0a6-4dff-be58-e0dfb5c3dea6",
-      "Path": "shaders/basic_instanced.vert",
-      "Type": "Shader"
     }
   ],
   "Folders": [

@@ -19,6 +19,16 @@ namespace KrayonCore
         private WorldPhysic _physicsWorld;
         public WorldPhysic PhysicsWorld => _physicsWorld;
 
+        // Eventos para notificar cambios en la escena
+        public event Action OnSceneChanged;
+        public event Action<GameObject> OnGameObjectAdded;
+        public event Action<GameObject> OnGameObjectRemoved;
+        public event Action OnSceneCleared;
+
+        // Nuevos eventos para componentes (para invalidar cache del renderer)
+        public event Action OnComponentAdded;
+        public event Action OnComponentRemoved;
+
         public GameScene(string name)
         {
             Id = Guid.NewGuid();
@@ -46,6 +56,14 @@ namespace KrayonCore
                 gameObject.Scene = this;
                 _gameObjects[gameObject.Id] = gameObject;
                 _gameObjectsList.Add(gameObject);
+
+                // Suscribirse a eventos de componentes del GameObject
+                gameObject.OnComponentAdded += NotifyComponentAdded;
+                gameObject.OnComponentRemoved += NotifyComponentRemoved;
+
+                // Notificar que se agregó un GameObject
+                OnGameObjectAdded?.Invoke(gameObject);
+                OnSceneChanged?.Invoke();
             }
         }
 
@@ -166,18 +184,50 @@ namespace KrayonCore
             {
                 foreach (var go in _toDestroy)
                 {
+                    // Desuscribirse de eventos antes de destruir
+                    go.OnComponentAdded -= NotifyComponentAdded;
+                    go.OnComponentRemoved -= NotifyComponentRemoved;
+
                     go.DestroyComponents();
                     _gameObjects.Remove(go.Id);
                     _gameObjectsList.Remove(go);
+
+                    // Notificar que se eliminó un GameObject
+                    OnGameObjectRemoved?.Invoke(go);
                 }
+
                 _toDestroy.Clear();
+
+                // Notificar cambio en la escena después de las destrucciones
+                OnSceneChanged?.Invoke();
             }
+        }
+
+        /// <summary>
+        /// Notifica que se agregó un componente (propagado desde GameObject)
+        /// </summary>
+        internal void NotifyComponentAdded()
+        {
+            OnComponentAdded?.Invoke();
+            OnSceneChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Notifica que se eliminó un componente (propagado desde GameObject)
+        /// </summary>
+        internal void NotifyComponentRemoved()
+        {
+            OnComponentRemoved?.Invoke();
+            OnSceneChanged?.Invoke();
         }
 
         public void Clear()
         {
+            // Desuscribirse de todos los eventos antes de limpiar
             foreach (var go in _gameObjectsList)
             {
+                go.OnComponentAdded -= NotifyComponentAdded;
+                go.OnComponentRemoved -= NotifyComponentRemoved;
                 go.DestroyComponents();
             }
 
@@ -188,6 +238,10 @@ namespace KrayonCore
             // Limpiar el mundo de física
             _physicsWorld?.Dispose();
             _physicsWorld = new WorldPhysic();
+
+            // Notificar que la escena fue limpiada
+            OnSceneCleared?.Invoke();
+            OnSceneChanged?.Invoke();
         }
 
         /// <summary>

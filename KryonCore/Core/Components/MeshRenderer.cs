@@ -15,10 +15,6 @@ namespace KrayonCore
         private Material[] _materials = new Material[0];
         private Model? _model;
 
-        // Instanced rendering support
-        private Matrix4[] _instanceMatrices = null;
-        private bool _instanceDataDirty = false;
-
         public Model? Model
         {
             get => _model;
@@ -31,7 +27,7 @@ namespace KrayonCore
             set => _materials = value ?? new Material[0];
         }
 
-        public int InstanceCount => _instanceMatrices?.Length ?? 0;
+        public int MaterialCount => _materials.Length;
 
         public MeshRenderer()
         {
@@ -52,7 +48,7 @@ namespace KrayonCore
                 Console.WriteLine($"[MeshRenderer] No hay ModelPath especificado");
             }
 
-            for (int i = 0; i < MaterialPaths.Count(); i++)
+            for (int i = 0; i < MaterialPaths.Length; i++)
             {
                 SetMaterial(i, GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]));
             }
@@ -71,11 +67,7 @@ namespace KrayonCore
                 Console.WriteLine($"[MeshRenderer] Warning: No hay modelo asignado a {GameObject?.Name ?? "Unknown"}");
             }
 
-            if (_materials.Length == 0 && MaterialPaths != null && MaterialPaths.Length > 0)
-            {
-                Console.WriteLine($"[MeshRenderer] Info: Hay {MaterialPaths.Length} rutas de materiales guardadas");
-                Console.WriteLine($"[MeshRenderer] Los materiales deben ser asignados manualmente después de cargar la escena");
-            }
+            Console.WriteLine($"[MeshRenderer] Start completado - Modelo: {(_model != null ? "OK" : "NULL")}, Materiales: {_materials.Length}");
         }
 
         public void SetModel(string path)
@@ -112,7 +104,6 @@ namespace KrayonCore
                 else
                 {
                     Console.WriteLine($"[MeshRenderer] ✗ Model.Load retornó null para: {path}");
-                    Console.WriteLine($"[MeshRenderer] Verifica que el archivo exista: {path}");
                 }
             }
             catch (Exception ex)
@@ -135,6 +126,8 @@ namespace KrayonCore
 
         public void SetMaterial(int index, Material material)
         {
+            Console.WriteLine("Material updated Meshss");
+
             if (index < 0) return;
 
             if (index >= _materials.Length)
@@ -143,6 +136,7 @@ namespace KrayonCore
             }
 
             _materials[index] = material;
+            Console.WriteLine("Material updated Mesh");
         }
 
         public Material GetMaterial(int index)
@@ -179,130 +173,10 @@ namespace KrayonCore
             _materials = new Material[0];
         }
 
-        public int MaterialCount => _materials.Length;
-
-        // Instanced rendering methods
-        public void SetInstanceMatrices(Matrix4[] matrices)
-        {
-            _instanceMatrices = matrices;
-            _instanceDataDirty = true;
-        }
-
-        public void SetInstanceMatrices(List<Matrix4> matrices)
-        {
-            SetInstanceMatrices(matrices?.ToArray());
-        }
-
-        public void AddInstance(Matrix4 matrix)
-        {
-            if (_instanceMatrices == null)
-            {
-                _instanceMatrices = new Matrix4[] { matrix };
-            }
-            else
-            {
-                Array.Resize(ref _instanceMatrices, _instanceMatrices.Length + 1);
-                _instanceMatrices[_instanceMatrices.Length - 1] = matrix;
-            }
-
-            _instanceDataDirty = true;
-        }
-
-        public void ClearInstances()
-        {
-            _instanceMatrices = null;
-            _instanceDataDirty = false;
-        }
-
-        private void UpdateInstanceData()
-        {
-            if (!_instanceDataDirty || _model == null || _instanceMatrices == null)
-                return;
-
-            _model.SetupInstancing(_instanceMatrices);
-            _instanceDataDirty = false;
-        }
-
-        public void Render(Matrix4 view, Matrix4 projection)
-        {
-            if (_model == null || !Enabled)
-                return;
-
-            if (_materials.Length == 0)
-                return;
-
-            Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
-
-            // Instanced rendering (cuando hay matrices de instancia)
-            if (_instanceMatrices != null && _instanceMatrices.Length > 0)
-            {
-                UpdateInstanceData();
-
-                var material = _materials[0];
-                if (material != null)
-                {
-                    material.SetPBRProperties();
-                    material.Use();
-
-                    material.SetMatrix4("view", view);
-                    material.SetMatrix4("projection", projection);
-                    material.SetVector3("u_CameraPos", cameraPos);
-
-                    _model.DrawInstanced(_instanceMatrices.Length);
-                }
-            }
-            // Normal rendering (sin instancing)
-            else
-            {
-                var transform = GetComponent<Transform>();
-                if (transform == null)
-                    return;
-
-                Matrix4 model = transform.GetWorldMatrix();
-
-                if (_materials.Length == 1)
-                {
-                    var material = _materials[0];
-                    if (material != null)
-                    {
-                        material.SetPBRProperties();
-                        material.Use();
-
-                        material.SetMatrix4("model", model);
-                        material.SetMatrix4("view", view);
-                        material.SetMatrix4("projection", projection);
-                        material.SetVector3("u_CameraPos", cameraPos);
-
-                        _model.Draw();
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < _materials.Length && i < _model.SubMeshCount; i++)
-                    {
-                        var material = _materials[i];
-                        if (material == null)
-                            continue;
-
-                        material.SetPBRProperties();
-                        material.Use();
-
-                        material.SetMatrix4("model", model);
-                        material.SetMatrix4("view", view);
-                        material.SetMatrix4("projection", projection);
-                        material.SetVector3("u_CameraPos", cameraPos);
-
-                        _model.DrawSubMesh(i);
-                    }
-                }
-            }
-        }
-
         public override void OnDestroy()
         {
             _model = null;
             _materials = new Material[0];
-            _instanceMatrices = null;
         }
     }
 }

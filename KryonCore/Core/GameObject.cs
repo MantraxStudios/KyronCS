@@ -17,6 +17,10 @@ namespace KrayonCore
         private List<Component> _componentsList;
         public Transform Transform { get; private set; }
 
+        // Eventos para notificar cuando se agregan/eliminan componentes
+        public event Action OnComponentAdded;
+        public event Action OnComponentRemoved;
+
         public GameObject(string name = "GameObject")
         {
             Id = Guid.NewGuid();
@@ -43,6 +47,10 @@ namespace KrayonCore
 
             component.Awake();
 
+            // Notificar que se agregó un componente
+            OnComponentAdded?.Invoke();
+            Scene?.NotifyComponentAdded();
+
             return component;
         }
 
@@ -66,6 +74,7 @@ namespace KrayonCore
             _componentsList.Add(component);
 
             // NO llamar a Awake aquí - se llamará después de deserializar
+            // NO notificar eventos aquí - se usa para deserialización
 
             return component;
         }
@@ -87,6 +96,10 @@ namespace KrayonCore
             _componentsList.Add(component);
 
             component.Awake();
+
+            // Notificar que se agregó un componente
+            OnComponentAdded?.Invoke();
+            Scene?.NotifyComponentAdded();
 
             return component;
         }
@@ -140,7 +153,47 @@ namespace KrayonCore
             {
                 component.OnDestroy();
                 _componentsList.Remove(component);
-                return _components.Remove(type);
+                bool removed = _components.Remove(type);
+
+                if (removed)
+                {
+                    // Notificar que se eliminó un componente
+                    OnComponentRemoved?.Invoke();
+                    Scene?.NotifyComponentRemoved();
+                }
+
+                return removed;
+            }
+
+            return false;
+        }
+
+        public bool RemoveComponent(Component component)
+        {
+            if (component == null)
+                return false;
+
+            if (component is Transform)
+            {
+                return false;
+            }
+
+            Type type = component.GetType();
+
+            if (_components.ContainsKey(type) && _components[type] == component)
+            {
+                component.OnDestroy();
+                _componentsList.Remove(component);
+                bool removed = _components.Remove(type);
+
+                if (removed)
+                {
+                    // Notificar que se eliminó un componente
+                    OnComponentRemoved?.Invoke();
+                    Scene?.NotifyComponentRemoved();
+                }
+
+                return removed;
             }
 
             return false;
