@@ -16,11 +16,6 @@
       "Type": "Model"
     },
     {
-      "Guid": "e0407f46-e317-4a81-a35c-c8a04e216480",
-      "Path": "scenes/DefaultScene.scene",
-      "Type": "Unknown"
-    },
-    {
       "Guid": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
       "Path": "shaders/basic.frag",
       "Type": "Shader"
@@ -1339,6 +1334,16 @@
       "Guid": "883faa19-41da-472e-8879-222fb9c3ba50",
       "Path": "Ground054_1K-PNG_Roughness.png",
       "Type": "Texture"
+    },
+    {
+      "Guid": "4804ed22-6ea5-49f6-9093-b5b9c9c64036",
+      "Path": "editor_prefs.json",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "86f23614-34a5-4af6-9c00-c8208cf53646",
+      "Path": "scenes/escena.scene",
+      "Type": "Unknown"
     }
   ],
   "Folders": [

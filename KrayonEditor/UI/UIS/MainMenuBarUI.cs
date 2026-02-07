@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Core.Attributes;
 using System;
 using System.IO;
 using System.Linq;
@@ -21,8 +22,14 @@ namespace KrayonEditor.UI
         private string[] _availableScenes = new string[0];
         private int _selectedSceneIndex = 0;
 
-        private const string SCENES_DIRECTORY = "scenes";
-        private const string MATERIALS_DIRECTORY = "materials";
+        private string SCENES_DIRECTORY
+        {
+            get
+            {
+                return AssetManager.BasePath + "scenes";
+            }
+        }
+
         private const string PREF_LAST_SCENE = "LastOpenedScene";
         private const int MAX_RECENT_SCENES = 10;
 
@@ -222,15 +229,7 @@ namespace KrayonEditor.UI
                 if (ImGui.MenuItem(sceneName))
                 {
                     LoadScene(sceneName);
-                }
-            }
-
-            if (_availableScenes.Length > 0)
-            {
-                ImGui.Separator();
-                if (ImGui.MenuItem("Clear Recent", null, false, true))
-                {
-                    // Placeholder
+                    EditorActions.SelectedObject = null;
                 }
             }
         }
@@ -305,7 +304,6 @@ namespace KrayonEditor.UI
                 }
 
                 GraphicsEngine.Instance.Materials.SaveMaterialsData();
-                EngineEditor.LogMessage($"Materiales guardados en: {MATERIALS_DIRECTORY}");
             }
             catch (Exception ex)
             {

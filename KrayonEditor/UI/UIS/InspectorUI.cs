@@ -40,6 +40,12 @@ namespace KrayonEditor.UI
             }
 
             ImGui.End();
+
+            if (EditorActions.SelectedObject != null && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete))
+            {
+                SceneManager.ActiveScene.DestroyGameObject(EditorActions.SelectedObject);
+                EditorActions.SelectedObject = null;
+            }
         }
 
         private void DrawTransformComponent()

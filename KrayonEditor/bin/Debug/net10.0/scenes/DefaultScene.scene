@@ -2,20 +2,20 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "901c0c04-99d7-4255-b94b-b8df9c7c3d98",
+      "Id": "5c00299b-ceb5-4669-8094-1c3ecf22943d",
       "Name": "GameObject_0",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "30ff17a0-f38e-41ee-9aea-fa65976e8be3",
+          "ComponentId": "56490977-fca8-4529-8b5e-e1f9554d208c",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
-              "y": 0,
+              "y": 2.1402795,
               "z": 0
             },
             "Rotation": {
@@ -35,13 +35,13 @@
         },
         {
           "TypeName": "KrayonCore.SpriteRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7d07f476-ba25-4055-933c-414a9d85cbe7",
+          "ComponentId": "c4cc8b1a-d0c3-46b2-8143-9d77d4d6162e",
           "Enabled": true,
           "SerializedFields": {
             "MaterialPath": "Chicken",
             "TileWidth": 32,
             "TileHeight": 32,
-            "TileIndexX": 0,
+            "TileIndexX": 1,
             "TileIndexY": 0,
             "Color": {
               "__type": "Vector4",
@@ -52,7 +52,7 @@
             },
             "FlipX": false,
             "FlipY": false,
-            "PixelsPerUnit": 32,
+            "PixelsPerUnit": 16,
             "Animations": {
               "__type": "List",
               "elementType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
@@ -65,7 +65,24 @@
                     "Frames": {
                       "__type": "List",
                       "elementType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                      "values": []
+                      "values": [
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 0,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 1,
+                            "TileIndexY": 0
+                          }
+                        }
+                      ]
                     },
                     "FrameRate": 12,
                     "Loop": true

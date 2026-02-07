@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
+using KrayonCore.Core.Attributes;
 
 namespace KrayonEditor
 {
@@ -10,7 +11,14 @@ namespace KrayonEditor
     /// </summary>
     public static class EditorPrefs
     {
-        private static readonly string PREFS_FILE = "editor_prefs.json";
+        private static string PREFS_FILE
+        {
+            get
+            {
+                return AssetManager.BasePath + "editor_prefs.json";
+            }
+        }
+
         private static Dictionary<string, object> _prefs = new Dictionary<string, object>();
         private static bool _isDirty = false;
 
