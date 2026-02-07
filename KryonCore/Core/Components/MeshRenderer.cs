@@ -9,7 +9,7 @@ namespace KrayonCore
 {
     public class MeshRenderer : Component
     {
-        private string _modelPath = "models/Cube.fbx";
+        private string _modelPath = "/models/Cube.fbx";
 
         [ToStorage]
         public string ModelPath

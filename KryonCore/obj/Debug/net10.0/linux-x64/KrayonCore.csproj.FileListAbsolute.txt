@@ -1,0 +1,13 @@
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/bin/Debug/net10.0/linux-x64/KrayonCore.deps.json
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/bin/Debug/net10.0/linux-x64/KrayonCore.dll
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/bin/Debug/net10.0/linux-x64/KrayonCore.pdb
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.csproj.AssemblyReference.cache
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.GeneratedMSBuildEditorConfig.editorconfig
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.AssemblyInfoInputs.cache
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.AssemblyInfo.cs
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.csproj.CoreCompileInputs.cache
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.sourcelink.json
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.dll
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/refint/KrayonCore.dll
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/KrayonCore.pdb
+/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/Debug/net10.0/linux-x64/ref/KrayonCore.dll
