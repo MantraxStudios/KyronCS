@@ -140,7 +140,7 @@ namespace KrayonEditor.UI
 
         private void ShowNewSceneDialog()
         {
-            _sceneNameInput = $"NewScene_{DateTime.Now:yyyyMMdd_HHmmss}";
+            _sceneNameInput = $"EmptyScene";
             _showNewSceneDialog = true;
         }
 
@@ -451,7 +451,7 @@ namespace KrayonEditor.UI
                     ImGui.Text("No hay escenas guardadas disponibles.");
                     ImGui.Spacing();
 
-                    if (ImGui.Button("Cerrar", new System.Numerics.Vector2(300, 0)))
+                    if (ImGui.Button("Cerrar", new System.Numerics.Vector2(-1, 0)))
                     {
                         _showOpenDialog = false;
                     }
@@ -520,7 +520,7 @@ namespace KrayonEditor.UI
 
                     ImGui.SameLine();
 
-                    if (ImGui.Button("🔄 Refrescar", new System.Numerics.Vector2(130, 0)))
+                    if (ImGui.Button("Refrescar", new System.Numerics.Vector2(130, 0)))
                     {
                         RefreshAvailableScenes();
                     }
@@ -595,14 +595,11 @@ namespace KrayonEditor.UI
             {
                 string sceneFilePath = GetSceneFilePath(sceneName);
 
-                // Solo eliminar archivo de escena
                 if (File.Exists(sceneFilePath))
                 {
                     File.Delete(sceneFilePath);
                     EngineEditor.LogMessage($"Escena eliminada: {sceneName}");
                 }
-
-                // Los materiales NO se eliminan porque son globales
 
                 RefreshAvailableScenes();
             }
