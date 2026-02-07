@@ -189,7 +189,7 @@ namespace KrayonEditor.UI
             _lastX = mouse.X;
             _lastY = mouse.Y;
 
-            if (mouse.IsButtonDown(MouseButton.Right) && !GraphicsEngine.Instance.GetSceneRenderer().GetCamera().IsPerspective)
+            if (mouse.IsButtonDown(MouseButton.Right) && GraphicsEngine.Instance.GetSceneRenderer().GetCamera().IsPerspective)
             {
                 _editorCamera.Rotate(xOffset, yOffset);
             }
