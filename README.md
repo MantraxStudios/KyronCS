@@ -26,6 +26,17 @@ dotnet --version
 - StbImageSharp
 - StbImageWriteSharp
 
+## Fix: Unable to load shared library 'libdl.so' on Linux
+
+If you get the following error when loading a model in Linux:
+
+
+You can fix it by installing the required dependencies:
+
+```bash
+sudo apt update
+sudo apt install libminizip1 libz-dev
+
 
 <img width="1920" height="1009" alt="image" src="https://github.com/user-attachments/assets/816fd1f8-757a-47c8-8d53-bdb76f9f8782" />
 
