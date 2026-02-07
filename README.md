@@ -7,7 +7,7 @@ Both methods produce identical binaries.
 
 ### 🔧 Requirements
 
-- **.NET SDK 8.0** or newer  
+- **.NET SDK 10.0** 
 - **Visual Studio 2022** (optional, recommended for development)  
 - Supported OS: **Windows**, **Linux**, **macOS**
 
