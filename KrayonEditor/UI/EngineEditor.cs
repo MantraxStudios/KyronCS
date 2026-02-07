@@ -32,6 +32,11 @@ namespace KrayonEditor.UI
 
         private static Vector2 _lastSceneViewportSize = new Vector2(1280, 720);
 
+        // Posición y rotación inicial de la cámara
+        private static readonly OpenTK.Mathematics.Vector3 _initialCameraPosition = new OpenTK.Mathematics.Vector3(0, 2, 5);
+        private static readonly float _initialCameraYaw = -90.0f;
+        private static readonly float _initialCameraPitch = 0.0f;
+
         public static void Run()
         {
             _engine = new GraphicsEngine();
@@ -49,6 +54,7 @@ namespace KrayonEditor.UI
                 LogMessage("  Q - Move Gizmo");
                 LogMessage("  E - Rotate Gizmo");
                 LogMessage("  R - Scale Gizmo");
+                LogMessage("  Ctrl+R - Reset Camera");
                 LogMessage("  1, 2, 3 - Switch scenes");
                 LogMessage("================================");
 
@@ -75,9 +81,8 @@ namespace KrayonEditor.UI
 
                 _imguiController?.Update(window, (float)dt);
 
-                EditorUI.Draw(_engine, _editorCamera, _selectedObject, _isPlaying, _editorCameraSpeed,
-                    _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages,
-                    out _selectedObject, out _isPlaying, out _editorCameraSpeed, out _lastSceneViewportSize);
+                EditorUI.Draw(_engine, _editorCamera, _isPlaying, _editorCameraSpeed,
+                    _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages, out _isPlaying, out _editorCameraSpeed, out _lastSceneViewportSize);
 
                 _UIRender.RenderUI();
             };
@@ -121,11 +126,18 @@ namespace KrayonEditor.UI
                     TransformGizmo.SetMode(GizmoMode.Rotate);
                     LogMessage("Switched to Rotate mode");
                 }
-                if (keyboard.IsKeyPressed(Keys.R))
+                if (keyboard.IsKeyPressed(Keys.R) && !keyboard.IsKeyDown(Keys.LeftControl))
                 {
                     TransformGizmo.SetMode(GizmoMode.Scale);
                     LogMessage("Switched to Scale mode");
                 }
+            }
+
+            // Ctrl+R para reiniciar cámara
+            if (keyboard.IsKeyDown(Keys.LeftControl) && keyboard.IsKeyPressed(Keys.R))
+            {
+                ResetCamera();
+                LogMessage("Camera reset to initial position");
             }
 
             if (keyboard.IsKeyPressed(Keys.D1))
@@ -209,8 +221,31 @@ namespace KrayonEditor.UI
 
             // Crear cámara de editor independiente
             _editorCamera = _renderer.GetCamera();
-            _editorCamera.Position = new OpenTK.Mathematics.Vector3(0, 2, 5);
+            _editorCamera.Position = _initialCameraPosition;
             _editorCamera.AspectRatio = 1280f / 800f;
+        }
+
+        private static void ResetCamera()
+        {
+            if (_editorCamera == null)
+                return;
+
+            _editorCamera.Position = _initialCameraPosition;
+
+            // Resetear yaw y pitch usando reflexión o propiedades públicas si están disponibles
+            var cameraType = _editorCamera.GetType();
+
+            var yawProperty = cameraType.GetProperty("Yaw");
+            if (yawProperty != null && yawProperty.CanWrite)
+            {
+                yawProperty.SetValue(_editorCamera, _initialCameraYaw);
+            }
+
+            var pitchProperty = cameraType.GetProperty("Pitch");
+            if (pitchProperty != null && pitchProperty.CanWrite)
+            {
+                pitchProperty.SetValue(_editorCamera, _initialCameraPitch);
+            }
         }
 
         public static void LogMessage(string message)
@@ -222,8 +257,6 @@ namespace KrayonEditor.UI
             {
                 _consoleMessages.RemoveAt(0);
             }
-
-            Console.WriteLine(message);
         }
 
         public static GameObject? GetSelectedObject() => _selectedObject;

@@ -5,8 +5,6 @@ namespace KrayonEditor.UI
 {
     public class HierarchyUI : UIBehaviour
     {
-        public GameObject? SelectedObject { get; set; }
-
         public override void OnDrawUI()
         {
             if (!_isVisible) return;
@@ -37,7 +35,7 @@ namespace KrayonEditor.UI
                     var allObjects = SceneManager.ActiveScene.GetAllGameObjects();
                     foreach (var go in allObjects)
                     {
-                        bool isSelected = SelectedObject == go;
+                        bool isSelected = EditorActions.SelectedObject == go;
 
                         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.Leaf |
                                                    ImGuiTreeNodeFlags.NoTreePushOnOpen |
@@ -49,7 +47,7 @@ namespace KrayonEditor.UI
 
                         if (ImGui.IsItemClicked())
                         {
-                            SelectedObject = go;
+                            EditorActions.SelectedObject = go;
                         }
 
                         if (ImGui.BeginPopupContextItem($"context_{go.GetHashCode()}"))
@@ -61,8 +59,8 @@ namespace KrayonEditor.UI
                             if (ImGui.MenuItem("Delete") && go.Tag != "MainCamera")
                             {
                                 EditorActions.DeleteGameObject(go);
-                                if (SelectedObject == go)
-                                    SelectedObject = null;
+                                if (EditorActions.SelectedObject == go)
+                                    EditorActions.SelectedObject = null;
                             }
                             ImGui.EndPopup();
                         }

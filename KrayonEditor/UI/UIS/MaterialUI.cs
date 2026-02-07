@@ -28,13 +28,25 @@ namespace KrayonEditor.UI
         private string _newMaterialName = "";
         private string _selectedShaderPath = "";
 
+        private bool _showChangeShaderDialog = false;
+        private string _newShaderPath = "";
+
+        private const string PROTECTED_MATERIAL_NAME = "basic";
+
         public override void OnDrawUI()
         {
-            ImGui.Begin("Material Editor");
+            ImGui.Begin("Material Editor", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
+            var windowSize = ImGui.GetContentRegionAvail();
+            float leftPanelWidth = 300;
+
+            ImGui.BeginChild("LeftPanel", new Vector2(leftPanelWidth, windowSize.Y));
             DrawMaterialList();
-            ImGui.Separator();
+            ImGui.EndChild();
 
+            ImGui.SameLine();
+
+            ImGui.BeginChild("RightPanel", new Vector2(windowSize.X - leftPanelWidth - 10, windowSize.Y));
             if (_selectedMaterial != null)
             {
                 DrawMaterialEditor();
@@ -43,6 +55,7 @@ namespace KrayonEditor.UI
             {
                 ImGui.TextDisabled("No material selected");
             }
+            ImGui.EndChild();
 
             ImGui.End();
 
@@ -54,6 +67,11 @@ namespace KrayonEditor.UI
             if (_showCreateDialog)
             {
                 DrawCreateMaterialDialog();
+            }
+
+            if (_showChangeShaderDialog)
+            {
+                DrawChangeShaderDialog();
             }
         }
 
@@ -71,12 +89,20 @@ namespace KrayonEditor.UI
 
             ImGui.Separator();
 
-            ImGui.BeginChild("MaterialList", new Vector2(0, 200));
+            ImGui.BeginChild("MaterialList", new Vector2(0, -70));
 
             var materials = GraphicsEngine.Instance!.Materials.GetAll().ToList();
-            var filtered = string.IsNullOrWhiteSpace(_searchFilter)
-                ? materials
-                : materials.Where(m => m.Name.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            var filtered = materials
+                .Where(m => !string.Equals(m.Name, PROTECTED_MATERIAL_NAME, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(_searchFilter))
+            {
+                filtered = filtered
+                    .Where(m => m.Name.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
 
             foreach (var mat in filtered)
             {
@@ -88,6 +114,151 @@ namespace KrayonEditor.UI
             }
 
             ImGui.EndChild();
+
+            if (_selectedMaterial != null && !IsProtectedMaterial(_selectedMaterial))
+            {
+                ImGui.Separator();
+
+                if (ImGui.Button("Change Shader", new Vector2(-1, 0)))
+                {
+                    _showChangeShaderDialog = true;
+                    _newShaderPath = "";
+                }
+
+                if (ImGui.Button("Delete Selected Material", new Vector2(-1, 0)))
+                {
+                    DeleteSelectedMaterial();
+                }
+            }
+        }
+
+        private bool IsProtectedMaterial(Material material)
+        {
+            return string.Equals(material.Name, PROTECTED_MATERIAL_NAME, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void DeleteSelectedMaterial()
+        {
+            if (_selectedMaterial == null)
+                return;
+
+            if (IsProtectedMaterial(_selectedMaterial))
+            {
+                Console.WriteLine($"Cannot delete protected material '{PROTECTED_MATERIAL_NAME}'");
+                return;
+            }
+
+            string materialName = _selectedMaterial.Name;
+            GraphicsEngine.Instance!.Materials.Remove(materialName);
+            _selectedMaterial = null;
+
+            Console.WriteLine($"Material '{materialName}' deleted successfully");
+        }
+
+        private void DrawChangeShaderDialog()
+        {
+            if (_selectedMaterial != null && IsProtectedMaterial(_selectedMaterial))
+            {
+                _showChangeShaderDialog = false;
+                return;
+            }
+
+            ImGui.SetNextWindowSize(new Vector2(400, 150), ImGuiCond.FirstUseEver);
+            ImGui.Begin("Change Shader", ref _showChangeShaderDialog);
+
+            ImGui.Text($"Change shader for: {_selectedMaterial?.Name}");
+            ImGui.Spacing();
+
+            ImGui.Text("New Shader Path:");
+            ImGui.InputText("##NewShaderPath", ref _newShaderPath, 512);
+            ImGui.SameLine();
+            if (ImGui.Button("Browse..."))
+            {
+                _fileDialogTarget = "Shader";
+                _showFileDialog = true;
+                _currentPath = AssetManager.BasePath;
+                _pendingPathChange = "";
+                RefreshFileList();
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            bool canChange = !string.IsNullOrWhiteSpace(_newShaderPath);
+
+            if (!canChange)
+            {
+                ImGui.BeginDisabled();
+            }
+
+            if (ImGui.Button("Change", new Vector2(190, 0)))
+            {
+                ChangeShader();
+                _showChangeShaderDialog = false;
+            }
+
+            if (!canChange)
+            {
+                ImGui.EndDisabled();
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Cancel", new Vector2(190, 0)))
+            {
+                _showChangeShaderDialog = false;
+            }
+
+            ImGui.End();
+        }
+
+        private void ChangeShader()
+        {
+            if (_selectedMaterial == null || string.IsNullOrWhiteSpace(_newShaderPath))
+                return;
+
+            if (IsProtectedMaterial(_selectedMaterial))
+            {
+                Console.WriteLine($"Cannot change shader for protected material '{PROTECTED_MATERIAL_NAME}'");
+                return;
+            }
+
+            try
+            {
+                string materialName = _selectedMaterial.Name;
+
+                var albedoColor = _selectedMaterial.AlbedoColor;
+                var metallic = _selectedMaterial.Metallic;
+                var roughness = _selectedMaterial.Roughness;
+                var ao = _selectedMaterial.AO;
+                var emissiveColor = _selectedMaterial.EmissiveColor;
+
+                GraphicsEngine.Instance!.Materials.Remove(materialName);
+
+                var newMaterial = GraphicsEngine.Instance!.Materials.Create(materialName, _newShaderPath);
+
+                if (newMaterial != null)
+                {
+                    newMaterial.AlbedoColor = albedoColor;
+                    newMaterial.Metallic = metallic;
+                    newMaterial.Roughness = roughness;
+                    newMaterial.AO = ao;
+                    newMaterial.EmissiveColor = emissiveColor;
+                    newMaterial.SetPBRProperties();
+
+                    _selectedMaterial = newMaterial;
+                    Console.WriteLine($"Shader changed successfully for material '{materialName}'");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to change shader for material '{materialName}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error changing shader: {ex.Message}");
+            }
         }
 
         private void DrawCreateMaterialDialog()
@@ -149,6 +320,15 @@ namespace KrayonEditor.UI
         {
             try
             {
+                var existingMaterial = GraphicsEngine.Instance!.Materials.GetAll()
+                    .FirstOrDefault(m => string.Equals(m.Name, _newMaterialName, StringComparison.OrdinalIgnoreCase));
+
+                if (existingMaterial != null)
+                {
+                    Console.WriteLine($"Material with name '{_newMaterialName}' already exists. Please choose a different name.");
+                    return;
+                }
+
                 var newMaterial = GraphicsEngine.Instance!.Materials.Create(_newMaterialName, _selectedShaderPath);
                 _selectedMaterial = newMaterial;
                 Console.WriteLine($"Material created: {_newMaterialName}");
@@ -161,27 +341,23 @@ namespace KrayonEditor.UI
 
         private void DrawMaterialEditor()
         {
-            ImGui.BeginChild("MaterialEditor");
-
             ImGui.Text($"Editing: {_selectedMaterial.Name}");
             ImGui.Separator();
 
-            if (ImGui.CollapsingHeader("PBR Properties", ref _showPBRSection))
+            if (ImGui.CollapsingHeader("PBR Properties", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 DrawPBRProperties();
             }
 
-            if (ImGui.CollapsingHeader("Textures", ref _showTexturesSection))
+            if (ImGui.CollapsingHeader("Textures", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 DrawTexturesSection();
             }
 
-            if (ImGui.CollapsingHeader("Advanced", ref _showAdvancedSection))
+            if (ImGui.CollapsingHeader("Advanced"))
             {
                 DrawAdvancedSection();
             }
-
-            ImGui.EndChild();
         }
 
         private void DrawPBRProperties()
@@ -219,23 +395,13 @@ namespace KrayonEditor.UI
 
         private void DrawTexturesSection()
         {
-            ImGui.Text("Albedo Map");
-            DrawTextureSlot(_selectedMaterial.AlbedoTexture, "AlbedoTexture",
-                () => _selectedMaterial.RemoveAlbedoTexture());
-            if (ImGui.Button("Load Albedo Texture##LoadAlbedo"))
-            {
-                OpenFileDialog("Albedo");
-            }
+            DrawTextureProperty("Albedo Map", _selectedMaterial.AlbedoTexture, "AlbedoTexture",
+                () => _selectedMaterial.RemoveAlbedoTexture(), () => OpenFileDialog("Albedo"));
 
             ImGui.Spacing();
 
-            ImGui.Text("Normal Map");
-            DrawTextureSlot(_selectedMaterial.NormalTexture, "NormalTexture",
-                () => _selectedMaterial.RemoveNormalTexture());
-            if (ImGui.Button("Load Normal Texture##LoadNormal"))
-            {
-                OpenFileDialog("Normal");
-            }
+            DrawTextureProperty("Normal Map", _selectedMaterial.NormalTexture, "NormalTexture",
+                () => _selectedMaterial.RemoveNormalTexture(), () => OpenFileDialog("Normal"));
 
             if (_selectedMaterial.UseNormalMap)
             {
@@ -248,66 +414,87 @@ namespace KrayonEditor.UI
 
             ImGui.Spacing();
 
-            ImGui.Text("Metallic Map");
-            DrawTextureSlot(_selectedMaterial.MetallicTexture, "MetallicTexture",
-                () => _selectedMaterial.RemoveMetallicTexture());
-            if (ImGui.Button("Load Metallic Texture##LoadMetallic"))
-            {
-                OpenFileDialog("Metallic");
-            }
+            DrawTextureProperty("Metallic Map", _selectedMaterial.MetallicTexture, "MetallicTexture",
+                () => _selectedMaterial.RemoveMetallicTexture(), () => OpenFileDialog("Metallic"));
 
             ImGui.Spacing();
 
-            ImGui.Text("Roughness Map");
-            DrawTextureSlot(_selectedMaterial.RoughnessTexture, "RoughnessTexture",
-                () => _selectedMaterial.RemoveRoughnessTexture());
-            if (ImGui.Button("Load Roughness Texture##LoadRoughness"))
-            {
-                OpenFileDialog("Roughness");
-            }
+            DrawTextureProperty("Roughness Map", _selectedMaterial.RoughnessTexture, "RoughnessTexture",
+                () => _selectedMaterial.RemoveRoughnessTexture(), () => OpenFileDialog("Roughness"));
 
             ImGui.Spacing();
 
-            ImGui.Text("Ambient Occlusion Map");
-            DrawTextureSlot(_selectedMaterial.AOTexture, "AOTexture",
-                () => _selectedMaterial.RemoveAOTexture());
-            if (ImGui.Button("Load AO Texture##LoadAO"))
-            {
-                OpenFileDialog("AO");
-            }
+            DrawTextureProperty("Ambient Occlusion Map", _selectedMaterial.AOTexture, "AOTexture",
+                () => _selectedMaterial.RemoveAOTexture(), () => OpenFileDialog("AO"));
 
             ImGui.Spacing();
 
-            ImGui.Text("Emissive Map");
-            DrawTextureSlot(_selectedMaterial.EmissiveTexture, "EmissiveTexture",
-                () => _selectedMaterial.RemoveEmissiveTexture());
-            if (ImGui.Button("Load Emissive Texture##LoadEmissive"))
-            {
-                OpenFileDialog("Emissive");
-            }
+            DrawTextureProperty("Emissive Map", _selectedMaterial.EmissiveTexture, "EmissiveTexture",
+                () => _selectedMaterial.RemoveEmissiveTexture(), () => OpenFileDialog("Emissive"));
 
             ImGui.Spacing();
 
-            if (ImGui.Button("Remove All Textures"))
+            if (ImGui.Button("Remove All Textures", new Vector2(-1, 0)))
             {
                 _selectedMaterial.RemoveAllPBRTextures();
             }
         }
 
-        private void DrawTextureSlot(TextureLoader texture, string label, Action onRemove)
+        private void DrawTextureProperty(string label, TextureLoader texture, string id, Action onRemove, Action onLoad)
         {
+            ImGui.Text(label);
+
             if (texture != null)
             {
-                ImGui.Text($"  Path: {texture.GetTexturePath}");
-                ImGui.SameLine();
-                if (ImGui.SmallButton($"Remove##{label}"))
+                ImGui.Indent();
+
+                if (!texture.IsLoaded)
+                {
+                    texture.Load();
+                }
+
+                if (texture.IsLoaded)
+                {
+                    uint textureId = (uint)texture.TextureId;
+                    Vector2 previewSize = new Vector2(128, 128);
+
+                    var cursorPos = ImGui.GetCursorScreenPos();
+                    var drawList = ImGui.GetWindowDrawList();
+
+                    drawList.AddRectFilled(
+                        cursorPos,
+                        new Vector2(cursorPos.X + previewSize.X, cursorPos.Y + previewSize.Y),
+                        ImGui.GetColorU32(new Vector4(0.2f, 0.2f, 0.2f, 1.0f))
+                    );
+
+                    ImGui.Image((IntPtr)textureId, previewSize, new Vector2(0, 1), new Vector2(1, 0));
+
+                    ImGui.Text($"Size: {texture.Width}x{texture.Height}");
+                    ImGui.Text($"Path: {texture.GetTexturePath}");
+                }
+                else
+                {
+                    ImGui.TextDisabled("Loading texture...");
+                }
+
+                if (ImGui.Button($"Remove##{id}", new Vector2(-1, 0)))
                 {
                     onRemove?.Invoke();
                 }
+
+                ImGui.Unindent();
             }
             else
             {
-                ImGui.TextDisabled("  No texture loaded");
+                ImGui.Indent();
+                ImGui.TextDisabled("No texture loaded");
+
+                if (ImGui.Button($"Load Texture##{id}", new Vector2(-1, 0)))
+                {
+                    onLoad?.Invoke();
+                }
+
+                ImGui.Unindent();
             }
         }
 
@@ -354,7 +541,7 @@ namespace KrayonEditor.UI
 
             ImGui.Spacing();
 
-            if (ImGui.Button("Apply PBR Properties"))
+            if (ImGui.Button("Apply PBR Properties", new Vector2(-1, 0)))
             {
                 _selectedMaterial.SetPBRProperties();
             }
@@ -424,9 +611,12 @@ namespace KrayonEditor.UI
             {
                 var parentPath = Directory.GetParent(_currentPath)?.FullName;
 
-                if (parentPath != null && parentPath.StartsWith(AssetManager.BasePath))
+                if (parentPath != null)
                 {
-                    _pendingPathChange = parentPath;
+                    if (parentPath.Length >= AssetManager.BasePath.Length)
+                    {
+                        _pendingPathChange = parentPath;
+                    }
                 }
             }
 
@@ -453,7 +643,16 @@ namespace KrayonEditor.UI
 
                     if (_fileDialogTarget == "Shader")
                     {
-                        _selectedShaderPath = relativePath;
+                        relativePath = RemoveShaderExtension(relativePath);
+
+                        if (_showChangeShaderDialog)
+                        {
+                            _newShaderPath = relativePath;
+                        }
+                        else
+                        {
+                            _selectedShaderPath = relativePath;
+                        }
                         _showFileDialog = false;
                     }
                     else
@@ -474,6 +673,21 @@ namespace KrayonEditor.UI
             }
 
             ImGui.End();
+        }
+
+        private string RemoveShaderExtension(string path)
+        {
+            var extensions = new[] { ".vert", ".frag", ".glsl", ".shader" };
+
+            foreach (var ext in extensions)
+            {
+                if (path.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                {
+                    return path.Substring(0, path.Length - ext.Length);
+                }
+            }
+
+            return path;
         }
 
         private string GetRelativePathFromBasePath(string fullPath)

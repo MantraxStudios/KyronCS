@@ -11,7 +11,6 @@ namespace KrayonEditor.UI
     {
         public GraphicsEngine? Engine { get; set; }
         public Camera? MainCamera { get; set; }
-        public GameObject? SelectedObject { get; set; }
         public bool IsPlaying { get; set; }
         public float EditorCameraSpeed { get; set; } = 5.0f;
         public Vector2 LastViewportSize { get; set; }
@@ -339,7 +338,7 @@ namespace KrayonEditor.UI
                         new Vector2(1, 0)
                     );
 
-                    if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left))
+                    if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !TransformGizmo.IsHovering)
                     {
                         // Obtener posición del mouse global (System.Numerics.Vector2)
                         System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
@@ -360,16 +359,16 @@ namespace KrayonEditor.UI
                                 relativeMousePos.Y
                             );
 
-                            EventSystem.OnClickObject(openTKMousePos);
+                            EditorActions.SelectedObject = EventSystem.OnClickObject(openTKMousePos) == EditorActions.SelectedObject ? null : EventSystem.OnClickObject(openTKMousePos);
                         }
                     }
 
                     bool isHovered = ImGui.IsItemHovered();
                     EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, MainCamera);
 
-                    if (SelectedObject != null && MainCamera != null)
+                    if (EditorActions.SelectedObject != null && MainCamera != null)
                     {
-                        TransformGizmo.Draw(SelectedObject, MainCamera, cursorPos, viewportSize, isHovered);
+                        TransformGizmo.Draw(EditorActions.SelectedObject, MainCamera, cursorPos, viewportSize, isHovered);
                     }
                 }
             }

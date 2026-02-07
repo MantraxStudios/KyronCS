@@ -18,6 +18,7 @@ namespace KrayonEditor.UI
         private static AssetsUI _assets = new AssetsUI();
         private static MaterialUI _materials = new MaterialUI();
         private static TileEditor _TileEditor = new TileEditor();
+        private static SpriteAnimationUI _SpriteAnimator= new SpriteAnimationUI();
 
         public static void Initialize()
         {
@@ -27,24 +28,18 @@ namespace KrayonEditor.UI
         public static void Draw(
             GraphicsEngine? engine,
             Camera? mainCamera,
-            GameObject? selectedObject,
             bool isPlaying,
             float editorCameraSpeed,
             Vector2 lastSceneViewportSize,
             double currentFps,
             double currentFrameTime,
             List<string> consoleMessages,
-            out GameObject? newSelectedObject,
             out bool newIsPlaying,
             out float newEditorCameraSpeed,
             out Vector2 newLastSceneViewportSize)
         {
-            // Actualizar datos compartidos
-            _hierarchy.SelectedObject = selectedObject;
-            _inspector.SelectedObject = selectedObject;
             _sceneView.Engine = engine;
             _sceneView.MainCamera = mainCamera;
-            _sceneView.SelectedObject = selectedObject;
             _sceneView.IsPlaying = isPlaying;
             _sceneView.EditorCameraSpeed = editorCameraSpeed;
             _sceneView.LastViewportSize = lastSceneViewportSize;
@@ -69,18 +64,16 @@ namespace KrayonEditor.UI
             _console.OnDrawUI();
             _stats.OnDrawUI();
             _assets.OnDrawUI();
+            _SpriteAnimator.OnDrawUI();
             _materials.OnDrawUI();
             _TileEditor.OnDrawUI();
 
-            // Sincronizar visibilidad de vuelta al menú
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
             _mainMenuBar.ShowInspector = _inspector.IsVisible;
             _mainMenuBar.ShowConsole = _console.IsVisible;
             _mainMenuBar.ShowStats = _stats.IsVisible;
             _mainMenuBar.ShowAssets = _assets.IsVisible;
 
-            // Salidas
-            newSelectedObject = _hierarchy.SelectedObject ?? _inspector.SelectedObject;
             newIsPlaying = _sceneView.IsPlaying;
             newEditorCameraSpeed = _sceneView.EditorCameraSpeed;
             newLastSceneViewportSize = _sceneView.LastViewportSize;

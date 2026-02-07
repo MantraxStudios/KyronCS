@@ -3,26 +3,26 @@ using KrayonCore;
 using System;
 using System.Numerics;
 using System.Reflection;
+using KrayonEditor;
 
 namespace KrayonEditor.UI
 {
+
     public class InspectorUI : UIBehaviour
     {
-        public GameObject? SelectedObject { get; set; }
-
         public override void OnDrawUI()
         {
             if (!_isVisible) return;
 
             ImGui.Begin("Inspector", ref _isVisible);
 
-            if (SelectedObject != null)
+            if (EditorActions.SelectedObject != null)
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.9f, 0.9f, 0.9f, 1.0f));
-                string name = SelectedObject.Name;
+                string name = EditorActions.SelectedObject.Name;
                 if (ImGui.InputText("Name", ref name, 256))
                 {
-                    SelectedObject.Name = name;
+                    EditorActions.SelectedObject.Name = name;
                 }
                 ImGui.PopStyleColor();
                 ImGui.Separator();
@@ -48,7 +48,7 @@ namespace KrayonEditor.UI
 
             if (ImGui.CollapsingHeader("Transform", ImGuiTreeNodeFlags.DefaultOpen))
             {
-                var transform = SelectedObject!.Transform;
+                var transform = EditorActions.SelectedObject!.Transform;
 
                 Vector3 position = new Vector3(transform.X, transform.Y, transform.Z);
                 if (ImGui.InputFloat3("Position", ref position))
@@ -74,7 +74,7 @@ namespace KrayonEditor.UI
 
         private void DrawComponents()
         {
-            var components = SelectedObject!.GetAllComponents();
+            var components = EditorActions.SelectedObject!.GetAllComponents();
             int componentIndex = 0;
 
             foreach (var component in components)
@@ -1123,8 +1123,8 @@ namespace KrayonEditor.UI
                     ImGui.PushID($"ComponentType_{componentIndex}");
                     if (ImGui.MenuItem(componentType.Name))
                     {
-                        SelectedObject!.AddComponent(componentType).Start();
-                        EngineEditor.LogMessage($"Added {componentType.Name} to {SelectedObject.Name}");
+                        EditorActions.SelectedObject!.AddComponent(componentType).Start();
+                        EngineEditor.LogMessage($"Added {componentType.Name} to {EditorActions.SelectedObject.Name}");
                     }
                     ImGui.PopID();
                     componentIndex++;

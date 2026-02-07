@@ -5,8 +5,10 @@ using KrayonEditor.UI;
 
 namespace KrayonEditor
 {
-    internal static class EditorActions
+    public static class EditorActions
     {
+        public static GameObject? SelectedObject { get; set; }
+
         public static void CreateEmptyGameObject()
         {
             if (SceneManager.ActiveScene == null) return;

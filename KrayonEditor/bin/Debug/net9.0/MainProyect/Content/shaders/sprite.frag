@@ -5,9 +5,8 @@ out vec4 FragColor;
 in vec2 TexCoord;
 
 uniform sampler2D u_AlbedoMap;
-uniform vec3 u_AlbedoColor;
 uniform int u_UseAlbedoMap;
-uniform float u_Alpha;
+uniform vec3 u_AlbedoColor;
 
 void main()
 {
@@ -19,8 +18,9 @@ void main()
         texColor = vec4(u_AlbedoColor, 1.0);
     }
     
-    // Aplicar alpha si se especifica
-    texColor.a *= u_Alpha;
+    if(texColor.a < 0.01) {
+        discard;
+    }
     
     FragColor = texColor;
 }

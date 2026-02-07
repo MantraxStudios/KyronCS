@@ -21,16 +21,6 @@
       "Type": "Unknown"
     },
     {
-      "Guid": "8d4563a4-0f27-4ba9-a151-8212885d4be2",
-      "Path": "shaders/animated.frag",
-      "Type": "Shader"
-    },
-    {
-      "Guid": "9fb0e068-c66c-42ed-93c9-5618fe3a545e",
-      "Path": "shaders/animated.vert",
-      "Type": "Shader"
-    },
-    {
       "Guid": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
       "Path": "shaders/basic.frag",
       "Type": "Shader"
@@ -38,26 +28,6 @@
     {
       "Guid": "52ccc06b-314c-4014-afbc-b0996db89a63",
       "Path": "shaders/basic.vert",
-      "Type": "Shader"
-    },
-    {
-      "Guid": "ac7795b5-7c74-4d3a-9ce1-ee1b713ef01e",
-      "Path": "shaders/lit.frag",
-      "Type": "Shader"
-    },
-    {
-      "Guid": "06ea7a96-a5fa-488a-afee-65a1abb75337",
-      "Path": "shaders/lit.vert",
-      "Type": "Shader"
-    },
-    {
-      "Guid": "2e9034a5-9d50-4283-9d8c-8e0aa7eca275",
-      "Path": "shaders/textured.frag",
-      "Type": "Shader"
-    },
-    {
-      "Guid": "9eaed12f-0f81-44d4-b014-bf4db0d81d7d",
-      "Path": "shaders/textured.vert",
       "Type": "Shader"
     },
     {
@@ -1338,6 +1308,36 @@
     {
       "Guid": "77baf0bf-3b3a-4e08-80b8-49444d92ee86",
       "Path": "Cute_Fantasy_Free/Animals/Sheep/Sheep.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "b87a7924-9833-4c48-b334-84c4a88517d6",
+      "Path": "Ground054_1K-PNG_AmbientOcclusion.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "d4912cd9-4e57-46c6-b6a7-50309b01b19d",
+      "Path": "Ground054_1K-PNG_Color.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "0867dd0a-3005-4bfe-bb69-0d2d2ed8cae8",
+      "Path": "Ground054_1K-PNG_Displacement.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "6b3cb026-07db-4116-9e74-d605e9f5c00a",
+      "Path": "Ground054_1K-PNG_NormalDX.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "42a9b480-2f9e-48ed-a6d7-7c108cc6aa2b",
+      "Path": "Ground054_1K-PNG_NormalGL.png",
+      "Type": "Texture"
+    },
+    {
+      "Guid": "883faa19-41da-472e-8879-222fb9c3ba50",
+      "Path": "Ground054_1K-PNG_Roughness.png",
       "Type": "Texture"
     }
   ],

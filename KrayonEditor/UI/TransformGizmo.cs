@@ -25,11 +25,13 @@ namespace KrayonEditor.UI
         private static GizmoSpace _currentSpace = GizmoSpace.World;
 
         private static bool _isDragging = false;
+        private static bool _isHovering = false;
         private static SysVec2 _dragStartPos = SysVec2.Zero;
         private static SysVec3 _objectStartPos = SysVec3.Zero;
         private static Quaternion _objectStartRot = Quaternion.Identity;
         private static SysVec3 _objectStartScale = SysVec3.One;
         private static int _activeAxis = -1;
+        private static int _hoveredAxis = -1;
         private static SysVec2 _lastMousePos = SysVec2.Zero;
 
         private static SysVec3 _accumulatedPos = SysVec3.Zero;
@@ -43,6 +45,8 @@ namespace KrayonEditor.UI
 
         public static GizmoMode CurrentMode => _currentMode;
         public static GizmoSpace CurrentSpace => _currentSpace;
+        public static bool IsDragging => _isDragging;
+        public static bool IsHovering => _isHovering;
 
         public static bool SnapEnabled
         {
@@ -75,6 +79,8 @@ namespace KrayonEditor.UI
                 _currentMode = mode;
                 _isDragging = false;
                 _activeAxis = -1;
+                _isHovering = false;
+                _hoveredAxis = -1;
             }
         }
 
@@ -93,6 +99,8 @@ namespace KrayonEditor.UI
             if (selectedObject == null || camera == null)
             {
                 _isDragging = false;
+                _isHovering = false;
+                _hoveredAxis = -1;
                 return;
             }
 
@@ -101,6 +109,8 @@ namespace KrayonEditor.UI
             if (!IsObjectInFrontOfCamera(objectPos, camera))
             {
                 _isDragging = false;
+                _isHovering = false;
+                _hoveredAxis = -1;
                 return;
             }
 
@@ -146,10 +156,18 @@ namespace KrayonEditor.UI
 
             if (!mouseInViewport && !_isDragging)
             {
+                _isHovering = false;
+                _hoveredAxis = -1;
                 return;
             }
 
             SysVec3 objectPos = ToSysVec3(selectedObject.Transform.LocalPosition);
+
+            if (!_isDragging && mouseInViewport)
+            {
+                _hoveredAxis = GetHoveredAxis(selectedObject, objectPos, camera, mousePos, viewportSize);
+                _isHovering = _hoveredAxis >= 0;
+            }
 
             if (mouseDown && !_isDragging && mouseInViewport)
             {
@@ -181,6 +199,8 @@ namespace KrayonEditor.UI
                 {
                     _isDragging = false;
                     _activeAxis = -1;
+                    _isHovering = false;
+                    _hoveredAxis = -1;
                 }
             }
         }
@@ -510,9 +530,11 @@ namespace KrayonEditor.UI
                 startScreen += viewportPos;
                 endScreen += viewportPos;
 
-                uint color = GetAxisColor(i, _isDragging && _activeAxis == i);
+                bool isActive = _isDragging && _activeAxis == i;
+                bool isHovered = !_isDragging && _hoveredAxis == i;
+                uint color = GetAxisColor(i, isActive, isHovered);
                 uint shadowColor = 0x40000000;
-                float thickness = _isDragging && _activeAxis == i ? 7.0f : 5.0f;
+                float thickness = (isActive || isHovered) ? 7.0f : 5.0f;
 
                 drawList.AddLine(startScreen + new SysVec2(2, 2), endScreen + new SysVec2(2, 2), shadowColor, thickness);
                 drawList.AddLine(startScreen, endScreen, color, thickness);
@@ -535,8 +557,10 @@ namespace KrayonEditor.UI
             }
 
             SysVec2 centerScreen = WorldToScreen(position, camera, viewportSize) + viewportPos;
-            uint centerColor = _isDragging && _activeAxis == 6 ? 0xFFFFDD00 : 0xFFFFFFFF;
-            float centerRadius = _isDragging && _activeAxis == 6 ? 8.0f : 7.0f;
+            bool isCenterActive = _isDragging && _activeAxis == 6;
+            bool isCenterHovered = !_isDragging && _hoveredAxis == 6;
+            uint centerColor = (isCenterActive || isCenterHovered) ? 0xFFFFDD00 : 0xFFFFFFFF;
+            float centerRadius = (isCenterActive || isCenterHovered) ? 8.0f : 7.0f;
 
             drawList.AddCircleFilled(centerScreen, centerRadius + 2.0f, 0x60FFFFFF);
             drawList.AddCircleFilled(centerScreen, centerRadius, centerColor);
@@ -553,9 +577,11 @@ namespace KrayonEditor.UI
 
             for (int i = 0; i < 3; i++)
             {
-                uint color = GetAxisColor(i, _isDragging && _activeAxis == i);
+                bool isActive = _isDragging && _activeAxis == i;
+                bool isHovered = !_isDragging && _hoveredAxis == i;
+                uint color = GetAxisColor(i, isActive, isHovered);
                 uint shadowColor = 0x40000000;
-                float thickness = _isDragging && _activeAxis == i ? 6.5f : 4.5f;
+                float thickness = (isActive || isHovered) ? 6.5f : 4.5f;
 
                 DrawRotationCircle(drawList, position, i, gizmoSize, camera, viewportPos + new SysVec2(2, 2), viewportSize, shadowColor, thickness + 1, obj);
                 DrawRotationCircle(drawList, position, i, gizmoSize, camera, viewportPos, viewportSize, color, thickness, obj);
@@ -603,14 +629,16 @@ namespace KrayonEditor.UI
                 startScreen += viewportPos;
                 endScreen += viewportPos;
 
-                uint color = GetAxisColor(i, _isDragging && _activeAxis == i);
+                bool isActive = _isDragging && _activeAxis == i;
+                bool isHovered = !_isDragging && _hoveredAxis == i;
+                uint color = GetAxisColor(i, isActive, isHovered);
                 uint shadowColor = 0x40000000;
-                float thickness = _isDragging && _activeAxis == i ? 7.0f : 5.0f;
+                float thickness = (isActive || isHovered) ? 7.0f : 5.0f;
 
                 drawList.AddLine(startScreen + new SysVec2(2, 2), endScreen + new SysVec2(2, 2), shadowColor, thickness);
                 drawList.AddLine(startScreen, endScreen, color, thickness);
 
-                float boxSize = _isDragging && _activeAxis == i ? 10.0f : 8.0f;
+                float boxSize = (isActive || isHovered) ? 10.0f : 8.0f;
 
                 drawList.AddRectFilled(
                     new SysVec2(endScreen.X - boxSize + 2, endScreen.Y - boxSize + 2),
@@ -648,8 +676,10 @@ namespace KrayonEditor.UI
             }
 
             SysVec2 centerScreen = WorldToScreen(position, camera, viewportSize) + viewportPos;
-            uint centerColor = _isDragging && _activeAxis == 6 ? 0xFFFFDD00 : 0xFFFFFFFF;
-            float centerSize = _isDragging && _activeAxis == 6 ? 11.0f : 9.0f;
+            bool isCenterActive = _isDragging && _activeAxis == 6;
+            bool isCenterHovered = !_isDragging && _hoveredAxis == 6;
+            uint centerColor = (isCenterActive || isCenterHovered) ? 0xFFFFDD00 : 0xFFFFFFFF;
+            float centerSize = (isCenterActive || isCenterHovered) ? 11.0f : 9.0f;
 
             drawList.AddRectFilled(
                 new SysVec2(centerScreen.X - centerSize + 2, centerScreen.Y - centerSize + 2),
@@ -732,7 +762,7 @@ namespace KrayonEditor.UI
             drawList.AddTriangle(end, p1, p2, 0xFF000000, 1.5f);
         }
 
-        private static uint GetAxisColor(int axis, bool isActive)
+        private static uint GetAxisColor(int axis, bool isActive, bool isHovered = false)
         {
             if (isActive)
             {
@@ -741,6 +771,16 @@ namespace KrayonEditor.UI
                     0 => 0xFFFF6666,
                     1 => 0xFF66FF66,
                     2 => 0xFF6666FF,
+                    _ => 0xFFFFFFFF
+                };
+            }
+            else if (isHovered)
+            {
+                return axis switch
+                {
+                    0 => 0xFFFF8888,
+                    1 => 0xFF88FF88,
+                    2 => 0xFF8888FF,
                     _ => 0xFFFFFFFF
                 };
             }

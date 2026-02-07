@@ -2,14 +2,14 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "336a0dad-47c7-4d37-bbee-0fb3fa8a24af",
-      "Name": "Cube_0",
+      "Id": "901c0c04-99d7-4255-b94b-b8df9c7c3d98",
+      "Name": "GameObject_0",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "733219da-2f59-4989-b9eb-c9989988fff4",
+          "ComponentId": "30ff17a0-f38e-41ee-9aea-fa65976e8be3",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -34,30 +34,15 @@
           }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ac22f26f-aacb-4773-aa09-c73f8944292b",
-          "Enabled": false,
-          "SerializedFields": {
-            "ModelPath": "models/Cube.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
-          }
-        },
-        {
           "TypeName": "KrayonCore.SpriteRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1d2f4bf3-5a01-4d54-8226-9fb1ee013ebc",
+          "ComponentId": "7d07f476-ba25-4055-933c-414a9d85cbe7",
           "Enabled": true,
           "SerializedFields": {
-            "MaterialPath": "basic",
-            "TileWidth": 16,
-            "TileHeight": 16,
+            "MaterialPath": "Chicken",
+            "TileWidth": 32,
+            "TileHeight": 32,
             "TileIndexX": 0,
-            "TileIndexY": 3,
+            "TileIndexY": 0,
             "Color": {
               "__type": "Vector4",
               "x": 1,
@@ -66,190 +51,31 @@
               "w": 1
             },
             "FlipX": false,
-            "FlipY": false
-          }
-        }
-      ]
-    },
-    {
-      "Id": "b1377f3c-2c02-4bdb-beb9-02411f6c79f3",
-      "Name": "Cube_1",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "af445520-816c-4724-9a4e-59f1122cbd0f",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9132c2a3-af1a-457e-a64b-90aedd9d308e",
-          "Enabled": false,
-          "SerializedFields": {
-            "ModelPath": "models/Cube.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+            "FlipY": false,
+            "PixelsPerUnit": 32,
+            "Animations": {
+              "__type": "List",
+              "elementType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "values": [
-                "basic"
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Name": "d",
+                    "Frames": {
+                      "__type": "List",
+                      "elementType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "values": []
+                    },
+                    "FrameRate": 12,
+                    "Loop": true
+                  }
+                }
               ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.SpriteRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "20f1dc08-d910-467c-94b5-07e1c5533422",
-          "Enabled": true,
-          "SerializedFields": {
-            "MaterialPath": "",
-            "TileWidth": 16,
-            "TileHeight": 16,
-            "TileIndexX": 1,
-            "TileIndexY": 3,
-            "Color": {
-              "__type": "Vector4",
-              "x": 1,
-              "y": 1,
-              "z": 1,
-              "w": 1
             },
-            "FlipX": false,
-            "FlipY": false
-          }
-        }
-      ]
-    },
-    {
-      "Id": "76af20b5-ec88-4634-a2b3-a4085cb7396a",
-      "Name": "GameObject_2",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "15fbd799-3d61-4aac-86dc-6cb55972f4fa",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 2,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.SpriteRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "bb6154c8-a36e-40f0-8a92-e0f727007f6a",
-          "Enabled": true,
-          "SerializedFields": {
-            "MaterialPath": "",
-            "TileWidth": 16,
-            "TileHeight": 16,
-            "TileIndexX": 2,
-            "TileIndexY": 3,
-            "Color": {
-              "__type": "Vector4",
-              "x": 1,
-              "y": 1,
-              "z": 1,
-              "w": 1
-            },
-            "FlipX": false,
-            "FlipY": false
-          }
-        }
-      ]
-    },
-    {
-      "Id": "436202b1-e169-45d8-a74b-202a48aa5c82",
-      "Name": "PointLight_3",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c730ebc2-dace-457a-9e04-bceff520d1e6",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "37ca6dfc-bcdd-418d-a3b6-33f971fa10dc",
-          "Enabled": true,
-          "SerializedFields": {
-            "Type": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Point"
-            },
-            "Color": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "Intensity": 2.42,
-            "Constant": 1,
-            "Linear": 0.09,
-            "Quadratic": 0.032,
-            "InnerCutOffDegrees": 12.5,
-            "OuterCutOffDegrees": 17.5
+            "IsPlaying": true,
+            "CurrentAnimationName": "d",
+            "AnimationSpeed": 1
           }
         }
       ]
