@@ -611,16 +611,16 @@
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 2,
+              "x": -2,
               "y": 0,
-              "z": 5
+              "z": 6
             },
             "Rotation": {
               "__type": "Quaternion",
-              "x": 0,
-              "y": 0.70710677,
-              "z": 0,
-              "w": 0.70710677
+              "x": -4.371139E-08,
+              "y": -1,
+              "z": -4.371139E-08,
+              "w": 1.9106855E-15
             },
             "Scale": {
               "__type": "Vector3",
@@ -635,7 +635,7 @@
           "ComponentId": "3d4a6839-1348-46c6-bbf1-e55056a9784f",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/window_2_single.fbx",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
@@ -701,6 +701,55 @@
             "Quadratic": 0.032,
             "InnerCutOffDegrees": 12.5,
             "OuterCutOffDegrees": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "Id": "470c071f-3863-4735-ad7c-f49682a981bf",
+      "Name": "Cube_8 (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "597f5b3e-4843-46e2-b7ba-ac38faf8a70a",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 2,
+              "y": 0,
+              "z": 5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0.70710677,
+              "z": 0,
+              "w": 0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "4ac10c89-9039-4b41-81da-d135b5c7b2dc",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
           }
         }
       ]

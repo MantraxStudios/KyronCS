@@ -39,7 +39,7 @@
     "Floor": {
       "Name": "Floor",
       "ShaderPath": "shaders/basic.vert",
-      "AlbedoPath": "psx/Textures/concrete_2.jpg",
+      "AlbedoPath": "psx/Textures/fabric_5.png",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,
@@ -75,7 +75,7 @@
     "Wall": {
       "Name": "Wall",
       "ShaderPath": "shaders/basic.vert",
-      "AlbedoPath": "psx/Textures/wood_2.png",
+      "AlbedoPath": "psx/Textures/wall_6.png",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,
@@ -95,6 +95,42 @@
         "Z": 0.0
       },
       "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "WindowWall": {
+      "Name": "WindowWall",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": null,
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.5,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": false,
       "UseNormalMap": false,
       "UseMetallicMap": false,
       "UseRoughnessMap": false,

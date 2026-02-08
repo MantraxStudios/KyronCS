@@ -80,7 +80,11 @@ namespace KrayonEditor.UI
 
             if (GraphicsEngine.Instance.GetKeyboardState().IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftControl) && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D))
             {
-                GameObject clone = SceneManager.ActiveScene.Instantiate(EditorActions.SelectedObject);
+                if (EditorActions.SelectedObject != null)
+                {
+                    GameObject clone = SceneManager.ActiveScene.Instantiate(EditorActions.SelectedObject);
+                    EditorActions.SelectedObject = clone;
+                }
             }
         }
 
