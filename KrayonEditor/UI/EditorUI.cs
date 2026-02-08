@@ -86,6 +86,11 @@ namespace KrayonEditor.UI
                     EditorActions.SelectedObject = clone;
                 }
             }
+
+            if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<MeshRenderer>())
+            {
+                Console.WriteLine($"Mesh Count: {EditorActions.SelectedObject.GetComponent<MeshRenderer>().Model.SubMeshCount}");
+            }
         }
 
         private static void SetupImGuiStyle()

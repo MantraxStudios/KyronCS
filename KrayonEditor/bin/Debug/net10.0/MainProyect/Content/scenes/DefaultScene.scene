@@ -2,14 +2,14 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "960721fe-ef1b-4a4b-b4bb-f59ea587e760",
+      "Id": "691e0015-20a5-4b92-9c16-569c560b82f5",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9e6c4ad1-7c5d-4742-a5e9-758bc484b6fe",
+          "ComponentId": "b37f8e41-beaf-493f-9676-1b797e519048",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -35,7 +35,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8be690ee-4586-432a-83e3-166eebce14e9",
+          "ComponentId": "651fda62-6974-4e6f-a9d9-0f738bbc5584",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
@@ -51,14 +51,14 @@
       ]
     },
     {
-      "Id": "caabdbd5-bdb4-4cad-960f-8ec57e38ad58",
+      "Id": "be42fece-9eed-4ca4-a8be-655c071f34f4",
       "Name": "Cube_2",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f4f44a76-3249-493d-870a-5e5a06738406",
+          "ComponentId": "ce1bca35-d6eb-42e7-a39d-0751620e0f20",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -84,7 +84,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d409f682-a0ea-4628-86ce-d06b7f4c8b20",
+          "ComponentId": "8791fd32-e436-49d3-86db-434a9a783e48",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
@@ -100,14 +100,14 @@
       ]
     },
     {
-      "Id": "93df021b-ac0e-412c-803a-9a7419b9c4b1",
+      "Id": "ce1932bd-d476-44bf-9f3a-58f85c18b9a1",
       "Name": "Cube_3",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ea0afdf2-e740-43b0-b282-82e3baf31534",
+          "ComponentId": "cb88100d-fba2-4ae4-8baa-66780eb796d5",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -133,7 +133,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "303166e5-d7e9-4ddc-8f55-4b8c2219426a",
+          "ComponentId": "94bb36db-5070-4446-8620-921f0c8597a7",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
@@ -149,14 +149,14 @@
       ]
     },
     {
-      "Id": "8b388b3a-5613-4e6c-adde-5a5f27b66cd7",
+      "Id": "2f2f6fe7-2cf9-4256-b7f3-11c57d9e836b",
       "Name": "Cube_4",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "133ca356-3823-42c7-9059-d698a7fd0db9",
+          "ComponentId": "2dc103e7-94d1-4225-abc3-ec41b0d8c839",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -182,7 +182,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "30efff46-0cb5-4d1f-95a1-3ed76a1f2b12",
+          "ComponentId": "65c78e7e-d233-416d-8226-2de225170557",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
@@ -198,14 +198,14 @@
       ]
     },
     {
-      "Id": "de5864f6-e2a3-4653-9ffe-58657ffa0808",
+      "Id": "641bb81e-f50f-4742-9aef-291a9f22bb93",
       "Name": "Cube_5",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8d34d907-203e-473c-b818-20a70e259c34",
+          "ComponentId": "31816ddf-70ae-41fa-b0ba-4736e98bd397",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -231,7 +231,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a21e4208-a94b-42e0-a2de-217d88b74f15",
+          "ComponentId": "339abf52-c298-43f5-9ad9-ea01b88af9ff",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
@@ -247,72 +247,14 @@
       ]
     },
     {
-      "Id": "f48ed3b9-dfdc-4f8e-b727-8cf07d0f85ab",
-      "Name": "GameObject_5",
-      "Tag": "Untagged",
-      "Active": true,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d84846c5-aaed-487b-b2d0-74fa19f7c632",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": 2,
-              "z": -4
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": -0.70710677,
-              "y": 0,
-              "z": 0,
-              "w": 0.70710677
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6f09ee26-5dcc-4b0e-a101-4c3e4db4a3f4",
-          "Enabled": true,
-          "SerializedFields": {
-            "Type": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Point"
-            },
-            "Color": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "Intensity": 0,
-            "Constant": 1,
-            "Linear": 0.09,
-            "Quadratic": 0.032,
-            "InnerCutOffDegrees": 14.35,
-            "OuterCutOffDegrees": 46.23
-          }
-        }
-      ]
-    },
-    {
-      "Id": "6b7e456d-7d47-4741-acea-bcd73de4bb39",
+      "Id": "e9084dab-43a3-465d-805b-b58533e9aecf",
       "Name": "Cube_6",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "e16fe360-3d31-4a0a-8774-4ead7601b986",
+          "ComponentId": "58cc9374-107a-4508-bef0-8094c80ad637",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -338,7 +280,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "53c82798-b776-4099-8af3-ebefe79d468e",
+          "ComponentId": "7a7b36ba-e9f2-4b26-a45e-337033aabe35",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
@@ -354,14 +296,14 @@
       ]
     },
     {
-      "Id": "6b2d6ba8-4366-4645-bdb6-70e241827d9e",
+      "Id": "64209929-0ef5-426e-a945-8ce4e5f832ab",
       "Name": "Cube_7",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "42d72c82-c47b-4105-bf1b-d0260cb829cf",
+          "ComponentId": "1a90f7c8-1c62-408f-a7ba-f1aaf4bb94f5",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -387,7 +329,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f75b5e61-c1b5-4305-bd11-150bebdefc31",
+          "ComponentId": "7dfa7e87-3f8d-4499-bafd-fa5a5313395d",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
@@ -403,14 +345,14 @@
       ]
     },
     {
-      "Id": "8c524285-7fea-4405-8e86-78dc001cad42",
+      "Id": "9d0fb9c4-c59d-4597-9043-e515aba138e1",
       "Name": "Cube_8",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4c0f559e-e721-412e-b112-67b23d35640b",
+          "ComponentId": "4e64f304-94fe-4969-9272-b6d1ecfb4589",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -436,7 +378,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a7647491-af10-491a-b346-9b2c8e2431cc",
+          "ComponentId": "0731c9dc-22fc-4c56-8352-4004c17dcddc",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
@@ -452,14 +394,14 @@
       ]
     },
     {
-      "Id": "baaab90c-af3e-447d-8dca-f6bb9a33e1cf",
+      "Id": "3d77447c-9d7a-4ad7-96d5-1b3f4dd8d36a",
       "Name": "Cube_8 (Clone)",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6789359a-8d26-4c13-8c04-6a71f9015c46",
+          "ComponentId": "870fa786-c970-471b-827f-1f827bde2ff6",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -485,7 +427,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "abc79487-81d1-4431-8596-b3d25702520c",
+          "ComponentId": "74ee7b79-4165-4839-bc4d-d69ac34c949a",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
@@ -501,14 +443,14 @@
       ]
     },
     {
-      "Id": "73b5699c-c0c4-4990-b486-94dccba7c982",
+      "Id": "70197740-312c-48c7-ac66-1f42602853d8",
       "Name": "Cube_8 (Clone)",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6b727fc3-88af-4bd8-9219-7e3a3e8347dc",
+          "ComponentId": "c36250ee-34c4-49f3-877c-272c50acd0c9",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -534,7 +476,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b7495745-30fb-453e-a463-d6b053dac264",
+          "ComponentId": "935158ba-caaa-436c-8dd5-466ac2bbbad4",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
@@ -550,14 +492,14 @@
       ]
     },
     {
-      "Id": "deaad123-3905-4677-b54b-d1a10bc84c16",
+      "Id": "2e8c35ae-62f2-49a9-9852-7a0e6741dc7f",
       "Name": "Cube_8 (Clone)",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4d2ccdae-73dc-427a-b09c-33327f741c3a",
+          "ComponentId": "6c3c5590-9317-43db-a195-f27dc5e40445",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -583,7 +525,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ef7ed74b-cff1-4109-98a8-98c4b810e7eb",
+          "ComponentId": "edbdffe0-ce2d-45a2-957e-11dc21e25186",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
@@ -599,14 +541,14 @@
       ]
     },
     {
-      "Id": "6e96c92c-7610-45bc-b133-9ad6ac11f5ab",
+      "Id": "7fea00c9-3635-488b-92a1-70568a26b333",
       "Name": "Cube_8 (Clone)",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "889f2094-0f69-4df2-be35-c6e42a161c8c",
+          "ComponentId": "841b7025-b279-4113-a94c-a17d021a6805",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -632,7 +574,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3d4a6839-1348-46c6-bbf1-e55056a9784f",
+          "ComponentId": "c624d09d-9365-4017-a9e1-0881b5bee913",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/window_2_single.fbx",
@@ -648,19 +590,861 @@
       ]
     },
     {
-      "Id": "79827679-47b3-4094-9277-8a309a0de832",
-      "Name": "PointLight_13",
+      "Id": "f51d1ab1-b717-44ba-b00a-689c7253cce3",
+      "Name": "Cube_8 (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a99ddf76-de01-4804-8309-f781331bb495",
+          "ComponentId": "8fb3efd7-c4b5-4a62-8751-2adc7aa9352c",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": -1.5,
+              "x": 2,
+              "y": 0,
+              "z": 5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": -4.439449E-07,
+              "y": -0.70710677,
+              "z": -4.439449E-07,
+              "w": -0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "c59844a0-0dd3-414f-ade9-cc13e3fccba4",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "73502153-fcbe-4b1f-bf08-93ba1e985297",
+      "Name": "DirectionalLight_13",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "a6d96f31-4f01-4d40-81e6-e6410f4df919",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0.5,
+              "y": 2.5,
+              "z": -5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0.962882,
+              "y": -0.02813051,
+              "z": -0.24453604,
+              "w": -0.110766284
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "b426e58c-0387-4a58-965c-b147beb22ee3",
+          "Enabled": true,
+          "SerializedFields": {
+            "Type": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Point"
+            },
+            "Color": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Intensity": 5.36,
+            "Constant": 1,
+            "Linear": 0.09,
+            "Quadratic": 0.032,
+            "InnerCutOffDegrees": 12.5,
+            "OuterCutOffDegrees": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "Id": "87039dca-81fd-493c-8a80-b937cf1c74cb",
+      "Name": "Cube_8 (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "03d0b042-b3fd-4b21-90da-35b4c3787222",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -2,
+              "y": 0,
+              "z": -5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": -4.439449E-07,
+              "y": -0.70710677,
+              "z": -4.439449E-07,
+              "w": -0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "6732b1ff-3e9e-4b6b-84dd-abcb46b43571",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "124be3db-9a7a-4c32-9dd6-89d2a8c1b172",
+      "Name": "Cube_8 (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "102bcc89-4e0c-442d-a0ff-ca62a759636b",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -2,
+              "y": 0,
+              "z": -3
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": -6.125323E-07,
+              "y": -0.70710677,
+              "z": -6.125323E-07,
+              "w": -0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "3ab55ab5-8439-4263-8b1d-98cbf1bd30bc",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "25de9b5c-85f1-4a7d-a51f-22b46007e6c0",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "08421afe-3fc7-4cee-802e-663db4204346",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -3,
+              "y": 0,
+              "z": -2
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": -4.371139E-08,
+              "y": 1,
+              "z": 4.371139E-08,
+              "w": 1.9106855E-15
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "6bd7b03c-bd65-44f2-a1b5-a333ff187caa",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "9ecfbc5e-eb31-4d38-b068-84dba70a5e21",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "2e43772d-3360-49a5-9192-93f69c44b745",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -5,
+              "y": 0,
+              "z": -2
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": -1.9470718E-07,
+              "y": 1,
+              "z": 1.9470718E-07,
+              "w": 3.7910887E-14
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "1c18e4e8-96f0-428f-85e1-df19a21d37f6",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "9ccb7bb9-f97a-48fa-a61b-9b966d9882b6",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "148eda8e-98e0-4eb7-b65e-e282e622f9ae",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -6,
+              "y": 0,
+              "z": -1
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": -0.70710677,
+              "z": 0,
+              "w": 0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7a549254-2524-4aec-935c-dd21793aa6b8",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "e4269199-cd93-4e7b-ab43-2481f5f8d919",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "49a984ed-2422-49af-875a-b9de0bb5db57",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -6,
+              "y": 0,
+              "z": 1
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": -0.70710677,
+              "z": -0,
+              "w": 0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "ff51eb26-a2d8-46e4-8cc4-f4ff74220084",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "ccd2212c-db44-4e12-8d3e-5f6e3cb393c3",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "4e07f719-a853-468d-b984-be874afdff48",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -6,
+              "y": 0,
+              "z": 3
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": -0.70710677,
+              "z": -0,
+              "w": 0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "ec89fb6a-b9e6-421e-901b-f44c58f2e3be",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "e3c62c29-f0c2-4a24-b447-b0b822de5aa2",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "1457f06d-6795-44d6-86c5-4762a7b5580f",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -6,
+              "y": 0,
+              "z": 5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": -0.70710677,
+              "z": -0,
+              "w": 0.70710677
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "3027e8c7-1455-497a-b739-d0391c25d3e3",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "7807b1ac-2d2a-4431-9e0a-7b929f941e3d",
+      "Name": "Cube_8 (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "0f9cd2d7-421a-4a1b-8ab9-b4dcb575b532",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -5,
+              "y": 0,
+              "z": 6
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "96b75380-a628-48d2-8382-9284e1f19e72",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "efdcec67-84cd-405b-be86-0016270b4a6e",
+      "Name": "Cube_0 (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "fd1fc136-8ba9-43e2-bc4d-7a19692a4924",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 2.98,
+              "z": -4
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7f3aebf1-bcc9-439e-b2f3-e25852da7514",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Floor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "18b9fcc4-b535-4631-81d9-f8c581b62908",
+      "Name": "Cube_0 (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "3d87b30e-ad20-44cd-baf1-a93ca6330afe",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 2.98,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7956df90-ca14-41fa-a365-69bf5e7d4edd",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Floor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "af4d4615-fe2b-42cc-8935-a07b6a2de35a",
+      "Name": "Cube_0 (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "046c900b-3bfb-49b7-9e84-520aed94fc33",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 2.98,
+              "z": 4
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "8178beb8-accd-4583-85ea-01bf5c5043f8",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Floor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "86d72105-6c0b-43ef-bd3f-1b1449c8a3b2",
+      "Name": "Cube_0 (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "0411cca0-d352-4da4-959b-773fd13612e8",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -4,
+              "y": 2.98,
+              "z": 4
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "c3f5a5ae-e26e-4268-8f15-9a42e5edd72d",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Floor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "2d5abc34-6257-41d9-b250-c9f7e5d2e23e",
+      "Name": "Cube_0 (Clone) (Clone) (Clone) (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "276dcac8-7927-4124-b7f5-c7b78b510808",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -4,
+              "y": 2.98,
+              "z": -0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "b833567f-7e23-4798-b88b-8ce2baae042e",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/floor_ceiling_1.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Floor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "2278689b-2218-43b6-884e-0bcc670ee4aa",
+      "Name": "Puerta",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "35d3d1bd-7785-4bee-b7ef-a17cdc9899c2",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -0,
+              "y": 0,
+              "z": -6
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": -4.371139E-08,
+              "y": 1,
+              "z": 4.371139E-08,
+              "w": 1.9106855E-15
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "235c24c5-a910-4b6d-b766-280c6d77afb2",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/doorway_3_wide.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Wall"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "59e6555e-ba2c-4c3e-9cc2-4a568ca5e180",
+      "Name": "PointLight_29",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7ea9b8b7-d7d1-49ad-a650-9d436a127252",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -2.5,
               "y": 2,
               "z": 0
             },
@@ -681,7 +1465,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9b1b693c-7175-4b8f-b0cc-04019f9af75c",
+          "ComponentId": "464d54a0-b2fc-4273-b093-3b79c3aca47c",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -695,7 +1479,7 @@
               "y": 1,
               "z": 1
             },
-            "Intensity": 6.13,
+            "Intensity": 6.61,
             "Constant": 1,
             "Linear": 0.09,
             "Quadratic": 0.032,
@@ -706,28 +1490,28 @@
       ]
     },
     {
-      "Id": "470c071f-3863-4735-ad7c-f49682a981bf",
-      "Name": "Cube_8 (Clone) (Clone)",
+      "Id": "a8d20d58-739f-4819-a279-53abfcf7d827",
+      "Name": "PointLight_29 (Clone)",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "597f5b3e-4843-46e2-b7ba-ac38faf8a70a",
+          "ComponentId": "8ae0c37b-7243-434c-bd57-29237b3805a1",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 2,
-              "y": 0,
-              "z": 5
+              "x": -1,
+              "y": 2,
+              "z": 4
             },
             "Rotation": {
               "__type": "Quaternion",
               "x": 0,
-              "y": 0.70710677,
+              "y": 0,
               "z": 0,
-              "w": 0.70710677
+              "w": 1
             },
             "Scale": {
               "__type": "Vector3",
@@ -738,18 +1522,27 @@
           }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4ac10c89-9039-4b41-81da-d135b5c7b2dc",
+          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "0615a59f-eb30-411f-88a9-2e3b696314de",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "/psx/Models/other-formats/FBX/Modular Structures/wall_1_1_half.fbx",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "Wall"
-              ]
-            }
+            "Type": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Point"
+            },
+            "Color": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Intensity": 6.61,
+            "Constant": 1,
+            "Linear": 0.09,
+            "Quadratic": 0.032,
+            "InnerCutOffDegrees": 12.5,
+            "OuterCutOffDegrees": 17.5
           }
         }
       ]

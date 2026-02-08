@@ -95,7 +95,8 @@ namespace KrayonCore
 
                 Matrix4 worldMatrix = transform.GetWorldMatrix();
 
-                // Si tiene un solo material, usar ese
+                // Como Unity: cada material se aplica a su submesh correspondiente por índice
+                // Si solo hay 1 material, se aplica a todos los submeshes
                 if (renderer.MaterialCount == 1)
                 {
                     var material = renderer.Materials[0];
@@ -113,19 +114,10 @@ namespace KrayonCore
                 }
                 else
                 {
-                    // Si tiene múltiples materiales, solo usar el primero para instancing
-                    var material = renderer.Materials[0];
-                    if (material != null)
-                    {
-                        var key = (renderer.Model, material);
-
-                        if (!_meshInstanceGroups.ContainsKey(key))
-                        {
-                            _meshInstanceGroups[key] = new List<Matrix4>();
-                        }
-
-                        _meshInstanceGroups[key].Add(worldMatrix);
-                    }
+                    // Con múltiples materiales, cada uno se aplica a su submesh por índice
+                    // No podemos usar instanced rendering eficientemente aquí, 
+                    // así que renderizamos directamente
+                    RenderMeshWithMultipleMaterials(renderer, worldMatrix, view, projection, cameraPos);
                 }
             }
 
@@ -155,6 +147,49 @@ namespace KrayonCore
 
                 // Dibujar todas las instancias de una vez
                 model.DrawInstanced(matrices.Count);
+            }
+        }
+
+        private void RenderMeshWithMultipleMaterials(MeshRenderer renderer, Matrix4 worldMatrix, Matrix4 view, Matrix4 projection, Vector3 cameraPos)
+        {
+            if (renderer.Model == null)
+                return;
+
+            int submeshCount = renderer.Model.SubMeshCount;
+            
+            // Renderizar cada submesh con su material correspondiente
+            for (int i = 0; i < submeshCount; i++)
+            {
+                // Obtener el material para este submesh (por índice)
+                Material material = null;
+                if (i < renderer.MaterialCount)
+                {
+                    material = renderer.GetMaterial(i);
+                }
+                
+                // Si no hay material para este índice, usar el último material disponible
+                if (material == null && renderer.MaterialCount > 0)
+                {
+                    material = renderer.GetMaterial(renderer.MaterialCount - 1);
+                }
+
+                if (material == null)
+                    continue;
+
+                // Configurar material
+                material.SetPBRProperties();
+                material.Use();
+
+                material.SetMatrix4("model", worldMatrix);
+                material.SetMatrix4("view", view);
+                material.SetMatrix4("projection", projection);
+                material.SetVector3("u_CameraPos", cameraPos);
+
+                // Aplicar luces al shader
+                _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
+
+                // Dibujar solo este submesh
+                renderer.Model.DrawSubMesh(i);
             }
         }
 

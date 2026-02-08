@@ -80,6 +80,7 @@ namespace KrayonCore
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
+            clone.StartComponents();
             clone.Transform.SetPosition(position.X, position.Y, position.Z);
             return clone;
         }
@@ -88,6 +89,7 @@ namespace KrayonCore
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
+            clone.StartComponents();
             clone.Transform.SetPosition(position.X, position.Y, position.Z);
             clone.Transform.SetRotation(rotation.X, rotation.Y, rotation.Z);
             return clone;

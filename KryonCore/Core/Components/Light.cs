@@ -65,7 +65,6 @@ namespace KrayonCore.Components
             }
 
             CreateLight();
-            _started = true;
         }
 
         public override void Start()
