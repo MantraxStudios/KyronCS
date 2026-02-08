@@ -1,4 +1,6 @@
 ﻿using KrayonCore;
+using KrayonCore.Core.Attributes;
+using KrayonCore.Utilities;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
@@ -213,6 +215,35 @@ namespace KrayonCore
         {
             _model = null;
             _materials = new Material[0];
+        }
+
+        [CallEvent("Setup Materials")]
+        public void SetupAutomaticMaterials()
+        {
+            _materials = new Material[Model.SubMeshCount];
+
+            for (int i = 0; i < Model.SubMeshCount; i++)
+            {
+                SubMeshInfo meshInfo = Model._subMeshes[i];
+
+                string textureFileName = PathUtils.GetFileNameWithExtension(
+                    meshInfo.TextureInfo.DiffuseTexture
+                );
+
+                string texturePath = PathUtils.FindFileByName(
+                    AssetManager.BasePath,
+                    textureFileName
+                );
+
+                if (!string.IsNullOrEmpty(texturePath))
+                {
+                    Material G = GraphicsEngine.Instance.Materials.Create(PathUtils.GetFileNameWithoutExtension(texturePath), "shaders/basic");
+                    G.LoadAlbedoTexture(PathUtils.GetPathAfterContent(texturePath));
+                    _materials[i] = G;
+                }
+            }
+
+            GraphicsEngine.Instance.Materials.SaveMaterialsData();
         }
     }
 }

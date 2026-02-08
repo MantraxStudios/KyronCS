@@ -5,14 +5,65 @@ using OpenTK.Mathematics;
 
 namespace KrayonCore
 {
+    public class MaterialTextureInfo
+    {
+        public string DiffuseTexture { get; set; }
+        public string NormalTexture { get; set; }
+        public string SpecularTexture { get; set; }
+        public string MetallicTexture { get; set; }
+        public string RoughnessTexture { get; set; }
+        public string AmbientOcclusionTexture { get; set; }
+        public string EmissiveTexture { get; set; }
+
+        public bool HasAnyTexture()
+        {
+            return !string.IsNullOrEmpty(DiffuseTexture) ||
+                   !string.IsNullOrEmpty(NormalTexture) ||
+                   !string.IsNullOrEmpty(SpecularTexture) ||
+                   !string.IsNullOrEmpty(MetallicTexture) ||
+                   !string.IsNullOrEmpty(RoughnessTexture) ||
+                   !string.IsNullOrEmpty(AmbientOcclusionTexture) ||
+                   !string.IsNullOrEmpty(EmissiveTexture);
+        }
+
+        public override string ToString()
+        {
+            var textures = new List<string>();
+            if (!string.IsNullOrEmpty(DiffuseTexture)) textures.Add($"Diffuse: {DiffuseTexture}");
+            if (!string.IsNullOrEmpty(NormalTexture)) textures.Add($"Normal: {NormalTexture}");
+            if (!string.IsNullOrEmpty(SpecularTexture)) textures.Add($"Specular: {SpecularTexture}");
+            if (!string.IsNullOrEmpty(MetallicTexture)) textures.Add($"Metallic: {MetallicTexture}");
+            if (!string.IsNullOrEmpty(RoughnessTexture)) textures.Add($"Roughness: {RoughnessTexture}");
+            if (!string.IsNullOrEmpty(AmbientOcclusionTexture)) textures.Add($"AO: {AmbientOcclusionTexture}");
+            if (!string.IsNullOrEmpty(EmissiveTexture)) textures.Add($"Emissive: {EmissiveTexture}");
+            return textures.Count > 0 ? string.Join(", ", textures) : "Sin texturas";
+        }
+    }
+
+    public class SubMeshInfo
+    {
+        public Mesh Mesh { get; set; }
+        public int MaterialIndex { get; set; }
+        public MaterialTextureInfo TextureInfo { get; set; }
+
+        public SubMeshInfo(Mesh mesh, int materialIndex, MaterialTextureInfo textureInfo)
+        {
+            Mesh = mesh;
+            MaterialIndex = materialIndex;
+            TextureInfo = textureInfo ?? new MaterialTextureInfo();
+        }
+    }
+
     public class Model : IDisposable
     {
-        private List<Mesh> _meshes = new();
+        public List<SubMeshInfo> _subMeshes = new();
+        private List<MaterialTextureInfo> _materials = new();
         private bool _disposed = false;
         private Box3 _aabb;
         private bool _aabbCalculated = false;
 
-        public int SubMeshCount => _meshes.Count;
+        public int SubMeshCount => _subMeshes.Count;
+        public int MaterialCount => _materials.Count;
 
         public Box3 AABB
         {
@@ -24,6 +75,36 @@ namespace KrayonCore
                 }
                 return _aabb;
             }
+        }
+
+        // Obtener el material index de un submesh
+        public int GetMaterialIndex(int subMeshIndex)
+        {
+            if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
+            {
+                return _subMeshes[subMeshIndex].MaterialIndex;
+            }
+            return 0;
+        }
+
+        // Obtener la información de texturas de un submesh específico
+        public MaterialTextureInfo GetSubMeshTextureInfo(int subMeshIndex)
+        {
+            if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
+            {
+                return _subMeshes[subMeshIndex].TextureInfo;
+            }
+            return new MaterialTextureInfo();
+        }
+
+        // Obtener la información de texturas de un material por índice
+        public MaterialTextureInfo GetMaterialTextureInfo(int materialIndex)
+        {
+            if (materialIndex >= 0 && materialIndex < _materials.Count)
+            {
+                return _materials[materialIndex];
+            }
+            return new MaterialTextureInfo();
         }
 
         public static Model Load(string path)
@@ -42,9 +123,131 @@ namespace KrayonCore
                 throw new Exception($"Error loading model: {path}");
             }
 
+            // Primero procesar todos los materiales
+            model.ProcessMaterials(scene, path);
+
+            // Luego procesar los nodos y meshes
             model.ProcessNode(scene.RootNode, scene);
             model.CalculateAABB();
+            
+            // Log para debug
+            Console.WriteLine($"[Model] ═══════════════════════════════════════");
+            Console.WriteLine($"[Model] Modelo cargado: {path}");
+            Console.WriteLine($"[Model]   Materiales en archivo: {model.MaterialCount}");
+            
+            for (int i = 0; i < model.MaterialCount; i++)
+            {
+                var matInfo = model.GetMaterialTextureInfo(i);
+                Console.WriteLine($"[Model]     Material {i}: {matInfo}");
+            }
+            
+            Console.WriteLine($"[Model]   SubMeshes: {model.SubMeshCount}");
+            for (int i = 0; i < model.SubMeshCount; i++)
+            {
+                var texInfo = model.GetSubMeshTextureInfo(i);
+                Console.WriteLine($"[Model]     SubMesh {i} -> Material: {model.GetMaterialIndex(i)}");
+                Console.WriteLine($"[Model]       Texturas: {texInfo}");
+            }
+            Console.WriteLine($"[Model] ═══════════════════════════════════════");
+            
             return model;
+        }
+
+        private void ProcessMaterials(Scene scene, string modelPath)
+        {
+            string modelDirectory = System.IO.Path.GetDirectoryName(modelPath) ?? "";
+            
+            Console.WriteLine($"[Model] Procesando {scene.MaterialCount} materiales...");
+
+            for (int i = 0; i < scene.MaterialCount; i++)
+            {
+                var material = scene.Materials[i];
+                var textureInfo = new MaterialTextureInfo();
+
+                // Diffuse/Albedo texture
+                if (material.HasTextureDiffuse)
+                {
+                    textureInfo.DiffuseTexture = GetTexturePath(material.TextureDiffuse, modelDirectory);
+                }
+
+                // Normal map
+                if (material.HasTextureNormal)
+                {
+                    textureInfo.NormalTexture = GetTexturePath(material.TextureNormal, modelDirectory);
+                }
+                // A veces las normales están en TextureHeight
+                else if (material.HasTextureHeight)
+                {
+                    textureInfo.NormalTexture = GetTexturePath(material.TextureHeight, modelDirectory);
+                }
+
+                // Specular texture
+                if (material.HasTextureSpecular)
+                {
+                    textureInfo.SpecularTexture = GetTexturePath(material.TextureSpecular, modelDirectory);
+                }
+
+                // Metallic texture (puede estar en diferentes slots según el formato)
+                if (material.HasTextureReflection)
+                {
+                    textureInfo.MetallicTexture = GetTexturePath(material.TextureReflection, modelDirectory);
+                }
+
+                // Roughness texture
+                // if (material.HasTextureShininess)
+                // {
+                //     textureInfo.RoughnessTexture = GetTexturePath(material.TextureShininess, modelDirectory);
+                // }
+
+                // Ambient Occlusion
+                if (material.HasTextureAmbient)
+                {
+                    textureInfo.AmbientOcclusionTexture = GetTexturePath(material.TextureAmbient, modelDirectory);
+                }
+                else if (material.HasTextureLightMap)
+                {
+                    textureInfo.AmbientOcclusionTexture = GetTexturePath(material.TextureLightMap, modelDirectory);
+                }
+
+                // Emissive texture
+                if (material.HasTextureEmissive)
+                {
+                    textureInfo.EmissiveTexture = GetTexturePath(material.TextureEmissive, modelDirectory);
+                }
+
+                _materials.Add(textureInfo);
+            }
+        }
+
+        private string GetTexturePath(TextureSlot textureSlot, string modelDirectory)
+        {
+            if (string.IsNullOrEmpty(textureSlot.FilePath))
+                return null;
+
+            string texturePath = textureSlot.FilePath;
+
+            // Limpiar la ruta (a veces viene con caracteres raros)
+            texturePath = texturePath.Replace("\\", "/");
+
+            // Si la ruta es absoluta, extraer solo el nombre del archivo
+            if (System.IO.Path.IsPathRooted(texturePath))
+            {
+                texturePath = System.IO.Path.GetFileName(texturePath);
+            }
+
+            // Combinar con el directorio del modelo
+            string fullPath = System.IO.Path.Combine(modelDirectory, texturePath);
+            fullPath = fullPath.Replace("\\", "/");
+
+            // Convertir a ruta relativa desde BasePath si es posible
+            if (fullPath.StartsWith(AssetManager.BasePath))
+            {
+                fullPath = fullPath.Substring(AssetManager.BasePath.Length);
+                if (fullPath.StartsWith("/"))
+                    fullPath = fullPath.Substring(1);
+            }
+
+            return fullPath;
         }
 
         private void ProcessNode(Node node, Scene scene)
@@ -52,7 +255,20 @@ namespace KrayonCore
             for (int i = 0; i < node.MeshCount; i++)
             {
                 Assimp.Mesh mesh = scene.Meshes[node.MeshIndices[i]];
-                _meshes.Add(ProcessMesh(mesh, scene));
+                
+                // Procesar el mesh Y obtener su info de material
+                var processedMesh = ProcessMesh(mesh, scene);
+                int materialIndex = mesh.MaterialIndex;
+                
+                // Obtener la información de texturas del material
+                MaterialTextureInfo textureInfo = null;
+                if (materialIndex >= 0 && materialIndex < _materials.Count)
+                {
+                    textureInfo = _materials[materialIndex];
+                }
+                
+                var subMeshInfo = new SubMeshInfo(processedMesh, materialIndex, textureInfo);
+                _subMeshes.Add(subMeshInfo);
             }
 
             for (int i = 0; i < node.ChildCount; i++)
@@ -137,7 +353,7 @@ namespace KrayonCore
 
         private void CalculateAABB()
         {
-            if (_meshes.Count == 0)
+            if (_subMeshes.Count == 0)
             {
                 _aabb = new Box3(Vector3.Zero, Vector3.Zero);
                 _aabbCalculated = true;
@@ -147,9 +363,9 @@ namespace KrayonCore
             Vector3 min = new Vector3(float.MaxValue);
             Vector3 max = new Vector3(float.MinValue);
 
-            foreach (var mesh in _meshes)
+            foreach (var subMeshInfo in _subMeshes)
             {
-                Box3 meshAABB = mesh.GetAABB();
+                Box3 meshAABB = subMeshInfo.Mesh.GetAABB();
                 min = Vector3.ComponentMin(min, meshAABB.Min);
                 max = Vector3.ComponentMax(max, meshAABB.Max);
             }
@@ -165,7 +381,6 @@ namespace KrayonCore
                 CalculateAABB();
             }
 
-            // Transformar las 8 esquinas del AABB
             Vector3[] corners = new Vector3[8]
             {
                 new Vector3(_aabb.Min.X, _aabb.Min.Y, _aabb.Min.Z),
@@ -193,33 +408,33 @@ namespace KrayonCore
 
         public void SetupInstancing(Matrix4[] instanceMatrices)
         {
-            foreach (var mesh in _meshes)
+            foreach (var subMeshInfo in _subMeshes)
             {
-                mesh.SetupInstancing(instanceMatrices);
+                subMeshInfo.Mesh.SetupInstancing(instanceMatrices);
             }
         }
 
         public void Draw()
         {
-            foreach (var mesh in _meshes)
+            foreach (var subMeshInfo in _subMeshes)
             {
-                mesh.Draw();
+                subMeshInfo.Mesh.Draw();
             }
         }
 
         public void DrawInstanced(int instanceCount)
         {
-            foreach (var mesh in _meshes)
+            foreach (var subMeshInfo in _subMeshes)
             {
-                mesh.DrawInstanced(instanceCount);
+                subMeshInfo.Mesh.DrawInstanced(instanceCount);
             }
         }
 
         public void DrawSubMesh(int index)
         {
-            if (index >= 0 && index < _meshes.Count)
+            if (index >= 0 && index < _subMeshes.Count)
             {
-                _meshes[index].Draw();
+                _subMeshes[index].Mesh.Draw();
             }
         }
 
@@ -227,11 +442,12 @@ namespace KrayonCore
         {
             if (!_disposed)
             {
-                foreach (var mesh in _meshes)
+                foreach (var subMeshInfo in _subMeshes)
                 {
-                    mesh?.Dispose();
+                    subMeshInfo.Mesh?.Dispose();
                 }
-                _meshes.Clear();
+                _subMeshes.Clear();
+                _materials.Clear();
                 _disposed = true;
             }
         }
