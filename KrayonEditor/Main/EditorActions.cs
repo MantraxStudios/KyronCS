@@ -8,6 +8,7 @@ namespace KrayonEditor
     public static class EditorActions
     {
         public static GameObject? SelectedObject { get; set; }
+        public static bool IsHoveringScene = false;
 
         public static void CreateEmptyGameObject()
         {
@@ -29,6 +30,19 @@ namespace KrayonEditor
             meshRenderer.Model = Model.Load("models/Cube.fbx");
             EngineEditor.SetSelectedObject(go);
             EngineEditor.LogMessage($"Created {go.Name} with MeshRenderer");
+        }
+
+        public static void SetupAllMaterials()
+        {
+            if (SceneManager.ActiveScene == null) return;
+            
+            for (int i = 0; i < SceneManager.ActiveScene.GetAllGameObjects().Count; i++)
+            {
+                if (SceneManager.ActiveScene.GetAllGameObjects()[i].HasComponent<MeshRenderer>())
+                {
+                    SceneManager.ActiveScene.GetAllGameObjects()[i].GetComponent<MeshRenderer>().SetupAutomaticMaterials();
+                }
+            }
         }
 
         public static void CreateDirectionalLight()

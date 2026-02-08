@@ -156,7 +156,7 @@ namespace KrayonEditor.UI
                 LogMessage("Loaded Scene3");
             }
 
-            if (mouse.IsButtonDown(MouseButton.Right))
+            if (mouse.IsButtonDown(MouseButton.Right) && EditorActions.IsHoveringScene)
             {
                 float speed = _editorCameraSpeed;
                 if (keyboard.IsKeyDown(Keys.LeftControl))
@@ -189,12 +189,12 @@ namespace KrayonEditor.UI
             _lastX = mouse.X;
             _lastY = mouse.Y;
 
-            if (mouse.IsButtonDown(MouseButton.Right) && GraphicsEngine.Instance.GetSceneRenderer().GetCamera().IsPerspective)
+            if (mouse.IsButtonDown(MouseButton.Right) && GraphicsEngine.Instance.GetSceneRenderer().GetCamera().IsPerspective && EditorActions.IsHoveringScene)
             {
                 _editorCamera.Rotate(xOffset, yOffset);
             }
 
-            if (mouse.ScrollDelta.Y != 0)
+            if (mouse.ScrollDelta.Y != 0 && EditorActions.IsHoveringScene)
             {
                 _editorCamera.Zoom(mouse.ScrollDelta.Y);
             }

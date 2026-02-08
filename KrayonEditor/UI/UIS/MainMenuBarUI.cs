@@ -90,6 +90,7 @@ namespace KrayonEditor.UI
                 {
                     if (ImGui.MenuItem("Create Empty")) { EditorActions.CreateEmptyGameObject(); }
                     if (ImGui.MenuItem("Create Cube")) { EditorActions.CreateCubeGameObject(); }
+                    if (ImGui.MenuItem("Setup All Materials From Scene")) { EditorActions.SetupAllMaterials(); }
                     ImGui.Separator();
                     if (ImGui.MenuItem("Delete Selected", "Del")) { EditorActions.DeleteSelectedObject(); }
                     ImGui.EndMenu();

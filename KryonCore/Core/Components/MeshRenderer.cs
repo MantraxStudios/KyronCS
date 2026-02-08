@@ -56,19 +56,35 @@ namespace KrayonCore
         {
             Console.WriteLine($"[MeshRenderer] Awake llamado en {GameObject?.Name ?? "Unknown"}");
 
+            // CRÍTICO: Limpiar materiales anteriores para evitar glitches al recargar
+            _materials = new Material[0];
+
             if (!string.IsNullOrEmpty(ModelPath))
             {
                 Console.WriteLine($"[MeshRenderer] Intentando cargar modelo desde: {ModelPath}");
                 LoadModelFromPath(ModelPath);
+                
+                // Inicializar array de materiales al tamaño correcto basado en el modelo
+                if (_model != null && _model.SubMeshCount > 0)
+                {
+                    _materials = new Material[_model.SubMeshCount];
+                    Console.WriteLine($"[MeshRenderer] Array de materiales inicializado con {_materials.Length} slots");
+                }
             }
             else
             {
                 Console.WriteLine($"[MeshRenderer] No hay ModelPath especificado");
             }
 
-            for (int i = 0; i < MaterialPaths.Length; i++)
+            // Cargar materiales guardados (solo hasta el límite del array)
+            for (int i = 0; i < MaterialPaths.Length && i < _materials.Length; i++)
             {
-                SetMaterial(i, GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]));
+                var material = GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]);
+                if (material != null)
+                {
+                    _materials[i] = material;
+                    Console.WriteLine($"[MeshRenderer] Material {i} cargado: {MaterialPaths[i]}");
+                }
             }
 
             _isInitialized = true;
@@ -80,6 +96,13 @@ namespace KrayonCore
             {
                 Console.WriteLine($"[MeshRenderer] Warning: Modelo no cargado en Start. Reintentando carga de: {ModelPath}");
                 LoadModelFromPath(ModelPath);
+                
+                // Asegurar que el array de materiales existe
+                if (_model != null && _materials.Length != _model.SubMeshCount)
+                {
+                    Console.WriteLine($"[MeshRenderer] Corrigiendo tamaño de array de materiales: {_materials.Length} -> {_model.SubMeshCount}");
+                    Array.Resize(ref _materials, _model.SubMeshCount);
+                }
             }
 
             if (_model == null)
@@ -99,12 +122,23 @@ namespace KrayonCore
 
                 if (!string.IsNullOrEmpty(ModelPath))
                 {
+                    // Limpiar materiales antes de cargar nuevo modelo
+                    _materials = new Material[0];
+                    
                     LoadModelFromPath(ModelPath);
+                    
+                    // Redimensionar array de materiales
+                    if (_model != null && _model.SubMeshCount > 0)
+                    {
+                        _materials = new Material[_model.SubMeshCount];
+                        Console.WriteLine($"[MeshRenderer] Array de materiales redimensionado a {_materials.Length}");
+                    }
                 }
                 else
                 {
                     _model = null;
-                    Console.WriteLine($"[MeshRenderer] ModelPath vacío, modelo eliminado");
+                    _materials = new Material[0];
+                    Console.WriteLine($"[MeshRenderer] ModelPath vacío, modelo y materiales eliminados");
                 }
             }
         }
@@ -118,6 +152,16 @@ namespace KrayonCore
         {
             _model = model;
             _modelPath = ""; // Usa el backing field para evitar disparar el evento
+            
+            // Ajustar array de materiales al nuevo modelo
+            if (model != null && model.SubMeshCount > 0)
+            {
+                _materials = new Material[model.SubMeshCount];
+            }
+            else
+            {
+                _materials = new Material[0];
+            }
         }
 
         protected virtual void LoadModelFromPath(string path)
@@ -164,17 +208,20 @@ namespace KrayonCore
 
         public void SetMaterial(int index, Material material)
         {
-            Console.WriteLine("Material updated Meshss");
+            Console.WriteLine($"[MeshRenderer] SetMaterial llamado - Index: {index}, Material: {material?.Name ?? "null"}");
 
             if (index < 0) return;
 
+            // Asegurar que el array tenga el tamaño necesario
             if (index >= _materials.Length)
             {
-                Array.Resize(ref _materials, index + 1);
+                int newSize = index + 1;
+                Console.WriteLine($"[MeshRenderer] Redimensionando array de materiales: {_materials.Length} -> {newSize}");
+                Array.Resize(ref _materials, newSize);
             }
 
             _materials[index] = material;
-            Console.WriteLine("Material updated Mesh");
+            Console.WriteLine($"[MeshRenderer] Material asignado en índice {index}");
         }
 
         public Material GetMaterial(int index)
@@ -209,6 +256,7 @@ namespace KrayonCore
         public void ClearMaterials()
         {
             _materials = new Material[0];
+            Console.WriteLine($"[MeshRenderer] Materiales limpiados");
         }
 
         public override void OnDestroy()
@@ -220,6 +268,12 @@ namespace KrayonCore
         [CallEvent("Setup Materials")]
         public void SetupAutomaticMaterials()
         {
+            if (_model == null)
+            {
+                Console.WriteLine($"[MeshRenderer] No se puede configurar materiales automáticos: modelo es null");
+                return;
+            }
+
             _materials = new Material[Model.SubMeshCount];
 
             for (int i = 0; i < Model.SubMeshCount; i++)
@@ -239,6 +293,7 @@ namespace KrayonCore
                 {
                     Material G = GraphicsEngine.Instance.Materials.Create(PathUtils.GetFileNameWithoutExtension(texturePath), "shaders/basic");
                     G.LoadAlbedoTexture(PathUtils.GetPathAfterContent(texturePath));
+                    G.Roughness = 0;
                     _materials[i] = G;
                 }
             }

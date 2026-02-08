@@ -74,20 +74,23 @@ namespace KrayonCore
                 if (renderer == null || !renderer.Enabled)
                     continue;
 
-                // Asignar material básico si no tiene
-                if (renderer.MaterialCount == 0)
+                // Verificar que tenga modelo
+                if (renderer.Model == null)
+                    continue;
+
+                // Asignar material básico si no tiene materiales válidos
+                if (renderer.MaterialCount == 0 || !HasAnyValidMaterial(renderer))
                 {
                     var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
                     if (basicMaterial != null)
                     {
                         basicMaterial.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
+                        
+                        // Limpiar y establecer material básico
+                        renderer.ClearMaterials();
                         renderer.AddMaterial(basicMaterial);
                     }
                 }
-
-                // Verificar que tenga modelo y materiales
-                if (renderer.Model == null || renderer.MaterialCount == 0)
-                    continue;
 
                 var transform = go.GetComponent<Transform>();
                 if (transform == null)
@@ -96,13 +99,16 @@ namespace KrayonCore
                 Matrix4 worldMatrix = transform.GetWorldMatrix();
 
                 // Como Unity: cada material se aplica a su submesh correspondiente por índice
-                // Si solo hay 1 material, se aplica a todos los submeshes
-                if (renderer.MaterialCount == 1)
+                // Si solo hay 1 material VÁLIDO, se aplica a todos los submeshes
+                int validMaterialCount = CountValidMaterials(renderer);
+                
+                if (validMaterialCount == 1)
                 {
-                    var material = renderer.Materials[0];
-                    if (material != null)
+                    // Encontrar el primer material válido
+                    Material validMaterial = GetFirstValidMaterial(renderer);
+                    if (validMaterial != null)
                     {
-                        var key = (renderer.Model, material);
+                        var key = (renderer.Model, validMaterial);
 
                         if (!_meshInstanceGroups.ContainsKey(key))
                         {
@@ -112,9 +118,9 @@ namespace KrayonCore
                         _meshInstanceGroups[key].Add(worldMatrix);
                     }
                 }
-                else
+                else if (validMaterialCount > 1)
                 {
-                    // Con múltiples materiales, cada uno se aplica a su submesh por índice
+                    // Con múltiples materiales válidos, cada uno se aplica a su submesh por índice
                     // No podemos usar instanced rendering eficientemente aquí, 
                     // así que renderizamos directamente
                     RenderMeshWithMultipleMaterials(renderer, worldMatrix, view, projection, cameraPos);
@@ -150,6 +156,38 @@ namespace KrayonCore
             }
         }
 
+        private bool HasAnyValidMaterial(MeshRenderer renderer)
+        {
+            for (int i = 0; i < renderer.MaterialCount; i++)
+            {
+                if (renderer.GetMaterial(i) != null)
+                    return true;
+            }
+            return false;
+        }
+
+        private int CountValidMaterials(MeshRenderer renderer)
+        {
+            int count = 0;
+            for (int i = 0; i < renderer.MaterialCount; i++)
+            {
+                if (renderer.GetMaterial(i) != null)
+                    count++;
+            }
+            return count;
+        }
+
+        private Material GetFirstValidMaterial(MeshRenderer renderer)
+        {
+            for (int i = 0; i < renderer.MaterialCount; i++)
+            {
+                var material = renderer.GetMaterial(i);
+                if (material != null)
+                    return material;
+            }
+            return null;
+        }
+
         private void RenderMeshWithMultipleMaterials(MeshRenderer renderer, Matrix4 worldMatrix, Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (renderer.Model == null)
@@ -160,21 +198,37 @@ namespace KrayonCore
             // Renderizar cada submesh con su material correspondiente
             for (int i = 0; i < submeshCount; i++)
             {
-                // Obtener el material para este submesh (por índice)
                 Material material = null;
+                
+                // ESTRATEGIA DE FALLBACK MEJORADA:
+                // 1. Intentar obtener el material en el índice exacto
                 if (i < renderer.MaterialCount)
                 {
                     material = renderer.GetMaterial(i);
                 }
                 
-                // Si no hay material para este índice, usar el último material disponible
-                if (material == null && renderer.MaterialCount > 0)
+                // 2. Si es null, buscar el primer material válido en el array
+                if (material == null)
                 {
-                    material = renderer.GetMaterial(renderer.MaterialCount - 1);
+                    material = GetFirstValidMaterial(renderer);
+                }
+                
+                // 3. Si aún no hay material, usar material básico
+                if (material == null)
+                {
+                    material = GraphicsEngine.Instance.Materials.Get("basic");
+                    if (material != null)
+                    {
+                        material.SetVector3Cached("u_Color", new Vector3(1.0f, 0.0f, 1.0f)); // Magenta para debug
+                    }
                 }
 
+                // 4. Si definitivamente no hay material, saltar este submesh
                 if (material == null)
+                {
+                    Console.WriteLine($"[SceneRenderer] ⚠️ No se pudo obtener material para submesh {i}");
                     continue;
+                }
 
                 // Configurar material
                 material.SetPBRProperties();

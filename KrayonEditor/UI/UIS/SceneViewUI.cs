@@ -336,7 +336,8 @@ namespace KrayonEditor.UI
                         viewportSize,
                         new Vector2(0, 1),
                         new Vector2(1, 0)
-                    );
+                    ); 
+                    EditorActions.IsHoveringScene = ImGui.IsItemHovered();
 
                     if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !TransformGizmo.IsHovering)
                     {
