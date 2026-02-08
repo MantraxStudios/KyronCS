@@ -92,6 +92,7 @@ namespace KrayonEditor.UI
         {
             var style = ImGui.GetStyle();
 
+            // Configuración de estilo
             style.WindowPadding = new Vector2(8, 8);
             style.FramePadding = new Vector2(5, 4);
             style.CellPadding = new Vector2(4, 2);
@@ -101,14 +102,12 @@ namespace KrayonEditor.UI
             style.ScrollbarSize = 14;
             style.GrabMinSize = 8;
 
-            // Bordes
             style.WindowBorderSize = 1;
             style.ChildBorderSize = 1;
             style.PopupBorderSize = 1;
             style.FrameBorderSize = 0;
             style.TabBorderSize = 0;
 
-            // Bordes ligeramente redondeados
             style.WindowRounding = 4;
             style.ChildRounding = 4;
             style.FrameRounding = 3;
@@ -120,96 +119,94 @@ namespace KrayonEditor.UI
 
             var colors = style.Colors;
 
-            // Colores gris claro estilo UE5
-            // Fondos principales - gris medio claro
-            colors[(int)ImGuiCol.WindowBg] = new Vector4(0.24f, 0.24f, 0.24f, 1.0f);              // #3D3D3D
-            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);               // #333333
-            colors[(int)ImGuiCol.PopupBg] = new Vector4(0.26f, 0.26f, 0.26f, 0.98f);              // #424242
-            colors[(int)ImGuiCol.Border] = new Vector4(0.14f, 0.14f, 0.14f, 1.0f);                // #242424
+            colors[(int)ImGuiCol.WindowBg] = new Vector4(0.12f, 0.15f, 0.22f, 1.0f);           
+            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);            
+            colors[(int)ImGuiCol.PopupBg] = new Vector4(0.14f, 0.17f, 0.24f, 0.98f);          
+            colors[(int)ImGuiCol.Border] = new Vector4(0.08f, 0.10f, 0.14f, 1.0f);              
             colors[(int)ImGuiCol.BorderShadow] = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 
             // Barras de título y menú
-            colors[(int)ImGuiCol.TitleBg] = new Vector4(0.16f, 0.16f, 0.16f, 1.0f);               // #292929
-            colors[(int)ImGuiCol.TitleBgActive] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);         // #333333
-            colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(0.16f, 0.16f, 0.16f, 1.0f);      // #292929
-            colors[(int)ImGuiCol.MenuBarBg] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);             // #2E2E2E
+            colors[(int)ImGuiCol.TitleBg] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);             // #1A1F2E
+            colors[(int)ImGuiCol.TitleBgActive] = new Vector4(0.15f, 0.18f, 0.27f, 1.0f);       // #262E45 - Deep Blue
+            colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);
+            colors[(int)ImGuiCol.MenuBarBg] = new Vector4(0.15f, 0.18f, 0.27f, 1.0f);           // #262E45
 
             // Frames (inputs, boxes)
-            colors[(int)ImGuiCol.FrameBg] = new Vector4(0.16f, 0.16f, 0.16f, 1.0f);               // #292929
-            colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.28f, 0.28f, 0.28f, 1.0f);        // #474747
-            colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.32f, 0.32f, 0.32f, 1.0f);         // #525252
+            colors[(int)ImGuiCol.FrameBg] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);             // #1A1F2E
+            colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.18f, 0.22f, 0.32f, 1.0f);      // #2E3852 - Ocean Blue
+            colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.20f, 0.25f, 0.35f, 1.0f);
 
             // Tabs
-            colors[(int)ImGuiCol.Tab] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);                   // #2E2E2E
-            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.34f, 0.34f, 0.34f, 1.0f);            // #575757
-            colors[(int)ImGuiCol.TabSelected] = new Vector4(0.24f, 0.24f, 0.24f, 1.0f);           // #3D3D3D
-            colors[(int)ImGuiCol.TabSelectedOverline] = new Vector4(0.0f, 0.47f, 0.84f, 1.0f);    // Azul UE5
-            colors[(int)ImGuiCol.TabDimmed] = new Vector4(0.16f, 0.16f, 0.16f, 1.0f);             // #292929
-            colors[(int)ImGuiCol.TabDimmedSelected] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);     // #333333
-            colors[(int)ImGuiCol.TabDimmedSelectedOverline] = new Vector4(0.0f, 0.34f, 0.61f, 1.0f);
+            colors[(int)ImGuiCol.Tab] = new Vector4(0.15f, 0.18f, 0.27f, 1.0f);                 // #262E45
+            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.18f, 0.22f, 0.32f, 1.0f);          // #2E3852
+            colors[(int)ImGuiCol.TabSelected] = new Vector4(0.12f, 0.15f, 0.22f, 1.0f);         // #1F2638
+            colors[(int)ImGuiCol.TabSelectedOverline] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f); // #42C5D9 - CYAN ✨
+            colors[(int)ImGuiCol.TabDimmed] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);
+            colors[(int)ImGuiCol.TabDimmedSelected] = new Vector4(0.15f, 0.18f, 0.27f, 1.0f);
+            colors[(int)ImGuiCol.TabDimmedSelectedOverline] = new Vector4(0.20f, 0.60f, 0.68f, 1.0f);
 
             // Scrollbar
-            colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.16f, 0.16f, 0.16f, 1.0f);           // #292929
-            colors[(int)ImGuiCol.ScrollbarGrab] = new Vector4(0.38f, 0.38f, 0.38f, 1.0f);         // #616161
-            colors[(int)ImGuiCol.ScrollbarGrabHovered] = new Vector4(0.46f, 0.46f, 0.46f, 1.0f);  // #757575
-            colors[(int)ImGuiCol.ScrollbarGrabActive] = new Vector4(0.54f, 0.54f, 0.54f, 1.0f);   // #8A8A8A
+            colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);
+            colors[(int)ImGuiCol.ScrollbarGrab] = new Vector4(0.18f, 0.22f, 0.32f, 1.0f);
+            colors[(int)ImGuiCol.ScrollbarGrabHovered] = new Vector4(0.24f, 0.28f, 0.38f, 1.0f);
+            colors[(int)ImGuiCol.ScrollbarGrabActive] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f); // CYAN ✨
 
             // Sliders
-            colors[(int)ImGuiCol.SliderGrab] = new Vector4(0.0f, 0.47f, 0.84f, 1.0f);             // Azul UE5
-            colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.0f, 0.59f, 1.0f, 1.0f);        // Azul claro UE5
+            colors[(int)ImGuiCol.SliderGrab] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f);          // #42C5D9 - CYAN ✨
+            colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.40f, 0.88f, 0.95f, 1.0f);    // #66E0F2 - CYAN BRILLANTE ✨
 
             // Buttons
-            colors[(int)ImGuiCol.Button] = new Vector4(0.30f, 0.30f, 0.30f, 1.0f);                // #4D4D4D
-            colors[(int)ImGuiCol.ButtonHovered] = new Vector4(0.0f, 0.47f, 0.84f, 0.6f);          // Azul UE5 con transparencia
-            colors[(int)ImGuiCol.ButtonActive] = new Vector4(0.0f, 0.47f, 0.84f, 1.0f);           // Azul UE5
+            colors[(int)ImGuiCol.Button] = new Vector4(0.18f, 0.22f, 0.32f, 1.0f);              // #2E3852
+            colors[(int)ImGuiCol.ButtonHovered] = new Vector4(0.26f, 0.77f, 0.85f, 0.5f);       // CYAN semi-transparente ✨
+            colors[(int)ImGuiCol.ButtonActive] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f);        // CYAN ✨
 
             // Headers (CollapsingHeader, TreeNode)
-            colors[(int)ImGuiCol.Header] = new Vector4(0.30f, 0.30f, 0.30f, 1.0f);                // #4D4D4D
-            colors[(int)ImGuiCol.HeaderHovered] = new Vector4(0.0f, 0.47f, 0.84f, 0.4f);          // Azul UE5 suave
-            colors[(int)ImGuiCol.HeaderActive] = new Vector4(0.0f, 0.47f, 0.84f, 0.6f);           // Azul UE5 medio
+            colors[(int)ImGuiCol.Header] = new Vector4(0.18f, 0.22f, 0.32f, 1.0f);
+            colors[(int)ImGuiCol.HeaderHovered] = new Vector4(0.26f, 0.77f, 0.85f, 0.3f);       // CYAN suave ✨
+            colors[(int)ImGuiCol.HeaderActive] = new Vector4(0.26f, 0.77f, 0.85f, 0.5f);        // CYAN medio ✨
 
             // Separators
-            colors[(int)ImGuiCol.Separator] = new Vector4(0.14f, 0.14f, 0.14f, 1.0f);             // #242424
-            colors[(int)ImGuiCol.SeparatorHovered] = new Vector4(0.0f, 0.47f, 0.84f, 0.78f);      // Azul UE5
-            colors[(int)ImGuiCol.SeparatorActive] = new Vector4(0.0f, 0.47f, 0.84f, 1.0f);        // Azul UE5
+            colors[(int)ImGuiCol.Separator] = new Vector4(0.08f, 0.10f, 0.14f, 1.0f);
+            colors[(int)ImGuiCol.SeparatorHovered] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f);    // CYAN ✨
+            colors[(int)ImGuiCol.SeparatorActive] = new Vector4(0.40f, 0.88f, 0.95f, 1.0f);     // CYAN BRILLANTE ✨
 
             // Resize grip
-            colors[(int)ImGuiCol.ResizeGrip] = new Vector4(0.0f, 0.47f, 0.84f, 0.25f);            // Azul UE5 transparente
-            colors[(int)ImGuiCol.ResizeGripHovered] = new Vector4(0.0f, 0.47f, 0.84f, 0.67f);     // Azul UE5
-            colors[(int)ImGuiCol.ResizeGripActive] = new Vector4(0.0f, 0.47f, 0.84f, 0.95f);      // Azul UE5
+            colors[(int)ImGuiCol.ResizeGrip] = new Vector4(0.26f, 0.77f, 0.85f, 0.2f);
+            colors[(int)ImGuiCol.ResizeGripHovered] = new Vector4(0.26f, 0.77f, 0.85f, 0.6f);
+            colors[(int)ImGuiCol.ResizeGripActive] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f);
 
             // CheckMark y Text
-            colors[(int)ImGuiCol.CheckMark] = new Vector4(0.0f, 0.59f, 1.0f, 1.0f);               // Azul claro UE5
-            colors[(int)ImGuiCol.Text] = new Vector4(0.95f, 0.95f, 0.95f, 1.0f);                  // Texto blanco
-            colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.50f, 0.50f, 0.50f, 1.0f);          // Texto deshabilitado
-            colors[(int)ImGuiCol.TextSelectedBg] = new Vector4(0.0f, 0.47f, 0.84f, 0.35f);        // Selección azul UE5
+            colors[(int)ImGuiCol.CheckMark] = new Vector4(0.40f, 0.88f, 0.95f, 1.0f);           // CYAN BRILLANTE ✨
+            colors[(int)ImGuiCol.Text] = new Vector4(0.92f, 0.94f, 0.96f, 1.0f);                // #EBF0F5 - Blanco azulado
+            colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.45f, 0.50f, 0.57f, 1.0f);        // Gris azulado
+            colors[(int)ImGuiCol.TextSelectedBg] = new Vector4(0.26f, 0.77f, 0.85f, 0.35f);     // CYAN transparente ✨
 
             // Docking
-            colors[(int)ImGuiCol.DockingPreview] = new Vector4(0.0f, 0.47f, 0.84f, 0.70f);        // Azul UE5
-            colors[(int)ImGuiCol.DockingEmptyBg] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);        // #333333
+            colors[(int)ImGuiCol.DockingPreview] = new Vector4(0.26f, 0.77f, 0.85f, 0.7f);      // CYAN ✨
+            colors[(int)ImGuiCol.DockingEmptyBg] = new Vector4(0.10f, 0.12f, 0.18f, 1.0f);
 
             // Plots
-            colors[(int)ImGuiCol.PlotLines] = new Vector4(0.0f, 0.59f, 1.0f, 1.0f);               // Azul claro
-            colors[(int)ImGuiCol.PlotLinesHovered] = new Vector4(0.0f, 0.78f, 1.0f, 1.0f);        // Azul muy claro
-            colors[(int)ImGuiCol.PlotHistogram] = new Vector4(0.0f, 0.47f, 0.84f, 1.0f);          // Azul UE5
-            colors[(int)ImGuiCol.PlotHistogramHovered] = new Vector4(0.0f, 0.59f, 1.0f, 1.0f);    // Azul claro
+            colors[(int)ImGuiCol.PlotLines] = new Vector4(0.26f, 0.77f, 0.85f, 1.0f);           // CYAN ✨
+            colors[(int)ImGuiCol.PlotLinesHovered] = new Vector4(0.40f, 0.88f, 0.95f, 1.0f);    // CYAN BRILLANTE ✨
+            colors[(int)ImGuiCol.PlotHistogram] = new Vector4(0.51f, 0.82f, 0.78f, 1.0f);       // #82D1C7 - Aqua ✨
+            colors[(int)ImGuiCol.PlotHistogramHovered] = new Vector4(0.40f, 0.88f, 0.95f, 1.0f);
 
             // Tables
-            colors[(int)ImGuiCol.TableHeaderBg] = new Vector4(0.22f, 0.22f, 0.22f, 1.0f);         // #383838
-            colors[(int)ImGuiCol.TableBorderStrong] = new Vector4(0.14f, 0.14f, 0.14f, 1.0f);     // #242424
-            colors[(int)ImGuiCol.TableBorderLight] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);      // #2E2E2E
-            colors[(int)ImGuiCol.TableRowBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);               // Transparente
-            colors[(int)ImGuiCol.TableRowBgAlt] = new Vector4(1.0f, 1.0f, 1.0f, 0.06f);           // Alternado sutil
+            colors[(int)ImGuiCol.TableHeaderBg] = new Vector4(0.15f, 0.18f, 0.27f, 1.0f);
+            colors[(int)ImGuiCol.TableBorderStrong] = new Vector4(0.08f, 0.10f, 0.14f, 1.0f);
+            colors[(int)ImGuiCol.TableBorderLight] = new Vector4(0.12f, 0.14f, 0.18f, 1.0f);
+            colors[(int)ImGuiCol.TableRowBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+            colors[(int)ImGuiCol.TableRowBgAlt] = new Vector4(0.26f, 0.77f, 0.85f, 0.06f);      // CYAN muy suave ✨
 
             // Drag & Drop
-            colors[(int)ImGuiCol.DragDropTarget] = new Vector4(0.0f, 0.78f, 1.0f, 0.90f);         // Azul muy claro
+            colors[(int)ImGuiCol.DragDropTarget] = new Vector4(0.40f, 0.88f, 0.95f, 1.0f);      // CYAN BRILLANTE ✨
 
             // Navigation
-            colors[(int)ImGuiCol.NavWindowingHighlight] = new Vector4(0.0f, 0.59f, 1.0f, 0.70f);  // Azul claro
-            colors[(int)ImGuiCol.NavWindowingDimBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.20f);       // Dim oscuro
+            colors[(int)ImGuiCol.NavWindowingHighlight] = new Vector4(0.26f, 0.77f, 0.85f, 0.7f);
+            colors[(int)ImGuiCol.NavWindowingDimBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.3f);
 
             // Modal
-            colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.50f);        // Fondo modal
+            colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.5f);
         }
     }
 }

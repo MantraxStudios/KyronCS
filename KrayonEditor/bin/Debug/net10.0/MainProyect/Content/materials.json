@@ -611,6 +611,78 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "tiles_floor_1": {
+      "Name": "tiles_floor_1",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/tiles_floor_1.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "floor_2": {
+      "Name": "floor_2",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/floor_2.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }
