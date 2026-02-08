@@ -33,6 +33,14 @@ namespace KrayonEditor.UI
 
         private const string PROTECTED_MATERIAL_NAME = "basic";
 
+        // Cache for texture previews in file dialog
+        private Dictionary<string, TextureLoader> _previewTextureCache = new();
+        private Dictionary<string, int> _previewLoadAttempts = new(); // Track load attempts
+        private string _hoveredFile = "";
+        private float _hoverTime = 0f;
+        private const float HOVER_DELAY = 0.3f; // Delay before showing preview
+        private const int MAX_LOAD_ATTEMPTS = 60; // Max frames to attempt loading
+
         public override void OnDrawUI()
         {
             ImGui.Begin("Material Editor", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
@@ -63,6 +71,11 @@ namespace KrayonEditor.UI
             {
                 DrawFileDialog();
             }
+            else
+            {
+                // Clear preview cache when dialog is closed
+                ClearPreviewCache();
+            }
 
             if (_showCreateDialog)
             {
@@ -73,6 +86,18 @@ namespace KrayonEditor.UI
             {
                 DrawChangeShaderDialog();
             }
+        }
+
+        private void ClearPreviewCache()
+        {
+            foreach (var kvp in _previewTextureCache)
+            {
+                kvp.Value?.Dispose();
+            }
+            _previewTextureCache.Clear();
+            _previewLoadAttempts.Clear();
+            _hoveredFile = "";
+            _hoverTime = 0f;
         }
 
         private void DrawMaterialList()
@@ -636,6 +661,8 @@ namespace KrayonEditor.UI
             var filesCopy = new List<string>(_currentFiles);
             foreach (var file in filesCopy)
             {
+                bool isHovered = false;
+                
                 if (ImGui.Selectable(file, false))
                 {
                     string fullPath = Path.Combine(_currentPath, file);
@@ -661,6 +688,42 @@ namespace KrayonEditor.UI
                         _showFileDialog = false;
                     }
                 }
+                
+                // Check if item is hovered (only for texture files, not shaders)
+                if (ImGui.IsItemHovered() && _fileDialogTarget != "Shader")
+                {
+                    isHovered = true;
+                    
+                    // Update hover tracking
+                    if (_hoveredFile != file)
+                    {
+                        Console.WriteLine($"[HOVER] Started hovering: {file}");
+                        _hoveredFile = file;
+                        _hoverTime = 0f;
+                    }
+                    else
+                    {
+                        _hoverTime += ImGui.GetIO().DeltaTime;
+                    }
+                    
+                    // Show preview after hover delay
+                    if (_hoverTime >= HOVER_DELAY)
+                    {
+                        if (_hoverTime < HOVER_DELAY + 0.1f) // Log solo una vez
+                        {
+                            Console.WriteLine($"[HOVER] Delay reached ({_hoverTime:F2}s), showing preview for: {file}");
+                        }
+                        DrawTexturePreview(file);
+                    }
+                }
+                
+                // Reset hover state if not hovering anymore
+                if (!isHovered && _hoveredFile == file)
+                {
+                    Console.WriteLine($"[HOVER] Stopped hovering: {file}");
+                    _hoveredFile = "";
+                    _hoverTime = 0f;
+                }
             }
 
             ImGui.EndChild();
@@ -673,6 +736,117 @@ namespace KrayonEditor.UI
             }
 
             ImGui.End();
+        }
+
+        private void DrawTexturePreview(string fileName)
+        {
+            string fullPath = Path.Combine(_currentPath, fileName);
+            
+            if (!_previewTextureCache.ContainsKey(fullPath))
+            {
+                try
+                {
+                    var texture = TextureLoader.FromAbsolutePath($"Preview_{fileName}", fullPath, false, true, TextureFilterMode.Bilinear);
+                    _previewTextureCache[fullPath] = texture;
+                    _previewLoadAttempts[fullPath] = 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[PREVIEW ERROR] Error creating TextureLoader: {ex.Message}");
+                    Console.WriteLine($"[PREVIEW ERROR] Stack trace: {ex.StackTrace}");
+                    return;
+                }
+            }
+
+            var previewTexture = _previewTextureCache[fullPath];
+            
+            if (previewTexture == null)
+            {
+                Console.WriteLine($"[PREVIEW ERROR] Preview texture is null!");
+                return;
+            }
+            
+            // Track loading attempts
+            if (!_previewLoadAttempts.ContainsKey(fullPath))
+            {
+                _previewLoadAttempts[fullPath] = 0;
+            }
+            
+            int attempts = _previewLoadAttempts[fullPath];
+            
+            if (!previewTexture.IsLoaded && attempts < MAX_LOAD_ATTEMPTS)
+            {
+                previewTexture.Load();
+                _previewLoadAttempts[fullPath]++;
+                
+                // Después de llamar Load(), verificar nuevamente
+                if (!previewTexture.IsLoaded)
+                {
+                    // Mostrar tooltip de "Cargando..."
+                    ImGui.BeginTooltip();
+                    ImGui.Text($"Loading preview: {fileName}");
+                    ImGui.TextDisabled($"Please wait... ({attempts}/{MAX_LOAD_ATTEMPTS})");
+                    ImGui.EndTooltip();
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine($"[PREVIEW] Texture loaded successfully on attempt {attempts + 1}!");
+                }
+            }
+
+            if (previewTexture.IsLoaded)
+            {
+                ImGui.BeginTooltip();
+                
+                ImGui.Text($"Preview: {fileName}");
+                ImGui.Separator();
+                
+                // Calculate preview size maintaining aspect ratio
+                float maxPreviewSize = 256f;
+                float aspectRatio = (float)previewTexture.Width / (float)previewTexture.Height;
+                
+                Vector2 previewSize;
+                if (aspectRatio > 1f)
+                {
+                    // Wider than tall
+                    previewSize = new Vector2(maxPreviewSize, maxPreviewSize / aspectRatio);
+                }
+                else
+                {
+                    // Taller than wide
+                    previewSize = new Vector2(maxPreviewSize * aspectRatio, maxPreviewSize);
+                }
+                
+                // Draw background
+                var cursorPos = ImGui.GetCursorScreenPos();
+                var drawList = ImGui.GetWindowDrawList();
+                
+                drawList.AddRectFilled(
+                    cursorPos,
+                    new Vector2(cursorPos.X + previewSize.X, cursorPos.Y + previewSize.Y),
+                    ImGui.GetColorU32(new Vector4(0.15f, 0.15f, 0.15f, 1.0f))
+                );
+                
+                // Draw texture
+                uint textureId = (uint)previewTexture.TextureId;
+                ImGui.Image((IntPtr)textureId, previewSize, new Vector2(0, 1), new Vector2(1, 0));
+                
+                // Show info
+                ImGui.Text($"Size: {previewTexture.Width} x {previewTexture.Height}");
+                ImGui.Text($"Texture ID: {textureId}");
+                
+                ImGui.EndTooltip();
+            }
+            else if (attempts >= MAX_LOAD_ATTEMPTS)
+            {
+                Console.WriteLine($"[PREVIEW ERROR] Texture failed to load after {MAX_LOAD_ATTEMPTS} attempts!");
+                
+                ImGui.BeginTooltip();
+                ImGui.Text($"Failed to load: {fileName}");
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), "Texture could not be loaded");
+                ImGui.EndTooltip();
+            }
         }
 
         private string RemoveShaderExtension(string path)

@@ -128,8 +128,6 @@ namespace KrayonCore
                     return null;
                 }
 
-                Console.WriteLine($"Texture found: {fullPath}");
-
                 StbImage.stbi_set_flip_vertically_on_load(_flip ? 1 : 0);
                 using var stream = File.OpenRead(fullPath);
                 return ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);

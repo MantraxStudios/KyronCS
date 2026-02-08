@@ -1349,6 +1349,11 @@
       "Guid": "bb575da5-001f-4152-9732-4666435bafdc",
       "Path": "scenes/abcd.scene",
       "Type": "Unknown"
+    },
+    {
+      "Guid": "f9ef88ae-ffea-4a17-b48d-de5d5f05cbee",
+      "Path": "scenes/DefaultScene.scene",
+      "Type": "Unknown"
     }
   ],
   "Folders": [

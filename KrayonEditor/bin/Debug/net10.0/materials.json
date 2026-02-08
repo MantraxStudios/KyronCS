@@ -39,7 +39,7 @@
     "Chicken": {
       "Name": "Chicken",
       "ShaderPath": "shaders/sprite.vert",
-      "AlbedoPath": "Cute_Fantasy_Free/Animals/Chicken/Chicken.png",
+      "AlbedoPath": "textures/World/Particles/swirl_blue.png",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,

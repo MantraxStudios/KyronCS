@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("KrayonCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e1fde5e611a5bd54151821c8418c7bc8a1f9e47e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2c0c22cb7525ee570d8fc39f9d8755e051edfd7")]
 [assembly: System.Reflection.AssemblyProductAttribute("KrayonCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("KrayonCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
