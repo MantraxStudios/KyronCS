@@ -71,6 +71,42 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "Floor": {
+      "Name": "Floor",
+      "ShaderPath": "shaders/sprite.vert",
+      "AlbedoPath": "Cute_Fantasy_Free/Tiles/Cliff_Tile.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.5,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }

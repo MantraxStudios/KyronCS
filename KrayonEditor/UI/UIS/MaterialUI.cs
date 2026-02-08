@@ -595,6 +595,9 @@ namespace KrayonEditor.UI
                     {
                         _currentDirectories.Add(Path.GetFileName(dir));
                     }
+                    
+                    // Ordenar directorios alfabéticamente
+                    _currentDirectories.Sort(StringComparer.OrdinalIgnoreCase);
 
                     var allowedExtensions = _fileDialogTarget == "Shader"
                         ? new[] { ".vert", ".frag", ".glsl", ".shader" }
@@ -609,6 +612,9 @@ namespace KrayonEditor.UI
                             _currentFiles.Add(Path.GetFileName(file));
                         }
                     }
+                    
+                    // Ordenar archivos alfabéticamente
+                    _currentFiles.Sort(StringComparer.OrdinalIgnoreCase);
                 }
                 catch (Exception ex)
                 {
