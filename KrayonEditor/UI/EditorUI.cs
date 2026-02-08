@@ -77,6 +77,11 @@ namespace KrayonEditor.UI
             newIsPlaying = _sceneView.IsPlaying;
             newEditorCameraSpeed = _sceneView.EditorCameraSpeed;
             newLastSceneViewportSize = _sceneView.LastViewportSize;
+
+            if (GraphicsEngine.Instance.GetKeyboardState().IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftControl) && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D))
+            {
+                GameObject clone = SceneManager.ActiveScene.Instantiate(EditorActions.SelectedObject);
+            }
         }
 
         private static void SetupImGuiStyle()

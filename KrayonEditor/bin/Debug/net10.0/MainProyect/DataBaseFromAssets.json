@@ -14394,6 +14394,16 @@
       "Guid": "2e638301-0a2c-4fc6-9b52-b68195e9b5c0",
       "Path": "psx/Models/other-formats/FBX/Items \u0026 Weapons/flashlight_mp_1.fbx",
       "Type": "Model"
+    },
+    {
+      "Guid": "a772bb4d-b453-4edf-8526-15dad555a0cd",
+      "Path": "scenes/DefaultScene.scene",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "dafbc388-1606-4749-b0b3-7e7d1525e43a",
+      "Path": "materials.json",
+      "Type": "Unknown"
     }
   ],
   "Folders": [

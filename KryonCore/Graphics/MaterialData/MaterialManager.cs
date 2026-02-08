@@ -205,19 +205,19 @@ namespace KrayonCore
 
             data["Materials"] = materialsObj;
 
-            File.WriteAllText("materials.json", data.ToString());
+            File.WriteAllText(AssetManager.BasePath + "materials.json", data.ToString());
             Console.WriteLine($"[MaterialManager] Saved {_materials.Count} materials to materials.json");
         }
 
         public void LoadMaterialsData()
         {
-            if (!File.Exists("materials.json"))
+            if (!File.Exists(AssetManager.BasePath + "materials.json"))
             {
                 Console.WriteLine("[MaterialManager] materials.json not found");
                 return;
             }
 
-            JObject root = JObject.Parse(File.ReadAllText("materials.json"));
+            JObject root = JObject.Parse(File.ReadAllText(AssetManager.BasePath + "materials.json"));
             JObject materialsObj = (JObject)root["Materials"];
 
             if (materialsObj == null)

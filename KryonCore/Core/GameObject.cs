@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace KrayonCore
 {
@@ -17,7 +18,6 @@ namespace KrayonCore
         private List<Component> _componentsList;
         public Transform Transform { get; private set; }
 
-        // Eventos para notificar cuando se agregan/eliminan componentes
         public event Action OnComponentAdded;
         public event Action OnComponentRemoved;
 
@@ -31,6 +31,196 @@ namespace KrayonCore
             Transform = AddComponent<Transform>();
         }
 
+        // MÉTODO DE CLONADO COMPLETO
+        public GameObject Clone(bool cloneChildren = true)
+        {
+            // Crear nuevo GameObject
+            GameObject clone = new GameObject(this.Name + " (Clone)");
+            clone.Tag = this.Tag;
+            clone.Active = this.Active;
+
+            // Clonar Transform (posición, rotación, escala)
+            clone.Transform.SetPosition(
+                this.Transform.X,
+                this.Transform.Y,
+                this.Transform.Z
+            );
+            clone.Transform.SetRotation(
+                this.Transform.RotationX,
+                this.Transform.RotationY,
+                this.Transform.RotationZ
+            );
+            clone.Transform.SetScale(
+                this.Transform.ScaleX,
+                this.Transform.ScaleY,
+                this.Transform.ScaleZ
+            );
+
+            // Clonar todos los componentes (excepto Transform que ya existe)
+            foreach (var component in _componentsList)
+            {
+                if (component is Transform)
+                    continue;
+
+                CloneComponent(component, clone);
+            }
+
+            // Clonar hijos recursivamente
+            if (cloneChildren)
+            {
+                foreach (var child in this.Transform.Children)
+                {
+                    GameObject childClone = child.GameObject.Clone(true);
+                    childClone.Transform.SetParent(clone.Transform);
+                }
+            }
+
+            // Agregar a la escena activa
+            if (SceneManager.ActiveScene != null)
+            {
+                SceneManager.ActiveScene.AddGameObject(clone);
+            }
+
+            return clone;
+        }
+
+        private void CloneComponent(Component original, GameObject target)
+        {
+            Type componentType = original.GetType();
+
+            // Crear componente del mismo tipo
+            Component newComponent = target.AddComponent(componentType);
+
+            // Copiar todas las propiedades públicas
+            PropertyInfo[] properties = componentType.GetProperties(
+                BindingFlags.Public | BindingFlags.Instance
+            );
+
+            foreach (var property in properties)
+            {
+                // Saltar propiedades que no se pueden escribir o que son referencias al GameObject
+                if (!property.CanWrite || 
+                    !property.CanRead || 
+                    property.Name == "GameObject" ||
+                    property.Name == "Transform")
+                    continue;
+
+                try
+                {
+                    object value = property.GetValue(original);
+                    
+                    // Copiar valor profundo si es necesario
+                    if (value != null && IsCloneableType(property.PropertyType))
+                    {
+                        value = DeepCloneValue(value);
+                    }
+                    
+                    property.SetValue(newComponent, value);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error copying property {property.Name}: {ex.Message}");
+                }
+            }
+
+            // Copiar todos los campos públicos
+            FieldInfo[] fields = componentType.GetFields(
+                BindingFlags.Public | BindingFlags.Instance
+            );
+
+            foreach (var field in fields)
+            {
+                try
+                {
+                    object value = field.GetValue(original);
+                    
+                    // Copiar valor profundo si es necesario
+                    if (value != null && IsCloneableType(field.FieldType))
+                    {
+                        value = DeepCloneValue(value);
+                    }
+                    
+                    field.SetValue(newComponent, value);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error copying field {field.Name}: {ex.Message}");
+                }
+            }
+        }
+
+        private bool IsCloneableType(Type type)
+        {
+            // Tipos que necesitan clonado profundo
+            return type.IsArray || 
+                   type.IsClass && 
+                   type != typeof(string) && 
+                   !type.IsSubclassOf(typeof(Component)) &&
+                   !type.IsSubclassOf(typeof(GameObject));
+        }
+
+        private object DeepCloneValue(object original)
+        {
+            if (original == null)
+                return null;
+
+            Type type = original.GetType();
+
+            // Clonar arrays
+            if (type.IsArray)
+            {
+                Type elementType = type.GetElementType();
+                Array originalArray = (Array)original;
+                Array clonedArray = Array.CreateInstance(elementType, originalArray.Length);
+                
+                for (int i = 0; i < originalArray.Length; i++)
+                {
+                    object element = originalArray.GetValue(i);
+                    if (element != null && IsCloneableType(elementType))
+                    {
+                        clonedArray.SetValue(DeepCloneValue(element), i);
+                    }
+                    else
+                    {
+                        clonedArray.SetValue(element, i);
+                    }
+                }
+                
+                return clonedArray;
+            }
+
+            // Clonar listas
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var list = (System.Collections.IList)original;
+                var clonedList = (System.Collections.IList)Activator.CreateInstance(type);
+                
+                foreach (var item in list)
+                {
+                    if (item != null && IsCloneableType(item.GetType()))
+                    {
+                        clonedList.Add(DeepCloneValue(item));
+                    }
+                    else
+                    {
+                        clonedList.Add(item);
+                    }
+                }
+                
+                return clonedList;
+            }
+
+            // Para otros tipos, retornar el valor original
+            return original;
+        }
+
+        // Método estático de utilidad
+        public static GameObject Instantiate(GameObject original, bool cloneChildren = true)
+        {
+            return original.Clone(cloneChildren);
+        }
+
+        // Resto de métodos existentes...
         public T AddComponent<T>() where T : Component, new()
         {
             Type type = typeof(T);
@@ -47,16 +237,12 @@ namespace KrayonCore
 
             component.Awake();
 
-            // Notificar que se agregó un componente
             OnComponentAdded?.Invoke();
             Scene?.NotifyComponentAdded();
 
             return component;
         }
 
-        /// <summary>
-        /// Añade un componente sin llamar a Awake (útil para deserialización)
-        /// </summary>
         internal Component AddComponentWithoutAwake(Type type)
         {
             if (!typeof(Component).IsAssignableFrom(type))
@@ -72,9 +258,6 @@ namespace KrayonCore
 
             _components[type] = component;
             _componentsList.Add(component);
-
-            // NO llamar a Awake aquí - se llamará después de deserializar
-            // NO notificar eventos aquí - se usa para deserialización
 
             return component;
         }
@@ -97,7 +280,6 @@ namespace KrayonCore
 
             component.Awake();
 
-            // Notificar que se agregó un componente
             OnComponentAdded?.Invoke();
             Scene?.NotifyComponentAdded();
 
@@ -157,7 +339,6 @@ namespace KrayonCore
 
                 if (removed)
                 {
-                    // Notificar que se eliminó un componente
                     OnComponentRemoved?.Invoke();
                     Scene?.NotifyComponentRemoved();
                 }
@@ -188,7 +369,6 @@ namespace KrayonCore
 
                 if (removed)
                 {
-                    // Notificar que se eliminó un componente
                     OnComponentRemoved?.Invoke();
                     Scene?.NotifyComponentRemoved();
                 }
@@ -257,17 +437,6 @@ namespace KrayonCore
         public static void Destroy(GameObject gameObject)
         {
             gameObject?.Scene?.DestroyGameObject(gameObject);
-        }
-
-        public static GameObject Instantiate(GameObject original)
-        {
-            var newObj = new GameObject(original.Name + " (Clone)");
-            newObj.Tag = original.Tag;
-            newObj.Active = original.Active;
-
-            SceneManager.ActiveScene?.AddGameObject(newObj);
-
-            return newObj;
         }
     }
 }

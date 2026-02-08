@@ -46,6 +46,79 @@ namespace KrayonCore
             return go;
         }
 
+        // NUEVO MÉTODO: Clonar GameObject y agregarlo a la escena
+        public GameObject Instantiate(GameObject original, bool cloneChildren = true)
+        {
+            if (original == null)
+                throw new ArgumentNullException(nameof(original));
+
+            // Clonar el GameObject
+            GameObject clone = original.Clone(cloneChildren);
+            
+            // Asegurarse de que está en esta escena
+            if (clone.Scene != this)
+            {
+                AddGameObject(clone);
+            }
+
+            // Si hay hijos clonados, asegurarse de que también estén en la escena
+            if (cloneChildren)
+            {
+                AddClonedChildrenToScene(clone);
+            }
+
+            // Inicializar componentes si la escena está cargada
+            if (IsLoaded)
+            {
+                clone.StartComponents();
+            }
+
+            return clone;
+        }
+
+        // SOBRECARGA: Clonar con posición específica
+        public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, bool cloneChildren = true)
+        {
+            GameObject clone = Instantiate(original, cloneChildren);
+            clone.Transform.SetPosition(position.X, position.Y, position.Z);
+            return clone;
+        }
+
+        // SOBRECARGA: Clonar con posición y rotación
+        public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, bool cloneChildren = true)
+        {
+            GameObject clone = Instantiate(original, cloneChildren);
+            clone.Transform.SetPosition(position.X, position.Y, position.Z);
+            clone.Transform.SetRotation(rotation.X, rotation.Y, rotation.Z);
+            return clone;
+        }
+
+        // SOBRECARGA: Clonar con Transform completo
+        public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, OpenTK.Mathematics.Vector3 scale, bool cloneChildren = true)
+        {
+            GameObject clone = Instantiate(original, cloneChildren);
+            clone.Transform.SetPosition(position.X, position.Y, position.Z);
+            clone.Transform.SetRotation(rotation.X, rotation.Y, rotation.Z);
+            clone.Transform.SetScale(scale.X, scale.Y, scale.Z);
+            return clone;
+        }
+
+        private void AddClonedChildrenToScene(GameObject parent)
+        {
+            foreach (var child in parent.Transform.Children)
+            {
+                GameObject childGO = child.GameObject;
+                
+                if (!_gameObjects.ContainsKey(childGO.Id))
+                {
+                    AddGameObject(childGO);
+                }
+                
+                // Recursivo para nietos
+                AddClonedChildrenToScene(childGO);
+            }
+        }
+
         internal void AddGameObject(GameObject gameObject)
         {
             if (!_gameObjects.ContainsKey(gameObject.Id))

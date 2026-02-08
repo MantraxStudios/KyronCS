@@ -36,10 +36,10 @@
       },
       "AmbientStrength": 1.0
     },
-    "Chicken": {
-      "Name": "Chicken",
-      "ShaderPath": "shaders/sprite.vert",
-      "AlbedoPath": "textures/World/Particles/swirl_blue.png",
+    "Floor": {
+      "Name": "Floor",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/concrete_2.jpg",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,
@@ -51,7 +51,7 @@
         "Z": 1.0
       },
       "Metallic": 0.0,
-      "Roughness": 0.5,
+      "Roughness": 0.0,
       "AO": 1.0,
       "EmissiveColor": {
         "X": 0.0,
@@ -72,10 +72,10 @@
       },
       "AmbientStrength": 1.0
     },
-    "Floor": {
-      "Name": "Floor",
-      "ShaderPath": "shaders/sprite.vert",
-      "AlbedoPath": "psx/Textures/concrete_2.jpg",
+    "Wall": {
+      "Name": "Wall",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/wood_2.png",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,
@@ -87,7 +87,7 @@
         "Z": 1.0
       },
       "Metallic": 0.0,
-      "Roughness": 0.5,
+      "Roughness": 0.0,
       "AO": 1.0,
       "EmissiveColor": {
         "X": 0.0,
