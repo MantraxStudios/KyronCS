@@ -7,13 +7,21 @@ namespace KrayonCore
     {
         private int _vao, _vbo, _ebo, _instanceVBO;
         private int _indexCount;
+        private int _vertexCount;
         private bool _disposed = false;
-        private float[] _vertices; // Guardamos los vértices para calcular AABB
+        private float[] _vertices;
+        private uint[] _indices;
+        private bool _instancingSetup = false;
+
+        public int IndexCount => _indexCount;
+        public int VertexCount => _vertexCount;
 
         public Mesh(float[] vertices, uint[] indices)
         {
-            _vertices = vertices; // Guardar los vértices
+            _vertices = vertices;
+            _indices = indices;
             _indexCount = indices.Length;
+            _vertexCount = vertices.Length / 14;
 
             _vao = GL.GenVertexArray();
             _vbo = GL.GenBuffer();
@@ -47,6 +55,12 @@ namespace KrayonCore
             GL.BindVertexArray(0);
         }
 
+        public int GetVAO() => _vao;
+
+        public float[] GetVertices() => _vertices;
+        
+        public uint[] GetIndices() => _indices;
+
         public void SetupInstancing(Matrix4[] instanceMatrices)
         {
             if (_instanceVBO == 0)
@@ -58,25 +72,49 @@ namespace KrayonCore
             GL.BindBuffer(BufferTarget.ArrayBuffer, _instanceVBO);
             GL.BufferData(BufferTarget.ArrayBuffer, instanceMatrices.Length * sizeof(float) * 16, instanceMatrices, BufferUsageHint.DynamicDraw);
 
-            int vec4Size = sizeof(float) * 4;
+            if (!_instancingSetup)
+            {
+                int vec4Size = sizeof(float) * 4;
 
-            GL.EnableVertexAttribArray(5);
-            GL.VertexAttribPointer(5, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, 0);
-            GL.VertexAttribDivisor(5, 1);
+                GL.EnableVertexAttribArray(5);
+                GL.VertexAttribPointer(5, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, 0);
+                GL.VertexAttribDivisor(5, 1);
 
-            GL.EnableVertexAttribArray(6);
-            GL.VertexAttribPointer(6, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, vec4Size);
-            GL.VertexAttribDivisor(6, 1);
+                GL.EnableVertexAttribArray(6);
+                GL.VertexAttribPointer(6, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, vec4Size);
+                GL.VertexAttribDivisor(6, 1);
 
-            GL.EnableVertexAttribArray(7);
-            GL.VertexAttribPointer(7, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, vec4Size * 2);
-            GL.VertexAttribDivisor(7, 1);
+                GL.EnableVertexAttribArray(7);
+                GL.VertexAttribPointer(7, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, vec4Size * 2);
+                GL.VertexAttribDivisor(7, 1);
 
-            GL.EnableVertexAttribArray(8);
-            GL.VertexAttribPointer(8, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, vec4Size * 3);
-            GL.VertexAttribDivisor(8, 1);
+                GL.EnableVertexAttribArray(8);
+                GL.VertexAttribPointer(8, 4, VertexAttribPointerType.Float, false, sizeof(float) * 16, vec4Size * 3);
+                GL.VertexAttribDivisor(8, 1);
+
+                _instancingSetup = true;
+            }
 
             GL.BindVertexArray(0);
+        }
+
+        public void ClearInstancing()
+        {
+            if (_instanceVBO != 0)
+            {
+                GL.BindVertexArray(_vao);
+                
+                GL.DisableVertexAttribArray(5);
+                GL.DisableVertexAttribArray(6);
+                GL.DisableVertexAttribArray(7);
+                GL.DisableVertexAttribArray(8);
+                
+                GL.BindVertexArray(0);
+                
+                GL.DeleteBuffer(_instanceVBO);
+                _instanceVBO = 0;
+                _instancingSetup = false;
+            }
         }
 
         public void Draw()
@@ -103,7 +141,6 @@ namespace KrayonCore
             Vector3 min = new Vector3(float.MaxValue);
             Vector3 max = new Vector3(float.MinValue);
 
-            // Los vértices están en formato: pos(3) + normal(3) + uv(2) + tangent(3) + bitangent(3) = 14 floats
             int stride = 14;
 
             for (int i = 0; i < _vertices.Length; i += stride)
@@ -120,14 +157,12 @@ namespace KrayonCore
         {
             if (!_disposed)
             {
+                ClearInstancing();
                 GL.DeleteVertexArray(_vao);
                 GL.DeleteBuffer(_vbo);
                 GL.DeleteBuffer(_ebo);
-                if (_instanceVBO != 0)
-                {
-                    GL.DeleteBuffer(_instanceVBO);
-                }
-                _vertices = null; // Liberar la referencia
+                _vertices = null;
+                _indices = null;
                 _disposed = true;
             }
         }

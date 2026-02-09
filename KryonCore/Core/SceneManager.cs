@@ -34,6 +34,8 @@ namespace KrayonCore
                 return;
             }
 
+            GraphicsEngine.Instance.GetSceneRenderer().Shutdown();
+
             if (_activeScene != null && _activeScene.IsLoaded)
             {
                 _activeScene.OnUnload();

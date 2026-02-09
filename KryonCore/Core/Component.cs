@@ -4,8 +4,8 @@ namespace KrayonCore
 {
     public abstract class Component : IComponent
     {
-        public Guid Id { get; private set; }
-        public GameObject GameObject { get; set; }
+        [NoSerializeToInspector] public Guid Id { get; private set; }
+        [NoSerializeToInspector] public GameObject GameObject { get; set; }
         public bool Enabled { get; set; } = true;
 
         internal bool _started = false;

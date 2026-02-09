@@ -14,13 +14,10 @@ namespace KrayonCore
         private Camera _camera;
         private LightManager _lightManager;
 
-        // Cache para instanced rendering de MeshRenderers
         private Dictionary<(Model model, Material material), List<Matrix4>> _meshInstanceGroups = new Dictionary<(Model, Material), List<Matrix4>>();
 
-        // Cache para instanced rendering de SpriteRenderers
         private Dictionary<(Model model, Material material), List<Matrix4>> _spriteInstanceGroups = new Dictionary<(Model, Material), List<Matrix4>>();
 
-        // Modo de renderizado
         public bool WireframeMode { get; set; } = false;
 
         public void Initialize()
@@ -31,7 +28,6 @@ namespace KrayonCore
 
         public void Render()
         {
-            // Configurar modo de polígono según wireframe
             if (WireframeMode)
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
@@ -45,17 +41,28 @@ namespace KrayonCore
             Matrix4 projection = _camera.GetProjectionMatrix();
             Vector3 cameraPos = _camera.Position;
 
-            // Renderizar MeshRenderers usando instanced rendering
             RenderMeshRenderers(view, projection, cameraPos);
-
-            // Renderizar SpriteRenderers usando instanced rendering
             RenderSpriteRenderers(view, projection, cameraPos);
-
-            // Renderizar TileRenderers
             RenderTileRenderers(view, projection, cameraPos);
 
-            // Restaurar modo fill por defecto
+            ClearInstanceGroups();
+
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+        }
+
+        private void ClearInstanceGroups()
+        {
+            foreach (var kvp in _meshInstanceGroups)
+            {
+                kvp.Key.model.ClearInstancing();
+            }
+            _meshInstanceGroups.Clear();
+
+            foreach (var kvp in _spriteInstanceGroups)
+            {
+                kvp.Key.model.ClearInstancing();
+            }
+            _spriteInstanceGroups.Clear();
         }
 
         private void RenderMeshRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
@@ -64,33 +71,18 @@ namespace KrayonCore
             if (meshRenderers == null)
                 return;
 
-            // Limpiar grupos de instancias
-            _meshInstanceGroups.Clear();
-
-            // PASO 1: Agrupar todos los MeshRenderers por modelo y material
+            List<GameObject> multiMaterialObjects = new List<GameObject>();
+            
             foreach (var go in meshRenderers)
             {
                 var renderer = go.GetComponent<MeshRenderer>();
                 if (renderer == null || !renderer.Enabled)
                     continue;
 
-                // Verificar que tenga modelo
                 if (renderer.Model == null)
                     continue;
 
-                // Asignar material básico si no tiene materiales válidos
-                if (renderer.MaterialCount == 0 || !HasAnyValidMaterial(renderer))
-                {
-                    var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
-                    if (basicMaterial != null)
-                    {
-                        basicMaterial.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
-                        
-                        // Limpiar y establecer material básico
-                        renderer.ClearMaterials();
-                        renderer.AddMaterial(basicMaterial);
-                    }
-                }
+                ValidateAndFixMaterials(renderer);
 
                 var transform = go.GetComponent<Transform>();
                 if (transform == null)
@@ -98,13 +90,10 @@ namespace KrayonCore
 
                 Matrix4 worldMatrix = transform.GetWorldMatrix();
 
-                // Como Unity: cada material se aplica a su submesh correspondiente por índice
-                // Si solo hay 1 material VÁLIDO, se aplica a todos los submeshes
                 int validMaterialCount = CountValidMaterials(renderer);
                 
                 if (validMaterialCount == 1)
                 {
-                    // Encontrar el primer material válido
                     Material validMaterial = GetFirstValidMaterial(renderer);
                     if (validMaterial != null)
                     {
@@ -120,14 +109,10 @@ namespace KrayonCore
                 }
                 else if (validMaterialCount > 1)
                 {
-                    // Con múltiples materiales válidos, cada uno se aplica a su submesh por índice
-                    // No podemos usar instanced rendering eficientemente aquí, 
-                    // así que renderizamos directamente
-                    RenderMeshWithMultipleMaterials(renderer, worldMatrix, view, projection, cameraPos);
+                    multiMaterialObjects.Add(go);
                 }
             }
-
-            // PASO 2: Renderizar cada grupo usando instanced rendering
+            
             foreach (var kvp in _meshInstanceGroups)
             {
                 var model = kvp.Key.model;
@@ -137,22 +122,179 @@ namespace KrayonCore
                 if (matrices.Count == 0)
                     continue;
 
-                // Setup instancing en el modelo
                 model.SetupInstancing(matrices.ToArray());
 
-                // Configurar material
                 material.SetPBRProperties();
                 material.Use();
 
+                material.SetInt("u_UseInstancing", 1);
                 material.SetMatrix4("view", view);
                 material.SetMatrix4("projection", projection);
                 material.SetVector3("u_CameraPos", cameraPos);
 
-                // Aplicar luces al shader
                 _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
 
-                // Dibujar todas las instancias de una vez
                 model.DrawInstanced(matrices.Count);
+                
+                model.ClearInstancing();
+            }
+            
+            foreach (var go in multiMaterialObjects)
+            {
+                var renderer = go.GetComponent<MeshRenderer>();
+                var transform = go.GetComponent<Transform>();
+                
+                Matrix4 worldMatrix = transform.GetWorldMatrix();
+                
+                if (renderer.Model != null)
+                {
+                    renderer.Model.ClearInstancing();
+                    RenderMeshWithMultipleMaterials(renderer, worldMatrix, view, projection, cameraPos);
+                }
+            }
+        }
+
+        private void RenderMeshWithMultipleMaterials(MeshRenderer renderer, Matrix4 worldMatrix, Matrix4 view, Matrix4 projection, Vector3 cameraPos)
+        {
+            if (renderer.Model == null)
+                return;
+
+            int submeshCount = renderer.Model.SubMeshCount;
+            Material fallbackMaterial = null;
+            int vao = renderer.Model.GetVAO();
+            
+            GL.BindVertexArray(vao);
+            
+            for (int i = 0; i < submeshCount; i++)
+            {
+                Material material = null;
+                
+                if (i < renderer.MaterialCount)
+                {
+                    material = renderer.GetMaterial(i);
+                }
+                
+                if (material == null && renderer.MaterialCount > 0)
+                {
+                    material = renderer.GetMaterial(0);
+                }
+                
+                if (material == null)
+                {
+                    if (fallbackMaterial == null)
+                    {
+                        fallbackMaterial = GraphicsEngine.Instance.Materials.Get("basic");
+                        if (fallbackMaterial != null)
+                        {
+                            fallbackMaterial.SetVector3Cached("u_Color", new Vector3(1.0f, 0.0f, 1.0f));
+                        }
+                    }
+                    
+                    material = fallbackMaterial;
+                }
+
+                if (material == null)
+                    continue;
+                
+                material.SetPBRProperties();
+                material.Use();
+
+                material.SetInt("u_UseInstancing", 0);
+                material.SetMatrix4("model", worldMatrix);
+                material.SetMatrix4("view", view);
+                material.SetMatrix4("projection", projection);
+                material.SetVector3("u_CameraPos", cameraPos);
+
+                _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
+                
+                int baseVertex = renderer.Model.GetSubmeshBaseVertex(i);
+                int indexCount = renderer.Model.GetSubmeshIndexCount(i);
+                int baseIndex = renderer.Model.GetSubmeshBaseIndex(i);
+                
+                GL.DrawElementsBaseVertex(
+                    OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
+                    indexCount,
+                    DrawElementsType.UnsignedInt,
+                    (IntPtr)(baseIndex * sizeof(uint)),
+                    baseVertex
+                );
+            }
+            
+            GL.BindVertexArray(0);
+        }
+
+        private void ValidateAndFixMaterials(MeshRenderer renderer)
+        {
+            if (renderer.Model == null)
+                return;
+
+            int submeshCount = renderer.Model.SubMeshCount;
+            int materialCount = renderer.MaterialCount;
+
+            if (materialCount == 0)
+            {
+                var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
+                if (basicMaterial != null)
+                {
+                    basicMaterial.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
+                    renderer.ClearMaterials();
+                    renderer.AddMaterial(basicMaterial);
+                }
+                return;
+            }
+
+            bool hasNullGaps = false;
+            int lastValidIndex = -1;
+            
+            for (int i = 0; i < materialCount; i++)
+            {
+                var mat = renderer.GetMaterial(i);
+                
+                if (mat != null)
+                {
+                    if (hasNullGaps)
+                    {
+                        RebuildMaterialArray(renderer);
+                        return;
+                    }
+                    lastValidIndex = i;
+                }
+                else if (lastValidIndex >= 0)
+                {
+                    hasNullGaps = true;
+                }
+            }
+
+            if (!HasAnyValidMaterial(renderer))
+            {
+                var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
+                if (basicMaterial != null)
+                {
+                    basicMaterial.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
+                    renderer.ClearMaterials();
+                    renderer.AddMaterial(basicMaterial);
+                }
+            }
+        }
+
+        private void RebuildMaterialArray(MeshRenderer renderer)
+        {
+            List<Material> validMaterials = new List<Material>();
+            
+            for (int i = 0; i < renderer.MaterialCount; i++)
+            {
+                var mat = renderer.GetMaterial(i);
+                if (mat != null)
+                {
+                    validMaterials.Add(mat);
+                }
+            }
+            
+            renderer.ClearMaterials();
+            
+            foreach (var mat in validMaterials)
+            {
+                renderer.AddMaterial(mat);
             }
         }
 
@@ -188,82 +330,18 @@ namespace KrayonCore
             return null;
         }
 
-        private void RenderMeshWithMultipleMaterials(MeshRenderer renderer, Matrix4 worldMatrix, Matrix4 view, Matrix4 projection, Vector3 cameraPos)
-        {
-            if (renderer.Model == null)
-                return;
-
-            int submeshCount = renderer.Model.SubMeshCount;
-            
-            // Renderizar cada submesh con su material correspondiente
-            for (int i = 0; i < submeshCount; i++)
-            {
-                Material material = null;
-                
-                // ESTRATEGIA DE FALLBACK MEJORADA:
-                // 1. Intentar obtener el material en el índice exacto
-                if (i < renderer.MaterialCount)
-                {
-                    material = renderer.GetMaterial(i);
-                }
-                
-                // 2. Si es null, buscar el primer material válido en el array
-                if (material == null)
-                {
-                    material = GetFirstValidMaterial(renderer);
-                }
-                
-                // 3. Si aún no hay material, usar material básico
-                if (material == null)
-                {
-                    material = GraphicsEngine.Instance.Materials.Get("basic");
-                    if (material != null)
-                    {
-                        material.SetVector3Cached("u_Color", new Vector3(1.0f, 0.0f, 1.0f)); // Magenta para debug
-                    }
-                }
-
-                // 4. Si definitivamente no hay material, saltar este submesh
-                if (material == null)
-                {
-                    Console.WriteLine($"[SceneRenderer] ⚠️ No se pudo obtener material para submesh {i}");
-                    continue;
-                }
-
-                // Configurar material
-                material.SetPBRProperties();
-                material.Use();
-
-                material.SetMatrix4("model", worldMatrix);
-                material.SetMatrix4("view", view);
-                material.SetMatrix4("projection", projection);
-                material.SetVector3("u_CameraPos", cameraPos);
-
-                // Aplicar luces al shader
-                _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
-
-                // Dibujar solo este submesh
-                renderer.Model.DrawSubMesh(i);
-            }
-        }
-
         private void RenderSpriteRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             var spriteRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<SpriteRenderer>();
             if (spriteRenderers == null)
                 return;
 
-            // Limpiar grupos de instancias
-            _spriteInstanceGroups.Clear();
-
-            // PASO 1: Agrupar todos los SpriteRenderers por modelo y material
             foreach (var go in spriteRenderers)
             {
                 var renderer = go.GetComponent<SpriteRenderer>();
                 if (renderer == null || !renderer.Enabled)
                     continue;
 
-                // Asignar material básico si no tiene
                 if (renderer.Material == null)
                 {
                     var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
@@ -274,7 +352,6 @@ namespace KrayonCore
                     }
                 }
 
-                // Verificar que tenga modelo y material
                 if (renderer.QuadModel == null || renderer.Material == null)
                     continue;
 
@@ -294,7 +371,6 @@ namespace KrayonCore
                 _spriteInstanceGroups[key].Add(worldMatrix);
             }
 
-            // PASO 2: Renderizar cada grupo usando instanced rendering
             foreach (var kvp in _spriteInstanceGroups)
             {
                 var model = kvp.Key.model;
@@ -304,21 +380,18 @@ namespace KrayonCore
                 if (matrices.Count == 0)
                     continue;
 
-                // Setup instancing en el modelo
                 model.SetupInstancing(matrices.ToArray());
 
-                // Configurar material
                 material.SetPBRProperties();
                 material.Use();
 
+                material.SetInt("u_UseInstancing", 1);
                 material.SetMatrix4("view", view);
                 material.SetMatrix4("projection", projection);
                 material.SetVector3("u_CameraPos", cameraPos);
 
-                // Aplicar luces al shader
                 _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
 
-                // Dibujar todas las instancias de una vez
                 model.DrawInstanced(matrices.Count);
             }
         }
@@ -335,7 +408,6 @@ namespace KrayonCore
                 if (renderer == null || !renderer.Enabled)
                     continue;
 
-                // Asignar material básico si no tiene
                 if (renderer.MaterialCount == 0)
                 {
                     var basicMaterial = GraphicsEngine.Instance.Materials.Get("basic");
@@ -352,10 +424,8 @@ namespace KrayonCore
                 if (renderer.TileCount == 0)
                     continue;
 
-                // Actualizar datos de instancias
                 renderer.UpdateInstanceData();
 
-                // Renderizar cada grupo de instancias
                 foreach (var kvp in renderer.InstanceGroups)
                 {
                     int modelIndex = kvp.Key.modelIndex;
@@ -374,11 +444,11 @@ namespace KrayonCore
                     material.SetPBRProperties();
                     material.Use();
 
+                    material.SetInt("u_UseInstancing", 1);
                     material.SetMatrix4("view", view);
                     material.SetMatrix4("projection", projection);
                     material.SetVector3("u_CameraPos", cameraPos);
 
-                    // Aplicar luces al shader
                     _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
 
                     model.DrawInstanced(instanceCount);
@@ -389,7 +459,6 @@ namespace KrayonCore
         public void ToggleWireframe()
         {
             WireframeMode = !WireframeMode;
-            Console.WriteLine($"[SceneRenderer] Wireframe mode: {(WireframeMode ? "ON" : "OFF")}");
         }
 
         public void SetWireframeMode(bool enabled)
@@ -405,11 +474,11 @@ namespace KrayonCore
 
         public void Update(float deltaTime)
         {
-            // Actualizar lógica si es necesario
         }
 
         public void Shutdown()
         {
+            ClearInstanceGroups();
         }
 
         public Camera GetCamera() => _camera;

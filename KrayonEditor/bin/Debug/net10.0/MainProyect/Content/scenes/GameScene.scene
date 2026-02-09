@@ -1,15 +1,15 @@
 {
-  "SceneName": "DefaultScene",
+  "SceneName": "GameScene",
   "GameObjects": [
     {
-      "Id": "086cf304-afe2-4b38-b8d7-c8f0fc790caf",
+      "Id": "f0778837-e661-43de-a7eb-0f44043447b6",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b8885dc9-5fb2-405e-ba3d-a10b53c917c9",
+          "ComponentId": "cf91052b-7e06-47b9-ab92-cd124892b01e",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -35,7 +35,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "117e7024-b0bb-4ec5-a5fe-596ed3566d7f",
+          "ComponentId": "cc6ef465-0315-4bc1-8327-86a55b2d81ef",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "/psx/Models/other-formats/FBX/Furniture/bed_2.fbx",
@@ -52,21 +52,21 @@
       ]
     },
     {
-      "Id": "15b92a46-2796-491a-a26c-ee24021f844d",
+      "Id": "cb1bfc89-26e8-459f-8a68-7486f8fa7e5e",
       "Name": "PointLight_1",
       "Tag": "Untagged",
       "Active": true,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c9cc4fb4-609d-4aa4-a73a-2ba4d27d1cb1",
+          "ComponentId": "9b4330d6-c9fc-4453-ac12-9444a3af7db2",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 0,
+              "x": -0.8516143,
               "y": 4.9610357,
-              "z": 0
+              "z": -0.24237153
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -85,7 +85,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "65a53a8e-7ba3-4336-a997-a1fd8c19cea7",
+          "ComponentId": "11b6f662-919a-4244-9855-09ae0a4042b1",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -105,6 +105,55 @@
             "Quadratic": 0.032,
             "InnerCutOffDegrees": 12.5,
             "OuterCutOffDegrees": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "Id": "2af9b4c7-1729-4797-a259-64d2fd229281",
+      "Name": "Cube_2",
+      "Tag": "Untagged",
+      "Active": true,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "535976bc-8807-42d5-9ce9-20f3780059f3",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "9e4e001e-4940-4f9d-b011-034306c77b21",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "/models/Cube.fbx",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
           }
         }
       ]

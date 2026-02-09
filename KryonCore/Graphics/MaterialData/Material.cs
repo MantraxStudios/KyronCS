@@ -19,7 +19,6 @@ namespace KrayonCore
 
         public TextureLoader MainTexture { get; private set; }
 
-        // Referencias a texturas PBR específicas
         public TextureLoader AlbedoTexture { get; private set; }
         public TextureLoader NormalTexture { get; private set; }
         public TextureLoader MetallicTexture { get; private set; }
@@ -82,29 +81,33 @@ namespace KrayonCore
                 string name = kvp.Key;
                 object value = kvp.Value;
 
+                int location = GetUniformLocationSilent(name);
+                if (location == -1)
+                    continue;
+
                 switch (value)
                 {
                     case int intValue:
-                        GL.Uniform1(GetUniformLocation(name), intValue);
+                        GL.Uniform1(location, intValue);
                         break;
                     case float floatValue:
-                        GL.Uniform1(GetUniformLocation(name), floatValue);
+                        GL.Uniform1(location, floatValue);
                         break;
                     case Vector2 vec2Value:
-                        GL.Uniform2(GetUniformLocation(name), vec2Value);
+                        GL.Uniform2(location, vec2Value);
                         break;
                     case Vector3 vec3Value:
-                        GL.Uniform3(GetUniformLocation(name), vec3Value);
+                        GL.Uniform3(location, vec3Value);
                         break;
                     case Vector4 vec4Value:
-                        GL.Uniform4(GetUniformLocation(name), vec4Value);
+                        GL.Uniform4(location, vec4Value);
                         break;
                     case Color4 colorValue:
-                        GL.Uniform4(GetUniformLocation(name), colorValue);
+                        GL.Uniform4(location, colorValue);
                         break;
                     case Matrix4 matrixValue:
                         Matrix4 mat = matrixValue;
-                        GL.UniformMatrix4(GetUniformLocation(name), false, ref mat);
+                        GL.UniformMatrix4(location, false, ref mat);
                         break;
                 }
             }
@@ -118,7 +121,6 @@ namespace KrayonCore
             SetFloatCached("u_AO", AO);
             SetVector3Cached("u_EmissiveColor", EmissiveColor);
 
-            // NUEVO: Propiedades de normal map e iluminación
             SetFloatCached("u_NormalMapIntensity", NormalMapIntensity);
             SetVector3Cached("u_AmbientLight", AmbientLight);
             SetFloatCached("u_AmbientStrength", AmbientStrength);
@@ -138,104 +140,66 @@ namespace KrayonCore
             if (UseEmissiveMap) SetIntCached("u_EmissiveMap", 5);
         }
 
-        // ============================================
-        // FUNCIONES PARA CARGAR TEXTURAS INDIVIDUALES
-        // ============================================
-
-        /// <summary>
-        /// Carga la textura principal como Albedo (compatible con sistemas legacy)
-        /// </summary>
         public void LoadMainTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             MainTexture?.Dispose();
             MainTexture = new TextureLoader("mainTexture", path, generateMipmaps, flip);
 
-            // IMPORTANTE: MainTexture debe ser tratada como AlbedoTexture
             AlbedoTexture?.Dispose();
             AlbedoTexture = MainTexture;
 
             SetTexture("u_AlbedoMap", MainTexture, 0);
             UseAlbedoMap = true;
-
-            Console.WriteLine($"[Material '{Name}'] ✓ Main texture loaded as Albedo: {path}");
-            Console.WriteLine($"[Material '{Name}']   UseAlbedoMap = {UseAlbedoMap}");
         }
 
-        /// <summary>
-        /// Carga la textura de Albedo/Diffuse (Color base)
-        /// </summary>
         public void LoadAlbedoTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             AlbedoTexture?.Dispose();
             AlbedoTexture = new TextureLoader("u_AlbedoMap", path, generateMipmaps, flip);
             SetTexture("u_AlbedoMap", AlbedoTexture, 0);
             UseAlbedoMap = true;
-            Console.WriteLine($"[Material] Albedo texture loaded: {path}");
         }
 
-        /// <summary>
-        /// Carga la textura de Normal Map (para detalles de superficie)
-        /// </summary>
         public void LoadNormalTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             NormalTexture?.Dispose();
             NormalTexture = new TextureLoader("u_NormalMap", path, generateMipmaps, flip);
             SetTexture("u_NormalMap", NormalTexture, 1);
             UseNormalMap = true;
-            Console.WriteLine($"[Material] Normal texture loaded: {path}");
         }
 
-        /// <summary>
-        /// Carga la textura de Metallic (qué tan metálico es el material)
-        /// </summary>
         public void LoadMetallicTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             MetallicTexture?.Dispose();
             MetallicTexture = new TextureLoader("u_MetallicMap", path, generateMipmaps, flip);
             SetTexture("u_MetallicMap", MetallicTexture, 2);
             UseMetallicMap = true;
-            Console.WriteLine($"[Material] Metallic texture loaded: {path}");
         }
 
-        /// <summary>
-        /// Carga la textura de Roughness (qué tan rugoso/suave es el material)
-        /// </summary>
         public void LoadRoughnessTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             RoughnessTexture?.Dispose();
             RoughnessTexture = new TextureLoader("u_RoughnessMap", path, generateMipmaps, flip);
             SetTexture("u_RoughnessMap", RoughnessTexture, 3);
             UseRoughnessMap = true;
-            Console.WriteLine($"[Material] Roughness texture loaded: {path}");
         }
 
-        /// <summary>
-        /// Carga la textura de Ambient Occlusion (sombras en cavidades)
-        /// </summary>
         public void LoadAOTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             AOTexture?.Dispose();
             AOTexture = new TextureLoader("u_AOMap", path, generateMipmaps, flip);
             SetTexture("u_AOMap", AOTexture, 4);
             UseAOMap = true;
-            Console.WriteLine($"[Material] AO texture loaded: {path}");
         }
 
-        /// <summary>
-        /// Carga la textura de Emissive (áreas que emiten luz)
-        /// </summary>
         public void LoadEmissiveTexture(string path, bool generateMipmaps = true, bool flip = true)
         {
             EmissiveTexture?.Dispose();
             EmissiveTexture = new TextureLoader("u_EmissiveMap", path, generateMipmaps, flip);
             SetTexture("u_EmissiveMap", EmissiveTexture, 5);
             UseEmissiveMap = true;
-            Console.WriteLine($"[Material] Emissive texture loaded: {path}");
         }
 
-        /// <summary>
-        /// Carga todas las texturas PBR de una sola vez
-        /// </summary>
         public void LoadPBRTextures(
             string albedoPath = null,
             string normalPath = null,
@@ -265,12 +229,8 @@ namespace KrayonCore
                 LoadEmissiveTexture(emissivePath, generateMipmaps, flip);
 
             SetPBRProperties();
-            Console.WriteLine($"[Material] PBR textures loaded for material: {Name}");
         }
 
-        /// <summary>
-        /// Configura las propiedades PBR sin texturas (solo valores)
-        /// </summary>
         public void SetupPBRMaterial(
             Vector3 albedo,
             float metallic = 0.0f,
@@ -284,49 +244,32 @@ namespace KrayonCore
             AO = ao;
             EmissiveColor = emissive ?? Vector3.Zero;
             SetPBRProperties();
-            Console.WriteLine($"[Material] PBR properties set for material: {Name}");
         }
 
-        /// <summary>
-        /// Ajusta la intensidad del normal map (0 = sin efecto, 1 = efecto completo, >1 = exagerado)
-        /// </summary>
         public void SetNormalMapIntensity(float intensity)
         {
             NormalMapIntensity = Math.Max(0f, intensity);
             SetFloatCached("u_NormalMapIntensity", NormalMapIntensity);
         }
 
-        /// <summary>
-        /// Ajusta la luz ambiental global
-        /// </summary>
         public void SetAmbientLight(Vector3 color)
         {
             AmbientLight = color;
             SetVector3Cached("u_AmbientLight", AmbientLight);
         }
 
-        /// <summary>
-        /// Ajusta la luz ambiental usando valores RGB (0-255)
-        /// </summary>
         public void SetAmbientLight(float r, float g, float b)
         {
             AmbientLight = new Vector3(r / 255f, g / 255f, b / 255f);
             SetVector3Cached("u_AmbientLight", AmbientLight);
         }
 
-        /// <summary>
-        /// Ajusta la intensidad de la luz ambiental
-        /// </summary>
         public void SetAmbientStrength(float strength)
         {
             AmbientStrength = Math.Max(0f, strength);
             SetFloatCached("u_AmbientStrength", AmbientStrength);
         }
 
-
-        /// <summary>
-        /// Remueve una textura de Albedo
-        /// </summary>
         public void RemoveAlbedoTexture()
         {
             AlbedoTexture?.Dispose();
@@ -335,9 +278,6 @@ namespace KrayonCore
             UseAlbedoMap = false;
         }
 
-        /// <summary>
-        /// Remueve una textura de Normal
-        /// </summary>
         public void RemoveNormalTexture()
         {
             NormalTexture?.Dispose();
@@ -346,9 +286,6 @@ namespace KrayonCore
             UseNormalMap = false;
         }
 
-        /// <summary>
-        /// Remueve una textura de Metallic
-        /// </summary>
         public void RemoveMetallicTexture()
         {
             MetallicTexture?.Dispose();
@@ -357,9 +294,6 @@ namespace KrayonCore
             UseMetallicMap = false;
         }
 
-        /// <summary>
-        /// Remueve una textura de Roughness
-        /// </summary>
         public void RemoveRoughnessTexture()
         {
             RoughnessTexture?.Dispose();
@@ -368,9 +302,6 @@ namespace KrayonCore
             UseRoughnessMap = false;
         }
 
-        /// <summary>
-        /// Remueve una textura de AO
-        /// </summary>
         public void RemoveAOTexture()
         {
             AOTexture?.Dispose();
@@ -379,9 +310,6 @@ namespace KrayonCore
             UseAOMap = false;
         }
 
-        /// <summary>
-        /// Remueve una textura de Emissive
-        /// </summary>
         public void RemoveEmissiveTexture()
         {
             EmissiveTexture?.Dispose();
@@ -390,9 +318,6 @@ namespace KrayonCore
             UseEmissiveMap = false;
         }
 
-        /// <summary>
-        /// Remueve todas las texturas PBR
-        /// </summary>
         public void RemoveAllPBRTextures()
         {
             RemoveAlbedoTexture();
@@ -401,12 +326,7 @@ namespace KrayonCore
             RemoveRoughnessTexture();
             RemoveAOTexture();
             RemoveEmissiveTexture();
-            Console.WriteLine($"[Material] All PBR textures removed for material: {Name}");
         }
-
-        // ============================================
-        // FUNCIONES GENÉRICAS (mantener compatibilidad)
-        // ============================================
 
         public void LoadTexture(string uniformName, string path, int slot = 0, bool generateMipmaps = true, bool flip = true)
         {
@@ -440,50 +360,60 @@ namespace KrayonCore
             }
         }
 
-        // ============================================
-        // UNIFORMS
-        // ============================================
-
         public void SetInt(string name, int value)
         {
             _shader.Use();
-            GL.Uniform1(GetUniformLocation(name), value);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.Uniform1(location, value);
         }
 
         public void SetFloat(string name, float value)
         {
             _shader.Use();
-            GL.Uniform1(GetUniformLocation(name), value);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.Uniform1(location, value);
         }
 
         public void SetVector2(string name, Vector2 value)
         {
             _shader.Use();
-            GL.Uniform2(GetUniformLocation(name), value);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.Uniform2(location, value);
         }
 
         public void SetVector3(string name, Vector3 value)
         {
             _shader.Use();
-            GL.Uniform3(GetUniformLocation(name), value);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.Uniform3(location, value);
         }
 
         public void SetVector4(string name, Vector4 value)
         {
             _shader.Use();
-            GL.Uniform4(GetUniformLocation(name), value);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.Uniform4(location, value);
         }
 
         public void SetColor(string name, Color4 color)
         {
             _shader.Use();
-            GL.Uniform4(GetUniformLocation(name), color);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.Uniform4(location, color);
         }
 
         public void SetMatrix4(string name, Matrix4 matrix)
         {
             _shader.Use();
-            GL.UniformMatrix4(GetUniformLocation(name), false, ref matrix);
+            int location = GetUniformLocation(name);
+            if (location != -1)
+                GL.UniformMatrix4(location, false, ref matrix);
         }
 
         public void SetBool(string name, bool value)
@@ -533,6 +463,17 @@ namespace KrayonCore
             return default;
         }
 
+        private int GetUniformLocationSilent(string name)
+        {
+            if (_uniformLocations.TryGetValue(name, out var location))
+                return location;
+
+            location = _shader.GetUniformLocation(name);
+            _uniformLocations[name] = location;
+
+            return location;
+        }
+
         private int GetUniformLocation(string name)
         {
             if (_uniformLocations.TryGetValue(name, out var location))
@@ -554,85 +495,54 @@ namespace KrayonCore
             _uniformCache.Clear();
         }
 
-        // ============================================
-        // FUNCIONES PARA AJUSTAR PROPIEDADES PBR
-        // ============================================
-
-        /// <summary>
-        /// Ajusta el color base del material (Albedo)
-        /// </summary>
         public void SetAlbedo(Vector3 color)
         {
             AlbedoColor = color;
             SetVector3Cached("u_AlbedoColor", AlbedoColor);
         }
 
-        /// <summary>
-        /// Ajusta el color base del material usando valores RGB (0-255)
-        /// </summary>
         public void SetAlbedo(float r, float g, float b)
         {
             AlbedoColor = new Vector3(r / 255f, g / 255f, b / 255f);
             SetVector3Cached("u_AlbedoColor", AlbedoColor);
         }
 
-        /// <summary>
-        /// Ajusta qué tan metálico es el material (0 = dieléctrico, 1 = metálico)
-        /// </summary>
         public void SetMetallic(float value)
         {
             Metallic = MathHelper.Clamp(value, 0f, 1f);
             SetFloatCached("u_Metallic", Metallic);
         }
 
-        /// <summary>
-        /// Ajusta qué tan rugoso es el material (0 = suave/brillante, 1 = rugoso/mate)
-        /// </summary>
         public void SetRoughness(float value)
         {
             Roughness = MathHelper.Clamp(value, 0f, 1f);
             SetFloatCached("u_Roughness", Roughness);
         }
 
-        /// <summary>
-        /// Ajusta el ambient occlusion (0 = completamente ocluido, 1 = sin oclusión)
-        /// </summary>
         public void SetAO(float value)
         {
             AO = MathHelper.Clamp(value, 0f, 1f);
             SetFloatCached("u_AO", AO);
         }
 
-        /// <summary>
-        /// Ajusta el color emisivo (luz propia del material)
-        /// </summary>
         public void SetEmissive(Vector3 color)
         {
             EmissiveColor = color;
             SetVector3Cached("u_EmissiveColor", EmissiveColor);
         }
 
-        /// <summary>
-        /// Ajusta el color emisivo usando valores RGB (0-255)
-        /// </summary>
         public void SetEmissive(float r, float g, float b)
         {
             EmissiveColor = new Vector3(r / 255f, g / 255f, b / 255f);
             SetVector3Cached("u_EmissiveColor", EmissiveColor);
         }
 
-        /// <summary>
-        /// Ajusta la intensidad del emisivo
-        /// </summary>
         public void SetEmissiveIntensity(float intensity)
         {
             EmissiveColor *= intensity;
             SetVector3Cached("u_EmissiveColor", EmissiveColor);
         }
 
-        /// <summary>
-        /// Configura todas las propiedades PBR de una vez
-        /// </summary>
         public void SetPBRValues(
             Vector3? albedo = null,
             float? metallic = null,
@@ -657,7 +567,6 @@ namespace KrayonCore
 
             SetPBRProperties();
         }
-
 
         public void Dispose()
         {

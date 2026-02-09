@@ -29,11 +29,11 @@ namespace KrayonCore
 
         [ToStorage, NoSerializeToInspector] public string[] MaterialPaths { get; set; } = new string[0];
 
-        private Material[] _materials = new Material[0];
-        private Model? _model;
-        private bool _isInitialized = false;
+        [NoSerializeToInspector] private Material[] _materials = new Material[0];
+        [NoSerializeToInspector] private Model? _model;
+        [NoSerializeToInspector] private bool _isInitialized = false;
 
-        public Model? Model
+        [NoSerializeToInspector] public Model? Model
         {
             get => _model;
             set => _model = value;
@@ -45,7 +45,7 @@ namespace KrayonCore
             set => _materials = value ?? new Material[0];
         }
 
-        public int MaterialCount => _materials.Length;
+        [NoSerializeToInspector] public int MaterialCount => _materials.Length;
 
         public MeshRenderer()
         {
@@ -54,36 +54,52 @@ namespace KrayonCore
 
         public override void Awake()
         {
-            Console.WriteLine($"[MeshRenderer] Awake llamado en {GameObject?.Name ?? "Unknown"}");
-
-            // CRÍTICO: Limpiar materiales anteriores para evitar glitches al recargar
-            _materials = new Material[0];
-
+            // NO borrar _materials aquí, solo inicializar si es necesario
+            
             if (!string.IsNullOrEmpty(ModelPath))
             {
-                Console.WriteLine($"[MeshRenderer] Intentando cargar modelo desde: {ModelPath}");
                 LoadModelFromPath(ModelPath);
                 
-                // Inicializar array de materiales al tamaño correcto basado en el modelo
                 if (_model != null && _model.SubMeshCount > 0)
                 {
-                    _materials = new Material[_model.SubMeshCount];
-                    Console.WriteLine($"[MeshRenderer] Array de materiales inicializado con {_materials.Length} slots");
+                    // Solo crear el array si no existe o tiene tamaño incorrecto
+                    if (_materials == null || _materials.Length != _model.SubMeshCount)
+                    {
+                        var oldMaterials = _materials ?? new Material[0];
+                        _materials = new Material[_model.SubMeshCount];
+                        
+                        // Copiar materiales existentes si los hay
+                        for (int i = 0; i < Math.Min(oldMaterials.Length, _materials.Length); i++)
+                        {
+                            _materials[i] = oldMaterials[i];
+                        }
+                    }
                 }
             }
             else
             {
-                Console.WriteLine($"[MeshRenderer] No hay ModelPath especificado");
+                // Si no hay modelo, asegurar que existe el array
+                if (_materials == null)
+                {
+                    _materials = new Material[0];
+                }
             }
 
-            // Cargar materiales guardados (solo hasta el límite del array)
+            // Cargar materiales desde MaterialPaths solo si no están ya asignados
             for (int i = 0; i < MaterialPaths.Length && i < _materials.Length; i++)
             {
-                var material = GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]);
-                if (material != null)
+                // Solo cargar si el slot está vacío
+                if (_materials[i] == null && !string.IsNullOrEmpty(MaterialPaths[i]))
                 {
-                    _materials[i] = material;
-                    Console.WriteLine($"[MeshRenderer] Material {i} cargado: {MaterialPaths[i]}");
+                    var material = GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]);
+                    if (material != null)
+                    {
+                        _materials[i] = material;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No se pudo cargar el material '{MaterialPaths[i]}' para el índice {i}");
+                    }
                 }
             }
 
@@ -94,66 +110,53 @@ namespace KrayonCore
         {
             if (_model == null && !string.IsNullOrEmpty(ModelPath))
             {
-                Console.WriteLine($"[MeshRenderer] Warning: Modelo no cargado en Start. Reintentando carga de: {ModelPath}");
                 LoadModelFromPath(ModelPath);
                 
-                // Asegurar que el array de materiales existe
                 if (_model != null && _materials.Length != _model.SubMeshCount)
                 {
-                    Console.WriteLine($"[MeshRenderer] Corrigiendo tamaño de array de materiales: {_materials.Length} -> {_model.SubMeshCount}");
                     Array.Resize(ref _materials, _model.SubMeshCount);
                 }
             }
+        }
 
-            if (_model == null)
-            {
-                Console.WriteLine($"[MeshRenderer] Warning: No hay modelo asignado a {GameObject?.Name ?? "Unknown"}");
-            }
-
-            Console.WriteLine($"[MeshRenderer] Start completado - Modelo: {(_model != null ? "OK" : "NULL")}, Materiales: {_materials.Length}");
+        public override void Update(float deltaTime)
+        {
+            base.Update(deltaTime);
         }
 
         private void OnModelPathChanged()
         {
-            // Solo recargar si ya está inicializado (después de Awake)
             if (_isInitialized)
             {
-                Console.WriteLine($"[MeshRenderer] ModelPath cambió a: {ModelPath}");
-
                 if (!string.IsNullOrEmpty(ModelPath))
                 {
-                    // Limpiar materiales antes de cargar nuevo modelo
                     _materials = new Material[0];
                     
                     LoadModelFromPath(ModelPath);
                     
-                    // Redimensionar array de materiales
                     if (_model != null && _model.SubMeshCount > 0)
                     {
                         _materials = new Material[_model.SubMeshCount];
-                        Console.WriteLine($"[MeshRenderer] Array de materiales redimensionado a {_materials.Length}");
                     }
                 }
                 else
                 {
                     _model = null;
                     _materials = new Material[0];
-                    Console.WriteLine($"[MeshRenderer] ModelPath vacío, modelo y materiales eliminados");
                 }
             }
         }
 
         public void SetModel(string path)
         {
-            ModelPath = path; // Esto ahora disparará automáticamente OnModelPathChanged
+            ModelPath = path;
         }
 
         public void SetModelDirect(Model model)
         {
             _model = model;
-            _modelPath = ""; // Usa el backing field para evitar disparar el evento
+            _modelPath = "";
             
-            // Ajustar array de materiales al nuevo modelo
             if (model != null && model.SubMeshCount > 0)
             {
                 _materials = new Material[model.SubMeshCount];
@@ -168,35 +171,15 @@ namespace KrayonCore
         {
             if (string.IsNullOrEmpty(path))
             {
-                Console.WriteLine($"[MeshRenderer] LoadModelFromPath: ruta vacía o nula");
                 return;
             }
 
             try
             {
-                Console.WriteLine($"[MeshRenderer] Llamando a Model.Load para: {path}");
-
                 _model = Model.Load(path);
-
-                if (_model != null)
-                {
-                    Console.WriteLine($"[MeshRenderer] ✓ Modelo cargado exitosamente: {path}");
-                    Console.WriteLine($"[MeshRenderer]   SubMeshes: {_model.SubMeshCount}");
-                }
-                else
-                {
-                    Console.WriteLine($"[MeshRenderer] ✗ Model.Load retornó null para: {path}");
-                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[MeshRenderer] ✗ Error al cargar modelo '{path}':");
-                Console.WriteLine($"[MeshRenderer]   Mensaje: {ex.Message}");
-                Console.WriteLine($"[MeshRenderer]   Tipo: {ex.GetType().Name}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[MeshRenderer]   Inner: {ex.InnerException.Message}");
-                }
                 _model = null;
             }
         }
@@ -208,20 +191,15 @@ namespace KrayonCore
 
         public void SetMaterial(int index, Material material)
         {
-            Console.WriteLine($"[MeshRenderer] SetMaterial llamado - Index: {index}, Material: {material?.Name ?? "null"}");
-
             if (index < 0) return;
 
-            // Asegurar que el array tenga el tamaño necesario
             if (index >= _materials.Length)
             {
                 int newSize = index + 1;
-                Console.WriteLine($"[MeshRenderer] Redimensionando array de materiales: {_materials.Length} -> {newSize}");
                 Array.Resize(ref _materials, newSize);
             }
 
             _materials[index] = material;
-            Console.WriteLine($"[MeshRenderer] Material asignado en índice {index}");
         }
 
         public Material GetMaterial(int index)
@@ -233,6 +211,9 @@ namespace KrayonCore
 
         public void AddMaterial(Material material)
         {
+            if (material == null)
+                return;
+
             Array.Resize(ref _materials, _materials.Length + 1);
             _materials[_materials.Length - 1] = material;
         }
@@ -256,7 +237,6 @@ namespace KrayonCore
         public void ClearMaterials()
         {
             _materials = new Material[0];
-            Console.WriteLine($"[MeshRenderer] Materiales limpiados");
         }
 
         public override void OnDestroy()
@@ -270,7 +250,6 @@ namespace KrayonCore
         {
             if (_model == null)
             {
-                Console.WriteLine($"[MeshRenderer] No se puede configurar materiales automáticos: modelo es null");
                 return;
             }
 

@@ -15,17 +15,25 @@ out vec3 Normal;
 out vec2 TexCoord;
 out mat3 TBN;
 
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform int u_UseInstancing;
 
 void main()
 {
-    mat4 aInstanceMatrix = mat4(aInstanceMatrix0, aInstanceMatrix1, aInstanceMatrix2, aInstanceMatrix3);
+    mat4 worldMatrix;
     
-    vec4 worldPos = aInstanceMatrix * vec4(aPosition, 1.0);
+    if(u_UseInstancing == 1) {
+        worldMatrix = mat4(aInstanceMatrix0, aInstanceMatrix1, aInstanceMatrix2, aInstanceMatrix3);
+    } else {
+        worldMatrix = model;
+    }
+    
+    vec4 worldPos = worldMatrix * vec4(aPosition, 1.0);
     FragPos = worldPos.xyz;
     
-    mat3 normalMatrix = transpose(inverse(mat3(aInstanceMatrix)));
+    mat3 normalMatrix = transpose(inverse(mat3(worldMatrix)));
     Normal = normalize(normalMatrix * aNormal);
     
     vec3 T = normalize(normalMatrix * aTangent);
