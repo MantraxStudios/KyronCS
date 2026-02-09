@@ -14424,6 +14424,31 @@
       "Guid": "cd044d38-a095-456e-974d-7aead1403a8e",
       "Path": "VFXData.json",
       "Type": "Unknown"
+    },
+    {
+      "Guid": "6ae2d816-7b63-46f0-a213-06b85fb89aa7",
+      "Path": "shaders/includes/lighting_engine.glsl",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "c5b3d0d9-e1d1-4717-9252-09a98e2dd267",
+      "Path": "shaders/includes/lighting_common.glsl",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "1becbd31-0b99-4281-9b20-ad8178e49273",
+      "Path": "shaders/includes/lighting_ambient.glsl",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "510b5893-1de4-49ef-9947-2b0ce7445338",
+      "Path": "shaders/includes/lighting_pbr.glsl",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "605583ba-4bd5-44dd-9487-f5be021fd6ee",
+      "Path": "shaders/includes/ssao.glsl",
+      "Type": "Unknown"
     }
   ],
   "Folders": [
@@ -14771,6 +14796,11 @@
       "Guid": "dc80981c-1506-4ff1-8e0a-20a280c492e7",
       "Path": "psx/Models/other-formats/FBX/Items \u0026 Weapons",
       "CreatedAt": "2026-02-07T23:03:29.3495549-03:00"
+    },
+    {
+      "Guid": "652f9de2-7105-432a-831f-bbf1deacc212",
+      "Path": "shaders/includes",
+      "CreatedAt": "2026-02-09T17:07:32.7995006-03:00"
     }
   ]
 }

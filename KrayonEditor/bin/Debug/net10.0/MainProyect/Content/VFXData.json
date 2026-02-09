@@ -10,11 +10,11 @@
     "Z": 1
   },
   "BloomEnabled": true,
-  "BloomThreshold": 0.66,
-  "BloomSoftThreshold": 0.38,
-  "BloomIntensity": 0.54,
-  "BloomRadius": 2.1,
+  "BloomThreshold": 0.4,
+  "BloomSoftThreshold": 0.27,
+  "BloomIntensity": 2,
+  "BloomRadius": 1,
   "GrainEnabled": true,
-  "GrainIntensity": 0.202,
+  "GrainIntensity": 0.322,
   "GrainSize": 5
 }

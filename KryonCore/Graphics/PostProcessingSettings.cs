@@ -74,6 +74,12 @@ namespace KrayonCore.Core.Rendering
         public float GrainIntensity { get; set; } = 0.05f;
         public float GrainSize { get; set; } = 1.0f;
 
+        public bool SSAOEnabled { get; set; } = true;
+        public int SSAOKernelSize { get; set; } = 64;
+        public float SSAORadius { get; set; } = 0.5f;
+        public float SSAOBias { get; set; } = 0.025f;
+        public float SSAOPower { get; set; } = 2.0f;
+
         public PostProcessingSettings()
         {
         }
@@ -97,6 +103,12 @@ namespace KrayonCore.Core.Rendering
             GrainEnabled = true;
             GrainIntensity = 0.05f;
             GrainSize = 1.0f;
+
+            SSAOEnabled = true;
+            SSAOKernelSize = 64;
+            SSAORadius = 0.5f;
+            SSAOBias = 0.025f;
+            SSAOPower = 2.0f;
         }
 
         public void Save(string filePath)
@@ -137,6 +149,11 @@ namespace KrayonCore.Core.Rendering
                 GrainEnabled = loaded.GrainEnabled;
                 GrainIntensity = loaded.GrainIntensity;
                 GrainSize = loaded.GrainSize;
+                SSAOEnabled = loaded.SSAOEnabled;
+                SSAOKernelSize = loaded.SSAOKernelSize;
+                SSAORadius = loaded.SSAORadius;
+                SSAOBias = loaded.SSAOBias;
+                SSAOPower = loaded.SSAOPower;
             }
         }
     }

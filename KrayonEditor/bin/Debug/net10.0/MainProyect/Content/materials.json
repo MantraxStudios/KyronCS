@@ -512,7 +512,7 @@
       "MetallicPath": null,
       "RoughnessPath": null,
       "AOPath": null,
-      "EmissivePath": null,
+      "EmissivePath": "psx/Textures/lamp_1_on_yellow.png",
       "AlbedoColor": {
         "X": 1.0,
         "Y": 1.0,
@@ -520,7 +520,7 @@
       },
       "Metallic": 0.0,
       "Roughness": 0.0,
-      "AO": 1.0,
+      "AO": 0.0,
       "EmissiveColor": {
         "X": 0.0,
         "Y": 0.0,
@@ -531,14 +531,14 @@
       "UseMetallicMap": false,
       "UseRoughnessMap": false,
       "UseAOMap": false,
-      "UseEmissiveMap": false,
+      "UseEmissiveMap": true,
       "NormalMapIntensity": 1.0,
       "AmbientLight": {
         "X": 0.03,
         "Y": 0.03,
         "Z": 0.03
       },
-      "AmbientStrength": 1.0
+      "AmbientStrength": 1.008
     },
     "lamp_3_off": {
       "Name": "lamp_3_off",
@@ -584,7 +584,7 @@
       "MetallicPath": null,
       "RoughnessPath": null,
       "AOPath": null,
-      "EmissivePath": null,
+      "EmissivePath": "psx/Textures/lamp_3_on.png",
       "AlbedoColor": {
         "X": 1.0,
         "Y": 1.0,
@@ -594,16 +594,16 @@
       "Roughness": 0.0,
       "AO": 1.0,
       "EmissiveColor": {
-        "X": 0.08849555,
-        "Y": 0.08849555,
-        "Z": 0.08849555
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
       },
       "UseAlbedoMap": true,
       "UseNormalMap": false,
       "UseMetallicMap": false,
       "UseRoughnessMap": false,
       "UseAOMap": false,
-      "UseEmissiveMap": false,
+      "UseEmissiveMap": true,
       "NormalMapIntensity": 1.0,
       "AmbientLight": {
         "X": 0.03,
@@ -635,6 +635,114 @@
         "Z": 0.0
       },
       "UseAlbedoMap": false,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "wood_6": {
+      "Name": "wood_6",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/wood_6.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "wood_3": {
+      "Name": "wood_3",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/wood_3.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "pillow_mp_1": {
+      "Name": "pillow_mp_1",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/pillow_mp_1.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
       "UseNormalMap": false,
       "UseMetallicMap": false,
       "UseRoughnessMap": false,
