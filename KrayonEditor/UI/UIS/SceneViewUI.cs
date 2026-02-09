@@ -397,7 +397,7 @@ namespace KrayonEditor.UI
                     }
 
                     float intensity = pp.BloomIntensity;
-                    if (ImGui.SliderFloat("Intensity", ref intensity, 0.0f, 2.0f, "%.2f"))
+                    if (ImGui.SliderFloat("Intensity", ref intensity, 0.0f, 10.0f, "%.2f"))
                     {
                         pp.BloomIntensity = intensity;
                     }
@@ -429,6 +429,41 @@ namespace KrayonEditor.UI
                     if (ImGui.SliderFloat("Size", ref grainSize, 0.1f, 5.0f, "%.2f"))
                     {
                         pp.GrainSize = grainSize;
+                    }
+                }
+
+                if (ImGui.CollapsingHeader("SSAO (Screen Space Ambient Occlusion)"))
+                {
+                    bool ssaoEnabled = pp.SSAOEnabled;
+                    if (ImGui.Checkbox("Enable##SSAO", ref ssaoEnabled))
+                    {
+                        pp.SSAOEnabled = ssaoEnabled;
+                    }
+
+                    ImGui.Spacing();
+
+                    int kernelSize = pp.SSAOKernelSize;
+                    if (ImGui.SliderInt("Kernel Size", ref kernelSize, 8, 64))
+                    {
+                        pp.SSAOKernelSize = kernelSize;
+                    }
+
+                    float radius = pp.SSAORadius;
+                    if (ImGui.SliderFloat("Radius##SSAO", ref radius, 0.1f, 2.0f, "%.2f"))
+                    {
+                        pp.SSAORadius = radius;
+                    }
+
+                    float bias = pp.SSAOBias;
+                    if (ImGui.SliderFloat("Bias", ref bias, 0.001f, 0.1f, "%.4f"))
+                    {
+                        pp.SSAOBias = bias;
+                    }
+
+                    float power = pp.SSAOPower;
+                    if (ImGui.SliderFloat("Power", ref power, 0.5f, 4.0f, "%.2f"))
+                    {
+                        pp.SSAOPower = power;
                     }
                 }
 

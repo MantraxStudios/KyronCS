@@ -197,17 +197,18 @@ namespace KrayonCore
                     
                     var camera = _sceneRenderer.GetCamera();
                     var projection = camera != null ? camera.GetProjectionMatrix() : Matrix4.Identity;
-                    
-                    // CAMBIAR deltaTime POR _totalTime
+                    var view = camera != null ? camera.GetViewMatrix() : Matrix4.Identity;
+
                     _fullscreenQuad.Render(
                         _sceneFrameBuffer.ColorTexture, 
                         _sceneFrameBuffer.EmissionTexture,
                         _sceneFrameBuffer.PositionTexture,
                         _sceneFrameBuffer.NormalTexture,
-                        _totalTime,  // <-- USAR TIEMPO ACUMULADO
+                        _totalTime,
                         _sceneFrameBuffer.Width, 
                         _sceneFrameBuffer.Height,
-                        projection
+                        projection,
+                        view
                     );
                     _postProcessFrameBuffer.Unbind();
                 }

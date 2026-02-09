@@ -38,7 +38,6 @@ float CalculateSSAO(
     mat3 TBN = mat3(tangent, bitangent, normal);
     
     float occlusion = 0.0;
-    int validSamples = 0;
     
     for(int i = 0; i < kernelSize; i++)
     {
@@ -55,18 +54,11 @@ float CalculateSSAO(
         
         float sampleDepth = texture(positionTex, offset.xy).z;
         
-        if(abs(sampleDepth) < 0.001)
-            continue;
-        
         float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
         occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
-        validSamples++;
     }
     
-    if(validSamples == 0)
-        return 1.0;
-    
-    occlusion = 1.0 - (occlusion / float(validSamples));
+    occlusion = 1.0 - (occlusion / float(kernelSize));
     return occlusion;
 }
 

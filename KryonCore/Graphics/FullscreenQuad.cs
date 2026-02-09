@@ -133,7 +133,7 @@ namespace KrayonCore.Core.Rendering
         }
 
         public void Render(int colorTextureId, int emissionTextureId, int positionTextureId, int normalTextureId, 
-                          float time, int width, int height, Matrix4 projection)
+                        float time, int width, int height, Matrix4 projection, Matrix4 view)
         {
             if (_material == null)
                 return;
@@ -169,6 +169,7 @@ namespace KrayonCore.Core.Rendering
             _material.SetFloat("u_Time", time);
             _material.SetVector2("u_Resolution", new Vector2(width, height));
             _material.SetMatrix4("u_Projection", projection);
+            _material.SetMatrix4("u_View", view);
 
             _material.SetInt("u_PostProcessEnabled", _settings.Enabled ? 1 : 0);
 

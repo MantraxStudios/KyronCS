@@ -594,9 +594,9 @@
       "Roughness": 0.0,
       "AO": 1.0,
       "EmissiveColor": {
-        "X": 0.0,
-        "Y": 0.0,
-        "Z": 0.0
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
       },
       "UseAlbedoMap": true,
       "UseNormalMap": false,
@@ -606,11 +606,11 @@
       "UseEmissiveMap": true,
       "NormalMapIntensity": 1.0,
       "AmbientLight": {
-        "X": 0.03,
-        "Y": 0.03,
-        "Z": 0.03
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
       },
-      "AmbientStrength": 1.0
+      "AmbientStrength": 2.0
     },
     "fullscreen": {
       "Name": "fullscreen",
@@ -724,6 +724,78 @@
       "Name": "pillow_mp_1",
       "ShaderPath": "shaders/basic.vert",
       "AlbedoPath": "psx/Textures/pillow_mp_1.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "ceiling_lamp_1_on": {
+      "Name": "ceiling_lamp_1_on",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/ceiling_lamp_1_on.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "fake_light_mp_1": {
+      "Name": "fake_light_mp_1",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/fake_light_mp_1.png",
       "NormalPath": null,
       "MetallicPath": null,
       "RoughnessPath": null,

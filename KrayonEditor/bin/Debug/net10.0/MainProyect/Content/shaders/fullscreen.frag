@@ -20,6 +20,7 @@ uniform float u_SSAOPower;
 uniform int u_SSAOEnabled;
 
 uniform mat4 u_Projection;
+uniform mat4 u_View;
 uniform vec2 u_Resolution;
 uniform float u_Time;
 
@@ -54,37 +55,42 @@ vec3 ApplyColorCorrection(vec3 color)
     return color;
 }
 
-vec3 ExtractBrightParts(vec3 color)
-{
-    float brightness = dot(color, vec3(0.2126, 0.7152, 0.0722));
-    float knee = u_BloomThreshold * u_BloomSoftThreshold;
-    float soft = brightness - u_BloomThreshold + knee;
-    soft = clamp(soft, 0.0, 2.0 * knee);
-    soft = soft * soft / (4.0 * knee + 0.00001);
-    float contribution = max(soft, brightness - u_BloomThreshold);
-    contribution /= max(brightness, 0.00001);
-    return color * contribution;
-}
+const float PI = 3.14159265359;
 
 vec3 ApplyBloom(vec2 uv)
 {
-    vec3 bloom = vec3(0.0);
     vec2 texelSize = 1.0 / u_Resolution;
-    float radius = u_BloomRadius;
+    vec3 bloom = vec3(0.0);
+    float totalWeight = 0.0;
     
-    for(float x = -radius; x <= radius; x += 1.0)
+    int rings = 64;
+    int samplesPerRing = 32;
+    
+    for(int ring = 1; ring <= rings; ring++)
     {
-        for(float y = -radius; y <= radius; y += 1.0)
+        float t = float(ring) / float(rings);
+        float ringRadius = u_BloomRadius * t * 20.0;
+        
+        for(int i = 0; i < samplesPerRing; i++)
         {
-            vec2 offset = vec2(x, y) * texelSize;
+            float angle = (float(i) / float(samplesPerRing)) * 2.0 * PI;
+            vec2 offset = vec2(cos(angle), sin(angle)) * ringRadius * texelSize;
+            
+            float dist = ringRadius;
+            float weight = 1.0 / (1.0 + dist * 0.1);
+            
             vec3 sample = texture(u_EmissionTexture, uv + offset).rgb;
-            vec3 bright = ExtractBrightParts(sample);
-            float weight = 1.0 / (1.0 + length(vec2(x, y)));
-            bloom += bright * weight;
+            bloom += sample * weight;
+            totalWeight += weight;
         }
     }
     
-    bloom /= ((radius * 2.0 + 1.0) * (radius * 2.0 + 1.0));
+    vec3 center = texture(u_EmissionTexture, uv).rgb;
+    bloom += center * 5.0;
+    totalWeight += 5.0;
+    
+    bloom /= totalWeight;
+    
     return bloom * u_BloomIntensity;
 }
 
@@ -103,20 +109,25 @@ void main()
     {
         if(u_SSAOEnabled == 1)
         {
-            float ao = CalculateSSAO(
-                TexCoord,
-                u_PositionTexture,
-                u_NormalTexture,
-                u_NoiseTexture,
-                u_SSAOKernel,
-                u_SSAOKernelSize,
-                u_SSAORadius,
-                u_SSAOBias,
-                u_Projection,
-                u_Resolution
-            );
-            ao = pow(ao, u_SSAOPower);
-            color *= ao;
+            vec3 viewPos = texture(u_PositionTexture, TexCoord).xyz;
+            
+            if(length(viewPos) > 0.001)
+            {
+                float ao = CalculateSSAO(
+                    TexCoord,
+                    u_PositionTexture,
+                    u_NormalTexture,
+                    u_NoiseTexture,
+                    u_SSAOKernel,
+                    u_SSAOKernelSize,
+                    u_SSAORadius,
+                    u_SSAOBias,
+                    u_Projection,
+                    u_Resolution
+                );
+                ao = pow(ao, u_SSAOPower);
+                color *= ao;
+            }
         }
         
         if(u_BloomEnabled == 1)

@@ -11,7 +11,9 @@ layout(location = 7) in vec4 aInstanceMatrix2;
 layout(location = 8) in vec4 aInstanceMatrix3;
 
 out vec3 FragPos;
+out vec3 ViewPos;
 out vec3 Normal;
+out vec3 ViewNormal;
 out vec2 TexCoord;
 out mat3 TBN;
 
@@ -33,8 +35,14 @@ void main()
     vec4 worldPos = worldMatrix * vec4(aPosition, 1.0);
     FragPos = worldPos.xyz;
     
+    vec4 viewPos = view * worldPos;
+    ViewPos = viewPos.xyz;
+    
     mat3 normalMatrix = transpose(inverse(mat3(worldMatrix)));
     Normal = normalize(normalMatrix * aNormal);
+    
+    mat3 viewNormalMatrix = mat3(transpose(inverse(view)));
+    ViewNormal = normalize(viewNormalMatrix * Normal);
     
     vec3 T = normalize(normalMatrix * aTangent);
     vec3 B = normalize(normalMatrix * aBiTangent);
@@ -43,5 +51,5 @@ void main()
     
     TexCoord = aTexCoord;
     
-    gl_Position = projection * view * worldPos;
+    gl_Position = projection * viewPos;
 }

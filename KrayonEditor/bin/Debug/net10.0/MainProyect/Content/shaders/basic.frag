@@ -11,7 +11,9 @@ layout(location = 2) out vec3 PositionOutput;
 layout(location = 3) out vec3 NormalOutput;
 
 in vec3 FragPos;
+in vec3 ViewPos;
 in vec3 Normal;
+in vec3 ViewNormal;
 in vec2 TexCoord;
 in mat3 TBN;
 
@@ -85,12 +87,12 @@ void main()
     
     color = ApplyToneMapping(color);
     
-    FragColor = vec4(color + emissive, 1.0);
+    FragColor = vec4(color, 1.0);
     EmissionColor = vec4(emissive, 1.0);
     
-    vec4 viewPos = u_View * vec4(FragPos, 1.0);
-    vec3 viewNormal = mat3(u_View) * ctx.N;
+    mat3 viewNormalMatrix = mat3(u_View);
+    vec3 viewSpaceNormal = normalize(viewNormalMatrix * ctx.N);
     
-    PositionOutput = viewPos.xyz;
-    NormalOutput = viewNormal;
+    PositionOutput = ViewPos;
+    NormalOutput = viewSpaceNormal;
 }
