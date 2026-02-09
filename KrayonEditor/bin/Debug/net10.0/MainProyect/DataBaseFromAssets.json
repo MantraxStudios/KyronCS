@@ -14409,6 +14409,16 @@
       "Guid": "eeb854a7-209b-414a-8283-5a0633450b34",
       "Path": "scenes/GameScene.scene",
       "Type": "Unknown"
+    },
+    {
+      "Guid": "30053d51-0fc7-4754-ba24-e4c347e44971",
+      "Path": "shaders/fullscreen.frag",
+      "Type": "Shader"
+    },
+    {
+      "Guid": "3c4df83f-75b0-4c42-8ceb-479039ca80c5",
+      "Path": "shaders/fullscreen.vert",
+      "Type": "Shader"
     }
   ],
   "Folders": [

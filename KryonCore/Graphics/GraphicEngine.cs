@@ -6,6 +6,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Mathematics;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core;
+using KrayonCore.Core.Rendering;
 
 namespace KrayonCore
 {
@@ -14,7 +15,8 @@ namespace KrayonCore
         private GameWindowInternal? _window;
         private SceneRenderer _sceneRenderer;
         private FrameBuffer? _sceneFrameBuffer;
-
+        private FrameBuffer? _postProcessFrameBuffer;
+        private FullscreenQuad? _fullscreenQuad;
 
         public event Action? LoadEvent;
         public event Action<float>? UpdateEvent;
@@ -28,6 +30,8 @@ namespace KrayonCore
         private MaterialManager _materials;
         public MaterialManager Materials => _materials;
 
+        public PostProcessingSettings? PostProcessing => _fullscreenQuad?.GetSettings();
+
         public GraphicsEngine()
         {
             Instance = this;
@@ -38,16 +42,42 @@ namespace KrayonCore
 
         private void CreateDefaultMaterials()
         {
-
             var textureMaterial = _materials.Create("basic", "shaders/basic");
             textureMaterial?.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
 
             if (textureMaterial != null)
             {
-                textureMaterial.LoadMainTexture("textures/sprites/Environment/dirt.png", generateMipmaps: true, flip: true);
+                textureMaterial.LoadMainTexture("textures/sprites/Environment/dirt.png", 
+                                               generateMipmaps: true, flip: true);
             }
+
+            _materials.Create("fullscreen", "shaders/fullscreen");
         }
 
+        private void ConfigureDefaultPostProcessing()
+        {
+            if (PostProcessing != null)
+            {
+                PostProcessing.Enabled = true;
+
+                PostProcessing.ColorCorrectionEnabled = true;
+                PostProcessing.Brightness = 0.0f;
+                PostProcessing.Contrast = 1.05f;
+                PostProcessing.Saturation = 1.1f;
+                PostProcessing.ColorFilter = new Vector3(1.0f, 1.0f, 1.0f);
+
+                PostProcessing.BloomEnabled = true;
+                PostProcessing.BloomThreshold = 0.9f;
+                PostProcessing.BloomSoftThreshold = 0.5f;
+                PostProcessing.BloomIntensity = 0.8f;
+                PostProcessing.BloomRadius = 4.0f;
+
+                PostProcessing.GrainEnabled = true;
+                PostProcessing.GrainIntensity = 0.03f;
+                PostProcessing.GrainSize = 1.2f;
+            }
+        }
+        
         public void CreateWindow(int width, int height, string title)
         {
             _window = new GameWindowInternal(width, height, title, this);
@@ -66,11 +96,16 @@ namespace KrayonCore
 
         public FrameBuffer GetSceneFrameBuffer()
         {
-            if (_sceneFrameBuffer == null)
+            if (_fullscreenQuad?.GetSettings().Enabled == false && _sceneFrameBuffer != null)
             {
-                _sceneFrameBuffer = new FrameBuffer(1280, 720);
+                return _sceneFrameBuffer;
             }
-            return _sceneFrameBuffer;
+            
+            if (_postProcessFrameBuffer == null)
+            {
+                _postProcessFrameBuffer = new FrameBuffer(1280, 720);
+            }
+            return _postProcessFrameBuffer;
         }
 
         public void ResizeSceneFrameBuffer(int width, int height)
@@ -78,6 +113,10 @@ namespace KrayonCore
             if (_sceneFrameBuffer != null)
             {
                 _sceneFrameBuffer.Resize(width, height);
+            }
+            if (_postProcessFrameBuffer != null)
+            {
+                _postProcessFrameBuffer.Resize(width, height);
             }
         }
 
@@ -88,7 +127,7 @@ namespace KrayonCore
 
         public void InternalLoad()
         {
-            AssetManager.Initialize ();
+            AssetManager.Initialize();
 
             if (SceneManager.ActiveScene == null)
             {
@@ -101,7 +140,18 @@ namespace KrayonCore
             CreateDefaultMaterials();
 
             _sceneFrameBuffer = new FrameBuffer(1280, 720);
+            _postProcessFrameBuffer = new FrameBuffer(1280, 720);
             _sceneRenderer.Initialize();
+            
+            _fullscreenQuad = new FullscreenQuad();
+            var fullscreenMaterial = _materials.Get("fullscreen");
+            if (fullscreenMaterial != null)
+            {
+                _fullscreenQuad.SetMaterial(fullscreenMaterial);
+            }
+
+            ConfigureDefaultPostProcessing();
+
             LoadEvent?.Invoke();
         }
 
@@ -114,13 +164,24 @@ namespace KrayonCore
 
         public void InternalRender(float deltaTime)
         {
-            if (_sceneFrameBuffer != null)
+            if (_sceneFrameBuffer != null && _postProcessFrameBuffer != null && _fullscreenQuad != null)
             {
                 _sceneFrameBuffer.Bind();
                 GL.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 _sceneRenderer.Render();
                 _sceneFrameBuffer.Unbind();
+
+                var ppSettings = _fullscreenQuad.GetSettings();
+                if (ppSettings.Enabled)
+                {
+                    _postProcessFrameBuffer.Bind();
+                    GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                    _fullscreenQuad.Render(_sceneFrameBuffer.GetColorTexture(), deltaTime, 
+                                           _sceneFrameBuffer.Width, _sceneFrameBuffer.Height);
+                    _postProcessFrameBuffer.Unbind();
+                }
             }
 
             if (_window != null)
@@ -146,7 +207,9 @@ namespace KrayonCore
                 SceneManager.ActiveScene.OnUnload();
             }
 
+            _fullscreenQuad?.Dispose();
             _sceneFrameBuffer?.Dispose();
+            _postProcessFrameBuffer?.Dispose();
             _sceneRenderer.Shutdown();
             CloseEvent?.Invoke();
         }

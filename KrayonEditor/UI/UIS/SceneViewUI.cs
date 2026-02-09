@@ -3,6 +3,7 @@ using KrayonCore;
 using KrayonCore.EventSystem;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
 
 namespace KrayonEditor.UI
@@ -53,6 +54,9 @@ namespace KrayonEditor.UI
             DrawSnapControls();
             DrawVerticalSeparator();
 
+            DrawVFXButton();
+            DrawVerticalSeparator();
+
             DrawCameraSpeed();
 
             ImGui.EndChild();
@@ -84,7 +88,6 @@ namespace KrayonEditor.UI
             Vector2 buttonSize = new Vector2(32, 32);
             Vector2 iconSize = new Vector2(20, 20);
 
-            // Botón Move
             if (isTranslate)
             {
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
@@ -107,7 +110,6 @@ namespace KrayonEditor.UI
 
             ImGui.SameLine();
 
-            // Botón Rotate
             if (isRotate)
             {
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
@@ -130,7 +132,6 @@ namespace KrayonEditor.UI
 
             ImGui.SameLine();
 
-            // Botón Scale
             if (isScale)
             {
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
@@ -183,7 +184,6 @@ namespace KrayonEditor.UI
             Vector2 buttonSize = new Vector2(75, 32);
             bool wireframeEnabled = GraphicsEngine.Instance.GetSceneRenderer().WireframeMode;
 
-            // Botón Camera Mode
             if (ImGui.Button("Camera", buttonSize))
             {
                 GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ToggleProjectionMode();
@@ -198,7 +198,6 @@ namespace KrayonEditor.UI
 
             ImGui.SameLine();
 
-            // Botón Wireframe
             if (wireframeEnabled)
             {
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.3f, 0.5f, 0.8f, 1.0f));
@@ -294,6 +293,156 @@ namespace KrayonEditor.UI
             }
         }
 
+        private void DrawVFXButton()
+        {
+            var pp = GraphicsEngine.Instance?.PostProcessing;
+            if (pp == null) return;
+
+            Vector4 vfxColor = pp.Enabled ? new Vector4(0.8f, 0.3f, 0.8f, 1.0f) : new Vector4(0.6f, 0.6f, 0.6f, 1.0f);
+            ImGui.PushStyleColor(ImGuiCol.Text, vfxColor);
+
+            bool enabled = pp.Enabled;
+            if (ImGui.Checkbox("VFX", ref enabled))
+            {
+                pp.Enabled = enabled;
+            }
+
+            ImGui.PopStyleColor();
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Post Processing Effects");
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("VFX Settings", new Vector2(90, 0)))
+            {
+                ImGui.OpenPopup("VFXSettings");
+            }
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("VFX Settings");
+            }
+
+            DrawVFXSettingsPopup();
+        }
+
+        private void DrawVFXSettingsPopup()
+        {
+            var pp = GraphicsEngine.Instance?.PostProcessing;
+            if (pp == null) return;
+
+            if (ImGui.BeginPopup("VFXSettings"))
+            {
+                ImGui.Text("Post Processing Settings");
+                ImGui.Separator();
+
+                if (ImGui.CollapsingHeader("Color Correction", ImGuiTreeNodeFlags.DefaultOpen))
+                {
+                    bool ccEnabled = pp.ColorCorrectionEnabled;
+                    if (ImGui.Checkbox("Enable##CC", ref ccEnabled))
+                    {
+                        pp.ColorCorrectionEnabled = ccEnabled;
+                    }
+
+                    ImGui.Spacing();
+
+                    float brightness = pp.Brightness;
+                    if (ImGui.SliderFloat("Brightness", ref brightness, -1.0f, 1.0f, "%.2f"))
+                    {
+                        pp.Brightness = brightness;
+                    }
+
+                    float contrast = pp.Contrast;
+                    if (ImGui.SliderFloat("Contrast", ref contrast, 0.0f, 2.0f, "%.2f"))
+                    {
+                        pp.Contrast = contrast;
+                    }
+
+                    float saturation = pp.Saturation;
+                    if (ImGui.SliderFloat("Saturation", ref saturation, 0.0f, 2.0f, "%.2f"))
+                    {
+                        pp.Saturation = saturation;
+                    }
+
+                    var colorFilter = new Vector3(pp.ColorFilter.X, pp.ColorFilter.Y, pp.ColorFilter.Z);
+                    if (ImGui.ColorEdit3("Color Filter", ref colorFilter))
+                    {
+                        pp.ColorFilter = new OpenTK.Mathematics.Vector3(colorFilter.X, colorFilter.Y, colorFilter.Z);
+                    }
+                }
+
+                if (ImGui.CollapsingHeader("Bloom"))
+                {
+                    bool bloomEnabled = pp.BloomEnabled;
+                    if (ImGui.Checkbox("Enable##Bloom", ref bloomEnabled))
+                    {
+                        pp.BloomEnabled = bloomEnabled;
+                    }
+
+                    ImGui.Spacing();
+
+                    float threshold = pp.BloomThreshold;
+                    if (ImGui.SliderFloat("Threshold", ref threshold, 0.0f, 2.0f, "%.2f"))
+                    {
+                        pp.BloomThreshold = threshold;
+                    }
+
+                    float softThreshold = pp.BloomSoftThreshold;
+                    if (ImGui.SliderFloat("Soft Threshold", ref softThreshold, 0.0f, 1.0f, "%.2f"))
+                    {
+                        pp.BloomSoftThreshold = softThreshold;
+                    }
+
+                    float intensity = pp.BloomIntensity;
+                    if (ImGui.SliderFloat("Intensity", ref intensity, 0.0f, 2.0f, "%.2f"))
+                    {
+                        pp.BloomIntensity = intensity;
+                    }
+
+                    float radius = pp.BloomRadius;
+                    if (ImGui.SliderFloat("Radius", ref radius, 1.0f, 10.0f, "%.1f"))
+                    {
+                        pp.BloomRadius = radius;
+                    }
+                }
+
+                if (ImGui.CollapsingHeader("Film Grain"))
+                {
+                    bool grainEnabled = pp.GrainEnabled;
+                    if (ImGui.Checkbox("Enable##Grain", ref grainEnabled))
+                    {
+                        pp.GrainEnabled = grainEnabled;
+                    }
+
+                    ImGui.Spacing();
+
+                    float grainIntensity = pp.GrainIntensity;
+                    if (ImGui.SliderFloat("Intensity##Grain", ref grainIntensity, 0.0f, 0.5f, "%.3f"))
+                    {
+                        pp.GrainIntensity = grainIntensity;
+                    }
+
+                    float grainSize = pp.GrainSize;
+                    if (ImGui.SliderFloat("Size", ref grainSize, 0.1f, 5.0f, "%.2f"))
+                    {
+                        pp.GrainSize = grainSize;
+                    }
+                }
+
+                ImGui.Separator();
+                
+                if (ImGui.Button("Reset to Defaults", new Vector2(-1, 0)))
+                {
+                    pp.Reset();
+                }
+
+                ImGui.EndPopup();
+            }
+        }
+
         private void DrawCameraSpeed()
         {
             if (MainCamera != null)
@@ -341,20 +490,16 @@ namespace KrayonEditor.UI
 
                     if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !TransformGizmo.IsHovering)
                     {
-                        // Obtener posición del mouse global (System.Numerics.Vector2)
                         System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
 
-                        // Convertir a posición relativa al viewport
                         System.Numerics.Vector2 relativeMousePos = new System.Numerics.Vector2(
                             globalMousePos.X - cursorPos.X,
                             globalMousePos.Y - cursorPos.Y
                         );
 
-                        // Verificar que el click esté dentro del viewport
                         if (relativeMousePos.X >= 0 && relativeMousePos.X <= viewportSize.X &&
                             relativeMousePos.Y >= 0 && relativeMousePos.Y <= viewportSize.Y)
                         {
-                            // Convertir a OpenTK.Mathematics.Vector2
                             OpenTK.Mathematics.Vector2 openTKMousePos = new OpenTK.Mathematics.Vector2(
                                 relativeMousePos.X,
                                 relativeMousePos.Y

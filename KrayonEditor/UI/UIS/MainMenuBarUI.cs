@@ -135,6 +135,11 @@ namespace KrayonEditor.UI
             DrawSaveDialog();
             DrawOpenDialog();
             HandleKeyboardShortcuts();
+
+            if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) && ImGui.IsKeyPressed(ImGuiKey.S))
+            {
+                SaveCurrentScene();
+            }
         }
 
         #region Scene Management

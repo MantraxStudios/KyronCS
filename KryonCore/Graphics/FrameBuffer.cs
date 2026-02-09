@@ -76,6 +76,11 @@ namespace KrayonCore
             GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.Depth24Stencil8, width, height);
         }
 
+        public int GetColorTexture()
+        {
+            return _textureId; 
+        }
+
         public void Dispose()
         {
             GL.DeleteFramebuffer(_fbo);
