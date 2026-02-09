@@ -184,12 +184,11 @@ namespace KrayonEditor.UI
                 string sceneName = SceneManager.ActiveScene.Name;
                 string sceneFilePath = GetSceneFilePath(sceneName);
 
-                // Guardar la escena
                 SceneManager.SaveActiveScene(sceneFilePath);
                 EngineEditor.LogMessage($"Escena guardada: {sceneName}");
 
-                // Guardar todos los materiales globales
                 SaveAllMaterials();
+                GraphicsEngine.Instance._fullscreenQuad.GetSettings().Save($"{AssetManager.BasePath}VFXData.json");
 
                 EditorPrefs.SetString(PREF_LAST_SCENE, sceneName);
                 EditorPrefs.Save();

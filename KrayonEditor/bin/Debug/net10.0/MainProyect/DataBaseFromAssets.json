@@ -14419,6 +14419,11 @@
       "Guid": "3c4df83f-75b0-4c42-8ceb-479039ca80c5",
       "Path": "shaders/fullscreen.vert",
       "Type": "Shader"
+    },
+    {
+      "Guid": "cd044d38-a095-456e-974d-7aead1403a8e",
+      "Path": "VFXData.json",
+      "Type": "Unknown"
     }
   ],
   "Folders": [

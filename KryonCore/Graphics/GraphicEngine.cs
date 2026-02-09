@@ -16,7 +16,7 @@ namespace KrayonCore
         private SceneRenderer _sceneRenderer;
         private FrameBuffer? _sceneFrameBuffer;
         private FrameBuffer? _postProcessFrameBuffer;
-        private FullscreenQuad? _fullscreenQuad;
+        public FullscreenQuad? _fullscreenQuad;
 
         public event Action? LoadEvent;
         public event Action<float>? UpdateEvent;
@@ -76,8 +76,10 @@ namespace KrayonCore
                 PostProcessing.GrainIntensity = 0.03f;
                 PostProcessing.GrainSize = 1.2f;
             }
+
+            _fullscreenQuad.GetSettings().Load($"{AssetManager.BasePath}VFXData.json");
         }
-        
+
         public void CreateWindow(int width, int height, string title)
         {
             _window = new GameWindowInternal(width, height, title, this);
@@ -103,7 +105,7 @@ namespace KrayonCore
             
             if (_postProcessFrameBuffer == null)
             {
-                _postProcessFrameBuffer = new FrameBuffer(1280, 720);
+                _postProcessFrameBuffer = new FrameBuffer(1280, 720, false);
             }
             return _postProcessFrameBuffer;
         }
@@ -139,8 +141,8 @@ namespace KrayonCore
 
             CreateDefaultMaterials();
 
-            _sceneFrameBuffer = new FrameBuffer(1280, 720);
-            _postProcessFrameBuffer = new FrameBuffer(1280, 720);
+            _sceneFrameBuffer = new FrameBuffer(1280, 720, true);
+            _postProcessFrameBuffer = new FrameBuffer(1280, 720, false);
             _sceneRenderer.Initialize();
             
             _fullscreenQuad = new FullscreenQuad();
@@ -151,6 +153,8 @@ namespace KrayonCore
             }
 
             ConfigureDefaultPostProcessing();
+
+            PostProcessing.Load($"{AssetManager.BasePath}VFXData.json");
 
             LoadEvent?.Invoke();
         }
@@ -178,8 +182,8 @@ namespace KrayonCore
                     _postProcessFrameBuffer.Bind();
                     GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                    _fullscreenQuad.Render(_sceneFrameBuffer.GetColorTexture(), deltaTime, 
-                                           _sceneFrameBuffer.Width, _sceneFrameBuffer.Height);
+                    _fullscreenQuad.Render(_sceneFrameBuffer.ColorTexture, _sceneFrameBuffer.EmissionTexture, 
+                                           deltaTime, _sceneFrameBuffer.Width, _sceneFrameBuffer.Height);
                     _postProcessFrameBuffer.Unbind();
                 }
             }

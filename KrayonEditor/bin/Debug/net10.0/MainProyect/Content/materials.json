@@ -590,13 +590,13 @@
         "Y": 1.0,
         "Z": 1.0
       },
-      "Metallic": 0.0,
+      "Metallic": 1.0,
       "Roughness": 0.0,
       "AO": 1.0,
       "EmissiveColor": {
-        "X": 0.0,
-        "Y": 0.0,
-        "Z": 0.0
+        "X": 0.08849555,
+        "Y": 0.08849555,
+        "Z": 0.08849555
       },
       "UseAlbedoMap": true,
       "UseNormalMap": false,

@@ -1,6 +1,7 @@
 #version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 EmissionColor;
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -283,10 +284,11 @@ void main()
     vec3 ambientSpecular = F * roughness * 0.1;
     ambient += ambientSpecular * ao;
     
-    vec3 color = ambient + Lo + emissive;
+    vec3 color = ambient + Lo;
     
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));
     
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(color + emissive, 1.0);
+    EmissionColor = vec4(emissive, 1.0);
 }

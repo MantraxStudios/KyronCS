@@ -59,7 +59,7 @@ namespace KrayonCore.Core.Rendering
             return _settings;
         }
 
-        public void Render(int textureId, float time, int width, int height)
+        public void Render(int colorTextureId, int emissionTextureId, float time, int width, int height)
         {
             if (_material == null)
                 return;
@@ -73,8 +73,12 @@ namespace KrayonCore.Core.Rendering
             _material.Use();
             
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, textureId);
+            GL.BindTexture(TextureTarget.Texture2D, colorTextureId);
             _material.SetInt("u_ScreenTexture", 0);
+            
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, emissionTextureId);
+            _material.SetInt("u_EmissionTexture", 1);
             
             _material.SetFloat("u_Time", time);
             _material.SetVector2("u_Resolution", new OpenTK.Mathematics.Vector2(width, height));

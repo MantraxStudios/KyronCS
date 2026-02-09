@@ -1,0 +1,20 @@
+{
+  "Enabled": true,
+  "ColorCorrectionEnabled": true,
+  "Brightness": 0.1,
+  "Contrast": 2,
+  "Saturation": 1.07,
+  "ColorFilter": {
+    "X": 1,
+    "Y": 1,
+    "Z": 1
+  },
+  "BloomEnabled": true,
+  "BloomThreshold": 0.66,
+  "BloomSoftThreshold": 0.38,
+  "BloomIntensity": 0.54,
+  "BloomRadius": 2.1,
+  "GrainEnabled": true,
+  "GrainIntensity": 0.202,
+  "GrainSize": 5
+}
