@@ -20,16 +20,10 @@ namespace KrayonCore
             }
         };
 
-        /// <summary>
-        /// Guarda una escena en un archivo JSON
-        /// </summary>
         public static void SaveScene(GameScene scene, string filePath)
         {
             if (scene == null)
                 throw new ArgumentNullException(nameof(scene));
-
-            // NUEVO: Preparar la escena antes de serializar
-            ComponentSerializerExtensions.PrepareSceneForSerialization(scene);
 
             var sceneData = SerializeScene(scene);
 
@@ -45,9 +39,6 @@ namespace KrayonCore
             Console.WriteLine($"Escena '{scene.Name}' guardada en: {filePath}");
         }
 
-        /// <summary>
-        /// Carga una escena desde un archivo JSON
-        /// </summary>
         public static GameScene LoadScene(string filePath)
         {
             if (!File.Exists(filePath))
@@ -66,9 +57,6 @@ namespace KrayonCore
             return scene;
         }
 
-        /// <summary>
-        /// Serializa una escena completa a SceneData
-        /// </summary>
         private static SceneData SerializeScene(GameScene scene)
         {
             var sceneData = new SceneData
@@ -85,9 +73,6 @@ namespace KrayonCore
             return sceneData;
         }
 
-        /// <summary>
-        /// Serializa un GameObject completo
-        /// </summary>
         private static GameObjectData SerializeGameObject(GameObject gameObject)
         {
             var goData = new GameObjectData
@@ -95,7 +80,8 @@ namespace KrayonCore
                 Id = gameObject.Id,
                 Name = gameObject.Name,
                 Tag = gameObject.Tag,
-                Active = gameObject.Active
+                Active = gameObject.Active,
+                ParentId = gameObject.Transform.Parent?.GameObject.Id
             };
 
             foreach (var component in gameObject.GetAllComponents())
@@ -107,19 +93,13 @@ namespace KrayonCore
             return goData;
         }
 
-        /// <summary>
-        /// Deserializa SceneData a una GameScene
-        /// </summary>
         private static GameScene DeserializeScene(SceneData sceneData)
         {
             var scene = new GameScene(sceneData.SceneName);
-
-            // Primero crear todos los GameObjects sin componentes
             var gameObjectMap = new System.Collections.Generic.Dictionary<Guid, GameObject>();
 
             foreach (var goData in sceneData.GameObjects)
             {
-                // Crear GameObject básico (esto crea un Transform por defecto)
                 var gameObject = new GameObject(goData.Name)
                 {
                     Tag = goData.Tag,
@@ -130,7 +110,6 @@ namespace KrayonCore
                 gameObjectMap[goData.Id] = gameObject;
             }
 
-            // Luego deserializar los componentes
             for (int i = 0; i < sceneData.GameObjects.Count; i++)
             {
                 var goData = sceneData.GameObjects[i];
@@ -139,12 +118,23 @@ namespace KrayonCore
                 DeserializeComponents(gameObject, goData.Components);
             }
 
+            foreach (var goData in sceneData.GameObjects)
+            {
+                if (goData.ParentId.HasValue && gameObjectMap.ContainsKey(goData.ParentId.Value))
+                {
+                    var child = gameObjectMap[goData.Id];
+                    var parent = gameObjectMap[goData.ParentId.Value];
+                    
+                    child.Transform.SetParent(parent.Transform, worldPositionStays: false);
+                    
+                    Console.WriteLine($"[SceneSaveSystem] Restaurada relación: {child.Name} es hijo de {parent.Name}");
+                }
+            }
+
             return scene;
         }
 
-        /// <summary>
-        /// Deserializa componentes en un GameObject
-        /// </summary>
+
         private static void DeserializeComponents(GameObject gameObject, System.Collections.Generic.List<ComponentData> componentsData)
         {
             foreach (var componentData in componentsData)
@@ -159,24 +149,19 @@ namespace KrayonCore
                         continue;
                     }
 
-                    // Si el componente ya existe (como Transform), obtenerlo
                     Component component = gameObject.GetAllComponents()
                         .FirstOrDefault(c => c.GetType() == componentType);
 
                     bool isNewComponent = false;
 
-                    // Si no existe, crearlo SIN llamar a Awake todavía
                     if (component == null)
                     {
                         component = gameObject.AddComponentWithoutAwake(componentType);
                         isNewComponent = true;
                     }
 
-                    // Deserializar los datos en el componente
                     ComponentSerializer.Deserialize(component, componentData);
 
-                    // CORRECCIÓN: Llamar a Awake() después de deserializar
-                    // Solo para componentes nuevos (Transform ya tiene Awake llamado)
                     if (isNewComponent)
                     {
                         try

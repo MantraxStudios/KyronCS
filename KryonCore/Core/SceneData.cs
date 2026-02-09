@@ -17,6 +17,7 @@ namespace KrayonCore
         public string Name { get; set; }
         public string Tag { get; set; }
         public bool Active { get; set; }
+        public Guid? ParentId { get; set; }
         public List<ComponentData> Components { get; set; } = new List<ComponentData>();
     }
 
