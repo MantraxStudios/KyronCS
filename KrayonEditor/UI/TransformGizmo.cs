@@ -104,7 +104,7 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            SysVec3 objectPos = ToSysVec3(selectedObject.Transform.LocalPosition);
+            SysVec3 objectPos = ToSysVec3(selectedObject.Transform.GetWorldPosition());
 
             if (!IsObjectInFrontOfCamera(objectPos, camera))
             {
@@ -161,7 +161,7 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            SysVec3 objectPos = ToSysVec3(selectedObject.Transform.LocalPosition);
+            SysVec3 objectPos = ToSysVec3(selectedObject.Transform.GetWorldPosition());
 
             if (!_isDragging && mouseInViewport)
             {
@@ -177,9 +177,9 @@ namespace KrayonEditor.UI
                 {
                     _isDragging = true;
                     _dragStartPos = mousePos;
-                    _objectStartPos = ToSysVec3(selectedObject.Transform.LocalPosition);
-                    _objectStartRot = selectedObject.Transform.Rotation;
-                    _objectStartScale = ToSysVec3(selectedObject.Transform.LocalScale);
+                    _objectStartPos = ToSysVec3(selectedObject.Transform.GetWorldPosition());
+                    _objectStartRot = selectedObject.Transform.GetWorldRotation();
+                    _objectStartScale = ToSysVec3(selectedObject.Transform.GetWorldScale());
                     _lastMousePos = mousePos;
 
                     _accumulatedPos = _objectStartPos;
@@ -240,7 +240,7 @@ namespace KrayonEditor.UI
                                 finalPos.Z = MathF.Round(_accumulatedPos.Z / _translateSnapValue) * _translateSnapValue;
                             }
 
-                            obj.Transform.SetPosition(finalPos.X, finalPos.Y, finalPos.Z);
+                            obj.Transform.SetWorldPosition(ToOpenTKVec3(finalPos));
                         }
                         else
                         {
@@ -268,14 +268,14 @@ namespace KrayonEditor.UI
                                     finalPos.Z = MathF.Round(_accumulatedPos.Z / _translateSnapValue) * _translateSnapValue;
                             }
 
-                            obj.Transform.SetPosition(finalPos.X, finalPos.Y, finalPos.Z);
+                            obj.Transform.SetWorldPosition(ToOpenTKVec3(finalPos));
                         }
                     }
                     break;
 
                 case GizmoMode.Rotate:
                     {
-                        SysVec3 objectPos = ToSysVec3(obj.Transform.LocalPosition);
+                        SysVec3 objectPos = ToSysVec3(obj.Transform.GetWorldPosition());
                         SysVec3 axisDir = GetAxisDirection(_activeAxis, obj);
 
                         SysVec2 objScreen = WorldToScreen(objectPos, camera, viewportSize);
@@ -325,18 +325,18 @@ namespace KrayonEditor.UI
                                 eulerDeg.Z * MathF.PI / 180f
                             );
 
-                            obj.Transform.SetRotation(Quaternion.FromEulerAngles(eulerRad));
+                            obj.Transform.SetWorldRotation(Quaternion.FromEulerAngles(eulerRad));
                         }
                         else
                         {
-                            obj.Transform.SetRotation(_accumulatedRot);
+                            obj.Transform.SetWorldRotation(_accumulatedRot);
                         }
                     }
                     break;
 
                 case GizmoMode.Scale:
                     {
-                        SysVec3 objectPos = ToSysVec3(obj.Transform.LocalPosition);
+                        SysVec3 objectPos = ToSysVec3(obj.Transform.GetWorldPosition());
 
                         float scaleSpeed = 0.01f;
                         float scaleDelta = 0f;
@@ -361,7 +361,7 @@ namespace KrayonEditor.UI
                                 finalScale = new SysVec3(snappedScale, snappedScale, snappedScale);
                             }
 
-                            obj.Transform.SetScale(finalScale.X, finalScale.Y, finalScale.Z);
+                            obj.Transform.SetWorldScale(ToOpenTKVec3(finalScale));
                         }
                         else
                         {
@@ -393,7 +393,7 @@ namespace KrayonEditor.UI
                                     finalScale.Z = Math.Max(0.01f, MathF.Round(_accumulatedScale.Z / _scaleSnapValue) * _scaleSnapValue);
                             }
 
-                            obj.Transform.SetScale(finalScale.X, finalScale.Y, finalScale.Z);
+                            obj.Transform.SetWorldScale(ToOpenTKVec3(finalScale));
                         }
                     }
                     break;
@@ -811,7 +811,7 @@ namespace KrayonEditor.UI
                 return baseAxis;
             }
 
-            Quaternion quat = obj.Transform.Rotation;
+            Quaternion quat = obj.Transform.GetWorldRotation();
             Vector3 axis3D = new Vector3(baseAxis.X, baseAxis.Y, baseAxis.Z);
             Vector3 rotated = quat * axis3D;
 
@@ -873,6 +873,11 @@ namespace KrayonEditor.UI
         private static SysVec3 ToSysVec3(Vector3 v)
         {
             return new SysVec3(v.X, v.Y, v.Z);
+        }
+
+        private static Vector3 ToOpenTKVec3(SysVec3 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
         }
     }
 }

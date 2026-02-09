@@ -395,6 +395,222 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "metal_mp_1": {
+      "Name": "metal_mp_1",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/metal_mp_1.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "metal_mp_4": {
+      "Name": "metal_mp_4",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/metal_mp_4.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "plastic_mp_2": {
+      "Name": "plastic_mp_2",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/plastic_mp_2.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "lamp_1_on_yellow": {
+      "Name": "lamp_1_on_yellow",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/lamp_1_on_yellow.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "lamp_3_off": {
+      "Name": "lamp_3_off",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Textures/lamp_3_off.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "lamp_3": {
+      "Name": "lamp_3",
+      "ShaderPath": "shaders/basic.vert",
+      "AlbedoPath": "psx/Models/other-formats/DAE/Lighting/lamp_3.png",
+      "NormalPath": null,
+      "MetallicPath": null,
+      "RoughnessPath": null,
+      "AOPath": null,
+      "EmissivePath": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }
