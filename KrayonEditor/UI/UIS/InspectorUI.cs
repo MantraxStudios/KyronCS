@@ -112,35 +112,81 @@ namespace KrayonEditor.UI
                 isEnabled = (bool)enabledProperty!.GetValue(component)!;
             }
 
-            if (hasEnabled)
+            // Indicador visual de si está habilitado/deshabilitado
+            if (hasEnabled && !isEnabled)
             {
-                bool enabled = isEnabled;
-                if (ImGui.Checkbox("##enabled", ref enabled))
-                {
-                    enabledProperty!.SetValue(component, enabled);
-                }
-                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
             }
-
-            // Botón de eliminar componente al final de la línea
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(1.0f, 0.3f, 0.3f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.6f, 0.1f, 0.1f, 1.0f));
-
-            float buttonWidth = 60f;
-            ImGui.SameLine(ImGui.GetWindowWidth() - buttonWidth - 15f);
-
-            if (ImGui.Button($"Remove##{componentName}", new Vector2(buttonWidth, 0)))
-            {
-                EditorActions.SelectedObject!.RemoveComponent((Component)component);
-                EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
-                ImGui.PopStyleColor(3);
-                return; // Salir temprano porque el componente fue eliminado
-            }
-
-            ImGui.PopStyleColor(3);
 
             if (ImGui.CollapsingHeader(componentName, ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                if (hasEnabled && !isEnabled)
+                {
+                    ImGui.PopStyleColor();
+                }
+
+                // Menú contextual al hacer clic derecho sobre el header del componente
+                if (ImGui.BeginPopupContextItem($"ComponentContext_{componentName}"))
+                {
+                    // Opción de Enable/Disable
+                    if (hasEnabled)
+                    {
+                        string toggleText = isEnabled ? "Disable" : "Enable";
+                        if (ImGui.MenuItem(toggleText))
+                        {
+                            enabledProperty!.SetValue(component, !isEnabled);
+                        }
+                        ImGui.Separator();
+                    }
+
+                    // Opción de Remove
+                    if (ImGui.MenuItem("Remove Component"))
+                    {
+                        EditorActions.SelectedObject!.RemoveComponent((Component)component);
+                        EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
+                        ImGui.EndPopup();
+                        return; // Salir temprano porque el componente fue eliminado
+                    }
+
+                    ImGui.EndPopup();
+                }
+            }
+            else
+            {
+                if (hasEnabled && !isEnabled)
+                {
+                    ImGui.PopStyleColor();
+                }
+
+                // Menú contextual también disponible cuando el header está colapsado
+                if (ImGui.BeginPopupContextItem($"ComponentContext_{componentName}"))
+                {
+                    // Opción de Enable/Disable
+                    if (hasEnabled)
+                    {
+                        string toggleText = isEnabled ? "Disable" : "Enable";
+                        if (ImGui.MenuItem(toggleText))
+                        {
+                            enabledProperty!.SetValue(component, !isEnabled);
+                        }
+                        ImGui.Separator();
+                    }
+
+                    // Opción de Remove
+                    if (ImGui.MenuItem("Remove Component"))
+                    {
+                        EditorActions.SelectedObject!.RemoveComponent((Component)component);
+                        EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
+                        ImGui.EndPopup();
+                        return; // Salir temprano porque el componente fue eliminado
+                    }
+
+                    ImGui.EndPopup();
+                }
+                return; // Si está colapsado, no dibujar el contenido
+            }
+
+            if (true) // Este bloque reemplaza el contenido del CollapsingHeader anterior
             {
                 // Caso especial para Rigidbody
                 if (component is KrayonCore.Rigidbody rigidbody)
