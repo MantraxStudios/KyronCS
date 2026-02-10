@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+using ImGuiNET;
 using KrayonCore.Core.Attributes;
 using System.Collections.Generic;
 using System.IO;
