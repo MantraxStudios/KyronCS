@@ -193,6 +193,16 @@ namespace KrayonCore.Graphics
 
             _materials[index] = material;
 
+            // Actualizar MaterialPaths para que se guarde correctamente
+            if (index >= MaterialPaths.Length)
+            {
+                var newPaths = new string[index + 1];
+                Array.Copy(MaterialPaths, newPaths, MaterialPaths.Length);
+                MaterialPaths = newPaths;
+            }
+
+            MaterialPaths[index] = material?.Name ?? "";
+
             Console.WriteLine("Material updated");
         }
 
@@ -207,6 +217,12 @@ namespace KrayonCore.Graphics
         {
             Array.Resize(ref _materials, _materials.Length + 1);
             _materials[_materials.Length - 1] = material;
+
+            // Sincronizar MaterialPaths
+            var newPaths = new string[_materials.Length];
+            Array.Copy(MaterialPaths, newPaths, Math.Min(MaterialPaths.Length, newPaths.Length));
+            newPaths[newPaths.Length - 1] = material?.Name ?? "";
+            MaterialPaths = newPaths;
         }
 
         public void RemoveMaterial(int index)
@@ -223,11 +239,29 @@ namespace KrayonCore.Graphics
                 }
             }
             _materials = newMaterials;
+
+            // Sincronizar MaterialPaths
+            if (index < MaterialPaths.Length)
+            {
+                var newPaths = new string[Math.Max(0, _materials.Length)];
+                for (int i = 0, j = 0; i < MaterialPaths.Length && i < _materials.Length + 1; i++)
+                {
+                    if (i != index)
+                    {
+                        if (j < newPaths.Length)
+                        {
+                            newPaths[j++] = MaterialPaths[i];
+                        }
+                    }
+                }
+                MaterialPaths = newPaths;
+            }
         }
 
         public void ClearMaterials()
         {
             _materials = new Material[0];
+            MaterialPaths = new string[0];
         }
 
         public int MaterialCount => _materials.Length;

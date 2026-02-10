@@ -941,25 +941,24 @@
     ]
   },
   "packageFolders": {
-    "/home/rhythm/.nuget/packages/": {}
+    "C:\\Users\\tupap\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj",
+      "projectUniqueName": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj",
       "projectName": "KrayonCore",
-      "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj",
-      "packagesPath": "/home/rhythm/.nuget/packages/",
-      "outputPath": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/",
+      "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj",
+      "packagesPath": "C:\\Users\\tupap\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/rhythm/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\tupap\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "/usr/lib/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1033,7 +1032,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

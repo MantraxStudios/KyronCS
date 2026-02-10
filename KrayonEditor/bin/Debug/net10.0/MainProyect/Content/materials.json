@@ -2,7 +2,7 @@
   "Materials": {
     "basic": {
       "Name": "basic",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "textures/sprites/Environment/dirt.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -38,7 +38,7 @@
     },
     "metal_mp_5": {
       "Name": "metal_mp_5",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/metal_mp_5.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -74,7 +74,7 @@
     },
     "old_mattress_mp_1": {
       "Name": "old_mattress_mp_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/old_mattress_mp_1.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -110,7 +110,7 @@
     },
     "wall_mp_1": {
       "Name": "wall_mp_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/wall_mp_1.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -146,7 +146,7 @@
     },
     "old_mattress_mp_2": {
       "Name": "old_mattress_mp_2",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/old_mattress_mp_2.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -182,7 +182,7 @@
     },
     "floor_1": {
       "Name": "floor_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/floor_1.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -218,7 +218,7 @@
     },
     "concrete_1": {
       "Name": "concrete_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/concrete_1.jpg",
       "NormalPath": null,
       "MetallicPath": null,
@@ -254,7 +254,7 @@
     },
     "wall_3": {
       "Name": "wall_3",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/wall_3.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -290,7 +290,7 @@
     },
     "door_frame_wood_1": {
       "Name": "door_frame_wood_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/door_frame_wood_1.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -326,7 +326,7 @@
     },
     "wall_6": {
       "Name": "wall_6",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/wall_6.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -362,7 +362,7 @@
     },
     "window_2": {
       "Name": "window_2",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/window_2.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -398,7 +398,7 @@
     },
     "metal_mp_1": {
       "Name": "metal_mp_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/metal_mp_1.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -434,7 +434,7 @@
     },
     "metal_mp_4": {
       "Name": "metal_mp_4",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/metal_mp_4.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -470,7 +470,7 @@
     },
     "plastic_mp_2": {
       "Name": "plastic_mp_2",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/plastic_mp_2.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -506,7 +506,7 @@
     },
     "lamp_1_on_yellow": {
       "Name": "lamp_1_on_yellow",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/lamp_1_on_yellow.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -542,7 +542,7 @@
     },
     "lamp_3_off": {
       "Name": "lamp_3_off",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/lamp_3_off.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -578,7 +578,7 @@
     },
     "lamp_3": {
       "Name": "lamp_3",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Models/other-formats/DAE/Lighting/lamp_3.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -614,7 +614,7 @@
     },
     "fullscreen": {
       "Name": "fullscreen",
-      "ShaderPath": "shaders/fullscreen.vert",
+      "ShaderPath": "shaders\\fullscreen.vert",
       "AlbedoPath": null,
       "NormalPath": null,
       "MetallicPath": null,
@@ -650,7 +650,7 @@
     },
     "wood_6": {
       "Name": "wood_6",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/wood_6.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -686,7 +686,7 @@
     },
     "wood_3": {
       "Name": "wood_3",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/wood_3.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -722,7 +722,7 @@
     },
     "pillow_mp_1": {
       "Name": "pillow_mp_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/pillow_mp_1.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -758,7 +758,7 @@
     },
     "ceiling_lamp_1_on": {
       "Name": "ceiling_lamp_1_on",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/ceiling_lamp_1_on.png",
       "NormalPath": null,
       "MetallicPath": null,
@@ -794,7 +794,7 @@
     },
     "fake_light_mp_1": {
       "Name": "fake_light_mp_1",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/fake_light_mp_1.png",
       "NormalPath": null,
       "MetallicPath": null,

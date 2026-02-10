@@ -600,7 +600,7 @@ namespace KrayonCore
         public void SetMaterial(Material material)
         {
             _material = material;
-            _materialPath = "";
+            _materialPath = material?.Name ?? "";
 
             Console.WriteLine($"[SpriteRenderer] Material asignado directamente");
 
