@@ -122,6 +122,24 @@ namespace KrayonEditor.UI
                 ImGui.SameLine();
             }
 
+            // Botón de eliminar componente al final de la línea
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(1.0f, 0.3f, 0.3f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.6f, 0.1f, 0.1f, 1.0f));
+
+            float buttonWidth = 60f;
+            ImGui.SameLine(ImGui.GetWindowWidth() - buttonWidth - 15f);
+
+            if (ImGui.Button($"Remove##{componentName}", new Vector2(buttonWidth, 0)))
+            {
+                EditorActions.SelectedObject!.RemoveComponent((Component)component);
+                EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
+                ImGui.PopStyleColor(3);
+                return; // Salir temprano porque el componente fue eliminado
+            }
+
+            ImGui.PopStyleColor(3);
+
             if (ImGui.CollapsingHeader(componentName, ImGuiTreeNodeFlags.DefaultOpen))
             {
                 // Caso especial para Rigidbody
