@@ -19,6 +19,7 @@ namespace KrayonEditor.UI
         private static MaterialUI _materials = new MaterialUI();
         private static TileEditor _TileEditor = new TileEditor();
         private static SpriteAnimationUI _SpriteAnimator= new SpriteAnimationUI();
+        private static CompilerUI _CompilerUI = new CompilerUI();
 
         public static void Initialize()
         {
@@ -67,6 +68,7 @@ namespace KrayonEditor.UI
             _SpriteAnimator.OnDrawUI();
             _materials.OnDrawUI();
             _TileEditor.OnDrawUI();
+            _CompilerUI.OnDrawUI();
 
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
             _mainMenuBar.ShowInspector = _inspector.IsVisible;

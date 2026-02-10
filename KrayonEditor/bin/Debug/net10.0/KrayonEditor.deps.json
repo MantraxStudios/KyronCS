@@ -9,6 +9,7 @@
       "KrayonEditor/1.0.0": {
         "dependencies": {
           "ImGui.NET": "1.91.6.1",
+          "KrayonCompiler": "1.0.0",
           "KrayonCore": "1.0.0"
         },
         "runtime": {
@@ -391,6 +392,14 @@
           }
         }
       },
+      "KrayonCompiler/1.0.0": {
+        "runtime": {
+          "KrayonCompiler.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "KrayonCore/1.0.0": {
         "dependencies": {
           "AssimpNet": "4.1.0",
@@ -598,6 +607,11 @@
       "sha512": "sha512-NF9kOxi0iS9VunklnRKgOpAWC2knCGKRjdy7RT6XAqYNyb7LQfyPHPdl4l1fJw7TFYKrGQzQOmK1XpBONC2MoA==",
       "path": "stbimagewritesharp/1.16.7",
       "hashPath": "stbimagewritesharp.1.16.7.nupkg.sha512"
+    },
+    "KrayonCompiler/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "KrayonCore/1.0.0": {
       "type": "project",

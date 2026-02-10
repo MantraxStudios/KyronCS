@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36811.4
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KrayonCore", "KryonCore\KrayonCore.csproj", "{81BD6ED2-29EF-B18F-C3BE-A0E5945DBD05}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KrayonEditor", "KrayonEditor\KrayonEditor.csproj", "{6A5EFC67-1C20-4639-8126-8840A59A3E5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KrayonCompiler", "KrayonCompiler\KrayonCompiler.csproj", "{36CE4F4D-08DE-4D4A-954C-14B26CEF05C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{6A5EFC67-1C20-4639-8126-8840A59A3E5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A5EFC67-1C20-4639-8126-8840A59A3E5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A5EFC67-1C20-4639-8126-8840A59A3E5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36CE4F4D-08DE-4D4A-954C-14B26CEF05C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36CE4F4D-08DE-4D4A-954C-14B26CEF05C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36CE4F4D-08DE-4D4A-954C-14B26CEF05C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36CE4F4D-08DE-4D4A-954C-14B26CEF05C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

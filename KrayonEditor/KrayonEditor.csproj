@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KrayonCompiler\KrayonCompiler.csproj" />
     <ProjectReference Include="..\KryonCore\KrayonCore.csproj" />
   </ItemGroup>
 
