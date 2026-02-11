@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Jint;
+using KrayonCore.Core.Attributes;
 using KrayonCore.Physics;
 using OpenTK.Mathematics;
 
@@ -42,7 +43,7 @@ namespace KrayonCore
 
             // Cargar y ejecutar el script
             string path = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
+                AssetManager.BasePath,
                 ScriptPath
             );
 
@@ -222,7 +223,6 @@ namespace KrayonCore
                 };
             ");
 
-            // Rigidbody functions
             _engine.SetValue("CreateVector3", new Func<float, float, float, Vector3>((x, y, z) =>
                 new Vector3(x, y, z)));
 

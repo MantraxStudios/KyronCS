@@ -202,7 +202,7 @@ namespace KrayonCore
                 if (ppSettings.Enabled)
                 {
                     _postProcessFrameBuffer.Bind();
-                    GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                    GL.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
                     var camera = _sceneRenderer.GetCamera();
@@ -234,7 +234,7 @@ namespace KrayonCore
             {
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                 GL.Viewport(0, 0, _window.ClientSize.X, _window.ClientSize.Y);
-                GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                GL.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
                 _screenQuad.Render(finalTexture);

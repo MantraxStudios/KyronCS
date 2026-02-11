@@ -14461,8 +14461,8 @@
       "Type": "Audio"
     },
     {
-      "Guid": "ac898a69-f62b-4883-94fe-88275d333c14",
-      "Path": "game.js",
+      "Guid": "03e5ab21-5449-4dba-93ca-1058e11a0368",
+      "Path": "scripts/game.js",
       "Type": "GameScript"
     }
   ],
@@ -14821,6 +14821,11 @@
       "Guid": "e219913a-7085-4816-9a25-fd9a934472c5",
       "Path": "audio",
       "CreatedAt": "2026-02-10T21:56:05.6801507-03:00"
+    },
+    {
+      "Guid": "d00d79c7-0620-44d7-88c4-48d1ecceb36b",
+      "Path": "scripts",
+      "CreatedAt": "2026-02-10T23:15:19.8395428-03:00"
     }
   ]
 }
