@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuPhysics.Trees;
-using BepuUtilities.Memory;
 
 namespace KrayonCore.Physics
 {
@@ -117,7 +116,7 @@ namespace KrayonCore.Physics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnRayHit(in RayData ray, ref float maximumT, float t, Vector3 normal,
+        public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal,
             CollidableReference collidable, int childIndex)
         {
             if (t < T)
@@ -145,11 +144,6 @@ namespace KrayonCore.Physics
                 Collidable = HitCollidable,
                 Layer = LayerRegistry.GetLayer(HitCollidable)
             };
-        }
-
-        public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal, CollidableReference collidable, int childIndex)
-        {
-            throw new NotImplementedException();
         }
     }
 
@@ -208,7 +202,7 @@ namespace KrayonCore.Physics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnRayHit(in RayData ray, ref float maximumT, float t, Vector3 normal,
+        public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal,
             CollidableReference collidable, int childIndex)
         {
             Results.Add(new RaycastHit
@@ -221,11 +215,6 @@ namespace KrayonCore.Physics
                 Layer = LayerRegistry.GetLayer(collidable)
             });
             // Don't narrow maximumT — we want all hits
-        }
-
-        public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal, CollidableReference collidable, int childIndex)
-        {
-            throw new NotImplementedException();
         }
     }
 

@@ -185,6 +185,18 @@ namespace KrayonCore
         {
             base.Start();
             InitializePhysics();
+
+            TriggerEnter += (contact) => {
+                Console.WriteLine($"Algo entró al trigger");
+            };
+
+            CollisionEnter += (contact) => {
+                Console.WriteLine($"Colisión! Normal: {contact.ContactNormal}");
+            };
+
+            CollisionExit += (contact) => {
+                 Console.WriteLine("Se separaron");
+            };
         }
 
         private void InitializePhysics()
