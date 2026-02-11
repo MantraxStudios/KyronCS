@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "76f140be-f7bb-415b-b6d9-6cb9f3a1e57a",
+      "Id": "a0e724fc-9228-42ab-b8cc-be0aa1211ba3",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "edbc4dce-f7f4-4e2b-92f1-f05a83bfb39e",
+          "ComponentId": "00c17b42-fc48-439a-b525-a50d039635a8",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,15 +36,17 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b954b79a-3593-4828-9f42-06709d1dbe46",
+          "ComponentId": "93a9ffb1-dd98-486d-9bfe-7f9ff6436662",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "/models/Cube.fbx",
+            "ModelPath": "70139b86-6f61-4e03-988c-286b2472287c",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
               "values": [
-                "basic"
+                "wood_3",
+                "wood_3",
+                "metal_6"
               ]
             }
           }
@@ -52,7 +54,7 @@
       ]
     },
     {
-      "Id": "ebc5ea55-bd35-4e54-9dba-4192de2b3e6e",
+      "Id": "2eef56a7-6c44-4c1e-82a7-5b683f7debff",
       "Name": "PointLight_1",
       "Tag": "Untagged",
       "Active": true,
@@ -60,14 +62,14 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "cda381fb-7629-4979-9034-fbd47ad5fdaf",
+          "ComponentId": "5b3d13e3-dd8f-43d8-9d25-c80b2fd76e08",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 0.7304683,
-              "y": 1.1886804,
-              "z": 0
+              "x": 0,
+              "y": 1.1804711,
+              "z": -0.489835
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -86,7 +88,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d56e300b-e418-4896-9890-601f0f3f1295",
+          "ComponentId": "acae8e83-898b-4b15-94bf-4f6583153dfd",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -100,66 +102,7 @@
               "y": 1,
               "z": 1
             },
-            "Intensity": 1,
-            "Constant": 1,
-            "Linear": 0.09,
-            "Quadratic": 0.032,
-            "InnerCutOffDegrees": 12.5,
-            "OuterCutOffDegrees": 17.5
-          }
-        }
-      ]
-    },
-    {
-      "Id": "25b47a52-fdf8-4d6e-85cd-d26859617543",
-      "Name": "PointLight_1 (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6056c297-b7cb-4c7d-a107-13666e775bf8",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -0.77771384,
-              "y": 1.1487166,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4050bd47-5027-464f-8e8c-6cd40bc03f42",
-          "Enabled": true,
-          "SerializedFields": {
-            "Type": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Point"
-            },
-            "Color": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 0,
-              "z": 0
-            },
-            "Intensity": 1,
+            "Intensity": 5.58,
             "Constant": 1,
             "Linear": 0.09,
             "Quadratic": 0.032,

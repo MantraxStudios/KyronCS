@@ -1,4 +1,10 @@
 .vs/
+bin/
+obj/
+KrayonCompiler/bin/
+KrayonEditor/bin/
+KryonCore/bin/
+*.pak
 readme.md
 README.md
 ReadMe.md

@@ -1,142 +1,137 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Text;
 
 namespace KrayonCompiler
 {
-    public readonly struct AssetEntry
+    struct AssetEntry
     {
-        public ulong Id { get; init; }
-        public long Offset { get; init; }
-        public int Size { get; init; }
+        public ulong Id;
+        public long Offset;
+        public int Size;
     }
 
-    public sealed class AssetNotFoundException : Exception
+    static class HashUtil
     {
-        public AssetNotFoundException(string assetName)
-            : base($"Asset not found: '{assetName}'") { }
-    }
-
-    public sealed class InvalidPakException : Exception
-    {
-        public InvalidPakException(string message) : base(message) { }
-    }
-
-    public static class FnvHash
-    {
-        private const ulong OffsetBasis = 14695981039346656037UL;
-        private const ulong Prime = 1099511628211UL;
-
-        public static ulong Compute(string value)
+        public static ulong Hash(string text)
         {
-            ArgumentNullException.ThrowIfNull(value);
-
-            ulong hash = OffsetBasis;
-            foreach (char c in value)
+            ulong hash = 14695981039346656037UL;
+            foreach (char c in text)
             {
                 hash ^= (byte)c;
-                hash *= Prime;
+                hash *= 1099511628211UL;
             }
             return hash;
         }
     }
 
-    public static class XorCipher
+    static class Crypto
     {
-        private const byte Key = 0xAC;
+        private const byte KEY = 0xAC;
 
-        public static void Apply(Span<byte> data)
+        public static void Apply(byte[] data)
         {
             for (int i = 0; i < data.Length; i++)
-                data[i] ^= Key;
+                data[i] ^= KEY;
         }
     }
 
-    public sealed class PakFile : IDisposable
+    public class KRCompiler
     {
-        private const string Magic = "MPAK";
-
-        private readonly FileStream _stream;
-        private readonly BinaryReader _reader;
-        private readonly Dictionary<ulong, AssetEntry> _assets;
-        private bool _disposed;
-
-        public int AssetCount => _assets.Count;
-
-        public PakFile(string path)
+        public static void Build(string pakPath, Dictionary<string, string> assets)
         {
-            ArgumentNullException.ThrowIfNull(path);
+            using var fs = new FileStream(pakPath, FileMode.Create);
+            using var bw = new BinaryWriter(fs);
 
-            _stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            _reader = new BinaryReader(_stream, Encoding.ASCII, leaveOpen: false);
-            _assets = new Dictionary<ulong, AssetEntry>();
+            bw.Write(Encoding.ASCII.GetBytes("MPAK"));
+            bw.Write(1);
+            bw.Write(assets.Count);
+            bw.Write((long)0);
 
-            ReadHeader();
+            List<AssetEntry> toc = new();
+
+            foreach (var pair in assets)
+            {
+                string assetName = pair.Key;
+                string filePath = pair.Value;
+
+                byte[] data = File.ReadAllBytes(filePath);
+                Crypto.Apply(data);
+
+                long offset = fs.Position;
+                bw.Write(data);
+
+                toc.Add(new AssetEntry
+                {
+                    Id = HashUtil.Hash(assetName),
+                    Offset = offset,
+                    Size = data.Length
+                });
+            }
+
+            long tocOffset = fs.Position;
+            foreach (var entry in toc)
+            {
+                bw.Write(entry.Id);
+                bw.Write(entry.Offset);
+                bw.Write(entry.Size);
+            }
+
+            fs.Seek(4 + 4 + 4, SeekOrigin.Begin);
+            bw.Write(tocOffset);
         }
+    }
 
-        private void ReadHeader()
+    public class PakFile : IDisposable
+    {
+        private FileStream _fs;
+        private BinaryReader _br;
+        private Dictionary<ulong, AssetEntry> _assets = new();
+
+        public PakFile(string pakPath)
         {
-            string magic = Encoding.ASCII.GetString(_reader.ReadBytes(4));
-            if (magic != Magic)
-                throw new InvalidPakException($"Invalid magic: expected '{Magic}', got '{magic}'.");
+            _fs = new FileStream(pakPath, FileMode.Open, FileAccess.Read);
+            _br = new BinaryReader(_fs);
 
-            _ = _reader.ReadInt32();
-            int count = _reader.ReadInt32();
-            long tocOffset = _reader.ReadInt64();
+            string magic = Encoding.ASCII.GetString(_br.ReadBytes(4));
+            if (magic != "MPAK")
+                throw new Exception("Invalid PAK file");
 
-            ReadTableOfContents(tocOffset, count);
-        }
+            int version = _br.ReadInt32();
+            int count = _br.ReadInt32();
+            long tocOffset = _br.ReadInt64();
 
-        private void ReadTableOfContents(long offset, int count)
-        {
-            _stream.Seek(offset, SeekOrigin.Begin);
-
+            _fs.Seek(tocOffset, SeekOrigin.Begin);
             for (int i = 0; i < count; i++)
             {
-                var entry = new AssetEntry
+                AssetEntry entry = new AssetEntry
                 {
-                    Id = _reader.ReadUInt64(),
-                    Offset = _reader.ReadInt64(),
-                    Size = _reader.ReadInt32()
+                    Id = _br.ReadUInt64(),
+                    Offset = _br.ReadInt64(),
+                    Size = _br.ReadInt32()
                 };
                 _assets[entry.Id] = entry;
             }
         }
 
-        public byte[] Load(string name)
+        public byte[] Load(string assetName)
         {
-            ArgumentNullException.ThrowIfNull(name);
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
-            ulong id = FnvHash.Compute(name);
+            ulong id = HashUtil.Hash(assetName);
             if (!_assets.TryGetValue(id, out var entry))
-                throw new AssetNotFoundException(name);
+                throw new Exception($"Asset not found: {assetName}");
 
-            _stream.Seek(entry.Offset, SeekOrigin.Begin);
-            byte[] data = _reader.ReadBytes(entry.Size);
-            XorCipher.Apply(data);
+            _fs.Seek(entry.Offset, SeekOrigin.Begin);
+            byte[] data = _br.ReadBytes(entry.Size);
+            Crypto.Apply(data);
+
             return data;
-        }
-
-        public bool TryLoad(string name, out byte[]? data)
-        {
-            try { data = Load(name); return true; }
-            catch (AssetNotFoundException) { data = null; return false; }
-        }
-
-        public bool Contains(string name)
-        {
-            ArgumentNullException.ThrowIfNull(name);
-            return _assets.ContainsKey(FnvHash.Compute(name));
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
-            _reader.Dispose();
-            _stream.Dispose();
-            _disposed = true;
+            _br?.Dispose();
+            _fs?.Dispose();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace KrayonCore
 {
     public class MeshRenderer : Component
     {
-        private string _modelPath = "/models/Cube.fbx";
+        private string _modelPath = "3d361d14-7340-48cd-b35c-0968515455a0";
 
         [ToStorage]
         public string ModelPath
@@ -179,7 +179,7 @@ namespace KrayonCore
 
             try
             {
-                _model = Model.Load(path);
+                _model = Model.Load(AssetManager.Get(Guid.Parse(path)).Path);
             }
             catch (Exception ex)
             {
