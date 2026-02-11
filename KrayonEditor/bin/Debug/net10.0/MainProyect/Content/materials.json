@@ -830,7 +830,7 @@
     },
     "metal_6": {
       "Name": "metal_6",
-      "ShaderPath": "shaders/basic.vert",
+      "ShaderPath": "shaders\\basic.vert",
       "AlbedoPath": "psx/Textures/metal_6.png",
       "NormalPath": null,
       "MetallicPath": null,

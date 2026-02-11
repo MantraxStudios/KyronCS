@@ -2,15 +2,15 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "a0e724fc-9228-42ab-b8cc-be0aa1211ba3",
-      "Name": "Cube_0",
+      "Id": "8af7ba51-a47c-4ecc-8043-23a7cb4dfe86",
+      "Name": "GameObject_0",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "00c17b42-fc48-439a-b525-a50d039635a8",
+          "ComponentId": "084bc1d4-8dde-45a0-9657-9df1937707db",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -35,79 +35,18 @@
           }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "93a9ffb1-dd98-486d-9bfe-7f9ff6436662",
+          "TypeName": "KrayonCore.Components.AudioSource, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "e8f4fd7f-6555-4b28-96f7-90659ead3613",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "70139b86-6f61-4e03-988c-286b2472287c",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "wood_3",
-                "wood_3",
-                "metal_6"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "2eef56a7-6c44-4c1e-82a7-5b683f7debff",
-      "Name": "PointLight_1",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5b3d13e3-dd8f-43d8-9d25-c80b2fd76e08",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": 1.1804711,
-              "z": -0.489835
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "acae8e83-898b-4b15-94bf-4f6583153dfd",
-          "Enabled": true,
-          "SerializedFields": {
-            "Type": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Point"
-            },
-            "Color": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "Intensity": 5.58,
-            "Constant": 1,
-            "Linear": 0.09,
-            "Quadratic": 0.032,
-            "InnerCutOffDegrees": 12.5,
-            "OuterCutOffDegrees": 17.5
+            "audioClip": "af576813-79ed-4780-8395-8534c06da4e1",
+            "Loop": true,
+            "Volume": 1,
+            "PlayOnAwake": true,
+            "SpatialBlend": 0,
+            "MinDistance": 1,
+            "MaxDistance": 25,
+            "RolloffFactor": 1
           }
         }
       ]
