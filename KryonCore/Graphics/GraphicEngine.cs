@@ -17,8 +17,8 @@ namespace KrayonCore
         private FrameBuffer? _sceneFrameBuffer;
         private FrameBuffer? _postProcessFrameBuffer;
         public FullscreenQuad? _fullscreenQuad;
-        
-        // AÑADIR ESTA VARIABLE
+        private ScreenQuad? _screenQuad; 
+
         private float _totalTime = 0.0f;
 
         public event Action? LoadEvent;
@@ -50,11 +50,12 @@ namespace KrayonCore
 
             if (textureMaterial != null)
             {
-                textureMaterial.LoadMainTexture("textures/sprites/Environment/dirt.png", 
+                textureMaterial.LoadMainTexture("textures/sprites/Environment/dirt.png",
                                                generateMipmaps: true, flip: true);
             }
 
             _materials.Create("fullscreen", "shaders/fullscreen");
+            _materials.Create("screen", "shaders/screen"); 
         }
 
         private void ConfigureDefaultPostProcessing()
@@ -86,7 +87,7 @@ namespace KrayonCore
                 PostProcessing.SSAOPower = 2.0f;
             }
 
-            //_fullscreenQuad.GetSettings().Load($"{AssetManager.BasePath}VFXData.json");
+            _fullscreenQuad.GetSettings().Load($"{AssetManager.BasePath}VFXData.json");
         }
 
         public void CreateWindow(int width, int height, string title)
@@ -111,7 +112,7 @@ namespace KrayonCore
             {
                 return _sceneFrameBuffer;
             }
-            
+
             if (_postProcessFrameBuffer == null)
             {
                 _postProcessFrameBuffer = new FrameBuffer(1280, 720, false, false);
@@ -153,12 +154,19 @@ namespace KrayonCore
             _sceneFrameBuffer = new FrameBuffer(1280, 720, true, true);
             _postProcessFrameBuffer = new FrameBuffer(1280, 720, false, false);
             _sceneRenderer.Initialize();
-            
+
             _fullscreenQuad = new FullscreenQuad();
             var fullscreenMaterial = _materials.Get("fullscreen");
             if (fullscreenMaterial != null)
             {
                 _fullscreenQuad.SetMaterial(fullscreenMaterial);
+            }
+
+            _screenQuad = new ScreenQuad();
+            var screenMaterial = _materials.Get("screen");
+            if (screenMaterial != null)
+            {
+                _screenQuad.SetMaterial(screenMaterial);
             }
 
             ConfigureDefaultPostProcessing();
@@ -170,9 +178,8 @@ namespace KrayonCore
 
         public void InternalUpdate(float deltaTime)
         {
-            // ACUMULAR EL TIEMPO TOTAL
             _totalTime += deltaTime;
-            
+
             SceneManager.Update(deltaTime);
             _sceneRenderer.Update(deltaTime);
             UpdateEvent?.Invoke(deltaTime);
@@ -180,45 +187,57 @@ namespace KrayonCore
 
         public void InternalRender(float deltaTime)
         {
+            int finalTexture = 0;
+
             if (_sceneFrameBuffer != null && _postProcessFrameBuffer != null && _fullscreenQuad != null)
             {
                 _sceneFrameBuffer.Bind();
-                GL.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+                GL.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 _sceneRenderer.Render();
                 _sceneFrameBuffer.Unbind();
 
                 var ppSettings = _fullscreenQuad.GetSettings();
+
                 if (ppSettings.Enabled)
                 {
                     _postProcessFrameBuffer.Bind();
                     GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                    
+
                     var camera = _sceneRenderer.GetCamera();
                     var projection = camera != null ? camera.GetProjectionMatrix() : Matrix4.Identity;
                     var view = camera != null ? camera.GetViewMatrix() : Matrix4.Identity;
 
                     _fullscreenQuad.Render(
-                        _sceneFrameBuffer.ColorTexture, 
+                        _sceneFrameBuffer.ColorTexture,
                         _sceneFrameBuffer.EmissionTexture,
                         _sceneFrameBuffer.PositionTexture,
                         _sceneFrameBuffer.NormalTexture,
                         _totalTime,
-                        _sceneFrameBuffer.Width, 
+                        _sceneFrameBuffer.Width,
                         _sceneFrameBuffer.Height,
                         projection,
                         view
                     );
                     _postProcessFrameBuffer.Unbind();
+
+                    finalTexture = _postProcessFrameBuffer.ColorTexture;
+                }
+                else
+                {
+                    finalTexture = _sceneFrameBuffer.ColorTexture;
                 }
             }
 
-            if (_window != null)
+            if (_window != null && _screenQuad != null && finalTexture != 0)
             {
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                 GL.Viewport(0, 0, _window.ClientSize.X, _window.ClientSize.Y);
                 GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+                _screenQuad.Render(finalTexture);
             }
 
             RenderEvent?.Invoke(deltaTime);
@@ -238,6 +257,7 @@ namespace KrayonCore
             }
 
             _fullscreenQuad?.Dispose();
+            _screenQuad?.Dispose();  // NUEVO
             _sceneFrameBuffer?.Dispose();
             _postProcessFrameBuffer?.Dispose();
             _sceneRenderer.Shutdown();

@@ -72,7 +72,7 @@ namespace KrayonCore
                 return;
 
             List<GameObject> multiMaterialObjects = new List<GameObject>();
-            
+
             foreach (var go in meshRenderers)
             {
                 var renderer = go.GetComponent<MeshRenderer>();

@@ -27,21 +27,70 @@ namespace KrayonCore
             return scene;
         }
 
-        public static void LoadScene(string name)
+        /// <summary>
+        /// Carga una escena. Puede recibir el nombre de una escena existente o una ruta de archivo .scene
+        /// </summary>
+        /// <param name="nameOrPath">Nombre de la escena o ruta del archivo .scene</param>
+        public static void LoadScene(string nameOrPath)
         {
-            if (!_scenes.ContainsKey(name))
+            GameScene sceneToLoad = null;
+
+            // Verificar si es una ruta de archivo
+            if (nameOrPath.EndsWith(".scene") || System.IO.File.Exists(nameOrPath))
             {
-                return;
+                // Cargar desde archivo
+                if (!System.IO.File.Exists(nameOrPath))
+                {
+                    System.Console.WriteLine($"Error: No se encontró el archivo '{nameOrPath}'");
+                    return;
+                }
+
+                // Descargar escena actual
+                if (_activeScene != null)
+                {
+                    _activeScene.OnUnload();
+                }
+
+                // Cargar escena desde archivo
+                sceneToLoad = SceneSaveSystem.LoadScene(nameOrPath);
+
+                // Si ya existe una escena con ese nombre en el diccionario, reemplazarla
+                if (_scenes.ContainsKey(sceneToLoad.Name))
+                {
+                    var oldScene = _scenes[sceneToLoad.Name];
+                    if (oldScene != _activeScene)
+                    {
+                        oldScene.OnUnload();
+                        oldScene.Clear();
+                    }
+                }
+
+                // Agregar al diccionario
+                _scenes[sceneToLoad.Name] = sceneToLoad;
+            }
+            else
+            {
+                // Cargar escena por nombre desde el diccionario
+                if (!_scenes.ContainsKey(nameOrPath))
+                {
+                    System.Console.WriteLine($"Error: No se encontró la escena '{nameOrPath}'");
+                    return;
+                }
+
+                sceneToLoad = _scenes[nameOrPath];
+
+                // Descargar escena actual
+                if (_activeScene != null)
+                {
+                    _activeScene.OnUnload();
+                }
             }
 
+            // Shutdown del renderer
             GraphicsEngine.Instance.GetSceneRenderer().Shutdown();
 
-            if (_activeScene != null && _activeScene.IsLoaded)
-            {
-                _activeScene.OnUnload();
-            }
-
-            _activeScene = _scenes[name];
+            // Activar la nueva escena
+            _activeScene = sceneToLoad;
             _activeScene.OnLoad();
             _activeScene.Start();
         }
@@ -113,38 +162,6 @@ namespace KrayonCore
         }
 
         /// <summary>
-        /// Carga una escena desde un archivo y la añade al SceneManager
-        /// </summary>
-        /// <param name="filePath">Ruta del archivo de escena</param>
-        /// <param name="setAsActive">Si true, establece la escena como activa después de cargarla</param>
-        /// <returns>La escena cargada</returns>
-        public static GameScene LoadSceneFromFile(string filePath, bool setAsActive = false)
-        {
-            if (!File.Exists(filePath))
-            {
-                System.Console.WriteLine($"Error: No se encontró el archivo '{filePath}'");
-                return null;
-            }
-
-            var scene = SceneSaveSystem.LoadScene(filePath);
-
-            // Si ya existe una escena con ese nombre, reemplazarla
-            if (_scenes.ContainsKey(scene.Name))
-            {
-                UnloadScene(scene.Name);
-            }
-
-            _scenes[scene.Name] = scene;
-
-            if (setAsActive)
-            {
-                LoadScene(scene.Name);
-            }
-
-            return scene;
-        }
-
-        /// <summary>
         /// Guarda todas las escenas cargadas en un directorio
         /// </summary>
         /// <param name="directoryPath">Directorio donde guardar las escenas</param>
@@ -165,7 +182,7 @@ namespace KrayonCore
         }
 
         /// <summary>
-        /// Carga todas las escenas desde un directorio
+        /// Carga todas las escenas desde un directorio (sin activarlas)
         /// </summary>
         /// <param name="directoryPath">Directorio desde donde cargar las escenas</param>
         public static void LoadAllScenesFromDirectory(string directoryPath)
@@ -182,7 +199,15 @@ namespace KrayonCore
             {
                 try
                 {
-                    LoadSceneFromFile(filePath, false);
+                    // Cargar escena sin activarla, solo agregarla al diccionario
+                    var scene = SceneSaveSystem.LoadScene(filePath);
+
+                    if (_scenes.ContainsKey(scene.Name))
+                    {
+                        _scenes[scene.Name].Clear();
+                    }
+
+                    _scenes[scene.Name] = scene;
                 }
                 catch (System.Exception ex)
                 {

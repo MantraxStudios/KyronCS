@@ -413,6 +413,7 @@ namespace KrayonCore
         {
             foreach (var component in _componentsList)
             {
+                component.Enabled = false;
                 component.OnDestroy();
             }
             _components.Clear();

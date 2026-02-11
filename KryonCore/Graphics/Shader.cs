@@ -30,9 +30,9 @@ namespace KrayonCore
             string fullFragmentPath = AssetManager.BasePath + fragmentPath;
 
             if (!File.Exists(fullVertexPath))
-                throw new FileNotFoundException($"Vertex shader not found: {vertexPath}");
+                throw new FileNotFoundException($"Vertex shader not found: {fullVertexPath}");
             if (!File.Exists(fullFragmentPath))
-                throw new FileNotFoundException($"Fragment shader not found: {fragmentPath}");
+                throw new FileNotFoundException($"Fragment shader not found: {fullFragmentPath}");
 
             VertexPath = vertexPath;
             FragmentPath = fragmentPath;

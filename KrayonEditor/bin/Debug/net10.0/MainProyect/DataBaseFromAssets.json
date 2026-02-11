@@ -14459,6 +14459,11 @@
       "Guid": "af576813-79ed-4780-8395-8534c06da4e1",
       "Path": "audio/LOS 4F - NADA VA A ESTAR MAL (Visualizer)  Young Cister, Kidd Voodoo, DrefQuil, Easykid \u0026 Swift 047.mp3",
       "Type": "Audio"
+    },
+    {
+      "Guid": "ac898a69-f62b-4883-94fe-88275d333c14",
+      "Path": "game.js",
+      "Type": "GameScript"
     }
   ],
   "Folders": [

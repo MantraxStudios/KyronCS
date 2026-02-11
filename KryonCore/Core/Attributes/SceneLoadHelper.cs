@@ -10,7 +10,7 @@ namespace KrayonEditor.UI
     {
         /// <summary>
         /// Reasigna todos los materiales a los MeshRenderers de una escena cargada
-        /// Esto debe llamarse después de LoadSceneFromFile
+        /// Esto debe llamarse después de LoadScene
         /// </summary>
         public static void ReassignMaterials(GameScene scene)
         {
@@ -136,7 +136,12 @@ namespace KrayonEditor.UI
             Console.WriteLine($"[SceneLoadHelper] ========================================");
 
             // 1. Cargar la escena
-            var scene = SceneManager.LoadSceneFromFile(filePath, setAsActive);
+            if (setAsActive)
+            {
+                SceneManager.LoadScene(filePath);
+            }
+
+            var scene = SceneManager.ActiveScene;
 
             if (scene == null)
             {

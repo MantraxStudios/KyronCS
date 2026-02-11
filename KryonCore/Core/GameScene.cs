@@ -172,6 +172,7 @@ namespace KrayonCore
         {
             if (gameObject != null && _gameObjects.ContainsKey(gameObject.Id))
             {
+                gameObject.DestroyComponents();
                 _toDestroy.Add(gameObject);
 
                 // También destruir todos los hijos recursivamente
@@ -187,6 +188,7 @@ namespace KrayonCore
             foreach (var childTransform in children)
             {
                 var child = childTransform.GameObject;
+                child.DestroyComponents();
 
                 if (child != null && _gameObjects.ContainsKey(child.Id))
                 {
@@ -216,6 +218,12 @@ namespace KrayonCore
         public void OnUnload()
         {
             IsLoaded = false;
+
+            foreach (GameObject item in _gameObjectsList)
+            {
+                item.DestroyComponents();
+            }
+
             CleanupPhysics();
         }
 

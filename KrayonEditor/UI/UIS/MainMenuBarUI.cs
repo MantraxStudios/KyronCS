@@ -251,12 +251,10 @@ namespace KrayonEditor.UI
                     return;
                 }
 
-                // Cargar la escena
-                var loadedScene = SceneManager.LoadSceneFromFile(sceneFilePath, setAsActive: true);
-                EngineEditor.LogMessage($"Escena cargada: {sceneName}");
+                Console.WriteLine($"Cargando la escena: {sceneFilePath}");
 
-                // Los materiales ya están cargados globalmente en el Initialize del SceneRenderer
-                // No es necesario cargarlos cada vez que se abre una escena
+                SceneManager.LoadScene(sceneFilePath);
+                EngineEditor.LogMessage($"Escena cargada: {sceneName}");
 
                 EditorPrefs.SetString(PREF_LAST_SCENE, sceneName);
                 EditorPrefs.Save();
