@@ -1,9 +1,11 @@
 using ImGuiNET;
 using KrayonCore.Core.Attributes;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace KrayonEditor.UI
 {
@@ -13,9 +15,33 @@ namespace KrayonEditor.UI
         private string _selectedFolder = "";
         private HashSet<string> _openFolders = new HashSet<string>();
 
-        // --- Cached tree ---
         private FolderNode _rootNode = null;
         private bool _treeDirty = true;
+
+        private bool _showNewScriptPopup = false;
+        private string _newScriptName = "newScript";
+        private string _newScriptFolder = "";
+
+        private bool _showNewFolderPopup = false;
+        private string _newFolderName = "NewFolder";
+        private string _newFolderParent = "";
+
+        private bool _showDeleteAssetPopup = false;
+        private Guid? _assetToDelete = null;
+        private string _assetToDeleteName = "";
+
+        private bool _showDeleteFolderPopup = false;
+        private string _folderToDelete = "";
+        private string _folderToDeleteName = "";
+
+        private bool _showRenameAssetPopup = false;
+        private Guid? _assetToRename = null;
+        private string _renameAssetNewName = "";
+        private string _renameAssetExtension = "";
+
+        private bool _showRenameFolderPopup = false;
+        private string _folderToRename = "";
+        private string _renameFolderNewName = "";
 
         private class FolderNode
         {
@@ -25,9 +51,6 @@ namespace KrayonEditor.UI
             public List<AssetRecord> Assets = new();
         }
 
-        /// <summary>
-        /// Call this whenever assets are added, removed, or moved.
-        /// </summary>
         public void MarkDirty() => _treeDirty = true;
 
         public override void OnDrawUI()
@@ -35,7 +58,6 @@ namespace KrayonEditor.UI
             if (!_isVisible)
                 return;
 
-            // Rebuild only when needed, never every frame
             if (_treeDirty)
             {
                 RebuildTree();
@@ -51,10 +73,16 @@ namespace KrayonEditor.UI
             }
             ImGui.EndChild();
 
+            DrawNewScriptPopup();
+            DrawNewFolderPopup();
+            DrawDeleteAssetPopup();
+            DrawDeleteFolderPopup();
+            DrawRenameAssetPopup();
+            DrawRenameFolderPopup();
+
             ImGui.End();
         }
 
-        // Single-pass O(n) tree builder — runs once, not every frame
         private void RebuildTree()
         {
             var nodes = new Dictionary<string, FolderNode>();
@@ -77,11 +105,9 @@ namespace KrayonEditor.UI
                 return node;
             }
 
-            // Register explicit folders
             foreach (var folder in AssetManager.AllFolders())
                 GetOrCreate(folder.Path);
 
-            // Place each asset in its parent folder (creates implicit folders too)
             foreach (var asset in AssetManager.All())
             {
                 int lastSlash = asset.Path.LastIndexOf('/');
@@ -95,10 +121,9 @@ namespace KrayonEditor.UI
         private void SortNode(FolderNode node)
         {
             node.SubFolders.Sort((a, b) => string.Compare(a.DisplayName, b.DisplayName,
-                                                           System.StringComparison.OrdinalIgnoreCase));
+                System.StringComparison.OrdinalIgnoreCase));
             node.Assets.Sort((a, b) => string.Compare(Path.GetFileName(a.Path),
-                                                       Path.GetFileName(b.Path),
-                                                       System.StringComparison.OrdinalIgnoreCase));
+                Path.GetFileName(b.Path), System.StringComparison.OrdinalIgnoreCase));
             foreach (var child in node.SubFolders)
                 SortNode(child);
         }
@@ -127,6 +152,95 @@ namespace KrayonEditor.UI
 
             if (ImGui.IsItemClicked() && !ImGui.IsItemToggledOpen())
                 _selectedFolder = node.Path;
+
+            if (ImGui.BeginPopupContextItem($"FolderCtx_{node.Path}"))
+            {
+                if (ImGui.MenuItem("New JavaScript Script"))
+                {
+                    _newScriptFolder = node.Path;
+                    _newScriptName = "newScript";
+                    _showNewScriptPopup = true;
+                }
+
+                if (ImGui.MenuItem("New Folder"))
+                {
+                    _newFolderParent = node.Path;
+                    _newFolderName = "NewFolder";
+                    _showNewFolderPopup = true;
+                }
+
+                if (!string.IsNullOrEmpty(node.Path))
+                {
+                    ImGui.Separator();
+
+                    if (ImGui.MenuItem("Rename"))
+                    {
+                        _folderToRename = node.Path;
+                        _renameFolderNewName = node.DisplayName;
+                        _showRenameFolderPopup = true;
+                    }
+
+                    if (ImGui.MenuItem("Delete"))
+                    {
+                        _folderToDelete = node.Path;
+                        _folderToDeleteName = node.DisplayName;
+                        _showDeleteFolderPopup = true;
+                    }
+                }
+
+                ImGui.EndPopup();
+            }
+
+            if (ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                unsafe
+                {
+                    if (payload.NativePtr != null)
+                    {
+                        byte[] data = new byte[payload.DataSize];
+                        System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
+                        string guidStr = System.Text.Encoding.UTF8.GetString(data);
+
+                        if (Guid.TryParse(guidStr, out Guid assetGuid))
+                        {
+                            AssetManager.MoveAsset(assetGuid, node.Path);
+                            MarkDirty();
+                        }
+                    }
+                }
+
+                var folderPayload = ImGui.AcceptDragDropPayload("FOLDER_PATH");
+                unsafe
+                {
+                    if (folderPayload.NativePtr != null)
+                    {
+                        byte[] data = new byte[folderPayload.DataSize];
+                        System.Runtime.InteropServices.Marshal.Copy(folderPayload.Data, data, 0, folderPayload.DataSize);
+                        string sourceFolderPath = System.Text.Encoding.UTF8.GetString(data);
+
+                        if (sourceFolderPath != node.Path && !node.Path.StartsWith(sourceFolderPath + "/"))
+                        {
+                            AssetManager.MoveFolder(sourceFolderPath, node.Path);
+                            MarkDirty();
+                        }
+                    }
+                }
+
+                ImGui.EndDragDropTarget();
+            }
+
+            if (!string.IsNullOrEmpty(node.Path) && ImGui.BeginDragDropSource())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(node.Path);
+                unsafe
+                {
+                    fixed (byte* ptr = bytes)
+                        ImGui.SetDragDropPayload("FOLDER_PATH", (IntPtr)ptr, (uint)bytes.Length);
+                }
+                ImGui.Text(node.DisplayName);
+                ImGui.EndDragDropSource();
+            }
 
             if (nodeOpen && !isOpen) _openFolders.Add(node.Path);
             else if (!nodeOpen && isOpen) _openFolders.Remove(node.Path);
@@ -161,6 +275,47 @@ namespace KrayonEditor.UI
             if (ImGui.IsItemClicked())
                 _selectedAsset = asset.Guid;
 
+            if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+            {
+                string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
+                if (ext == ".js")
+                {
+                    string fullPath = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path));
+                    OpenInVSCode(fullPath);
+                }
+            }
+
+            if (ImGui.BeginPopupContextItem($"AssetCtx_{asset.Guid}"))
+            {
+                string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
+
+                if (ext == ".js" && ImGui.MenuItem("Open in VSCode"))
+                {
+                    string fullPath = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path));
+                    OpenInVSCode(fullPath);
+                }
+
+                if (ext == ".js")
+                    ImGui.Separator();
+
+                if (ImGui.MenuItem("Rename"))
+                {
+                    _assetToRename = asset.Guid;
+                    _renameAssetExtension = Path.GetExtension(asset.Path);
+                    _renameAssetNewName = Path.GetFileNameWithoutExtension(asset.Path);
+                    _showRenameAssetPopup = true;
+                }
+
+                if (ImGui.MenuItem("Delete"))
+                {
+                    _assetToDelete = asset.Guid;
+                    _assetToDeleteName = Path.GetFileName(asset.Path);
+                    _showDeleteAssetPopup = true;
+                }
+
+                ImGui.EndPopup();
+            }
+
             if (ImGui.BeginDragDropSource())
             {
                 string guid = asset.Guid.ToString();
@@ -172,11 +327,596 @@ namespace KrayonEditor.UI
                         ImGui.SetDragDropPayload("ASSET_PATH", (IntPtr)ptr, (uint)bytes.Length);
                 }
 
-                ImGui.Text(guid);
+                ImGui.Text(Path.GetFileName(asset.Path));
                 ImGui.EndDragDropSource();
             }
 
             ImGui.PopID();
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  New Script Popup
+        // ─────────────────────────────────────────────────────────
+
+        private static readonly string DefaultScriptTemplate =
+@"let timer = 0.0;
+
+function OnStart() {
+    console.log('{SCRIPT_NAME} started');
+}
+
+function OnTick(deltaTime) {
+    timer += deltaTime;
+}
+";
+
+        private void DrawNewScriptPopup()
+        {
+            if (_showNewScriptPopup)
+            {
+                ImGui.OpenPopup("New Script##Popup");
+                _showNewScriptPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+            ImGui.SetNextWindowSize(new Vector2(350, 0), ImGuiCond.Appearing);
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("New Script##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("Script name:");
+                ImGui.SetNextItemWidth(-1);
+
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+
+                bool enterPressed = ImGui.InputText("##ScriptName", ref _newScriptName, 128,
+                    ImGuiInputTextFlags.EnterReturnsTrue);
+
+                bool validName = !string.IsNullOrWhiteSpace(_newScriptName) &&
+                                 _newScriptName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+
+                string previewPath = string.IsNullOrEmpty(_newScriptFolder)
+                    ? $"{_newScriptName}.js"
+                    : $"{_newScriptFolder}/{_newScriptName}.js";
+                string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
+                bool alreadyExists = File.Exists(fullPath);
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+                ImGui.Text($"Path: {previewPath}");
+                ImGui.PopStyleColor();
+
+                if (alreadyExists)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f));
+                    ImGui.Text("A file with this name already exists.");
+                    ImGui.PopStyleColor();
+                }
+
+                if (!validName)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f));
+                    ImGui.Text("Invalid file name.");
+                    ImGui.PopStyleColor();
+                }
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                bool canCreate = validName && !alreadyExists;
+
+                if (!canCreate) ImGui.BeginDisabled();
+                if (ImGui.Button("Create", new Vector2(120, 0)) || (enterPressed && canCreate))
+                {
+                    CreateNewScript(previewPath, fullPath);
+                    ImGui.CloseCurrentPopup();
+                }
+                if (!canCreate) ImGui.EndDisabled();
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        private void CreateNewScript(string relativePath, string fullPath)
+        {
+            try
+            {
+                string directory = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                string content = DefaultScriptTemplate.Replace("{SCRIPT_NAME}", _newScriptName);
+                File.WriteAllText(fullPath, content);
+
+                AssetManager.Import(relativePath);
+                MarkDirty();
+                OpenInVSCode(fullPath);
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine($"Error creating script: {ex.Message}");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  New Folder Popup
+        // ─────────────────────────────────────────────────────────
+
+        private void DrawNewFolderPopup()
+        {
+            if (_showNewFolderPopup)
+            {
+                ImGui.OpenPopup("New Folder##Popup");
+                _showNewFolderPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+            ImGui.SetNextWindowSize(new Vector2(350, 0), ImGuiCond.Appearing);
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("New Folder##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("Folder name:");
+                ImGui.SetNextItemWidth(-1);
+
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+
+                bool enterPressed = ImGui.InputText("##FolderName", ref _newFolderName, 128,
+                    ImGuiInputTextFlags.EnterReturnsTrue);
+
+                bool validName = !string.IsNullOrWhiteSpace(_newFolderName) &&
+                                 _newFolderName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+
+                string previewPath = string.IsNullOrEmpty(_newFolderParent)
+                    ? _newFolderName
+                    : $"{_newFolderParent}/{_newFolderName}";
+                string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
+                bool alreadyExists = Directory.Exists(fullPath);
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+                ImGui.Text($"Path: {previewPath}");
+                ImGui.PopStyleColor();
+
+                if (alreadyExists)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f));
+                    ImGui.Text("A folder with this name already exists.");
+                    ImGui.PopStyleColor();
+                }
+
+                if (!validName)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f));
+                    ImGui.Text("Invalid folder name.");
+                    ImGui.PopStyleColor();
+                }
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                bool canCreate = validName && !alreadyExists;
+
+                if (!canCreate) ImGui.BeginDisabled();
+                if (ImGui.Button("Create", new Vector2(120, 0)) || (enterPressed && canCreate))
+                {
+                    AssetManager.CreateFolder(_newFolderParent, _newFolderName);
+                    MarkDirty();
+                    ImGui.CloseCurrentPopup();
+                }
+                if (!canCreate) ImGui.EndDisabled();
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Rename Asset Popup
+        // ─────────────────────────────────────────────────────────
+
+        private void DrawRenameAssetPopup()
+        {
+            if (_showRenameAssetPopup)
+            {
+                ImGui.OpenPopup("Rename Asset##Popup");
+                _showRenameAssetPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+            ImGui.SetNextWindowSize(new Vector2(350, 0), ImGuiCond.Appearing);
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("Rename Asset##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("New name:");
+                ImGui.SetNextItemWidth(-1);
+
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+
+                bool enterPressed = ImGui.InputText("##RenameAsset", ref _renameAssetNewName, 128,
+                    ImGuiInputTextFlags.EnterReturnsTrue);
+
+                bool validName = !string.IsNullOrWhiteSpace(_renameAssetNewName) &&
+                                 _renameAssetNewName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+
+                string finalName = _renameAssetNewName + _renameAssetExtension;
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+                ImGui.Text($"Final: {finalName}");
+                ImGui.PopStyleColor();
+
+                bool nameConflict = false;
+                if (_assetToRename.HasValue && validName)
+                {
+                    var asset = AssetManager.Get(_assetToRename.Value);
+                    if (asset != null)
+                    {
+                        string dir = Path.GetDirectoryName(asset.Path)?.Replace("\\", "/") ?? "";
+                        string newRelPath = string.IsNullOrEmpty(dir)
+                            ? finalName
+                            : $"{dir}/{finalName}";
+                        string newFullPath = Path.Combine(AssetManager.BasePath, newRelPath);
+                        nameConflict = File.Exists(newFullPath) && newRelPath != asset.Path;
+                    }
+                }
+
+                if (nameConflict)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f));
+                    ImGui.Text("A file with this name already exists.");
+                    ImGui.PopStyleColor();
+                }
+
+                if (!validName)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f));
+                    ImGui.Text("Invalid name.");
+                    ImGui.PopStyleColor();
+                }
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                bool canRename = validName && !nameConflict;
+
+                if (!canRename) ImGui.BeginDisabled();
+                if (ImGui.Button("Rename", new Vector2(120, 0)) || (enterPressed && canRename))
+                {
+                    if (_assetToRename.HasValue)
+                    {
+                        AssetManager.RenameAsset(_assetToRename.Value, finalName);
+                        MarkDirty();
+                    }
+                    ImGui.CloseCurrentPopup();
+                }
+                if (!canRename) ImGui.EndDisabled();
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Rename Folder Popup
+        // ─────────────────────────────────────────────────────────
+
+        private void DrawRenameFolderPopup()
+        {
+            if (_showRenameFolderPopup)
+            {
+                ImGui.OpenPopup("Rename Folder##Popup");
+                _showRenameFolderPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+            ImGui.SetNextWindowSize(new Vector2(350, 0), ImGuiCond.Appearing);
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("Rename Folder##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("New name:");
+                ImGui.SetNextItemWidth(-1);
+
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+
+                bool enterPressed = ImGui.InputText("##RenameFolder", ref _renameFolderNewName, 128,
+                    ImGuiInputTextFlags.EnterReturnsTrue);
+
+                bool validName = !string.IsNullOrWhiteSpace(_renameFolderNewName) &&
+                                 _renameFolderNewName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+
+                string parentPath = "";
+                if (_folderToRename.Contains('/'))
+                    parentPath = string.Join("/", _folderToRename.Split('/').SkipLast(1));
+
+                string previewPath = string.IsNullOrEmpty(parentPath)
+                    ? _renameFolderNewName
+                    : $"{parentPath}/{_renameFolderNewName}";
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+                ImGui.Text($"Path: {previewPath}");
+                ImGui.PopStyleColor();
+
+                string newFullPath = Path.Combine(AssetManager.BasePath, previewPath);
+                bool alreadyExists = Directory.Exists(newFullPath) && previewPath != _folderToRename;
+
+                if (alreadyExists)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f));
+                    ImGui.Text("A folder with this name already exists.");
+                    ImGui.PopStyleColor();
+                }
+
+                if (!validName)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f));
+                    ImGui.Text("Invalid name.");
+                    ImGui.PopStyleColor();
+                }
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                bool canRename = validName && !alreadyExists;
+
+                if (!canRename) ImGui.BeginDisabled();
+                if (ImGui.Button("Rename", new Vector2(120, 0)) || (enterPressed && canRename))
+                {
+                    if (!string.IsNullOrEmpty(_folderToRename))
+                    {
+                        AssetManager.RenameFolder(_folderToRename, _renameFolderNewName);
+                        if (_selectedFolder == _folderToRename)
+                            _selectedFolder = previewPath;
+                        MarkDirty();
+                    }
+                    ImGui.CloseCurrentPopup();
+                }
+                if (!canRename) ImGui.EndDisabled();
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Delete Asset Popup
+        // ─────────────────────────────────────────────────────────
+
+        private void DrawDeleteAssetPopup()
+        {
+            if (_showDeleteAssetPopup)
+            {
+                ImGui.OpenPopup("Delete Asset##Popup");
+                _showDeleteAssetPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("Delete Asset##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("Are you sure you want to delete:");
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.8f, 0.3f, 1f));
+                ImGui.Text($"  {_assetToDeleteName}");
+                ImGui.PopStyleColor();
+
+                ImGui.Text("This action cannot be undone.");
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.9f, 0.3f, 0.3f, 1f));
+                if (ImGui.Button("Delete", new Vector2(120, 0)))
+                {
+                    if (_assetToDelete.HasValue)
+                    {
+                        AssetManager.DeleteAsset(_assetToDelete.Value);
+                        if (_selectedAsset == _assetToDelete)
+                            _selectedAsset = null;
+                        MarkDirty();
+                    }
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.PopStyleColor(2);
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Delete Folder Popup
+        // ─────────────────────────────────────────────────────────
+
+        private void DrawDeleteFolderPopup()
+        {
+            if (_showDeleteFolderPopup)
+            {
+                ImGui.OpenPopup("Delete Folder##Popup");
+                _showDeleteFolderPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("Delete Folder##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("Are you sure you want to delete folder:");
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.8f, 0.3f, 1f));
+                ImGui.Text($"  {_folderToDeleteName}");
+                ImGui.PopStyleColor();
+
+                ImGui.Text("All contents will be permanently deleted.");
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.9f, 0.3f, 0.3f, 1f));
+                if (ImGui.Button("Delete", new Vector2(120, 0)))
+                {
+                    if (!string.IsNullOrEmpty(_folderToDelete))
+                    {
+                        AssetManager.DeleteFolder(_folderToDelete);
+                        if (_selectedFolder == _folderToDelete)
+                            _selectedFolder = "";
+                        MarkDirty();
+                    }
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.PopStyleColor(2);
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  VSCode
+        // ─────────────────────────────────────────────────────────
+
+        private static void OpenInVSCode(string filePath)
+        {
+            string codePath = FindVSCodePath();
+
+            if (codePath != null)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = codePath,
+                        Arguments = $"\"{filePath}\"",
+                        UseShellExecute = false
+                    });
+                }
+                catch (System.Exception ex)
+                {
+                    System.Console.WriteLine($"Error opening VSCode: {ex.Message}");
+                    OpenVSCodeDownloadPage();
+                }
+            }
+            else
+            {
+                OpenVSCodeDownloadPage();
+            }
+        }
+
+        private static string FindVSCodePath()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string[] windowsPaths = new[]
+                {
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "Programs", "Microsoft VS Code", "Code.exe"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                        "Microsoft VS Code", "Code.exe"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                        "Microsoft VS Code", "Code.exe"),
+                };
+
+                foreach (var p in windowsPaths)
+                    if (File.Exists(p)) return p;
+
+                return FindInPath("code.cmd") ?? FindInPath("code.exe");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string macPath = "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code";
+                if (File.Exists(macPath)) return macPath;
+                return FindInPath("code");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return FindInPath("code");
+
+            return null;
+        }
+
+        private static string FindInPath(string executable)
+        {
+            string pathEnv = Environment.GetEnvironmentVariable("PATH");
+            if (string.IsNullOrEmpty(pathEnv)) return null;
+
+            char separator = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ';' : ':';
+
+            foreach (string dir in pathEnv.Split(separator))
+            {
+                string fullPath = Path.Combine(dir.Trim(), executable);
+                if (File.Exists(fullPath)) return fullPath;
+            }
+
+            return null;
+        }
+
+        private static void OpenVSCodeDownloadPage()
+        {
+            string url = "https://code.visualstudio.com/Download";
+
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    Process.Start("open", url);
+                else
+                    Process.Start("xdg-open", url);
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine($"Could not open browser: {ex.Message}");
+            }
         }
     }
 }

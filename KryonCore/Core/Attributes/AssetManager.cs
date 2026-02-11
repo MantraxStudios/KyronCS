@@ -49,6 +49,53 @@ namespace KrayonCore.Core.Attributes
         public static bool IsFolderRegistered(string folderPath)
             => _folders.Values.Any(f => f.Path == folderPath);
 
+        public static Guid? Import(string relativePath)
+        {
+            try
+            {
+                relativePath = relativePath.Replace("\\", "/");
+                string fullPath = Path.Combine(BasePath, relativePath);
+
+                if (!File.Exists(fullPath))
+                {
+                    Console.WriteLine($"File not found: {fullPath}");
+                    return null;
+                }
+
+                var existing = FindByPath(relativePath);
+                if (existing != null)
+                {
+                    Console.WriteLine($"Already registered: {relativePath}");
+                    return existing.Guid;
+                }
+
+                var record = new AssetRecord
+                {
+                    Guid = Guid.NewGuid(),
+                    Path = relativePath,
+                    Type = DetectType(fullPath)
+                };
+
+                _assets.Add(record.Guid, record);
+                SaveDatabase();
+
+                Console.WriteLine($"Imported: {relativePath} ({record.Type})");
+                return record.Guid;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error importing: {ex.Message}");
+                return null;
+            }
+        }
+
+        public static void Refresh()
+        {
+            ScanFileSystem();
+            SaveDatabase();
+            Console.WriteLine($"Refreshed. Assets: {_assets.Count}, Folders: {_folders.Count}");
+        }
+
         public static bool MoveAsset(Guid guid, string newFolderPath)
         {
             if (!_assets.TryGetValue(guid, out var asset))

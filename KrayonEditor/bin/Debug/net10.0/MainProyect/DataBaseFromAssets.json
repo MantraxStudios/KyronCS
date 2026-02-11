@@ -14462,7 +14462,7 @@
     },
     {
       "Guid": "03e5ab21-5449-4dba-93ca-1058e11a0368",
-      "Path": "scripts/game.js",
+      "Path": "scripts/hola.js",
       "Type": "GameScript"
     }
   ],
