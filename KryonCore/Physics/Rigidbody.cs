@@ -186,17 +186,6 @@ namespace KrayonCore
             base.Start();
             InitializePhysics();
 
-            TriggerEnter += (contact) => {
-                Console.WriteLine($"Algo entró al trigger");
-            };
-
-            CollisionEnter += (contact) => {
-                Console.WriteLine($"Colisión! Normal: {contact.ContactNormal}");
-            };
-
-            CollisionExit += (contact) => {
-                 Console.WriteLine("Se separaron");
-            };
         }
 
         private void InitializePhysics()
@@ -506,7 +495,14 @@ namespace KrayonCore
             if (finalMotionType == BodyMotionType.Kinematic || finalMotionType == BodyMotionType.Static)
                 return;
 
-            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            var physicsWorld = GameObject.Scene.PhysicsWorld;
+            var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
+
+            // Despertar bodies con gravedad para evitar que se congelen en el aire.
+            // BepuPhysics2 duerme bodies con velocidad baja y deja de aplicar gravedad.
+            // AwakenBody es casi gratis si el body ya está despierto (solo checa set index).
+            if (UseGravity)
+                physicsWorld.Awaken(_bodyHandle.Value);
 
             Vector3 position = ToOpenTK(bodyRef.Pose.Position);
             Quaternion rotation = ToOpenTK(bodyRef.Pose.Orientation);

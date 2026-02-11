@@ -41,17 +41,17 @@ namespace KrayonCore
             VSync = VSyncMode.Off;
 
             GL.ClearColor(0.2f, 0.3f, 0.6f, 1f);
-
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
             GL.DepthMask(true);
             GL.ClearDepth(1.0);
-
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
             GL.FrontFace(FrontFaceDirection.Ccw);
 
+            // Suscribirse a eventos
             TextInput += OnTextInput;
+            FileDrop += OnFileDrop;
 
             _engine.InternalLoad();
 
@@ -63,6 +63,11 @@ namespace KrayonCore
         private void OnTextInput(TextInputEventArgs e)
         {
             _engine.OnTextInput(e);
+        }
+
+        private void OnFileDrop(FileDropEventArgs e)
+        {
+            _engine.OnFileDrop(e);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -83,7 +88,6 @@ namespace KrayonCore
             base.OnRenderFrame(args);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
             _engine.InternalRender((float)args.Time);
 
             SwapBuffers();
@@ -92,6 +96,7 @@ namespace KrayonCore
         protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
+
             GL.Viewport(0, 0, e.Width, e.Height);
             _engine.InternalResize(e.Width, e.Height);
         }
@@ -100,7 +105,9 @@ namespace KrayonCore
         {
             base.OnUnload();
 
+            // Desuscribirse de eventos
             TextInput -= OnTextInput;
+            FileDrop -= OnFileDrop;
 
             _engine.InternalClose();
         }

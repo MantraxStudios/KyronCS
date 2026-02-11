@@ -17,7 +17,7 @@ namespace KrayonCore
         private FrameBuffer? _sceneFrameBuffer;
         private FrameBuffer? _postProcessFrameBuffer;
         public FullscreenQuad? _fullscreenQuad;
-        private ScreenQuad? _screenQuad; 
+        private ScreenQuad? _screenQuad;
 
         private float _totalTime = 0.0f;
 
@@ -28,6 +28,8 @@ namespace KrayonCore
         public event Action? CloseEvent;
 
         public event Action<TextInputEventArgs>? TextInputEvent;
+        public event Action<string[]>? FileDropEvent;  // NUEVO: Evento para archivos arrastrados
+
         public static GraphicsEngine? Instance { get; private set; }
 
         private MaterialManager _materials;
@@ -55,7 +57,7 @@ namespace KrayonCore
             }
 
             _materials.Create("fullscreen", "shaders/fullscreen");
-            _materials.Create("screen", "shaders/screen"); 
+            _materials.Create("screen", "shaders/screen");
         }
 
         private void ConfigureDefaultPostProcessing()
@@ -135,6 +137,16 @@ namespace KrayonCore
         public void OnTextInput(TextInputEventArgs e)
         {
             TextInputEvent?.Invoke(e);
+        }
+
+        // NUEVO: Método para manejar archivos arrastrados
+        public void OnFileDrop(FileDropEventArgs e)
+        {
+            if (e.FileNames != null && e.FileNames.Length > 0)
+            {
+                Console.WriteLine($"Files dropped: {string.Join(", ", e.FileNames)}");
+                FileDropEvent?.Invoke(e.FileNames);
+            }
         }
 
         public void InternalLoad()
@@ -257,7 +269,7 @@ namespace KrayonCore
             }
 
             _fullscreenQuad?.Dispose();
-            _screenQuad?.Dispose();  // NUEVO
+            _screenQuad?.Dispose();
             _sceneFrameBuffer?.Dispose();
             _postProcessFrameBuffer?.Dispose();
             _sceneRenderer.Shutdown();

@@ -1,5 +1,5 @@
 {
-  "Enabled": true,
+  "Enabled": false,
   "ColorCorrectionEnabled": true,
   "Brightness": -0.01,
   "Contrast": 1.28,
@@ -9,7 +9,7 @@
     "Y": 1,
     "Z": 1
   },
-  "BloomEnabled": false,
+  "BloomEnabled": true,
   "BloomThreshold": 0.23,
   "BloomSoftThreshold": 0.21,
   "BloomIntensity": 3.98,

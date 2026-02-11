@@ -72,6 +72,8 @@ namespace KrayonEditor.UI
                 SetupCamera();
             };
 
+            _engine.FileDropEvent += OnFilesDropped;
+
             _engine.UpdateEvent += dt =>
             {
                 if (_editorCamera == null || window == null) return;
@@ -107,6 +109,11 @@ namespace KrayonEditor.UI
             _engine.Run();
         }
 
+
+        private static void OnFilesDropped(string[] filePaths)
+        {
+            EditorUI._assets.HandleExternalDrop(filePaths, "");
+        }
         private static void HandleInput(float dt)
         {
             if (_engine == null || _editorCamera == null) return;

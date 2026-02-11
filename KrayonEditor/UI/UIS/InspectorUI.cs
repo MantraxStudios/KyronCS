@@ -1193,6 +1193,22 @@ namespace KrayonEditor.UI
                 {
                     field.SetValue(component, stringValue);
                 }
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    unsafe
+                    {
+                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                        if (payload.NativePtr != null)
+                        {
+                            byte[] data = new byte[payload.DataSize];
+                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
+                            string path = System.Text.Encoding.UTF8.GetString(data);
+                            field.SetValue(component, path);
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
             }
             else if (fieldType == typeof(Vector2))
             {

@@ -15,7 +15,7 @@ namespace KrayonEditor.UI
         private static SceneViewUI _sceneView = new SceneViewUI();
         private static ConsoleUI _console = new ConsoleUI();
         private static StatsUI _stats = new StatsUI();
-        private static AssetsUI _assets = new AssetsUI();
+        public static AssetsUI _assets = new AssetsUI();
         private static MaterialUI _materials = new MaterialUI();
         private static TileEditor _TileEditor = new TileEditor();
         private static SpriteAnimationUI _SpriteAnimator= new SpriteAnimationUI();

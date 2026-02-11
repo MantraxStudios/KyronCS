@@ -1,0 +1,478 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KrayonHub.MainPage"
+             BackgroundColor="#0A0A0A"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Wine">#7B1E3A</Color>
+            <Color x:Key="WineDark">#5A1028</Color>
+            <Color x:Key="WineLight">#9B2E50</Color>
+            <Color x:Key="Black">#0A0A0A</Color>
+            <Color x:Key="CardBg">#1C1C1C</Color>
+            <Color x:Key="BorderGray">#3A3A3A</Color>
+            <Color x:Key="TextSecondary">#9A9A9A</Color>
+            <Color x:Key="White">#FFFFFF</Color>
+
+            <Style x:Key="SidebarBtn" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="TextColor" Value="{StaticResource TextSecondary}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="Padding" Value="14,12"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="HorizontalOptions" Value="Fill"/>
+                <Setter Property="CharacterSpacing" Value="1"/>
+            </Style>
+
+            <Style x:Key="SidebarBtnActive" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Wine}"/>
+                <Setter Property="TextColor" Value="{StaticResource White}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="Padding" Value="14,12"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="HorizontalOptions" Value="Fill"/>
+                <Setter Property="CharacterSpacing" Value="1"/>
+            </Style>
+
+            <Style x:Key="BtnWine" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Wine}"/>
+                <Setter Property="TextColor" Value="{StaticResource White}"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="20,12"/>
+            </Style>
+
+            <Style x:Key="BtnGray" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource BorderGray}"/>
+                <Setter Property="TextColor" Value="{StaticResource TextSecondary}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="12,8"/>
+            </Style>
+
+            <Style x:Key="BtnDelete" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#2A1520"/>
+                <Setter Property="TextColor" Value="{StaticResource WineLight}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="12,8"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid ColumnDefinitions="240,*" BackgroundColor="{StaticResource Black}">
+
+        <Border Grid.Column="0"
+                BackgroundColor="{StaticResource CardBg}"
+                Stroke="{StaticResource BorderGray}"
+                StrokeThickness="1">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="0"/>
+            </Border.StrokeShape>
+
+            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="20">
+                <HorizontalStackLayout Grid.Row="0" Spacing="12" Padding="0,16,0,28">
+                    <Border BackgroundColor="{StaticResource Wine}"
+                            StrokeThickness="0"
+                            WidthRequest="46" HeightRequest="46">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <Label Text="K" TextColor="{StaticResource White}"
+                               FontSize="24" FontAttributes="Bold"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                        <Label Text="KRAYON"
+                               TextColor="{StaticResource White}"
+                               FontSize="16" FontAttributes="Bold"
+                               CharacterSpacing="3"/>
+                        <Label Text="ENGINE"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="10" CharacterSpacing="4"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <BoxView Grid.Row="1" HeightRequest="1"
+                         Color="{StaticResource BorderGray}" Margin="0,0,0,20"/>
+
+                <VerticalStackLayout Grid.Row="2" Spacing="6">
+                    <Button x:Name="BtnProjects" Text="▦  PROJECTS"
+                            Style="{StaticResource SidebarBtnActive}"
+                            Clicked="OnNavProjects"/>
+                    <Button x:Name="BtnAssets" Text="▤  ASSETS"
+                            Style="{StaticResource SidebarBtn}"
+                            Clicked="OnNavAssets"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Row="3" Spacing="6" Margin="0,20,0,0">
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderGray}" Margin="0,0,0,12"/>
+                    <Button Text="⎋  LOGOUT"
+                            Style="{StaticResource SidebarBtn}"
+                            Clicked="OnLogout"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Row="4" Spacing="4" Padding="4,20,4,0">
+                    <Label Text="KrayonEngine v1.0"
+                           TextColor="{StaticResource TextSecondary}" FontSize="10"/>
+                    <Label Text="© 2026" TextColor="#4A4A4A" FontSize="9"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,*">
+
+            <Border Grid.Row="0" BackgroundColor="{StaticResource CardBg}"
+                    Stroke="{StaticResource BorderGray}" StrokeThickness="1"
+                    Padding="28,16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="0"/>
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <Border Grid.Column="0" BackgroundColor="#141414"
+                            Stroke="{StaticResource BorderGray}" StrokeThickness="1"
+                            MaximumWidthRequest="400" HorizontalOptions="Start">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10"/>
+                        </Border.StrokeShape>
+                        <Grid ColumnDefinitions="Auto,*" Padding="14,2">
+                            <Label Grid.Column="0" Text="🔍" FontSize="14"
+                                   VerticalOptions="Center" Margin="0,0,10,0"/>
+                            <Entry x:Name="SearchEntry" Grid.Column="1"
+                                   Placeholder="Search..."
+                                   PlaceholderColor="#4A4A4A"
+                                   TextColor="{StaticResource White}"
+                                   BackgroundColor="Transparent" FontSize="14"
+                                   TextChanged="OnSearchTextChanged"/>
+                        </Grid>
+                    </Border>
+
+                    <Label x:Name="LblPageTitle" Grid.Column="1"
+                           Text="My Projects"
+                           TextColor="{StaticResource White}"
+                           FontSize="18" FontAttributes="Bold"
+                           VerticalOptions="Center" Margin="0,0,24,0"/>
+
+                    <Button x:Name="BtnPrimaryAction" Grid.Column="2"
+                            Text="＋ NEW PROJECT"
+                            Style="{StaticResource BtnWine}"
+                            Clicked="OnNewProjectClicked"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Padding="28">
+
+                <ScrollView x:Name="ProjectsView" IsVisible="True">
+                    <VerticalStackLayout Spacing="20">
+                        <HorizontalStackLayout Spacing="8" Padding="4,0,0,0">
+                            <Label Text="●" TextColor="{StaticResource Wine}"
+                                   FontSize="12" VerticalOptions="Center"/>
+                            <Label x:Name="LblProjectCount" Text="4 projects"
+                                   TextColor="{StaticResource TextSecondary}" FontSize="13"/>
+                        </HorizontalStackLayout>
+
+                        <CollectionView x:Name="ProjectsCollection"
+                                        SelectionMode="None">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="3"
+                                                 HorizontalItemSpacing="16"
+                                                 VerticalItemSpacing="16"/>
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.EmptyView>
+                                <VerticalStackLayout HorizontalOptions="Center"
+                                                     VerticalOptions="Center" Padding="60">
+                                    <Label Text="📦" FontSize="48" HorizontalOptions="Center" Margin="0,0,0,12"/>
+                                    <Label Text="No projects yet" FontSize="18"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           HorizontalOptions="Center" FontAttributes="Bold"/>
+                                    <Label Text="Create your first project to get started"
+                                           FontSize="13" TextColor="#4A4A4A"
+                                           HorizontalOptions="Center" Margin="0,6,0,0"/>
+                                </VerticalStackLayout>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{StaticResource CardBg}"
+                                            Stroke="{StaticResource BorderGray}"
+                                            StrokeThickness="1" Padding="0">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12"/>
+                                        </Border.StrokeShape>
+                                        <Grid RowDefinitions="120,Auto">
+                                            <Border Grid.Row="0" BackgroundColor="#141414"
+                                                    StrokeThickness="0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="12,12,0,0"/>
+                                                </Border.StrokeShape>
+                                                <Grid>
+                                                    <Label Text="{Binding Icon}" FontSize="42"
+                                                           HorizontalOptions="Center"
+                                                           VerticalOptions="Center"/>
+                                                    <Border BackgroundColor="#2A1520"
+                                                            StrokeThickness="0" Padding="10,4"
+                                                            HorizontalOptions="End"
+                                                            VerticalOptions="Start"
+                                                            Margin="0,10,10,0">
+                                                        <Border.StrokeShape>
+                                                            <RoundRectangle CornerRadius="5"/>
+                                                        </Border.StrokeShape>
+                                                        <Label Text="{Binding Template}"
+                                                               TextColor="{StaticResource WineLight}"
+                                                               FontSize="9" FontAttributes="Bold"
+                                                               CharacterSpacing="1.5"/>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+
+                                            <VerticalStackLayout Grid.Row="1"
+                                                                 Padding="16,14,16,16" Spacing="10">
+                                                <Label Text="{Binding Name}"
+                                                       TextColor="{StaticResource White}"
+                                                       FontSize="16" FontAttributes="Bold"/>
+                                                <HorizontalStackLayout Spacing="14">
+                                                    <Label Text="{Binding ScenesLabel}"
+                                                           TextColor="{StaticResource TextSecondary}"
+                                                           FontSize="12"/>
+                                                    <Label Text="·" TextColor="#4A4A4A" FontSize="12"/>
+                                                    <Label Text="{Binding AssetsLabel}"
+                                                           TextColor="{StaticResource TextSecondary}"
+                                                           FontSize="12"/>
+                                                </HorizontalStackLayout>
+                                                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,6,0,0">
+                                                    <Label Grid.Column="0"
+                                                           Text="{Binding LastModified}"
+                                                           TextColor="#4A4A4A" FontSize="11"
+                                                           VerticalOptions="Center"/>
+                                                    <Button Grid.Column="1" Text="▶ OPEN"
+                                                            Style="{StaticResource BtnGray}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnOpenProject"
+                                                            Margin="0,0,8,0"/>
+                                                    <Button Grid.Column="2" Text="✕ DELETE"
+                                                            Style="{StaticResource BtnDelete}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnDeleteProject"/>
+                                                </Grid>
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <ScrollView x:Name="AssetsView" IsVisible="False">
+                    <VerticalStackLayout Spacing="0">
+                        <Border BackgroundColor="{StaticResource CardBg}"
+                                Stroke="{StaticResource BorderGray}"
+                                StrokeThickness="1" Padding="18,12">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12,12,0,0"/>
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="*,140,110,110">
+                                <Label Grid.Column="0" Text="NAME" TextColor="#4A4A4A"
+                                       FontSize="10" FontAttributes="Bold" CharacterSpacing="2"/>
+                                <Label Grid.Column="1" Text="TYPE" TextColor="#4A4A4A"
+                                       FontSize="10" FontAttributes="Bold" CharacterSpacing="2"/>
+                                <Label Grid.Column="2" Text="SIZE" TextColor="#4A4A4A"
+                                       FontSize="10" FontAttributes="Bold" CharacterSpacing="2"/>
+                                <Label Grid.Column="3" Text="ACTIONS" TextColor="#4A4A4A"
+                                       FontSize="10" FontAttributes="Bold" CharacterSpacing="2"
+                                       HorizontalTextAlignment="End"/>
+                            </Grid>
+                        </Border>
+
+                        <Border BackgroundColor="{StaticResource CardBg}"
+                                Stroke="{StaticResource BorderGray}"
+                                StrokeThickness="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="0,0,12,12"/>
+                            </Border.StrokeShape>
+                            <CollectionView x:Name="AssetsCollection" SelectionMode="None">
+                                <CollectionView.EmptyView>
+                                    <Label Text="No assets found" FontSize="14"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           HorizontalOptions="Center" Padding="60"/>
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BackgroundColor="Transparent"
+                                                Stroke="{StaticResource BorderGray}"
+                                                StrokeThickness="0" Padding="18,14">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="0"/>
+                                            </Border.StrokeShape>
+                                            <Grid ColumnDefinitions="*,140,110,110">
+                                                <HorizontalStackLayout Grid.Column="0" Spacing="12">
+                                                    <Border BackgroundColor="{StaticResource Wine}"
+                                                            WidthRequest="10" HeightRequest="10"
+                                                            StrokeThickness="0">
+                                                        <Border.StrokeShape>
+                                                            <RoundRectangle CornerRadius="5"/>
+                                                        </Border.StrokeShape>
+                                                    </Border>
+                                                    <Label Text="{Binding Name}"
+                                                           TextColor="{StaticResource White}"
+                                                           FontSize="14" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                                <Label Grid.Column="1" Text="{Binding Type}"
+                                                       TextColor="{StaticResource TextSecondary}"
+                                                       FontSize="13" VerticalOptions="Center"/>
+                                                <Label Grid.Column="2" Text="{Binding Size}"
+                                                       TextColor="#4A4A4A" FontSize="13"
+                                                       VerticalOptions="Center"/>
+                                                <HorizontalStackLayout Grid.Column="3"
+                                                                       HorizontalOptions="End" Spacing="8">
+                                                    <Button Text="👁" Style="{StaticResource BtnGray}"
+                                                            Padding="10,6" FontSize="12"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnPreviewAsset"/>
+                                                    <Button Text="✕" Style="{StaticResource BtnDelete}"
+                                                            Padding="10,6" FontSize="12"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnDeleteAsset"/>
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Border>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <ScrollView x:Name="NewProjectView" IsVisible="False">
+                    <VerticalStackLayout Spacing="24" MaximumWidthRequest="650">
+                        <Button Text="← BACK" Style="{StaticResource SidebarBtn}"
+                                HorizontalOptions="Start" Clicked="OnBackToProjects"/>
+
+                        <Border BackgroundColor="{StaticResource CardBg}"
+                                Stroke="{StaticResource BorderGray}"
+                                StrokeThickness="1" Padding="32">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="24">
+                                <Label Text="CREATE NEW PROJECT"
+                                       TextColor="{StaticResource White}"
+                                       FontSize="20" FontAttributes="Bold"
+                                       CharacterSpacing="2"/>
+                                <BoxView HeightRequest="1"
+                                         Color="{StaticResource BorderGray}"/>
+
+                                <VerticalStackLayout Spacing="10">
+                                    <Label Text="PROJECT NAME"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           CharacterSpacing="2"/>
+                                    <Border BackgroundColor="#141414"
+                                            Stroke="{StaticResource BorderGray}"
+                                            StrokeThickness="1">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+                                        <Entry x:Name="EntryProjectName"
+                                               Placeholder="My Awesome Game"
+                                               PlaceholderColor="#4A4A4A"
+                                               TextColor="{StaticResource White}"
+                                               BackgroundColor="Transparent"
+                                               FontSize="15" Margin="14,10"/>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Spacing="12">
+                                    <Label Text="TEMPLATE"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           CharacterSpacing="2"/>
+                                    <CollectionView x:Name="TemplatesCollection"
+                                                    SelectionMode="Single"
+                                                    SelectionChanged="OnTemplateSelected"
+                                                    HeightRequest="260">
+                                        <CollectionView.ItemsLayout>
+                                            <GridItemsLayout Orientation="Vertical" Span="3"
+                                                             HorizontalItemSpacing="12"
+                                                             VerticalItemSpacing="12"/>
+                                        </CollectionView.ItemsLayout>
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BackgroundColor="#141414"
+                                                        Stroke="{StaticResource BorderGray}"
+                                                        StrokeThickness="1" Padding="16,20">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="10"/>
+                                                    </Border.StrokeShape>
+                                                    <VerticalStackLayout Spacing="10"
+                                                                         HorizontalOptions="Center">
+                                                        <Label Text="{Binding Icon}" FontSize="32"
+                                                               HorizontalOptions="Center"/>
+                                                        <Label Text="{Binding Name}"
+                                                               TextColor="{StaticResource TextSecondary}"
+                                                               FontSize="12" FontAttributes="Bold"
+                                                               HorizontalOptions="Center"/>
+                                                    </VerticalStackLayout>
+                                                </Border>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </VerticalStackLayout>
+
+                                <BoxView HeightRequest="1"
+                                         Color="{StaticResource BorderGray}"/>
+
+                                <Button x:Name="BtnCreate" Text="CREATE PROJECT"
+                                        Style="{StaticResource BtnWine}"
+                                        HorizontalOptions="Fill"
+                                        Padding="0,14"
+                                        Clicked="OnCreateProject"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <Grid x:Name="DeleteModal" IsVisible="False"
+                      BackgroundColor="#90000000" InputTransparent="False">
+                    <Border BackgroundColor="{StaticResource CardBg}"
+                            Stroke="{StaticResource Wine}" StrokeThickness="2"
+                            Padding="32" MaximumWidthRequest="440"
+                            MaximumHeightRequest="280"
+                            HorizontalOptions="Center" VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16"/>
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="20" VerticalOptions="Center">
+                            <Label Text="DELETE PROJECT"
+                                   TextColor="{StaticResource White}"
+                                   FontSize="18" FontAttributes="Bold"
+                                   CharacterSpacing="1.5" HorizontalOptions="Center"/>
+                            <Label x:Name="LblDeleteMsg"
+                                   Text="Are you sure? This cannot be undone."
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="14" HorizontalTextAlignment="Center"
+                                   LineHeight="1.5"/>
+                            <HorizontalStackLayout Spacing="12"
+                                                   HorizontalOptions="Center" Margin="0,10,0,0">
+                                <Button Text="CANCEL" Style="{StaticResource BtnGray}"
+                                        Clicked="OnCancelDelete" WidthRequest="140" Padding="0,12"/>
+                                <Button Text="DELETE"
+                                        BackgroundColor="{StaticResource Wine}"
+                                        TextColor="{StaticResource White}"
+                                        FontSize="13" FontAttributes="Bold"
+                                        CornerRadius="8" Padding="0,12"
+                                        Clicked="OnConfirmDelete" WidthRequest="140"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+            </Grid>
+        </Grid>
+
+    </Grid>
+</ContentPage>

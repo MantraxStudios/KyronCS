@@ -182,6 +182,12 @@ namespace KrayonCore.Physics
             _handlers.Remove(id);
         }
 
+        public ICollisionEventHandler GetHandler(CollidableId id)
+        {
+            _handlers.TryGetValue(id, out var handler);
+            return handler;
+        }
+
         // ── Called from narrow phase (multithreaded!) ──
 
         internal struct PairReport

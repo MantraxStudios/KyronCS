@@ -53,6 +53,165 @@ namespace KrayonEditor.UI
 
         public void MarkDirty() => _treeDirty = true;
 
+        // ─────────────────────────────────────────────────────────
+        //  External Drop Handler (llamar desde el backend)
+        // ─────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Método público para manejar archivos/carpetas arrastrados desde el sistema operativo.
+        /// Debe ser llamado desde el backend cuando se detecta un drop externo.
+        /// </summary>
+        /// <param name="externalPaths">Lista de rutas completas de archivos o carpetas arrastrados</param>
+        /// <param name="targetFolder">Carpeta de destino en el proyecto (vacío para root)</param>
+        public void HandleExternalDrop(string[] externalPaths, string targetFolder = "")
+        {
+            if (externalPaths == null || externalPaths.Length == 0)
+                return;
+
+            try
+            {
+                foreach (string externalPath in externalPaths)
+                {
+                    if (Directory.Exists(externalPath))
+                    {
+                        ImportExternalFolder(externalPath, targetFolder);
+                    }
+                    else if (File.Exists(externalPath))
+                    {
+                        ImportExternalFile(externalPath, targetFolder);
+                    }
+                }
+
+                MarkDirty();
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine($"Error importing external drop: {ex.Message}");
+            }
+        }
+
+        private void ImportExternalFile(string sourceFilePath, string targetFolder)
+        {
+            string fileName = Path.GetFileName(sourceFilePath);
+            string relativePath = string.IsNullOrEmpty(targetFolder)
+                ? fileName
+                : $"{targetFolder}/{fileName}";
+            string destPath = Path.Combine(AssetManager.BasePath, relativePath);
+
+            // Evitar sobrescribir archivos existentes
+            if (File.Exists(destPath))
+            {
+                string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                string extension = Path.GetExtension(fileName);
+                int counter = 1;
+
+                while (File.Exists(destPath))
+                {
+                    fileName = $"{nameWithoutExt}_{counter}{extension}";
+                    relativePath = string.IsNullOrEmpty(targetFolder)
+                        ? fileName
+                        : $"{targetFolder}/{fileName}";
+                    destPath = Path.Combine(AssetManager.BasePath, relativePath);
+                    counter++;
+                }
+            }
+
+            // Crear directorio si no existe
+            string directory = Path.GetDirectoryName(destPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            // Copiar archivo
+            File.Copy(sourceFilePath, destPath, false);
+
+            // Registrar en AssetManager
+            AssetManager.Import(relativePath);
+
+            System.Console.WriteLine($"Imported file: {relativePath}");
+        }
+
+        private void ImportExternalFolder(string sourceFolderPath, string targetFolder)
+        {
+            string folderName = new DirectoryInfo(sourceFolderPath).Name;
+            string relativePath = string.IsNullOrEmpty(targetFolder)
+                ? folderName
+                : $"{targetFolder}/{folderName}";
+            string destPath = Path.Combine(AssetManager.BasePath, relativePath);
+
+            // Evitar sobrescribir carpetas existentes
+            if (Directory.Exists(destPath))
+            {
+                int counter = 1;
+                while (Directory.Exists(destPath))
+                {
+                    folderName = $"{new DirectoryInfo(sourceFolderPath).Name}_{counter}";
+                    relativePath = string.IsNullOrEmpty(targetFolder)
+                        ? folderName
+                        : $"{targetFolder}/{folderName}";
+                    destPath = Path.Combine(AssetManager.BasePath, relativePath);
+                    counter++;
+                }
+            }
+
+            // Copiar carpeta recursivamente
+            CopyDirectory(sourceFolderPath, destPath);
+
+            // Registrar carpeta en AssetManager
+            AssetManager.CreateFolder(targetFolder, folderName);
+
+            // Importar todos los archivos de la carpeta
+            ImportFolderContents(relativePath);
+
+            System.Console.WriteLine($"Imported folder: {relativePath}");
+        }
+
+        private void CopyDirectory(string sourceDir, string destDir)
+        {
+            Directory.CreateDirectory(destDir);
+
+            // Copiar archivos
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string fileName = Path.GetFileName(file);
+                string destFile = Path.Combine(destDir, fileName);
+                File.Copy(file, destFile, false);
+            }
+
+            // Copiar subdirectorios recursivamente
+            foreach (string dir in Directory.GetDirectories(sourceDir))
+            {
+                string dirName = new DirectoryInfo(dir).Name;
+                string destSubDir = Path.Combine(destDir, dirName);
+                CopyDirectory(dir, destSubDir);
+            }
+        }
+
+        private void ImportFolderContents(string folderPath)
+        {
+            string fullPath = Path.Combine(AssetManager.BasePath, folderPath);
+
+            // Importar todos los archivos
+            foreach (string file in Directory.GetFiles(fullPath))
+            {
+                string fileName = Path.GetFileName(file);
+                string relativePath = $"{folderPath}/{fileName}";
+                AssetManager.Import(relativePath);
+            }
+
+            // Importar subdirectorios recursivamente
+            foreach (string dir in Directory.GetDirectories(fullPath))
+            {
+                string dirName = new DirectoryInfo(dir).Name;
+                string subFolderPath = $"{folderPath}/{dirName}";
+
+                // Crear carpeta en AssetManager
+                AssetManager.CreateFolder(folderPath, dirName);
+
+                // Importar contenidos recursivamente
+                ImportFolderContents(subFolderPath);
+            }
+        }
+
         public override void OnDrawUI()
         {
             if (!_isVisible)
@@ -68,6 +227,31 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginChild("AssetTree", new Vector2(0, 0)))
             {
+                // Detectar drop de archivos externos en toda la ventana
+                if (ImGui.BeginDragDropTarget())
+                {
+                    // Intentar aceptar payload de archivos externos (esto depende del backend)
+                    // Nota: Esto requiere que el backend esté configurado para pasar drops externos a ImGui
+                    var payload = ImGui.AcceptDragDropPayload("EXTERNAL_FILE");
+                    unsafe
+                    {
+                        if (payload.NativePtr != null)
+                        {
+                            byte[] data = new byte[payload.DataSize];
+                            Marshal.Copy(payload.Data, data, 0, payload.DataSize);
+                            string pathsData = System.Text.Encoding.UTF8.GetString(data);
+
+                            // El formato esperado es rutas separadas por newline
+                            string[] paths = pathsData.Split(new[] { '\n', '\r' },
+                                System.StringSplitOptions.RemoveEmptyEntries);
+
+                            HandleExternalDrop(paths, _selectedFolder);
+                        }
+                    }
+
+                    ImGui.EndDragDropTarget();
+                }
+
                 if (_rootNode != null)
                     DrawFolderNode(_rootNode);
             }
@@ -193,13 +377,14 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginDragDropTarget())
             {
+                // Drop interno de assets
                 var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
                 unsafe
                 {
                     if (payload.NativePtr != null)
                     {
                         byte[] data = new byte[payload.DataSize];
-                        System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
+                        Marshal.Copy(payload.Data, data, 0, payload.DataSize);
                         string guidStr = System.Text.Encoding.UTF8.GetString(data);
 
                         if (Guid.TryParse(guidStr, out Guid assetGuid))
@@ -210,13 +395,14 @@ namespace KrayonEditor.UI
                     }
                 }
 
+                // Drop interno de carpetas
                 var folderPayload = ImGui.AcceptDragDropPayload("FOLDER_PATH");
                 unsafe
                 {
                     if (folderPayload.NativePtr != null)
                     {
                         byte[] data = new byte[folderPayload.DataSize];
-                        System.Runtime.InteropServices.Marshal.Copy(folderPayload.Data, data, 0, folderPayload.DataSize);
+                        Marshal.Copy(folderPayload.Data, data, 0, folderPayload.DataSize);
                         string sourceFolderPath = System.Text.Encoding.UTF8.GetString(data);
 
                         if (sourceFolderPath != node.Path && !node.Path.StartsWith(sourceFolderPath + "/"))
@@ -224,6 +410,23 @@ namespace KrayonEditor.UI
                             AssetManager.MoveFolder(sourceFolderPath, node.Path);
                             MarkDirty();
                         }
+                    }
+                }
+
+                // Drop externo de archivos/carpetas del sistema
+                var externalPayload = ImGui.AcceptDragDropPayload("EXTERNAL_FILE");
+                unsafe
+                {
+                    if (externalPayload.NativePtr != null)
+                    {
+                        byte[] data = new byte[externalPayload.DataSize];
+                        Marshal.Copy(externalPayload.Data, data, 0, externalPayload.DataSize);
+                        string pathsData = System.Text.Encoding.UTF8.GetString(data);
+
+                        string[] paths = pathsData.Split(new[] { '\n', '\r' },
+                            System.StringSplitOptions.RemoveEmptyEntries);
+
+                        HandleExternalDrop(paths, node.Path);
                     }
                 }
 

@@ -14462,6 +14462,16 @@
     },
     {
       "Guid": "03e5ab21-5449-4dba-93ca-1058e11a0368",
+      "Path": "scripts/game.js",
+      "Type": "GameScript"
+    },
+    {
+      "Guid": "34c8b8ea-c97f-47b9-8f20-c429de6d7915",
+      "Path": "scenes/EmptyScene.scene",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "4edd7fac-07d5-481e-93b7-d82148809e41",
       "Path": "scripts/hola.js",
       "Type": "GameScript"
     }

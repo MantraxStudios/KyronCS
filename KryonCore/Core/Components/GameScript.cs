@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Jint;
 using KrayonCore.Core.Attributes;
@@ -11,6 +12,8 @@ namespace KrayonCore
     {
         [ToStorage] public string ScriptPath = "scripts/game.js";
         private Engine _engine;
+        private bool _collisionEventsSubscribed = false;
+        private List<RaycastHit> _raycastAllResults = new();
 
         public override void Awake()
         {
@@ -41,6 +44,10 @@ namespace KrayonCore
             // Funciones de componentes
             SetupComponentFunctions();
 
+            // Eventos de colisión y API de física
+            SetupCollisionEvents();
+            SetupPhysicsRaycast();
+
             // Cargar y ejecutar el script
             string path = Path.Combine(
                 AssetManager.BasePath,
@@ -55,6 +62,8 @@ namespace KrayonCore
                 {
                     _engine.Invoke("OnStart");
                 }
+
+                TrySubscribeCollisionEvents();
             }
             catch (Exception ex)
             {
@@ -471,7 +480,7 @@ namespace KrayonCore
                 rb?.ForceReinitialize();
             }));
 
-            // ── JS Rigidbody wrapper object ──
+            // ── JS enums y Rigidbody wrapper object ──
             _engine.Execute(@"
                 const MotionType = { Static: 0, Kinematic: 1, Dynamic: 2 };
                 const Shape = { Box: 0, Sphere: 1, Capsule: 2 };
@@ -567,8 +576,331 @@ namespace KrayonCore
             ");
         }
 
+        // ─────────────────────────────────────────────────────────────
+        //  Collision / Trigger Events → JS
+        // ─────────────────────────────────────────────────────────────
+
+        private void SetupCollisionEvents()
+        {
+            // --- C# bridges para operar sobre cualquier GameObject ---
+            _engine.SetValue("_go_rb_addForce", new Action<object, double, double, double>((go, x, y, z) =>
+            {
+                if (go is GameObject g) g.GetComponent<Rigidbody>()?.AddForce(new Vector3((float)x, (float)y, (float)z));
+            }));
+            _engine.SetValue("_go_rb_addImpulse", new Action<object, double, double, double>((go, x, y, z) =>
+            {
+                if (go is GameObject g) g.GetComponent<Rigidbody>()?.AddImpulse(new Vector3((float)x, (float)y, (float)z));
+            }));
+            _engine.SetValue("_go_rb_addTorque", new Action<object, double, double, double>((go, x, y, z) =>
+            {
+                if (go is GameObject g) g.GetComponent<Rigidbody>()?.AddTorque(new Vector3((float)x, (float)y, (float)z));
+            }));
+            _engine.SetValue("_go_rb_setVelocity", new Action<object, double, double, double>((go, x, y, z) =>
+            {
+                if (go is GameObject g) g.GetComponent<Rigidbody>()?.SetVelocity(new Vector3((float)x, (float)y, (float)z));
+            }));
+            _engine.SetValue("_go_rb_getVelocity", new Func<object, double[]>((go) =>
+            {
+                if (go is GameObject g) { var v = g.GetComponent<Rigidbody>()?.GetVelocity() ?? Vector3.Zero; return new double[] { v.X, v.Y, v.Z }; }
+                return new double[] { 0, 0, 0 };
+            }));
+            _engine.SetValue("_go_rb_getMass", new Func<object, double>((go) =>
+            {
+                if (go is GameObject g) return g.GetComponent<Rigidbody>()?.Mass ?? 1.0;
+                return 1.0;
+            }));
+            _engine.SetValue("_go_rb_setMass", new Action<object, double>((go, v) =>
+            {
+                if (go is GameObject g) { var rb = g.GetComponent<Rigidbody>(); if (rb != null) rb.Mass = (float)v; }
+            }));
+            _engine.SetValue("_go_t_getPosition", new Func<object, double[]>((go) =>
+            {
+                if (go is GameObject g) { var t = g.Transform; return new double[] { t.X, t.Y, t.Z }; }
+                return new double[] { 0, 0, 0 };
+            }));
+            _engine.SetValue("_go_t_setPosition", new Action<object, double, double, double>((go, x, y, z) =>
+            {
+                if (go is GameObject g) g.Transform?.SetPosition((float)x, (float)y, (float)z);
+            }));
+
+            // --- GetComponent por nombre de tipo ---
+            _engine.SetValue("_go_getComponent", new Func<object, string, object>((go, typeName) =>
+            {
+                if (go is GameObject g)
+                {
+                    foreach (var comp in g.GetAllComponents())
+                    {
+                        if (comp.GetType().Name == typeName)
+                            return comp;
+                    }
+                }
+                return null;
+            }));
+            _engine.SetValue("_go_hasComponent", new Func<object, string, bool>((go, typeName) =>
+            {
+                if (go is GameObject g)
+                {
+                    foreach (var comp in g.GetAllComponents())
+                    {
+                        if (comp.GetType().Name == typeName)
+                            return true;
+                    }
+                }
+                return false;
+            }));
+
+            // --- JS helper que crea el contact con wrapper del otro objeto ---
+            _engine.Execute(@"
+                function __createContactInfo(px, py, pz, nx, ny, nz, depth, otherGO) {
+                    var other = null;
+                    if (otherGO) {
+                        other = {
+                            gameObject: otherGO,
+                            name: otherGO.Name,
+                            getPosition: function() {
+                                var p = _go_t_getPosition(otherGO);
+                                return new Vector3(p[0], p[1], p[2]);
+                            },
+                            setPosition: function(x, y, z) { _go_t_setPosition(otherGO, x, y, z); },
+                            addForce: function(x, y, z) { _go_rb_addForce(otherGO, x, y, z); },
+                            addImpulse: function(x, y, z) { _go_rb_addImpulse(otherGO, x, y, z); },
+                            addTorque: function(x, y, z) { _go_rb_addTorque(otherGO, x, y, z); },
+                            setVelocity: function(x, y, z) { _go_rb_setVelocity(otherGO, x, y, z); },
+                            getVelocity: function() {
+                                var v = _go_rb_getVelocity(otherGO);
+                                return new Vector3(v[0], v[1], v[2]);
+                            },
+                            getMass: function() { return _go_rb_getMass(otherGO); },
+                            setMass: function(v) { _go_rb_setMass(otherGO, v); },
+                            getComponent: function(name) { return _go_getComponent(otherGO, name); },
+                            hasComponent: function(name) { return _go_hasComponent(otherGO, name); }
+                        };
+                    }
+                    return {
+                        position: new Vector3(px, py, pz),
+                        normal: new Vector3(nx, ny, nz),
+                        depth: depth,
+                        other: other
+                    };
+                }
+            ");
+        }
+
+        private void TrySubscribeCollisionEvents()
+        {
+            if (_collisionEventsSubscribed || _engine == null) return;
+
+            var rb = GameObject?.GetComponent<Rigidbody>();
+            if (rb == null) return;
+
+            rb.CollisionEnter += (contact) => InvokeCollisionCallback("OnCollisionEnter", contact);
+            rb.CollisionStay += (contact) => InvokeCollisionCallback("OnCollisionStay", contact);
+            rb.CollisionExit += (contact) => InvokeCollisionCallback("OnCollisionExit", contact);
+            rb.TriggerEnter += (contact) => InvokeCollisionCallback("OnTriggerEnter", contact);
+            rb.TriggerStay += (contact) => InvokeCollisionCallback("OnTriggerStay", contact);
+            rb.TriggerExit += (contact) => InvokeCollisionCallback("OnTriggerExit", contact);
+
+            _collisionEventsSubscribed = true;
+        }
+
+        private void InvokeCollisionCallback(string functionName, ContactInfo contact)
+        {
+            try
+            {
+                if (_engine == null || _engine.GetValue(functionName).IsUndefined()) return;
+
+                // Resolver el GameObject del otro collidable
+                object otherGameObject = null;
+                var world = GameObject?.Scene?.PhysicsWorld;
+                if (world != null)
+                {
+                    var handler = world.EventSystem.GetHandler(contact.OtherCollidable);
+                    if (handler is Rigidbody otherRb)
+                        otherGameObject = otherRb.GameObject;
+                }
+
+                var contactObj = _engine.Invoke("__createContactInfo",
+                    (double)contact.ContactPosition.X, (double)contact.ContactPosition.Y, (double)contact.ContactPosition.Z,
+                    (double)contact.ContactNormal.X, (double)contact.ContactNormal.Y, (double)contact.ContactNormal.Z,
+                    (double)contact.PenetrationDepth,
+                    otherGameObject);
+
+                _engine.Invoke(functionName, contactObj);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en {functionName}: {ex.Message}");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        //  Physics Raycast API → JS
+        // ─────────────────────────────────────────────────────────────
+
+        private void SetupPhysicsRaycast()
+        {
+            // --- Raycast (closest hit) ---
+            _engine.SetValue("_physics_raycast", new Func<double, double, double, double, double, double, double, double, double[]>(
+                (ox, oy, oz, dx, dy, dz, maxDist, layerMask) =>
+                {
+                    var world = GameObject?.Scene?.PhysicsWorld;
+                    if (world == null) return null;
+
+                    var origin = new System.Numerics.Vector3((float)ox, (float)oy, (float)oz);
+                    var direction = new System.Numerics.Vector3((float)dx, (float)dy, (float)dz);
+
+                    if (PhysicsRaycast.Raycast(world, origin, direction, (float)maxDist, out var hit, (PhysicsLayer)(uint)layerMask))
+                    {
+                        return new double[]
+                        {
+                            hit.Point.X, hit.Point.Y, hit.Point.Z,
+                            hit.Normal.X, hit.Normal.Y, hit.Normal.Z,
+                            hit.Distance,
+                            (double)(uint)hit.Layer
+                        };
+                    }
+                    return null;
+                }));
+
+            // --- RaycastAll (count + query pattern) ---
+            _engine.SetValue("_physics_raycastAll", new Func<double, double, double, double, double, double, double, double, int>(
+                (ox, oy, oz, dx, dy, dz, maxDist, layerMask) =>
+                {
+                    _raycastAllResults.Clear();
+                    var world = GameObject?.Scene?.PhysicsWorld;
+                    if (world == null) return 0;
+
+                    var origin = new System.Numerics.Vector3((float)ox, (float)oy, (float)oz);
+                    var direction = new System.Numerics.Vector3((float)dx, (float)dy, (float)dz);
+
+                    _raycastAllResults = PhysicsRaycast.RaycastAll(world, origin, direction, (float)maxDist, (PhysicsLayer)(uint)layerMask);
+                    return _raycastAllResults.Count;
+                }));
+
+            _engine.SetValue("_physics_raycastAll_get", new Func<int, double[]>(
+                (index) =>
+                {
+                    if (index < 0 || index >= _raycastAllResults.Count) return null;
+                    var hit = _raycastAllResults[index];
+                    return new double[]
+                    {
+                        hit.Point.X, hit.Point.Y, hit.Point.Z,
+                        hit.Normal.X, hit.Normal.Y, hit.Normal.Z,
+                        hit.Distance,
+                        (double)(uint)hit.Layer
+                    };
+                }));
+
+            // --- Linecast ---
+            _engine.SetValue("_physics_linecast", new Func<double, double, double, double, double, double, double, double[]>(
+                (sx, sy, sz, ex, ey, ez, layerMask) =>
+                {
+                    var world = GameObject?.Scene?.PhysicsWorld;
+                    if (world == null) return null;
+
+                    var start = new System.Numerics.Vector3((float)sx, (float)sy, (float)sz);
+                    var end = new System.Numerics.Vector3((float)ex, (float)ey, (float)ez);
+
+                    if (PhysicsRaycast.Linecast(world, start, end, out var hit, (PhysicsLayer)(uint)layerMask))
+                    {
+                        return new double[]
+                        {
+                            hit.Point.X, hit.Point.Y, hit.Point.Z,
+                            hit.Normal.X, hit.Normal.Y, hit.Normal.Z,
+                            hit.Distance,
+                            (double)(uint)hit.Layer
+                        };
+                    }
+                    return null;
+                }));
+
+            // --- Check (boolean) ---
+            _engine.SetValue("_physics_check", new Func<double, double, double, double, double, double, double, double, bool>(
+                (ox, oy, oz, dx, dy, dz, maxDist, layerMask) =>
+                {
+                    var world = GameObject?.Scene?.PhysicsWorld;
+                    if (world == null) return false;
+
+                    var origin = new System.Numerics.Vector3((float)ox, (float)oy, (float)oz);
+                    var direction = new System.Numerics.Vector3((float)dx, (float)dy, (float)dz);
+
+                    return PhysicsRaycast.Check(world, origin, direction, (float)maxDist, (PhysicsLayer)(uint)layerMask);
+                }));
+
+            // --- JS Physics wrapper ---
+            _engine.Execute(@"
+                const Physics = {
+                    Layer: {
+                        None: 0,
+                        Default: 1,
+                        Static: 2,
+                        Player: 4,
+                        Enemy: 8,
+                        Projectile: 16,
+                        Trigger: 32,
+                        Environment: 64,
+                        UI: 128,
+                        All: 4294967295
+                    },
+
+                    raycast: function(origin, direction, maxDistance, layerMask) {
+                        if (maxDistance === undefined) maxDistance = 99999;
+                        if (layerMask === undefined) layerMask = 4294967295;
+                        const r = _physics_raycast(origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, maxDistance, layerMask);
+                        if (!r) return null;
+                        return {
+                            hit: true,
+                            point: new Vector3(r[0], r[1], r[2]),
+                            normal: new Vector3(r[3], r[4], r[5]),
+                            distance: r[6],
+                            layer: r[7]
+                        };
+                    },
+
+                    raycastAll: function(origin, direction, maxDistance, layerMask) {
+                        if (maxDistance === undefined) maxDistance = 99999;
+                        if (layerMask === undefined) layerMask = 4294967295;
+                        const count = _physics_raycastAll(origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, maxDistance, layerMask);
+                        const hits = [];
+                        for (let i = 0; i < count; i++) {
+                            const r = _physics_raycastAll_get(i);
+                            hits.push({
+                                hit: true,
+                                point: new Vector3(r[0], r[1], r[2]),
+                                normal: new Vector3(r[3], r[4], r[5]),
+                                distance: r[6],
+                                layer: r[7]
+                            });
+                        }
+                        return hits;
+                    },
+
+                    linecast: function(start, end, layerMask) {
+                        if (layerMask === undefined) layerMask = 4294967295;
+                        const r = _physics_linecast(start.x, start.y, start.z, end.x, end.y, end.z, layerMask);
+                        if (!r) return null;
+                        return {
+                            hit: true,
+                            point: new Vector3(r[0], r[1], r[2]),
+                            normal: new Vector3(r[3], r[4], r[5]),
+                            distance: r[6],
+                            layer: r[7]
+                        };
+                    },
+
+                    check: function(origin, direction, maxDistance, layerMask) {
+                        if (maxDistance === undefined) maxDistance = 99999;
+                        if (layerMask === undefined) layerMask = 4294967295;
+                        return _physics_check(origin.x, origin.y, origin.z, direction.x, direction.y, direction.z, maxDistance, layerMask);
+                    }
+                };
+            ");
+        }
+
         public override void Update(float deltaTime)
         {
+            TrySubscribeCollisionEvents();
+
             try
             {
                 if (!_engine.GetValue("OnTick").IsUndefined())

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KrayonHub.LoginPage"
+             BackgroundColor="#0A0A0A"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Wine">#7B1E3A</Color>
+            <Color x:Key="Black">#0A0A0A</Color>
+            <Color x:Key="CardBg">#1C1C1C</Color>
+            <Color x:Key="BorderGray">#3A3A3A</Color>
+            <Color x:Key="TextSecondary">#9A9A9A</Color>
+            <Color x:Key="White">#FFFFFF</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid BackgroundColor="{StaticResource Black}">
+        <ScrollView x:Name="LoginView" IsVisible="True">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" 
+                                 Spacing="30" Padding="40">
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Border BackgroundColor="{StaticResource Wine}"
+                            StrokeThickness="0"
+                            WidthRequest="50" HeightRequest="50">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <Label Text="K" TextColor="{StaticResource White}"
+                               FontSize="26" FontAttributes="Bold"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                        <Label Text="KRAYON"
+                               TextColor="{StaticResource White}"
+                               FontSize="20" FontAttributes="Bold"
+                               CharacterSpacing="3"/>
+                        <Label Text="ENGINE"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="11" CharacterSpacing="4"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <Border BackgroundColor="{StaticResource CardBg}"
+                        Stroke="{StaticResource BorderGray}"
+                        StrokeThickness="1" Padding="40"
+                        WidthRequest="400">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="24">
+                        <Label Text="LOGIN"
+                               TextColor="{StaticResource White}"
+                               FontSize="22" FontAttributes="Bold"
+                               CharacterSpacing="2"
+                               HorizontalOptions="Center"/>
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="USERNAME OR EMAIL"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="10" FontAttributes="Bold"
+                                   CharacterSpacing="1"/>
+                            <Border BackgroundColor="#141414"
+                                    Stroke="{StaticResource BorderGray}"
+                                    StrokeThickness="1">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Entry x:Name="EntryLoginUsername"
+                                       Placeholder="Enter username or email"
+                                       PlaceholderColor="#4A4A4A"
+                                       TextColor="{StaticResource White}"
+                                       BackgroundColor="Transparent"
+                                       FontSize="14" Margin="14,10"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="PASSWORD"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="10" FontAttributes="Bold"
+                                   CharacterSpacing="1"/>
+                            <Border BackgroundColor="#141414"
+                                    Stroke="{StaticResource BorderGray}"
+                                    StrokeThickness="1">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Entry x:Name="EntryLoginPassword"
+                                       Placeholder="Enter password"
+                                       PlaceholderColor="#4A4A4A"
+                                       TextColor="{StaticResource White}"
+                                       BackgroundColor="Transparent"
+                                       IsPassword="True"
+                                       FontSize="14" Margin="14,10"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Button Text="LOGIN"
+                                BackgroundColor="{StaticResource Wine}"
+                                TextColor="{StaticResource White}"
+                                FontSize="14" FontAttributes="Bold"
+                                CornerRadius="8" Padding="0,14"
+                                Clicked="OnLoginClicked"/>
+
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                            <Label Text="Don't have an account?"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="12"/>
+                            <Label Text="Register"
+                                   TextColor="{StaticResource Wine}"
+                                   FontSize="12" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnSwitchToRegister"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <ScrollView x:Name="RegisterView" IsVisible="False">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" 
+                                 Spacing="30" Padding="40">
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Border BackgroundColor="{StaticResource Wine}"
+                            StrokeThickness="0"
+                            WidthRequest="50" HeightRequest="50">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <Label Text="K" TextColor="{StaticResource White}"
+                               FontSize="26" FontAttributes="Bold"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                        <Label Text="KRAYON"
+                               TextColor="{StaticResource White}"
+                               FontSize="20" FontAttributes="Bold"
+                               CharacterSpacing="3"/>
+                        <Label Text="ENGINE"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="11" CharacterSpacing="4"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <Border BackgroundColor="{StaticResource CardBg}"
+                        Stroke="{StaticResource BorderGray}"
+                        StrokeThickness="1" Padding="40"
+                        WidthRequest="400">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="24">
+                        <Label Text="REGISTER"
+                               TextColor="{StaticResource White}"
+                               FontSize="22" FontAttributes="Bold"
+                               CharacterSpacing="2"
+                               HorizontalOptions="Center"/>
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="USERNAME"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="10" FontAttributes="Bold"
+                                   CharacterSpacing="1"/>
+                            <Border BackgroundColor="#141414"
+                                    Stroke="{StaticResource BorderGray}"
+                                    StrokeThickness="1">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Entry x:Name="EntryRegUsername"
+                                       Placeholder="Choose a username"
+                                       PlaceholderColor="#4A4A4A"
+                                       TextColor="{StaticResource White}"
+                                       BackgroundColor="Transparent"
+                                       FontSize="14" Margin="14,10"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="EMAIL"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="10" FontAttributes="Bold"
+                                   CharacterSpacing="1"/>
+                            <Border BackgroundColor="#141414"
+                                    Stroke="{StaticResource BorderGray}"
+                                    StrokeThickness="1">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Entry x:Name="EntryRegEmail"
+                                       Placeholder="Enter your email"
+                                       PlaceholderColor="#4A4A4A"
+                                       TextColor="{StaticResource White}"
+                                       BackgroundColor="Transparent"
+                                       Keyboard="Email"
+                                       FontSize="14" Margin="14,10"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="PASSWORD"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="10" FontAttributes="Bold"
+                                   CharacterSpacing="1"/>
+                            <Border BackgroundColor="#141414"
+                                    Stroke="{StaticResource BorderGray}"
+                                    StrokeThickness="1">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8"/>
+                                </Border.StrokeShape>
+                                <Entry x:Name="EntryRegPassword"
+                                       Placeholder="Create a password"
+                                       PlaceholderColor="#4A4A4A"
+                                       TextColor="{StaticResource White}"
+                                       BackgroundColor="Transparent"
+                                       IsPassword="True"
+                                       FontSize="14" Margin="14,10"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Button Text="REGISTER"
+                                BackgroundColor="{StaticResource Wine}"
+                                TextColor="{StaticResource White}"
+                                FontSize="14" FontAttributes="Bold"
+                                CornerRadius="8" Padding="0,14"
+                                Clicked="OnRegisterClicked"/>
+
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                            <Label Text="Already have an account?"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="12"/>
+                            <Label Text="Login"
+                                   TextColor="{StaticResource Wine}"
+                                   FontSize="12" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnSwitchToLogin"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
