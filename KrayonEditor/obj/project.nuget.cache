@@ -1,15 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "OtNSbY1uA3Y=",
+  "dgSpecHash": "doZD5hZgkJ4=",
   "success": true,
   "projectFilePath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\KrayonEditor.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tupap\\.nuget\\packages\\acornima\\1.2.0\\acornima.1.2.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\assimpnet\\4.1.0\\assimpnet.4.1.0.nupkg.sha512",
+    "C:\\Users\\tupap\\.nuget\\packages\\bepuphysics\\2.4.0\\bepuphysics.2.4.0.nupkg.sha512",
+    "C:\\Users\\tupap\\.nuget\\packages\\bepuutilities\\2.4.0\\bepuutilities.2.4.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\imgui.net\\1.91.6.1\\imgui.net.1.91.6.1.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\jint\\4.5.0\\jint.4.5.0.nupkg.sha512",
-    "C:\\Users\\tupap\\.nuget\\packages\\joltphysics.native\\1.0.9\\joltphysics.native.1.0.9.nupkg.sha512",
-    "C:\\Users\\tupap\\.nuget\\packages\\joltphysicssharp\\2.20.1\\joltphysicssharp.2.20.1.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
     "C:\\Users\\tupap\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512",

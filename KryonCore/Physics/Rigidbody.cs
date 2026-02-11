@@ -1,25 +1,26 @@
 ﻿using System;
 using OpenTK.Mathematics;
-using JoltPhysicsSharp;
+using BepuPhysics;
+using BepuPhysics.Collidables;
 using KrayonCore.Physics;
 
 namespace KrayonCore
 {
     public class Rigidbody : Component
     {
-        private Body _body;
+        private BodyHandle? _bodyHandle;
+        private StaticHandle? _staticHandle;
         private bool _isInitialized = false;
 
-        private MotionType _previousMotionType;
+        private BodyMotionType _previousMotionType;
         private bool _previousIsKinematic;
         private ShapeType _previousShapeType;
         private Vector3 _previousShapeSize;
-        private ObjectLayer _previousLayer;
         private Vector3 _previousScale;
 
-        private MotionType _motionType = MotionType.Dynamic;
+        private BodyMotionType _motionType = BodyMotionType.Dynamic;
         [ToStorage]
-        public MotionType MotionType
+        public BodyMotionType MotionType
         {
             get => _motionType;
             set
@@ -28,23 +29,6 @@ namespace KrayonCore
                 {
                     _motionType = value;
                     if (_isInitialized && !_isKinematic)
-                    {
-                        RecreatePhysicsBody();
-                    }
-                }
-            }
-        }
-
-        private ObjectLayer _layer = WorldPhysic.Layers.Moving;
-        public ObjectLayer Layer
-        {
-            get => _layer;
-            set
-            {
-                if (_layer != value)
-                {
-                    _layer = value;
-                    if (_isInitialized)
                     {
                         RecreatePhysicsBody();
                     }
@@ -120,8 +104,22 @@ namespace KrayonCore
         [ToStorage] public float AngularDamping { get; set; } = 0.05f;
         [ToStorage] public float Friction { get; set; } = 0.5f;
         [ToStorage] public float Restitution { get; set; } = 0.0f;
+        [ToStorage] public float SleepThreshold { get; set; } = 0.01f;
 
-        public Body Body => _body;
+        /// <summary>
+        /// Returns the BodyHandle if this is a dynamic/kinematic body. Null for statics.
+        /// </summary>
+        public BodyHandle? BodyHandle => _bodyHandle;
+
+        /// <summary>
+        /// Returns the StaticHandle if this is a static body. Null for dynamic/kinematic.
+        /// </summary>
+        public StaticHandle? StaticHandle => _staticHandle;
+
+        /// <summary>
+        /// Whether this rigidbody currently has an active physics representation.
+        /// </summary>
+        public bool HasBody => _bodyHandle.HasValue || _staticHandle.HasValue;
 
         public override void Awake()
         {
@@ -152,7 +150,8 @@ namespace KrayonCore
 
         public void CleanupPhysics()
         {
-            _body = null;
+            _bodyHandle = null;
+            _staticHandle = null;
             _isInitialized = false;
         }
 
@@ -172,6 +171,11 @@ namespace KrayonCore
             );
         }
 
+        private BodyMotionType GetFinalMotionType()
+        {
+            return _isKinematic ? BodyMotionType.Kinematic : _motionType;
+        }
+
         private void CreatePhysicsBody()
         {
             if (GameObject?.Scene?.PhysicsWorld == null)
@@ -183,85 +187,121 @@ namespace KrayonCore
             System.Numerics.Vector3 position = ToNumerics(transform.GetWorldPosition());
             System.Numerics.Quaternion rotation = ToNumerics(transform.GetWorldRotation());
 
-            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
-
+            BodyMotionType finalMotionType = GetFinalMotionType();
             Vector3 finalSize = GetFinalShapeSize();
 
-            switch (_shapeType)
+            if (finalMotionType == BodyMotionType.Static)
             {
-                case ShapeType.Box:
-                    System.Numerics.Vector3 halfExtent = ToNumerics(finalSize);
-                    _body = physicsWorld.CreateBox(
-                        halfExtent,
-                        position,
-                        rotation,
-                        finalMotionType,
-                        _layer
-                    );
-                    break;
-
-                case ShapeType.Sphere:
-                    _body = physicsWorld.CreateSphere(
-                        finalSize.X,
-                        position,
-                        rotation,
-                        finalMotionType,
-                        _layer
-                    );
-                    break;
-
-                case ShapeType.Capsule:
-                    _body = physicsWorld.CreateCapsule(
-                        finalSize.Y,
-                        finalSize.X,
-                        position,
-                        rotation,
-                        finalMotionType,
-                        _layer
-                    );
-                    break;
+                CreateStaticBody(physicsWorld, position, rotation, finalSize);
             }
-
-            if (_body != null)
+            else
             {
-                var bodyInterface = physicsWorld.BodyInterface;
-
-                bodyInterface.SetFriction(_body.ID, Friction);
-                bodyInterface.SetRestitution(_body.ID, Restitution);
-
-                if (finalMotionType == MotionType.Dynamic || finalMotionType == MotionType.Kinematic)
-                {
-                    var motionProps = _body.MotionProperties;
-                    if (motionProps != null)
-                    {
-                        motionProps.LinearDamping = LinearDamping;
-                        motionProps.AngularDamping = AngularDamping;
-
-                        if (!UseGravity && finalMotionType == MotionType.Dynamic)
-                        {
-                            bodyInterface.SetGravityFactor(_body.ID, 0.0f);
-                        }
-                    }
-                }
-
-                if (finalMotionType == MotionType.Kinematic)
-                {
-                    bodyInterface.SetLinearVelocity(_body.ID, System.Numerics.Vector3.Zero);
-                    bodyInterface.SetAngularVelocity(_body.ID, System.Numerics.Vector3.Zero);
-                }
-
-                if (finalMotionType == MotionType.Dynamic)
-                {
-                    bodyInterface.ActivateBody(_body.ID);
-                }
+                bool isDynamic = finalMotionType == BodyMotionType.Dynamic;
+                CreateDynamicOrKinematicBody(physicsWorld, position, rotation, finalSize, isDynamic);
             }
 
             _previousMotionType = finalMotionType;
             _previousIsKinematic = _isKinematic;
             _previousShapeType = _shapeType;
             _previousShapeSize = _shapeSize;
-            _previousLayer = _layer;
             _previousScale = GetCurrentScale();
+        }
+
+        private void CreateStaticBody(WorldPhysic physicsWorld, System.Numerics.Vector3 position,
+            System.Numerics.Quaternion rotation, Vector3 finalSize)
+        {
+            switch (_shapeType)
+            {
+                case ShapeType.Box:
+                    _staticHandle = physicsWorld.CreateStaticBox(
+                        ToNumerics(finalSize),
+                        position,
+                        rotation);
+                    break;
+
+                case ShapeType.Sphere:
+                    {
+                        // For static spheres, create via the simulation directly
+                        var sim = physicsWorld.Simulation;
+                        var shape = new Sphere(finalSize.X);
+                        var shapeIndex = sim.Shapes.Add(shape);
+                        _staticHandle = sim.Statics.Add(new StaticDescription(
+                            new RigidPose(position, rotation),
+                            shapeIndex));
+                        break;
+                    }
+
+                case ShapeType.Capsule:
+                    {
+                        var sim = physicsWorld.Simulation;
+                        var shape = new Capsule(finalSize.X, finalSize.Y * 2f);
+                        var shapeIndex = sim.Shapes.Add(shape);
+                        _staticHandle = sim.Statics.Add(new StaticDescription(
+                            new RigidPose(position, rotation),
+                            shapeIndex));
+                        break;
+                    }
+            }
+        }
+
+        private void CreateDynamicOrKinematicBody(WorldPhysic physicsWorld, System.Numerics.Vector3 position,
+            System.Numerics.Quaternion rotation, Vector3 finalSize, bool isDynamic)
+        {
+            switch (_shapeType)
+            {
+                case ShapeType.Box:
+                    _bodyHandle = physicsWorld.CreateBox(
+                        ToNumerics(finalSize),
+                        position,
+                        rotation,
+                        isDynamic,
+                        Mass,
+                        SleepThreshold);
+                    break;
+
+                case ShapeType.Sphere:
+                    _bodyHandle = physicsWorld.CreateSphere(
+                        finalSize.X,
+                        position,
+                        rotation,
+                        isDynamic,
+                        Mass,
+                        SleepThreshold);
+                    break;
+
+                case ShapeType.Capsule:
+                    _bodyHandle = physicsWorld.CreateCapsule(
+                        finalSize.Y,
+                        finalSize.X,
+                        position,
+                        rotation,
+                        isDynamic,
+                        Mass,
+                        SleepThreshold);
+                    break;
+            }
+
+            // Apply per-body settings after creation
+            if (_bodyHandle.HasValue)
+            {
+                var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
+
+                // For dynamic bodies that don't use gravity, zero out velocity each frame
+                // (BepuPhysics applies gravity globally via PoseIntegratorCallbacks;
+                //  per-body gravity toggle requires custom integrator logic or manual compensation)
+
+                if (isDynamic)
+                {
+                    physicsWorld.Awaken(_bodyHandle.Value);
+                }
+
+                if (!isDynamic)
+                {
+                    // Kinematic: ensure zero velocity
+                    bodyRef.Velocity.Linear = System.Numerics.Vector3.Zero;
+                    bodyRef.Velocity.Angular = System.Numerics.Vector3.Zero;
+                }
+            }
         }
 
         private void RecreatePhysicsBody()
@@ -269,34 +309,50 @@ namespace KrayonCore
             if (!_isInitialized || GameObject?.Scene?.PhysicsWorld == null)
                 return;
 
+            var physicsWorld = GameObject.Scene.PhysicsWorld;
+
             System.Numerics.Vector3 linearVelocity = System.Numerics.Vector3.Zero;
             System.Numerics.Vector3 angularVelocity = System.Numerics.Vector3.Zero;
 
-            if (_body != null && _previousMotionType == MotionType.Dynamic)
+            // Preserve velocities from dynamic bodies
+            if (_bodyHandle.HasValue && _previousMotionType == BodyMotionType.Dynamic)
             {
-                var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
-                linearVelocity = bodyInterface.GetLinearVelocity(_body.ID);
-                angularVelocity = bodyInterface.GetAngularVelocity(_body.ID);
+                var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                linearVelocity = bodyRef.Velocity.Linear;
+                angularVelocity = bodyRef.Velocity.Angular;
             }
 
-            if (_body != null)
-            {
-                GameObject.Scene.PhysicsWorld.RemoveBody(_body);
-                _body = null;
-            }
+            // Remove old body
+            RemoveCurrentBody(physicsWorld);
 
+            // Create new body
             CreatePhysicsBody();
 
-            if (_body != null)
+            // Restore velocities if transitioning dynamic -> dynamic
+            if (_bodyHandle.HasValue)
             {
-                MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
-
-                if (finalMotionType == MotionType.Dynamic && _previousMotionType == MotionType.Dynamic)
+                BodyMotionType finalMotionType = GetFinalMotionType();
+                if (finalMotionType == BodyMotionType.Dynamic && _previousMotionType == BodyMotionType.Dynamic)
                 {
-                    var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
-                    bodyInterface.SetLinearVelocity(_body.ID, linearVelocity);
-                    bodyInterface.SetAngularVelocity(_body.ID, angularVelocity);
+                    var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                    bodyRef.Velocity.Linear = linearVelocity;
+                    bodyRef.Velocity.Angular = angularVelocity;
                 }
+            }
+        }
+
+        private void RemoveCurrentBody(WorldPhysic physicsWorld)
+        {
+            if (_bodyHandle.HasValue)
+            {
+                physicsWorld.RemoveBody(_bodyHandle.Value);
+                _bodyHandle = null;
+            }
+
+            if (_staticHandle.HasValue)
+            {
+                physicsWorld.RemoveStatic(_staticHandle.Value);
+                _staticHandle = null;
             }
         }
 
@@ -309,7 +365,7 @@ namespace KrayonCore
                 InitializePhysics();
             }
 
-            if (_body == null || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
+            if (!HasBody || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
                 return;
 
             Vector3 currentScale = GetCurrentScale();
@@ -318,9 +374,9 @@ namespace KrayonCore
                 RecreatePhysicsBody();
             }
 
-            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
+            BodyMotionType finalMotionType = GetFinalMotionType();
 
-            if (finalMotionType == MotionType.Static || finalMotionType == MotionType.Kinematic)
+            if (finalMotionType == BodyMotionType.Static || finalMotionType == BodyMotionType.Kinematic)
             {
                 SyncToPhysics();
             }
@@ -328,25 +384,41 @@ namespace KrayonCore
 
         internal void SyncFromPhysics()
         {
-            if (_body == null || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
                 return;
 
-            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
+            BodyMotionType finalMotionType = GetFinalMotionType();
 
-            if (finalMotionType == MotionType.Kinematic || finalMotionType == MotionType.Static)
+            if (finalMotionType == BodyMotionType.Kinematic || finalMotionType == BodyMotionType.Static)
                 return;
 
-            var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
 
-            System.Numerics.Vector3 physicsPosition = bodyInterface.GetPosition(_body.ID);
-            System.Numerics.Quaternion physicsRotation = bodyInterface.GetRotation(_body.ID);
-
-            Vector3 position = ToOpenTK(physicsPosition);
-            Quaternion rotation = ToOpenTK(physicsRotation);
+            Vector3 position = ToOpenTK(bodyRef.Pose.Position);
+            Quaternion rotation = ToOpenTK(bodyRef.Pose.Orientation);
 
             if (FreezePositionX) position.X = GameObject.Transform.GetWorldPosition().X;
             if (FreezePositionY) position.Y = GameObject.Transform.GetWorldPosition().Y;
             if (FreezePositionZ) position.Z = GameObject.Transform.GetWorldPosition().Z;
+
+            // Enforce freeze constraints on velocity
+            if (FreezePositionX || FreezePositionY || FreezePositionZ)
+            {
+                var vel = bodyRef.Velocity.Linear;
+                if (FreezePositionX) vel.X = 0;
+                if (FreezePositionY) vel.Y = 0;
+                if (FreezePositionZ) vel.Z = 0;
+                bodyRef.Velocity.Linear = vel;
+            }
+
+            if (FreezeRotationX || FreezeRotationY || FreezeRotationZ)
+            {
+                var angVel = bodyRef.Velocity.Angular;
+                if (FreezeRotationX) angVel.X = 0;
+                if (FreezeRotationY) angVel.Y = 0;
+                if (FreezeRotationZ) angVel.Z = 0;
+                bodyRef.Velocity.Angular = angVel;
+            }
 
             GameObject.Transform.SetWorldPosition(position);
 
@@ -358,138 +430,124 @@ namespace KrayonCore
 
         public void SyncToPhysics()
         {
-            if (_body == null || GameObject?.Scene?.PhysicsWorld == null)
+            if (GameObject?.Scene?.PhysicsWorld == null)
                 return;
 
-            var bodyInterface = GameObject.Scene.PhysicsWorld.BodyInterface;
+            var sim = GameObject.Scene.PhysicsWorld.Simulation;
+            BodyMotionType finalMotionType = GetFinalMotionType();
 
-            MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
-
-            if (finalMotionType == MotionType.Kinematic)
+            if (finalMotionType == BodyMotionType.Kinematic && _bodyHandle.HasValue)
             {
-                bodyInterface.MoveKinematic(
-                    _body.ID,
-                    ToNumerics(GameObject.Transform.GetWorldPosition()),
-                    ToNumerics(GameObject.Transform.GetWorldRotation()),
-                    0.016f
-                );
+                var bodyRef = sim.Bodies[_bodyHandle.Value];
+                var targetPos = ToNumerics(GameObject.Transform.GetWorldPosition());
+                var targetRot = ToNumerics(GameObject.Transform.GetWorldRotation());
+
+                // For kinematic bodies, compute velocity to reach target pose
+                const float dt = 0.016f;
+                var currentPos = bodyRef.Pose.Position;
+                bodyRef.Velocity.Linear = (targetPos - currentPos) / dt;
+
+                // Set pose directly for rotation (kinematic doesn't need torque-based rotation)
+                bodyRef.Pose.Position = targetPos;
+                bodyRef.Pose.Orientation = targetRot;
+
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
-            else if (finalMotionType == MotionType.Static)
+            else if (finalMotionType == BodyMotionType.Static && _staticHandle.HasValue)
             {
-                bodyInterface.SetPosition(
-                    _body.ID,
-                    ToNumerics(GameObject.Transform.GetWorldPosition()),
-                    Activation.DontActivate
-                );
-
-                bodyInterface.SetRotation(
-                    _body.ID,
-                    ToNumerics(GameObject.Transform.GetWorldRotation()),
-                    Activation.DontActivate
-                );
+                var staticRef = sim.Statics[_staticHandle.Value];
+                staticRef.Pose.Position = ToNumerics(GameObject.Transform.GetWorldPosition());
+                staticRef.Pose.Orientation = ToNumerics(GameObject.Transform.GetWorldRotation());
             }
         }
 
         public void AddForce(Vector3 force)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.AddForce(
-                    _body.ID,
-                    ToNumerics(force)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.ApplyLinearImpulse(ToNumerics(force));
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
         public void AddImpulse(Vector3 impulse)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.AddImpulse(
-                    _body.ID,
-                    ToNumerics(impulse)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.ApplyLinearImpulse(ToNumerics(impulse));
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
         public void AddTorque(Vector3 torque)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.AddTorque(
-                    _body.ID,
-                    ToNumerics(torque)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.ApplyAngularImpulse(ToNumerics(torque));
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
         public void SetVelocity(Vector3 velocity)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.SetLinearVelocity(
-                    _body.ID,
-                    ToNumerics(velocity)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.Velocity.Linear = ToNumerics(velocity);
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
         public Vector3 GetVelocity()
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                return ToOpenTK(
-                    GameObject.Scene.PhysicsWorld.BodyInterface.GetLinearVelocity(_body.ID)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                return ToOpenTK(bodyRef.Velocity.Linear);
             }
             return Vector3.Zero;
         }
 
         public void SetAngularVelocity(Vector3 angularVelocity)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.SetAngularVelocity(
-                    _body.ID,
-                    ToNumerics(angularVelocity)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.Velocity.Angular = ToNumerics(angularVelocity);
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
         public Vector3 GetAngularVelocity()
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                return ToOpenTK(
-                    GameObject.Scene.PhysicsWorld.BodyInterface.GetAngularVelocity(_body.ID)
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                return ToOpenTK(bodyRef.Velocity.Angular);
             }
             return Vector3.Zero;
         }
 
         public void MovePosition(Vector3 position)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.MoveKinematic(
-                    _body.ID,
-                    ToNumerics(position),
-                    ToNumerics(GameObject.Transform.GetWorldRotation()),
-                    0.016f
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.Pose.Position = ToNumerics(position);
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
         public void MoveRotation(Quaternion rotation)
         {
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.BodyInterface.MoveKinematic(
-                    _body.ID,
-                    ToNumerics(GameObject.Transform.GetWorldPosition()),
-                    ToNumerics(rotation),
-                    0.016f
-                );
+                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+                bodyRef.Pose.Orientation = ToNumerics(rotation);
+                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
         }
 
@@ -497,14 +555,15 @@ namespace KrayonCore
         {
             base.OnDestroy();
 
-            if (_body != null && GameObject?.Scene?.PhysicsWorld != null)
+            if (GameObject?.Scene?.PhysicsWorld != null)
             {
-                GameObject.Scene.PhysicsWorld.RemoveBody(_body);
-                _body = null;
+                RemoveCurrentBody(GameObject.Scene.PhysicsWorld);
             }
 
             _isInitialized = false;
         }
+
+        // --- Conversion helpers ---
 
         private static System.Numerics.Vector3 ToNumerics(Vector3 v)
         {
@@ -525,6 +584,16 @@ namespace KrayonCore
         {
             return new Quaternion(q.X, q.Y, q.Z, q.W);
         }
+    }
+
+    /// <summary>
+    /// Replaces JoltPhysicsSharp.MotionType with a custom enum.
+    /// </summary>
+    public enum BodyMotionType
+    {
+        Static,
+        Kinematic,
+        Dynamic
     }
 
     public enum ShapeType

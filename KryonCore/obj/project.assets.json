@@ -52,6 +52,35 @@
           }
         }
       },
+      "BepuPhysics/2.4.0": {
+        "type": "package",
+        "dependencies": {
+          "BepuUtilities": "2.4.0"
+        },
+        "compile": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "BepuUtilities/2.4.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Jint/4.5.0": {
         "type": "package",
         "dependencies": {
@@ -66,69 +95,6 @@
           "lib/net8.0/Jint.dll": {
             "related": ".xml"
           }
-        }
-      },
-      "JoltPhysics.Native/1.0.9": {
-        "type": "package",
-        "compile": {
-          "lib/net10.0/_._": {}
-        },
-        "runtime": {
-          "lib/net10.0/_._": {}
-        },
-        "runtimeTargets": {
-          "runtimes/android-arm/native/libjoltc.so": {
-            "assetType": "native",
-            "rid": "android-arm"
-          },
-          "runtimes/android-arm64/native/libjoltc.so": {
-            "assetType": "native",
-            "rid": "android-arm64"
-          },
-          "runtimes/android-x64/native/libjoltc.so": {
-            "assetType": "native",
-            "rid": "android-x64"
-          },
-          "runtimes/linux-arm64/native/libjoltc.so": {
-            "assetType": "native",
-            "rid": "linux-arm64"
-          },
-          "runtimes/linux-x64/native/libjoltc.so": {
-            "assetType": "native",
-            "rid": "linux-x64"
-          },
-          "runtimes/osx/native/libjoltc.dylib": {
-            "assetType": "native",
-            "rid": "osx"
-          },
-          "runtimes/win-arm64/native/joltc.dll": {
-            "assetType": "native",
-            "rid": "win-arm64"
-          },
-          "runtimes/win-arm64/native/joltc_double.dll": {
-            "assetType": "native",
-            "rid": "win-arm64"
-          },
-          "runtimes/win-x64/native/joltc.dll": {
-            "assetType": "native",
-            "rid": "win-x64"
-          },
-          "runtimes/win-x64/native/joltc_double.dll": {
-            "assetType": "native",
-            "rid": "win-x64"
-          }
-        }
-      },
-      "JoltPhysicsSharp/2.20.1": {
-        "type": "package",
-        "dependencies": {
-          "JoltPhysics.Native": "1.0.9"
-        },
-        "compile": {
-          "lib/net10.0/JoltPhysicsSharp.dll": {}
-        },
-        "runtime": {
-          "lib/net10.0/JoltPhysicsSharp.dll": {}
         }
       },
       "Microsoft.NETCore.Platforms/1.1.0": {
@@ -409,6 +375,34 @@
         "runtimes/win-x86/native/assimp.dll"
       ]
     },
+    "BepuPhysics/2.4.0": {
+      "sha512": "Ck/BJgSQrBqYrj0T9jGljDdHNILBP5kTPTylc7N/hCzR1XJJc7p6ORzwtjTfjgoYkkdajvLHxEQv6BRC8kaysQ==",
+      "type": "package",
+      "path": "bepuphysics/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "bepuphysics.2.4.0.nupkg.sha512",
+        "bepuphysics.nuspec",
+        "bepuphysicslogo256.png",
+        "lib/net6.0/BepuPhysics.dll",
+        "lib/net6.0/BepuPhysics.xml"
+      ]
+    },
+    "BepuUtilities/2.4.0": {
+      "sha512": "KNMxkzKLHAvV7jRtErxs3rPv71fHToqo/WN96HlT6iomWuwL97tohEbt0B1WA8A6sO5t6PP+qF08d4T9A8k2uA==",
+      "type": "package",
+      "path": "bepuutilities/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "bepuphysicslogo256.png",
+        "bepuutilities.2.4.0.nupkg.sha512",
+        "bepuutilities.nuspec",
+        "lib/net6.0/BepuUtilities.dll",
+        "lib/net6.0/BepuUtilities.xml"
+      ]
+    },
     "Jint/4.5.0": {
       "sha512": "NMl4Zs77Qb6BChgwlrD+BaDkPIwoRt7gPuxko2/4CU9dfwScf7K/Ksn8RPKUat7CP8OqztXPY+3qW8oia2Uvmw==",
       "type": "package",
@@ -427,47 +421,6 @@
         "lib/netstandard2.0/Jint.xml",
         "lib/netstandard2.1/Jint.dll",
         "lib/netstandard2.1/Jint.xml"
-      ]
-    },
-    "JoltPhysics.Native/1.0.9": {
-      "sha512": "dQvX+zPXnrCBVJhWZLFF08AxdrPwge9bMjt17J3C3q2IdvuU4mDxV2KpNpiEjq43yZ5KaP5kZrQ2vFbFRNQw+Q==",
-      "type": "package",
-      "path": "joltphysics.native/1.0.9",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE.MIT.txt",
-        "README.md",
-        "joltphysics.native.1.0.9.nupkg.sha512",
-        "joltphysics.native.nuspec",
-        "lib/net10.0/_._",
-        "lib/net461/_._",
-        "lib/net9.0/_._",
-        "lib/netstandard2.0/_._",
-        "runtimes/android-arm/native/libjoltc.so",
-        "runtimes/android-arm64/native/libjoltc.so",
-        "runtimes/android-x64/native/libjoltc.so",
-        "runtimes/linux-arm64/native/libjoltc.so",
-        "runtimes/linux-x64/native/libjoltc.so",
-        "runtimes/osx/native/libjoltc.dylib",
-        "runtimes/win-arm64/native/joltc.dll",
-        "runtimes/win-arm64/native/joltc_double.dll",
-        "runtimes/win-x64/native/joltc.dll",
-        "runtimes/win-x64/native/joltc_double.dll"
-      ]
-    },
-    "JoltPhysicsSharp/2.20.1": {
-      "sha512": "H2lTymXbkXxbcrB5u0b9yyZ8FeAD42np1JkNaBbtH4hKyqmmYjVzNexbW1rrFazUJjaVGg0VJ8tecmNmNTBdxQ==",
-      "type": "package",
-      "path": "joltphysicssharp/2.20.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "joltphysicssharp.2.20.1.nupkg.sha512",
-        "joltphysicssharp.nuspec",
-        "lib/net10.0/JoltPhysicsSharp.dll",
-        "lib/net9.0/JoltPhysicsSharp.dll"
       ]
     },
     "Microsoft.NETCore.Platforms/1.1.0": {
@@ -740,8 +693,8 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "AssimpNet >= 4.1.0",
+      "BepuPhysics >= 2.4.0",
       "Jint >= 4.5.0",
-      "JoltPhysicsSharp >= 2.20.1",
       "Newtonsoft.Json >= 13.0.4",
       "OpenTK >= 4.9.4",
       "StbImageSharp >= 2.30.15",
@@ -803,13 +756,13 @@
             "target": "Package",
             "version": "[4.1.0, )"
           },
+          "BepuPhysics": {
+            "target": "Package",
+            "version": "[2.4.0, )"
+          },
           "Jint": {
             "target": "Package",
             "version": "[4.5.0, )"
-          },
-          "JoltPhysicsSharp": {
-            "target": "Package",
-            "version": "[2.20.1, )"
           },
           "Newtonsoft.Json": {
             "target": "Package",

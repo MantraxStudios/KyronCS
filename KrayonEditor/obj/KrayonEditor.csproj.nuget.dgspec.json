@@ -748,13 +748,13 @@
               "target": "Package",
               "version": "[4.1.0, )"
             },
+            "BepuPhysics": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
             "Jint": {
               "target": "Package",
               "version": "[4.5.0, )"
-            },
-            "JoltPhysicsSharp": {
-              "target": "Package",
-              "version": "[2.20.1, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",

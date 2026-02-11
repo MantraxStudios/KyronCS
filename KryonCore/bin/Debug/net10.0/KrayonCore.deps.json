@@ -9,8 +9,8 @@
       "KrayonCore/1.0.0": {
         "dependencies": {
           "AssimpNet": "4.1.0",
+          "BepuPhysics": "2.4.0",
           "Jint": "4.5.0",
-          "JoltPhysicsSharp": "2.20.1",
           "Newtonsoft.Json": "13.0.4",
           "OpenTK": "4.9.4",
           "StbImageSharp": "2.30.15",
@@ -58,6 +58,25 @@
           }
         }
       },
+      "BepuPhysics/2.4.0": {
+        "dependencies": {
+          "BepuUtilities": "2.4.0"
+        },
+        "runtime": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
+        }
+      },
+      "BepuUtilities/2.4.0": {
+        "runtime": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
+        }
+      },
       "Jint/4.5.0": {
         "dependencies": {
           "Acornima": "1.2.0"
@@ -66,71 +85,6 @@
           "lib/net8.0/Jint.dll": {
             "assemblyVersion": "4.5.0.0",
             "fileVersion": "4.5.0.0"
-          }
-        }
-      },
-      "JoltPhysics.Native/1.0.9": {
-        "runtimeTargets": {
-          "runtimes/android-arm/native/libjoltc.so": {
-            "rid": "android-arm",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/android-arm64/native/libjoltc.so": {
-            "rid": "android-arm64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/android-x64/native/libjoltc.so": {
-            "rid": "android-x64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/linux-arm64/native/libjoltc.so": {
-            "rid": "linux-arm64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/linux-x64/native/libjoltc.so": {
-            "rid": "linux-x64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/osx/native/libjoltc.dylib": {
-            "rid": "osx",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/win-arm64/native/joltc.dll": {
-            "rid": "win-arm64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/win-arm64/native/joltc_double.dll": {
-            "rid": "win-arm64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/win-x64/native/joltc.dll": {
-            "rid": "win-x64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          },
-          "runtimes/win-x64/native/joltc_double.dll": {
-            "rid": "win-x64",
-            "assetType": "native",
-            "fileVersion": "0.0.0.0"
-          }
-        }
-      },
-      "JoltPhysicsSharp/2.20.1": {
-        "dependencies": {
-          "JoltPhysics.Native": "1.0.9"
-        },
-        "runtime": {
-          "lib/net10.0/JoltPhysicsSharp.dll": {
-            "assemblyVersion": "2.20.1.0",
-            "fileVersion": "2.20.1.0"
           }
         }
       },
@@ -316,26 +270,26 @@
       "path": "assimpnet/4.1.0",
       "hashPath": "assimpnet.4.1.0.nupkg.sha512"
     },
+    "BepuPhysics/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ck/BJgSQrBqYrj0T9jGljDdHNILBP5kTPTylc7N/hCzR1XJJc7p6ORzwtjTfjgoYkkdajvLHxEQv6BRC8kaysQ==",
+      "path": "bepuphysics/2.4.0",
+      "hashPath": "bepuphysics.2.4.0.nupkg.sha512"
+    },
+    "BepuUtilities/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KNMxkzKLHAvV7jRtErxs3rPv71fHToqo/WN96HlT6iomWuwL97tohEbt0B1WA8A6sO5t6PP+qF08d4T9A8k2uA==",
+      "path": "bepuutilities/2.4.0",
+      "hashPath": "bepuutilities.2.4.0.nupkg.sha512"
+    },
     "Jint/4.5.0": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-NMl4Zs77Qb6BChgwlrD+BaDkPIwoRt7gPuxko2/4CU9dfwScf7K/Ksn8RPKUat7CP8OqztXPY+3qW8oia2Uvmw==",
       "path": "jint/4.5.0",
       "hashPath": "jint.4.5.0.nupkg.sha512"
-    },
-    "JoltPhysics.Native/1.0.9": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-dQvX+zPXnrCBVJhWZLFF08AxdrPwge9bMjt17J3C3q2IdvuU4mDxV2KpNpiEjq43yZ5KaP5kZrQ2vFbFRNQw+Q==",
-      "path": "joltphysics.native/1.0.9",
-      "hashPath": "joltphysics.native.1.0.9.nupkg.sha512"
-    },
-    "JoltPhysicsSharp/2.20.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-H2lTymXbkXxbcrB5u0b9yyZ8FeAD42np1JkNaBbtH4hKyqmmYjVzNexbW1rrFazUJjaVGg0VJ8tecmNmNTBdxQ==",
-      "path": "joltphysicssharp/2.20.1",
-      "hashPath": "joltphysicssharp.2.20.1.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.4": {
       "type": "package",

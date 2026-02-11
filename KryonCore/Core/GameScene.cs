@@ -291,7 +291,7 @@ namespace KrayonCore
             foreach (var go in physicsObjects)
             {
                 var rigidbody = go.GetComponent<Rigidbody>();
-                if (rigidbody != null && rigidbody.Body != null)
+                if (rigidbody != null)
                 {
                     rigidbody.SyncFromPhysics();
                 }
