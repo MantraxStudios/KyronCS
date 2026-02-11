@@ -1,0 +1,79 @@
+using System.Numerics;
+using KrayonCore.Physics;
+
+// ─── Raycast básico (hit más cercano) ───
+if (PhysicsRaycast.Raycast(
+    scene.PhysicsWorld,                    // tu WorldPhysic
+    Transform.Position,                     // origen
+    Transform.Forward,                      // dirección
+    50f,                                    // distancia máxima
+    out var hit))                           // resultado
+{
+    Console.WriteLine($"Hit at {hit.Point}, distance: {hit.Distance}");
+    Console.WriteLine($"Normal: {hit.Normal}");
+}
+
+// ─── Con filtro de layers ───
+if (PhysicsRaycast.Raycast(
+    scene.PhysicsWorld,
+    gunPosition,
+    gunDirection,
+    100f,
+    out var hit,
+    PhysicsLayer.Enemy | PhysicsLayer.Environment))  // solo estas layers
+{
+    if (hit.Layer == PhysicsLayer.Enemy && hit.IsBody)
+    {
+        // hit.BodyHandle te da el BodyHandle del cuerpo impactado
+        var bodyRef = scene.PhysicsWorld.Simulation.Bodies[hit.BodyHandle];
+        // aplicar daño, etc.
+    }
+}
+
+// ─── Raycast desde cámara (picking) ───
+Vector3 cameraPos = camera.Transform.Position;
+Vector3 mouseDir = GetMouseWorldDirection(); // tu lógica de unproject
+
+if (PhysicsRaycast.Raycast(
+    scene.PhysicsWorld,
+    cameraPos,
+    mouseDir,
+    500f,
+    out var hit,
+    PhysicsLayer.All,          // todas las layers
+    ignoreTriggers: true))     // ignorar triggers
+{
+    Console.WriteLine($"Clicked on object at {hit.Point}");
+}
+
+// ─── Todos los hits (penetración) ───
+var hits = PhysicsRaycast.RaycastAll(
+    scene.PhysicsWorld,
+    origin, direction, 100f,
+    PhysicsLayer.Enemy);
+
+foreach (var h in hits)  // ya vienen ordenados por distancia
+{
+    Console.WriteLine($"Hit at dist {h.Distance}, layer: {h.Layer}");
+}
+
+// ─── Linecast (punto A → punto B, línea de visión) ───
+bool blocked = PhysicsRaycast.Linecast(
+    scene.PhysicsWorld,
+    myPosition,
+    targetPosition,
+    out var hit,
+    PhysicsLayer.Environment | PhysicsLayer.Static);
+
+if (!blocked)
+{
+    // tengo línea de visión directa al target
+}
+
+// ─── Check rápido (solo bool, sin datos) ───
+bool groundBelow = PhysicsRaycast.Check(
+    scene.PhysicsWorld,
+    Transform.Position,
+    -Vector3.UnitY,    // abajo
+    2f,                // 2 metros
+    PhysicsLayer.Static | PhysicsLayer.Environment);
