@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using OpenTK.Mathematics;
 using BepuPhysics;
 using BepuPhysics.Collidables;
@@ -6,7 +7,7 @@ using KrayonCore.Physics;
 
 namespace KrayonCore
 {
-    public class Rigidbody : Component
+    public class Rigidbody : Component, ICollisionEventHandler
     {
         private BodyHandle? _bodyHandle;
         private StaticHandle? _staticHandle;
@@ -17,6 +18,9 @@ namespace KrayonCore
         private ShapeType _previousShapeType;
         private Vector3 _previousShapeSize;
         private Vector3 _previousScale;
+        private bool _previousIsTrigger;
+
+        // ── Motion Type ──
 
         private BodyMotionType _motionType = BodyMotionType.Dynamic;
         [ToStorage]
@@ -29,12 +33,12 @@ namespace KrayonCore
                 {
                     _motionType = value;
                     if (_isInitialized && !_isKinematic)
-                    {
                         RecreatePhysicsBody();
-                    }
                 }
             }
         }
+
+        // ── Shape ──
 
         private ShapeType _shapeType = ShapeType.Box;
         [ToStorage]
@@ -46,10 +50,7 @@ namespace KrayonCore
                 if (_shapeType != value)
                 {
                     _shapeType = value;
-                    if (_isInitialized)
-                    {
-                        RecreatePhysicsBody();
-                    }
+                    if (_isInitialized) RecreatePhysicsBody();
                 }
             }
         }
@@ -64,16 +65,16 @@ namespace KrayonCore
                 if (_shapeSize != value)
                 {
                     _shapeSize = value;
-                    if (_isInitialized)
-                    {
-                        RecreatePhysicsBody();
-                    }
+                    if (_isInitialized) RecreatePhysicsBody();
                 }
             }
         }
 
+        // ── Physics properties ──
+
         [ToStorage] public float Mass { get; set; } = 1.0f;
         [ToStorage] public bool UseGravity { get; set; } = true;
+        [ToStorage] public float SleepThreshold { get; set; } = 0.01f;
 
         private bool _isKinematic = false;
         [ToStorage]
@@ -85,13 +86,51 @@ namespace KrayonCore
                 if (_isKinematic != value)
                 {
                     _isKinematic = value;
-                    if (_isInitialized)
-                    {
-                        RecreatePhysicsBody();
-                    }
+                    if (_isInitialized) RecreatePhysicsBody();
                 }
             }
         }
+
+        /// <summary>
+        /// The physics layer this body belongs to. Used for raycast filtering
+        /// and can be used for collision filtering.
+        /// </summary>
+        private PhysicsLayer _layer = PhysicsLayer.Default;
+        [ToStorage]
+        public PhysicsLayer Layer
+        {
+            get => _layer;
+            set
+            {
+                if (_layer != value)
+                {
+                    _layer = value;
+                    if (_isInitialized) UpdateLayerRegistration();
+                }
+            }
+        }
+
+        /// <summary>
+        /// When true, this body acts as a sensor/trigger: it detects overlaps
+        /// but does not generate a physics response (objects pass through it).
+        /// Fires OnTriggerEnter/Stay/Exit instead of OnCollisionEnter/Stay/Exit.
+        /// </summary>
+        private bool _isTrigger = false;
+        [ToStorage]
+        public bool IsTrigger
+        {
+            get => _isTrigger;
+            set
+            {
+                if (_isTrigger != value)
+                {
+                    _isTrigger = value;
+                    if (_isInitialized) UpdateTriggerRegistration();
+                }
+            }
+        }
+
+        // ── Freeze axes ──
 
         [ToStorage] public bool FreezePositionX { get; set; } = false;
         [ToStorage] public bool FreezePositionY { get; set; } = false;
@@ -100,26 +139,41 @@ namespace KrayonCore
         [ToStorage] public bool FreezeRotationY { get; set; } = false;
         [ToStorage] public bool FreezeRotationZ { get; set; } = false;
 
+        // ── Material ──
+
         [ToStorage] public float LinearDamping { get; set; } = 0.05f;
         [ToStorage] public float AngularDamping { get; set; } = 0.05f;
         [ToStorage] public float Friction { get; set; } = 0.5f;
         [ToStorage] public float Restitution { get; set; } = 0.0f;
-        [ToStorage] public float SleepThreshold { get; set; } = 0.01f;
 
-        /// <summary>
-        /// Returns the BodyHandle if this is a dynamic/kinematic body. Null for statics.
-        /// </summary>
+        // ── Public accessors ──
+
         public BodyHandle? BodyHandle => _bodyHandle;
-
-        /// <summary>
-        /// Returns the StaticHandle if this is a static body. Null for dynamic/kinematic.
-        /// </summary>
         public StaticHandle? StaticHandle => _staticHandle;
-
-        /// <summary>
-        /// Whether this rigidbody currently has an active physics representation.
-        /// </summary>
         public bool HasBody => _bodyHandle.HasValue || _staticHandle.HasValue;
+
+        // ─────────────────────────────────────────────────────────
+        //  Collision / Trigger Events  (C# events for user code)
+        // ─────────────────────────────────────────────────────────
+
+        public event Action<ContactInfo> CollisionEnter;
+        public event Action<ContactInfo> CollisionStay;
+        public event Action<ContactInfo> CollisionExit;
+        public event Action<ContactInfo> TriggerEnter;
+        public event Action<ContactInfo> TriggerStay;
+        public event Action<ContactInfo> TriggerExit;
+
+        // ICollisionEventHandler implementation (called by CollisionEventSystem)
+        void ICollisionEventHandler.OnCollisionEnter(ContactInfo contact) => CollisionEnter?.Invoke(contact);
+        void ICollisionEventHandler.OnCollisionStay(ContactInfo contact) => CollisionStay?.Invoke(contact);
+        void ICollisionEventHandler.OnCollisionExit(ContactInfo contact) => CollisionExit?.Invoke(contact);
+        void ICollisionEventHandler.OnTriggerEnter(ContactInfo contact) => TriggerEnter?.Invoke(contact);
+        void ICollisionEventHandler.OnTriggerStay(ContactInfo contact) => TriggerStay?.Invoke(contact);
+        void ICollisionEventHandler.OnTriggerExit(ContactInfo contact) => TriggerExit?.Invoke(contact);
+
+        // ─────────────────────────────────────────────────────────
+        //  Lifecycle
+        // ─────────────────────────────────────────────────────────
 
         public override void Awake()
         {
@@ -150,9 +204,23 @@ namespace KrayonCore
 
         public void CleanupPhysics()
         {
+            if (_isInitialized && GameObject?.Scene?.PhysicsWorld != null)
+            {
+                UnregisterFromEventSystem();
+            }
+
             _bodyHandle = null;
             _staticHandle = null;
             _isInitialized = false;
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Body creation
+        // ─────────────────────────────────────────────────────────
+
+        private BodyMotionType GetFinalMotionType()
+        {
+            return _isKinematic ? BodyMotionType.Kinematic : _motionType;
         }
 
         private Vector3 GetCurrentScale()
@@ -167,13 +235,7 @@ namespace KrayonCore
             return new Vector3(
                 _shapeSize.X * scale.X,
                 _shapeSize.Y * scale.Y,
-                _shapeSize.Z * scale.Z
-            );
-        }
-
-        private BodyMotionType GetFinalMotionType()
-        {
-            return _isKinematic ? BodyMotionType.Kinematic : _motionType;
+                _shapeSize.Z * scale.Z);
         }
 
         private void CreatePhysicsBody()
@@ -191,54 +253,50 @@ namespace KrayonCore
             Vector3 finalSize = GetFinalShapeSize();
 
             if (finalMotionType == BodyMotionType.Static)
-            {
                 CreateStaticBody(physicsWorld, position, rotation, finalSize);
-            }
             else
-            {
-                bool isDynamic = finalMotionType == BodyMotionType.Dynamic;
-                CreateDynamicOrKinematicBody(physicsWorld, position, rotation, finalSize, isDynamic);
-            }
+                CreateDynamicOrKinematicBody(physicsWorld, position, rotation, finalSize,
+                    isDynamic: finalMotionType == BodyMotionType.Dynamic);
+
+            // Register with the event system & trigger registry
+            RegisterWithEventSystem();
 
             _previousMotionType = finalMotionType;
             _previousIsKinematic = _isKinematic;
             _previousShapeType = _shapeType;
             _previousShapeSize = _shapeSize;
             _previousScale = GetCurrentScale();
+            _previousIsTrigger = _isTrigger;
         }
 
         private void CreateStaticBody(WorldPhysic physicsWorld, System.Numerics.Vector3 position,
             System.Numerics.Quaternion rotation, Vector3 finalSize)
         {
+            var sim = physicsWorld.Simulation;
+
             switch (_shapeType)
             {
                 case ShapeType.Box:
-                    _staticHandle = physicsWorld.CreateStaticBox(
-                        ToNumerics(finalSize),
-                        position,
-                        rotation);
+                    _staticHandle = physicsWorld.CreateStaticBox(ToNumerics(finalSize), position, rotation, _layer);
                     break;
 
                 case ShapeType.Sphere:
                     {
-                        // For static spheres, create via the simulation directly
-                        var sim = physicsWorld.Simulation;
                         var shape = new Sphere(finalSize.X);
                         var shapeIndex = sim.Shapes.Add(shape);
                         _staticHandle = sim.Statics.Add(new StaticDescription(
-                            new RigidPose(position, rotation),
-                            shapeIndex));
+                            new RigidPose(position, rotation), shapeIndex));
+                        physicsWorld.LayerRegistry.SetLayer(_staticHandle.Value, _layer);
                         break;
                     }
 
                 case ShapeType.Capsule:
                     {
-                        var sim = physicsWorld.Simulation;
                         var shape = new Capsule(finalSize.X, finalSize.Y * 2f);
                         var shapeIndex = sim.Shapes.Add(shape);
                         _staticHandle = sim.Statics.Add(new StaticDescription(
-                            new RigidPose(position, rotation),
-                            shapeIndex));
+                            new RigidPose(position, rotation), shapeIndex));
+                        physicsWorld.LayerRegistry.SetLayer(_staticHandle.Value, _layer);
                         break;
                     }
             }
@@ -250,59 +308,109 @@ namespace KrayonCore
             switch (_shapeType)
             {
                 case ShapeType.Box:
-                    _bodyHandle = physicsWorld.CreateBox(
-                        ToNumerics(finalSize),
-                        position,
-                        rotation,
-                        isDynamic,
-                        Mass,
-                        SleepThreshold);
+                    _bodyHandle = physicsWorld.CreateBox(ToNumerics(finalSize), position, rotation,
+                        isDynamic, Mass, SleepThreshold, _layer);
                     break;
 
                 case ShapeType.Sphere:
-                    _bodyHandle = physicsWorld.CreateSphere(
-                        finalSize.X,
-                        position,
-                        rotation,
-                        isDynamic,
-                        Mass,
-                        SleepThreshold);
+                    _bodyHandle = physicsWorld.CreateSphere(finalSize.X, position, rotation,
+                        isDynamic, Mass, SleepThreshold, _layer);
                     break;
 
                 case ShapeType.Capsule:
-                    _bodyHandle = physicsWorld.CreateCapsule(
-                        finalSize.Y,
-                        finalSize.X,
-                        position,
-                        rotation,
-                        isDynamic,
-                        Mass,
-                        SleepThreshold);
+                    _bodyHandle = physicsWorld.CreateCapsule(finalSize.Y, finalSize.X, position, rotation,
+                        isDynamic, Mass, SleepThreshold, _layer);
                     break;
             }
 
-            // Apply per-body settings after creation
             if (_bodyHandle.HasValue)
             {
                 var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
 
-                // For dynamic bodies that don't use gravity, zero out velocity each frame
-                // (BepuPhysics applies gravity globally via PoseIntegratorCallbacks;
-                //  per-body gravity toggle requires custom integrator logic or manual compensation)
-
                 if (isDynamic)
-                {
                     physicsWorld.Awaken(_bodyHandle.Value);
-                }
-
-                if (!isDynamic)
+                else
                 {
-                    // Kinematic: ensure zero velocity
                     bodyRef.Velocity.Linear = System.Numerics.Vector3.Zero;
                     bodyRef.Velocity.Angular = System.Numerics.Vector3.Zero;
                 }
             }
         }
+
+        // ─────────────────────────────────────────────────────────
+        //  Event system registration
+        // ─────────────────────────────────────────────────────────
+
+        private CollidableId? GetCollidableId()
+        {
+            if (GameObject?.Scene?.PhysicsWorld == null) return null;
+            var sim = GameObject.Scene.PhysicsWorld.Simulation;
+
+            if (_bodyHandle.HasValue && sim.Bodies.BodyExists(_bodyHandle.Value))
+                return new CollidableId(sim.Bodies[_bodyHandle.Value].CollidableReference);
+
+            if (_staticHandle.HasValue && sim.Statics.StaticExists(_staticHandle.Value))
+                return new CollidableId(new CollidableReference(_staticHandle.Value));
+
+            return null;
+        }
+
+        private void RegisterWithEventSystem()
+        {
+            var physicsWorld = GameObject?.Scene?.PhysicsWorld;
+            if (physicsWorld == null) return;
+
+            var collidableId = GetCollidableId();
+            if (!collidableId.HasValue) return;
+
+            // Register event handler
+            physicsWorld.EventSystem.RegisterHandler(collidableId.Value, this);
+
+            // Register as trigger if needed
+            if (_isTrigger)
+                physicsWorld.TriggerRegistry.Register(collidableId.Value);
+        }
+
+        private void UnregisterFromEventSystem()
+        {
+            var physicsWorld = GameObject?.Scene?.PhysicsWorld;
+            if (physicsWorld == null) return;
+
+            var collidableId = GetCollidableId();
+            if (!collidableId.HasValue) return;
+
+            physicsWorld.EventSystem.UnregisterHandler(collidableId.Value);
+            physicsWorld.TriggerRegistry.Unregister(collidableId.Value);
+        }
+
+        private void UpdateTriggerRegistration()
+        {
+            var physicsWorld = GameObject?.Scene?.PhysicsWorld;
+            if (physicsWorld == null) return;
+
+            var collidableId = GetCollidableId();
+            if (!collidableId.HasValue) return;
+
+            if (_isTrigger)
+                physicsWorld.TriggerRegistry.Register(collidableId.Value);
+            else
+                physicsWorld.TriggerRegistry.Unregister(collidableId.Value);
+        }
+
+        private void UpdateLayerRegistration()
+        {
+            var physicsWorld = GameObject?.Scene?.PhysicsWorld;
+            if (physicsWorld == null) return;
+
+            if (_bodyHandle.HasValue)
+                physicsWorld.LayerRegistry.SetLayer(_bodyHandle.Value, _layer);
+            else if (_staticHandle.HasValue)
+                physicsWorld.LayerRegistry.SetLayer(_staticHandle.Value, _layer);
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Recreate
+        // ─────────────────────────────────────────────────────────
 
         private void RecreatePhysicsBody()
         {
@@ -314,7 +422,6 @@ namespace KrayonCore
             System.Numerics.Vector3 linearVelocity = System.Numerics.Vector3.Zero;
             System.Numerics.Vector3 angularVelocity = System.Numerics.Vector3.Zero;
 
-            // Preserve velocities from dynamic bodies
             if (_bodyHandle.HasValue && _previousMotionType == BodyMotionType.Dynamic)
             {
                 var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
@@ -322,13 +429,9 @@ namespace KrayonCore
                 angularVelocity = bodyRef.Velocity.Angular;
             }
 
-            // Remove old body
             RemoveCurrentBody(physicsWorld);
-
-            // Create new body
             CreatePhysicsBody();
 
-            // Restore velocities if transitioning dynamic -> dynamic
             if (_bodyHandle.HasValue)
             {
                 BodyMotionType finalMotionType = GetFinalMotionType();
@@ -343,6 +446,8 @@ namespace KrayonCore
 
         private void RemoveCurrentBody(WorldPhysic physicsWorld)
         {
+            UnregisterFromEventSystem();
+
             if (_bodyHandle.HasValue)
             {
                 physicsWorld.RemoveBody(_bodyHandle.Value);
@@ -356,30 +461,28 @@ namespace KrayonCore
             }
         }
 
+        // ─────────────────────────────────────────────────────────
+        //  Update / Sync
+        // ─────────────────────────────────────────────────────────
+
         public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
 
             if (!_isInitialized && GameObject?.Scene?.PhysicsWorld != null)
-            {
                 InitializePhysics();
-            }
 
             if (!HasBody || GameObject?.Scene?.PhysicsWorld == null || !Enabled)
                 return;
 
             Vector3 currentScale = GetCurrentScale();
             if (currentScale != _previousScale)
-            {
                 RecreatePhysicsBody();
-            }
 
             BodyMotionType finalMotionType = GetFinalMotionType();
 
             if (finalMotionType == BodyMotionType.Static || finalMotionType == BodyMotionType.Kinematic)
-            {
                 SyncToPhysics();
-            }
         }
 
         internal void SyncFromPhysics()
@@ -388,7 +491,6 @@ namespace KrayonCore
                 return;
 
             BodyMotionType finalMotionType = GetFinalMotionType();
-
             if (finalMotionType == BodyMotionType.Kinematic || finalMotionType == BodyMotionType.Static)
                 return;
 
@@ -401,7 +503,6 @@ namespace KrayonCore
             if (FreezePositionY) position.Y = GameObject.Transform.GetWorldPosition().Y;
             if (FreezePositionZ) position.Z = GameObject.Transform.GetWorldPosition().Z;
 
-            // Enforce freeze constraints on velocity
             if (FreezePositionX || FreezePositionY || FreezePositionZ)
             {
                 var vel = bodyRef.Velocity.Linear;
@@ -423,9 +524,7 @@ namespace KrayonCore
             GameObject.Transform.SetWorldPosition(position);
 
             if (!FreezeRotationX || !FreezeRotationY || !FreezeRotationZ)
-            {
                 GameObject.Transform.SetWorldRotation(rotation);
-            }
         }
 
         public void SyncToPhysics()
@@ -442,12 +541,9 @@ namespace KrayonCore
                 var targetPos = ToNumerics(GameObject.Transform.GetWorldPosition());
                 var targetRot = ToNumerics(GameObject.Transform.GetWorldRotation());
 
-                // For kinematic bodies, compute velocity to reach target pose
                 const float dt = 0.016f;
                 var currentPos = bodyRef.Pose.Position;
                 bodyRef.Velocity.Linear = (targetPos - currentPos) / dt;
-
-                // Set pose directly for rotation (kinematic doesn't need torque-based rotation)
                 bodyRef.Pose.Position = targetPos;
                 bodyRef.Pose.Orientation = targetRot;
 
@@ -460,6 +556,10 @@ namespace KrayonCore
                 staticRef.Pose.Orientation = ToNumerics(GameObject.Transform.GetWorldRotation());
             }
         }
+
+        // ─────────────────────────────────────────────────────────
+        //  Physics API
+        // ─────────────────────────────────────────────────────────
 
         public void AddForce(Vector3 force)
         {
@@ -504,10 +604,7 @@ namespace KrayonCore
         public Vector3 GetVelocity()
         {
             if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                return ToOpenTK(bodyRef.Velocity.Linear);
-            }
+                return ToOpenTK(GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value].Velocity.Linear);
             return Vector3.Zero;
         }
 
@@ -524,10 +621,7 @@ namespace KrayonCore
         public Vector3 GetAngularVelocity()
         {
             if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                return ToOpenTK(bodyRef.Velocity.Angular);
-            }
+                return ToOpenTK(GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value].Velocity.Angular);
             return Vector3.Zero;
         }
 
@@ -551,44 +645,37 @@ namespace KrayonCore
             }
         }
 
+        // ─────────────────────────────────────────────────────────
+        //  Destroy
+        // ─────────────────────────────────────────────────────────
+
         public override void OnDestroy()
         {
             base.OnDestroy();
 
             if (GameObject?.Scene?.PhysicsWorld != null)
-            {
                 RemoveCurrentBody(GameObject.Scene.PhysicsWorld);
-            }
 
             _isInitialized = false;
         }
 
-        // --- Conversion helpers ---
+        // ─────────────────────────────────────────────────────────
+        //  Conversion helpers
+        // ─────────────────────────────────────────────────────────
 
         private static System.Numerics.Vector3 ToNumerics(Vector3 v)
-        {
-            return new System.Numerics.Vector3(v.X, v.Y, v.Z);
-        }
+            => new(v.X, v.Y, v.Z);
 
         private static Vector3 ToOpenTK(System.Numerics.Vector3 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
-        }
+            => new(v.X, v.Y, v.Z);
 
         private static System.Numerics.Quaternion ToNumerics(Quaternion q)
-        {
-            return new System.Numerics.Quaternion(q.X, q.Y, q.Z, q.W);
-        }
+            => new(q.X, q.Y, q.Z, q.W);
 
         private static Quaternion ToOpenTK(System.Numerics.Quaternion q)
-        {
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
-        }
+            => new(q.X, q.Y, q.Z, q.W);
     }
 
-    /// <summary>
-    /// Replaces JoltPhysicsSharp.MotionType with a custom enum.
-    /// </summary>
     public enum BodyMotionType
     {
         Static,

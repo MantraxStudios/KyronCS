@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Physics;
 using System;
 using System.Numerics;
 using System.Reflection;
@@ -112,7 +113,6 @@ namespace KrayonEditor.UI
                 isEnabled = (bool)enabledProperty!.GetValue(component)!;
             }
 
-            // Indicador visual de si está habilitado/deshabilitado
             if (hasEnabled && !isEnabled)
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
@@ -125,10 +125,8 @@ namespace KrayonEditor.UI
                     ImGui.PopStyleColor();
                 }
 
-                // Menú contextual al hacer clic derecho sobre el header del componente
                 if (ImGui.BeginPopupContextItem($"ComponentContext_{componentName}"))
                 {
-                    // Opción de Enable/Disable
                     if (hasEnabled)
                     {
                         string toggleText = isEnabled ? "Disable" : "Enable";
@@ -139,13 +137,12 @@ namespace KrayonEditor.UI
                         ImGui.Separator();
                     }
 
-                    // Opción de Remove
                     if (ImGui.MenuItem("Remove Component"))
                     {
                         EditorActions.SelectedObject!.RemoveComponent((Component)component);
                         EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
                         ImGui.EndPopup();
-                        return; // Salir temprano porque el componente fue eliminado
+                        return;
                     }
 
                     ImGui.EndPopup();
@@ -158,10 +155,8 @@ namespace KrayonEditor.UI
                     ImGui.PopStyleColor();
                 }
 
-                // Menú contextual también disponible cuando el header está colapsado
                 if (ImGui.BeginPopupContextItem($"ComponentContext_{componentName}"))
                 {
-                    // Opción de Enable/Disable
                     if (hasEnabled)
                     {
                         string toggleText = isEnabled ? "Disable" : "Enable";
@@ -172,30 +167,27 @@ namespace KrayonEditor.UI
                         ImGui.Separator();
                     }
 
-                    // Opción de Remove
                     if (ImGui.MenuItem("Remove Component"))
                     {
                         EditorActions.SelectedObject!.RemoveComponent((Component)component);
                         EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
                         ImGui.EndPopup();
-                        return; // Salir temprano porque el componente fue eliminado
+                        return;
                     }
 
                     ImGui.EndPopup();
                 }
-                return; // Si está colapsado, no dibujar el contenido
+                return;
             }
 
-            if (true) // Este bloque reemplaza el contenido del CollapsingHeader anterior
+            if (true)
             {
-                // Caso especial para Rigidbody
                 if (component is KrayonCore.Rigidbody rigidbody)
                 {
                     DrawRigidbodyInspector(rigidbody);
                 }
                 else
                 {
-                    // Dibujar propiedades
                     PropertyInfo[] properties = componentType.GetProperties(
                         BindingFlags.Public | BindingFlags.Instance
                     );
@@ -209,7 +201,6 @@ namespace KrayonEditor.UI
                         if (property.Name == "Enabled" && property.PropertyType == typeof(bool))
                             continue;
 
-                        // Verificar atributo NoSerializeToInspector
                         if (property.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null)
                             continue;
 
@@ -219,7 +210,6 @@ namespace KrayonEditor.UI
                         propertyIndex++;
                     }
 
-                    // Dibujar campos
                     FieldInfo[] fields = componentType.GetFields(
                         BindingFlags.Public | BindingFlags.Instance
                     );
@@ -227,7 +217,6 @@ namespace KrayonEditor.UI
                     int fieldIndex = 0;
                     foreach (var field in fields)
                     {
-                        // Verificar atributo NoSerializeToInspector
                         if (field.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null)
                             continue;
 
@@ -237,7 +226,6 @@ namespace KrayonEditor.UI
                         fieldIndex++;
                     }
 
-                    // Dibujar métodos con CallEvent
                     DrawCallEventMethods(component, componentType);
                 }
             }
@@ -274,7 +262,6 @@ namespace KrayonEditor.UI
                     if (callEventAttr == null)
                         continue;
 
-                    // Obtener el nombre a mostrar
                     string displayName = method.Name;
 
                     if (!string.IsNullOrEmpty(callEventAttr.DisplayName))
@@ -288,7 +275,6 @@ namespace KrayonEditor.UI
                     {
                         try
                         {
-                            // Verificar que el método no tenga parámetros
                             if (method.GetParameters().Length == 0)
                             {
                                 method.Invoke(component, null);
@@ -311,16 +297,18 @@ namespace KrayonEditor.UI
             }
         }
 
+        // ─────────────────────────────────────────────────────────
+        //  Rigidbody Inspector (BepuPhysics2)
+        // ─────────────────────────────────────────────────────────
+
         private void DrawRigidbodyInspector(KrayonCore.Rigidbody rigidbody)
         {
-            // Propiedades principales
             DrawRigidbodyMainProperties(rigidbody);
 
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
 
-            // Constraints en una sección colapsable
             if (ImGui.TreeNode("Constraints"))
             {
                 DrawRigidbodyConstraints(rigidbody);
@@ -329,7 +317,6 @@ namespace KrayonEditor.UI
 
             ImGui.Spacing();
 
-            // Physics Properties en una sección colapsable
             if (ImGui.TreeNode("Physics Material"))
             {
                 DrawRigidbodyPhysicsProperties(rigidbody);
@@ -339,25 +326,35 @@ namespace KrayonEditor.UI
 
         private void DrawRigidbodyMainProperties(KrayonCore.Rigidbody rigidbody)
         {
-            var rbType = typeof(KrayonCore.Rigidbody);
-
-            // MotionType
-            var motionTypeProperty = rbType.GetProperty("MotionType");
-            if (motionTypeProperty != null)
+            // ── Motion Type (BodyMotionType enum) ──
             {
-                ImGui.PushID("MotionType");
-                DrawProperty(rigidbody, motionTypeProperty);
-                ImGui.PopID();
+                string[] motionTypeNames = Enum.GetNames(typeof(BodyMotionType));
+                int currentMotionType = (int)rigidbody.MotionType;
+                if (ImGui.Combo("Motion Type", ref currentMotionType, motionTypeNames, motionTypeNames.Length))
+                {
+                    rigidbody.MotionType = (BodyMotionType)currentMotionType;
+                }
             }
 
-            // IsKinematic
+            // ── Is Kinematic ──
             bool isKinematic = rigidbody.IsKinematic;
             if (ImGui.Checkbox("Is Kinematic", ref isKinematic))
             {
                 rigidbody.IsKinematic = isKinematic;
             }
 
-            // UseGravity
+            // ── Is Trigger ──
+            bool isTrigger = rigidbody.IsTrigger;
+            if (ImGui.Checkbox("Is Trigger", ref isTrigger))
+            {
+                rigidbody.IsTrigger = isTrigger;
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("When enabled, this collider detects overlaps\nbut does not generate physics response.\nUse OnTriggerEnter/Stay/Exit events.");
+            }
+
+            // ── Use Gravity ──
             bool useGravity = rigidbody.UseGravity;
             if (ImGui.Checkbox("Use Gravity", ref useGravity))
             {
@@ -366,27 +363,39 @@ namespace KrayonEditor.UI
 
             ImGui.Spacing();
 
-            // Mass
+            // ── Mass ──
             float mass = rigidbody.Mass;
             if (ImGui.DragFloat("Mass", ref mass, 0.1f, 0.01f, 1000f))
             {
                 rigidbody.Mass = Math.Max(0.01f, mass);
             }
 
+            // ── Sleep Threshold ──
+            float sleepThreshold = rigidbody.SleepThreshold;
+            if (ImGui.DragFloat("Sleep Threshold", ref sleepThreshold, 0.001f, 0f, 1f, "%.4f"))
+            {
+                rigidbody.SleepThreshold = Math.Max(0f, sleepThreshold);
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Velocity threshold below which the body\nwill be put to sleep to save performance.");
+            }
+
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
 
-            // Shape Type
-            var shapeTypeProperty = rbType.GetProperty("ShapeType");
-            if (shapeTypeProperty != null)
+            // ── Shape Type (ShapeType enum) ──
             {
-                ImGui.PushID("ShapeType");
-                DrawProperty(rigidbody, shapeTypeProperty);
-                ImGui.PopID();
+                string[] shapeTypeNames = Enum.GetNames(typeof(ShapeType));
+                int currentShapeType = (int)rigidbody.ShapeType;
+                if (ImGui.Combo("Shape Type", ref currentShapeType, shapeTypeNames, shapeTypeNames.Length))
+                {
+                    rigidbody.ShapeType = (ShapeType)currentShapeType;
+                }
             }
 
-            // Shape Size
+            // ── Shape Size ──
             var shapeSize = rigidbody.ShapeSize;
             Vector3 shapeSizeVec = new Vector3(shapeSize.X, shapeSize.Y, shapeSize.Z);
             if (ImGui.DragFloat3("Shape Size", ref shapeSizeVec, 0.1f, 0.01f, 100f))
@@ -402,14 +411,93 @@ namespace KrayonEditor.UI
             ImGui.Separator();
             ImGui.Spacing();
 
-            // Layer
-            var layerProperty = rbType.GetProperty("Layer");
-            if (layerProperty != null)
+            // ── Physics Layer (flags bitmask) ──
+            DrawPhysicsLayerSelector("Layer", rigidbody);
+        }
+
+        /// <summary>
+        /// Draws a dropdown with checkboxes for each PhysicsLayer flag.
+        /// </summary>
+        private void DrawPhysicsLayerSelector(string label, KrayonCore.Rigidbody rigidbody)
+        {
+            PhysicsLayer currentLayer = rigidbody.Layer;
+            string previewText = GetLayerPreviewText(currentLayer);
+
+            ImGui.Text(label);
+            ImGui.SameLine();
+
+            // Use a button that opens a popup with checkboxes for each layer
+            float availWidth = ImGui.GetContentRegionAvail().X;
+            if (ImGui.Button($"{previewText}###{label}_btn", new Vector2(availWidth, 0)))
             {
-                ImGui.PushID("Layer");
-                DrawProperty(rigidbody, layerProperty);
-                ImGui.PopID();
+                ImGui.OpenPopup($"{label}_LayerPopup");
             }
+
+            if (ImGui.BeginPopup($"{label}_LayerPopup"))
+            {
+                // Quick select buttons
+                if (ImGui.Button("All", new Vector2(60, 0)))
+                {
+                    rigidbody.Layer = PhysicsLayer.All;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("None", new Vector2(60, 0)))
+                {
+                    rigidbody.Layer = PhysicsLayer.None;
+                }
+                ImGui.Separator();
+
+                // Individual layer checkboxes
+                string[] layerNames = Enum.GetNames(typeof(PhysicsLayer));
+                PhysicsLayer[] layerValues = (PhysicsLayer[])Enum.GetValues(typeof(PhysicsLayer));
+
+                for (int i = 0; i < layerNames.Length; i++)
+                {
+                    // Skip None and All pseudo-values
+                    if (layerValues[i] == PhysicsLayer.None || layerValues[i] == PhysicsLayer.All)
+                        continue;
+
+                    bool isSet = (currentLayer & layerValues[i]) != 0;
+                    if (ImGui.Checkbox(layerNames[i], ref isSet))
+                    {
+                        if (isSet)
+                            rigidbody.Layer = currentLayer | layerValues[i];
+                        else
+                            rigidbody.Layer = currentLayer & ~layerValues[i];
+
+                        currentLayer = rigidbody.Layer;
+                    }
+                }
+
+                ImGui.EndPopup();
+            }
+        }
+
+        /// <summary>
+        /// Returns a human-readable preview string for the selected layers.
+        /// </summary>
+        private string GetLayerPreviewText(PhysicsLayer layer)
+        {
+            if (layer == PhysicsLayer.None) return "None";
+            if (layer == PhysicsLayer.All) return "All";
+
+            // Count set bits and collect names
+            var names = new System.Collections.Generic.List<string>();
+            string[] layerNames = Enum.GetNames(typeof(PhysicsLayer));
+            PhysicsLayer[] layerValues = (PhysicsLayer[])Enum.GetValues(typeof(PhysicsLayer));
+
+            for (int i = 0; i < layerNames.Length; i++)
+            {
+                if (layerValues[i] == PhysicsLayer.None || layerValues[i] == PhysicsLayer.All)
+                    continue;
+
+                if ((layer & layerValues[i]) != 0)
+                    names.Add(layerNames[i]);
+            }
+
+            if (names.Count == 0) return "None";
+            if (names.Count <= 2) return string.Join(", ", names);
+            return $"{names[0]}, {names[1]} +{names.Count - 2}";
         }
 
         private void DrawRigidbodyConstraints(KrayonCore.Rigidbody rigidbody)
@@ -446,14 +534,12 @@ namespace KrayonEditor.UI
 
         private void DrawRigidbodyPhysicsProperties(KrayonCore.Rigidbody rigidbody)
         {
-            // Linear Damping
             float linearDamping = rigidbody.LinearDamping;
             if (ImGui.DragFloat("Linear Damping", ref linearDamping, 0.01f, 0f, 1f))
             {
                 rigidbody.LinearDamping = Math.Max(0f, linearDamping);
             }
 
-            // Angular Damping
             float angularDamping = rigidbody.AngularDamping;
             if (ImGui.DragFloat("Angular Damping", ref angularDamping, 0.01f, 0f, 1f))
             {
@@ -462,20 +548,22 @@ namespace KrayonEditor.UI
 
             ImGui.Spacing();
 
-            // Friction
             float friction = rigidbody.Friction;
             if (ImGui.SliderFloat("Friction", ref friction, 0f, 1f))
             {
                 rigidbody.Friction = friction;
             }
 
-            // Restitution (Bounciness)
             float restitution = rigidbody.Restitution;
             if (ImGui.SliderFloat("Restitution", ref restitution, 0f, 1f))
             {
                 rigidbody.Restitution = restitution;
             }
         }
+
+        // ─────────────────────────────────────────────────────────
+        //  Generic Property/Field Drawing (unchanged)
+        // ─────────────────────────────────────────────────────────
 
         private void DrawProperty(object component, PropertyInfo property)
         {
@@ -488,10 +576,17 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            // Soporte para Enums
             if (propertyType.IsEnum)
             {
-                DrawEnumProperty(component, property, value);
+                // Handle [Flags] enums with checkboxes
+                if (propertyType.GetCustomAttribute<FlagsAttribute>() != null)
+                {
+                    DrawFlagsEnumProperty(component, property, value);
+                }
+                else
+                {
+                    DrawEnumProperty(component, property, value);
+                }
                 return;
             }
 
@@ -501,7 +596,6 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            // Verificar si tiene el atributo Range de KrayonCore
             var rangeAttr = property.GetCustomAttribute<KrayonCore.RangeAttribute>();
 
             if (propertyType == typeof(bool))
@@ -518,7 +612,6 @@ namespace KrayonEditor.UI
 
                 if (rangeAttr != null)
                 {
-                    // Usar DragFloat con rango
                     if (ImGui.DragFloat(property.Name, ref floatValue, 0.01f, rangeAttr.Min, rangeAttr.Max))
                     {
                         property.SetValue(component, floatValue);
@@ -526,7 +619,6 @@ namespace KrayonEditor.UI
                 }
                 else
                 {
-                    // InputFloat normal
                     if (ImGui.InputFloat(property.Name, ref floatValue))
                     {
                         property.SetValue(component, floatValue);
@@ -539,7 +631,6 @@ namespace KrayonEditor.UI
 
                 if (rangeAttr != null)
                 {
-                    // Usar DragInt con rango
                     if (ImGui.DragInt(property.Name, ref intValue, 1f, (int)rangeAttr.Min, (int)rangeAttr.Max))
                     {
                         property.SetValue(component, intValue);
@@ -547,7 +638,6 @@ namespace KrayonEditor.UI
                 }
                 else
                 {
-                    // InputInt normal
                     if (ImGui.InputInt(property.Name, ref intValue))
                     {
                         property.SetValue(component, intValue);
@@ -561,7 +651,7 @@ namespace KrayonEditor.UI
                 {
                     property.SetValue(component, stringValue);
                 }
-                
+
                 if (ImGui.BeginDragDropTarget())
                 {
                     unsafe
@@ -730,6 +820,106 @@ namespace KrayonEditor.UI
                 object newValue = Enum.Parse(property.PropertyType, enumNames[currentIndex]);
                 property.SetValue(component, newValue);
             }
+        }
+
+        /// <summary>
+        /// Draws a [Flags] enum property as a popup with checkboxes.
+        /// Works generically for any flags enum (PhysicsLayer, etc).
+        /// </summary>
+        private void DrawFlagsEnumProperty(object component, PropertyInfo property, object? value)
+        {
+            if (value == null)
+            {
+                ImGui.Text($"{property.Name}: null");
+                return;
+            }
+
+            Type enumType = property.PropertyType;
+            uint currentValue = Convert.ToUInt32(value);
+
+            // Build preview text
+            string previewText = GetFlagsPreviewText(enumType, currentValue);
+
+            ImGui.Text(property.Name);
+            ImGui.SameLine();
+
+            float availWidth = ImGui.GetContentRegionAvail().X;
+            if (ImGui.Button($"{previewText}###{property.Name}_flags", new Vector2(availWidth, 0)))
+            {
+                ImGui.OpenPopup($"{property.Name}_FlagsPopup");
+            }
+
+            if (ImGui.BeginPopup($"{property.Name}_FlagsPopup"))
+            {
+                // All / None buttons
+                uint allValue = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
+                if (ImGui.Button("All", new Vector2(60, 0)))
+                {
+                    property.SetValue(component, Enum.ToObject(enumType, allValue));
+                    currentValue = allValue;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("None", new Vector2(60, 0)))
+                {
+                    property.SetValue(component, Enum.ToObject(enumType, 0u));
+                    currentValue = 0u;
+                }
+                ImGui.Separator();
+
+                string[] names = Enum.GetNames(enumType);
+                Array values = Enum.GetValues(enumType);
+
+                for (int i = 0; i < names.Length; i++)
+                {
+                    uint flagValue = Convert.ToUInt32(values.GetValue(i));
+
+                    // Skip 0 (None) and ~0 (All) pseudo-values
+                    if (flagValue == 0 || flagValue == allValue)
+                        continue;
+
+                    bool isSet = (currentValue & flagValue) != 0;
+                    if (ImGui.Checkbox(names[i], ref isSet))
+                    {
+                        if (isSet)
+                            currentValue |= flagValue;
+                        else
+                            currentValue &= ~flagValue;
+
+                        property.SetValue(component, Enum.ToObject(enumType, currentValue));
+                    }
+                }
+
+                ImGui.EndPopup();
+            }
+        }
+
+        /// <summary>
+        /// Returns a preview string for a flags enum value.
+        /// </summary>
+        private string GetFlagsPreviewText(Type enumType, uint value)
+        {
+            if (value == 0) return "None";
+
+            uint allValue = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
+            if (value == allValue) return "All";
+
+            var names = new System.Collections.Generic.List<string>();
+            string[] enumNames = Enum.GetNames(enumType);
+            Array enumValues = Enum.GetValues(enumType);
+
+            for (int i = 0; i < enumNames.Length; i++)
+            {
+                uint flagValue = Convert.ToUInt32(enumValues.GetValue(i));
+                if (flagValue == 0 || flagValue == allValue)
+                    continue;
+
+                if ((value & flagValue) != 0)
+                    names.Add(enumNames[i]);
+            }
+
+            if (names.Count == 0) return "None";
+            if (names.Count <= 2) return string.Join(", ", names);
+            return $"{names[0]}, {names[1]} +{names.Count - 2}";
         }
 
         private void DrawArrayProperty(object component, PropertyInfo property, object? value)
@@ -929,10 +1119,16 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            // Soporte para Enums
             if (fieldType.IsEnum)
             {
-                DrawEnumField(component, field, value);
+                if (fieldType.GetCustomAttribute<FlagsAttribute>() != null)
+                {
+                    DrawFlagsEnumField(component, field, value);
+                }
+                else
+                {
+                    DrawEnumField(component, field, value);
+                }
                 return;
             }
 
@@ -942,7 +1138,6 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            // Verificar si tiene el atributo Range de KrayonCore
             var rangeAttr = field.GetCustomAttribute<KrayonCore.RangeAttribute>();
 
             if (fieldType == typeof(bool))
@@ -959,7 +1154,6 @@ namespace KrayonEditor.UI
 
                 if (rangeAttr != null)
                 {
-                    // Usar DragFloat con rango
                     if (ImGui.DragFloat(field.Name, ref floatValue, 0.01f, rangeAttr.Min, rangeAttr.Max))
                     {
                         field.SetValue(component, floatValue);
@@ -967,7 +1161,6 @@ namespace KrayonEditor.UI
                 }
                 else
                 {
-                    // InputFloat normal
                     if (ImGui.InputFloat(field.Name, ref floatValue))
                     {
                         field.SetValue(component, floatValue);
@@ -980,7 +1173,6 @@ namespace KrayonEditor.UI
 
                 if (rangeAttr != null)
                 {
-                    // Usar DragInt con rango
                     if (ImGui.DragInt(field.Name, ref intValue, 1f, (int)rangeAttr.Min, (int)rangeAttr.Max))
                     {
                         field.SetValue(component, intValue);
@@ -988,7 +1180,6 @@ namespace KrayonEditor.UI
                 }
                 else
                 {
-                    // InputInt normal
                     if (ImGui.InputInt(field.Name, ref intValue))
                     {
                         field.SetValue(component, intValue);
@@ -1154,6 +1345,71 @@ namespace KrayonEditor.UI
             {
                 object newValue = Enum.Parse(field.FieldType, enumNames[currentIndex]);
                 field.SetValue(component, newValue);
+            }
+        }
+
+        /// <summary>
+        /// Draws a [Flags] enum field as a popup with checkboxes.
+        /// </summary>
+        private void DrawFlagsEnumField(object component, FieldInfo field, object? value)
+        {
+            if (value == null)
+            {
+                ImGui.Text($"{field.Name}: null");
+                return;
+            }
+
+            Type enumType = field.FieldType;
+            uint currentValue = Convert.ToUInt32(value);
+            string previewText = GetFlagsPreviewText(enumType, currentValue);
+
+            ImGui.Text(field.Name);
+            ImGui.SameLine();
+
+            float availWidth = ImGui.GetContentRegionAvail().X;
+            if (ImGui.Button($"{previewText}###{field.Name}_flags", new Vector2(availWidth, 0)))
+            {
+                ImGui.OpenPopup($"{field.Name}_FlagsPopup");
+            }
+
+            if (ImGui.BeginPopup($"{field.Name}_FlagsPopup"))
+            {
+                uint allValue = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
+                if (ImGui.Button("All", new Vector2(60, 0)))
+                {
+                    field.SetValue(component, Enum.ToObject(enumType, allValue));
+                    currentValue = allValue;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("None", new Vector2(60, 0)))
+                {
+                    field.SetValue(component, Enum.ToObject(enumType, 0u));
+                    currentValue = 0u;
+                }
+                ImGui.Separator();
+
+                string[] names = Enum.GetNames(enumType);
+                Array values = Enum.GetValues(enumType);
+
+                for (int i = 0; i < names.Length; i++)
+                {
+                    uint flagValue = Convert.ToUInt32(values.GetValue(i));
+                    if (flagValue == 0 || flagValue == allValue)
+                        continue;
+
+                    bool isSet = (currentValue & flagValue) != 0;
+                    if (ImGui.Checkbox(names[i], ref isSet))
+                    {
+                        if (isSet)
+                            currentValue |= flagValue;
+                        else
+                            currentValue &= ~flagValue;
+
+                        field.SetValue(component, Enum.ToObject(enumType, currentValue));
+                    }
+                }
+
+                ImGui.EndPopup();
             }
         }
 
