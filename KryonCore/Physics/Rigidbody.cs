@@ -180,8 +180,8 @@ namespace KrayonCore
             var physicsWorld = GameObject.Scene.PhysicsWorld;
             var transform = GameObject.Transform;
 
-            System.Numerics.Vector3 position = ToNumerics(transform.Position);
-            System.Numerics.Quaternion rotation = ToNumerics(transform.Rotation);
+            System.Numerics.Vector3 position = ToNumerics(transform.GetWorldPosition());
+            System.Numerics.Quaternion rotation = ToNumerics(transform.GetWorldRotation());
 
             MotionType finalMotionType = _isKinematic ? MotionType.Kinematic : _motionType;
 
@@ -344,15 +344,15 @@ namespace KrayonCore
             Vector3 position = ToOpenTK(physicsPosition);
             Quaternion rotation = ToOpenTK(physicsRotation);
 
-            if (FreezePositionX) position.X = GameObject.Transform.Position.X;
-            if (FreezePositionY) position.Y = GameObject.Transform.Position.Y;
-            if (FreezePositionZ) position.Z = GameObject.Transform.Position.Z;
+            if (FreezePositionX) position.X = GameObject.Transform.GetWorldPosition().X;
+            if (FreezePositionY) position.Y = GameObject.Transform.GetWorldPosition().Y;
+            if (FreezePositionZ) position.Z = GameObject.Transform.GetWorldPosition().Z;
 
-            GameObject.Transform.Position = position;
+            GameObject.Transform.SetWorldPosition(position);
 
             if (!FreezeRotationX || !FreezeRotationY || !FreezeRotationZ)
             {
-                GameObject.Transform.Rotation = rotation;
+                GameObject.Transform.SetWorldRotation(rotation);
             }
         }
 
@@ -369,8 +369,8 @@ namespace KrayonCore
             {
                 bodyInterface.MoveKinematic(
                     _body.ID,
-                    ToNumerics(GameObject.Transform.Position),
-                    ToNumerics(GameObject.Transform.Rotation),
+                    ToNumerics(GameObject.Transform.GetWorldPosition()),
+                    ToNumerics(GameObject.Transform.GetWorldRotation()),
                     0.016f
                 );
             }
@@ -378,13 +378,13 @@ namespace KrayonCore
             {
                 bodyInterface.SetPosition(
                     _body.ID,
-                    ToNumerics(GameObject.Transform.Position),
+                    ToNumerics(GameObject.Transform.GetWorldPosition()),
                     Activation.DontActivate
                 );
 
                 bodyInterface.SetRotation(
                     _body.ID,
-                    ToNumerics(GameObject.Transform.Rotation),
+                    ToNumerics(GameObject.Transform.GetWorldRotation()),
                     Activation.DontActivate
                 );
             }
@@ -474,7 +474,7 @@ namespace KrayonCore
                 GameObject.Scene.PhysicsWorld.BodyInterface.MoveKinematic(
                     _body.ID,
                     ToNumerics(position),
-                    ToNumerics(GameObject.Transform.Rotation),
+                    ToNumerics(GameObject.Transform.GetWorldRotation()),
                     0.016f
                 );
             }
@@ -486,7 +486,7 @@ namespace KrayonCore
             {
                 GameObject.Scene.PhysicsWorld.BodyInterface.MoveKinematic(
                     _body.ID,
-                    ToNumerics(GameObject.Transform.Position),
+                    ToNumerics(GameObject.Transform.GetWorldPosition()),
                     ToNumerics(rotation),
                     0.016f
                 );
