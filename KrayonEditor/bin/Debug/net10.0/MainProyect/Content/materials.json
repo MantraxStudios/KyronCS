@@ -517,6 +517,43 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "old_mattress_mp_1_1": {
+      "Name": "old_mattress_mp_1_1",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "e469bdc8-8bf9-4ea5-aaf1-8575df450171",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }

@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "c804966d-dce1-4fa9-8d12-35aac5bc3796",
+      "Id": "2bc9e516-0deb-417a-bd5b-46036a672180",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,13 +10,64 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7f53e45f-eae0-41da-9a09-77bb84d91d98",
+          "ComponentId": "e8c86a4d-570d-412a-b38f-9795bdb0be82",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
               "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": -0.50324947,
+              "w": 0.86414117
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "05bca3d7-917f-424f-84bd-0c86decd7b19",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "39da8b8a-ffe6-4b36-b7e1-0c7f6123cc77",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "wood_6",
+                "old_mattress_mp_1_1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "4ebeb43d-7c90-4d94-8f5a-e1f5258f9d10",
+      "Name": "PointLight_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "9ae82a3e-141e-40db-8d1d-645ad5346e15",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 2,
               "z": 0
             },
             "Rotation": {
@@ -35,26 +86,27 @@
           }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "73762644-1158-4bd7-8e76-23b7e9bb4b95",
+          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "afc94541-c9a4-4959-9e80-e0c2b4712dbd",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "3d361d14-7340-48cd-b35c-0968515455a0",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Core.Components.CSharpLogic, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "e11569e7-181a-45fe-a6d9-b1acb4c097d5",
-          "Enabled": true,
-          "SerializedFields": {
-            "Script": "JumpOnTrigger"
+            "Type": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Point"
+            },
+            "Color": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Intensity": 4.05,
+            "Constant": 1,
+            "Linear": 0.09,
+            "Quadratic": 0.032,
+            "InnerCutOffDegrees": 12.5,
+            "OuterCutOffDegrees": 17.5
           }
         }
       ]
