@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
@@ -14,8 +15,8 @@ namespace KrayonCore
         private bool _isCompiled;
 
         public string Name { get; }
-        public string VertexPath { get; private set; }
-        public string FragmentPath { get; private set; }
+        public Guid VertexGUID { get; private set; }
+        public Guid FragmentGUID { get; private set; }
         public int ProgramID => _programID;
         public bool IsCompiled => _isCompiled;
 
@@ -24,34 +25,45 @@ namespace KrayonCore
             Name = name;
         }
 
-        public void LoadFromFile(string vertexPath, string fragmentPath)
+        public void Load(Guid vertexGuid, Guid fragmentGuid)
         {
-            string fullVertexPath = AssetManager.BasePath + vertexPath;
-            string fullFragmentPath = AssetManager.BasePath + fragmentPath;
+            VertexGUID = vertexGuid;
+            FragmentGUID = fragmentGuid;
 
-            if (!File.Exists(fullVertexPath))
-                throw new FileNotFoundException($"Vertex shader not found: {fullVertexPath}");
-            if (!File.Exists(fullFragmentPath))
-                throw new FileNotFoundException($"Fragment shader not found: {fullFragmentPath}");
+            byte[] vertexBytes = AssetManager.GetBytes(vertexGuid);
+            byte[] fragmentBytes = AssetManager.GetBytes(fragmentGuid);
 
-            VertexPath = vertexPath;
-            FragmentPath = fragmentPath;
+            if (vertexBytes == null)
+                throw new Exception($"Vertex shader not found for GUID: {vertexGuid}");
+            if (fragmentBytes == null)
+                throw new Exception($"Fragment shader not found for GUID: {fragmentGuid}");
 
-            string vertexSource = File.ReadAllText(fullVertexPath);
-            string fragmentSource = File.ReadAllText(fullFragmentPath);
+            string vertexSource = Encoding.UTF8.GetString(vertexBytes);
+            string fragmentSource = Encoding.UTF8.GetString(fragmentBytes);
 
-            // Procesar #include en ambos shaders
-            vertexSource = ProcessIncludes(fullVertexPath, vertexSource);
-            fragmentSource = ProcessIncludes(fullFragmentPath, fragmentSource);
+            var vertexAsset = AssetManager.Get(vertexGuid);
+            var fragmentAsset = AssetManager.Get(fragmentGuid);
+
+            vertexSource = ProcessIncludes(vertexAsset?.Path, vertexSource);
+            fragmentSource = ProcessIncludes(fragmentAsset?.Path, fragmentSource);
 
             Compile(vertexSource, fragmentSource);
         }
 
-        public void LoadFromFile(string basePath)
+        public void LoadFromBaseName(string baseName)
         {
-            string vertexPath = $"{basePath}.vert";
-            string fragmentPath = $"{basePath}.frag";
-            LoadFromFile(vertexPath, fragmentPath);
+            string vertexPath = $"{baseName}.vert";
+            string fragmentPath = $"{baseName}.frag";
+
+            var vertexAsset = AssetManager.FindByPath(vertexPath);
+            var fragmentAsset = AssetManager.FindByPath(fragmentPath);
+
+            if (vertexAsset == null)
+                throw new FileNotFoundException($"Vertex shader not found in AssetManager: {vertexPath}");
+            if (fragmentAsset == null)
+                throw new FileNotFoundException($"Fragment shader not found in AssetManager: {fragmentPath}");
+
+            Load(vertexAsset.Guid, fragmentAsset.Guid);
         }
 
         public void LoadFromSource(string vertexSource, string fragmentSource)
@@ -102,8 +114,7 @@ namespace KrayonCore
             if (!_isCompiled)
                 throw new InvalidOperationException($"Shader '{Name}' is not compiled");
 
-            int location = GL.GetUniformLocation(_programID, name);
-            return location;
+            return GL.GetUniformLocation(_programID, name);
         }
 
         public void Dispose()
@@ -137,66 +148,69 @@ namespace KrayonCore
             return shader;
         }
 
-        // ===== SISTEMA DE #INCLUDE =====
-        
         private static HashSet<string> _currentIncludes;
 
-        private string ProcessIncludes(string shaderPath, string source)
+        private string ProcessIncludes(string shaderRelativePath, string source)
         {
             _currentIncludes = new HashSet<string>();
-            return ProcessIncludesRecursive(shaderPath, source);
+            string shaderDir = "";
+            if (!string.IsNullOrEmpty(shaderRelativePath))
+            {
+                shaderDir = Path.GetDirectoryName(shaderRelativePath)?.Replace("\\", "/") ?? "";
+            }
+            return ProcessIncludesRecursive(shaderDir, source);
         }
 
-        private string ProcessIncludesRecursive(string currentPath, string source)
+        private string ProcessIncludesRecursive(string currentDir, string source)
         {
-            // Patrón para detectar: #include "ruta/archivo.glsl"
             string pattern = @"^\s*#include\s+""([^""]+)""\s*";
-            
+
             string result = "";
             string[] lines = source.Split('\n');
-            string currentDir = Path.GetDirectoryName(currentPath) ?? "";
 
             foreach (string line in lines)
             {
                 Match match = Regex.Match(line.Trim(), pattern);
-                
+
                 if (match.Success)
                 {
-                    string includePath = match.Groups[1].Value;
-                    
-                    // Resolver ruta completa del include
-                    string fullIncludePath;
-                    if (Path.IsPathRooted(includePath))
-                    {
-                        fullIncludePath = includePath;
-                    }
-                    else
-                    {
-                        fullIncludePath = Path.Combine(currentDir, includePath);
-                    }
-                    
-                    string normalizedPath = Path.GetFullPath(fullIncludePath);
+                    string includePath = match.Groups[1].Value.Replace("\\", "/");
 
-                    // Prevenir inclusión circular
-                    if (_currentIncludes.Contains(normalizedPath))
+                    string resolvedPath = string.IsNullOrEmpty(currentDir)
+                        ? includePath
+                        : $"{currentDir}/{includePath}";
+
+                    resolvedPath = NormalizePath(resolvedPath);
+
+                    if (_currentIncludes.Contains(resolvedPath))
                     {
                         result += $"// Already included: {includePath}\n";
                         continue;
                     }
 
-                    _currentIncludes.Add(normalizedPath);
+                    _currentIncludes.Add(resolvedPath);
 
-                    // Leer y procesar el archivo incluido
-                    if (File.Exists(normalizedPath))
+                    var includeAsset = AssetManager.FindByPath(resolvedPath);
+                    if (includeAsset != null)
                     {
-                        string includeSource = File.ReadAllText(normalizedPath);
-                        result += $"// ===== Begin include: {includePath} =====\n";
-                        result += ProcessIncludesRecursive(normalizedPath, includeSource);
-                        result += $"// ===== End include: {includePath} =====\n";
+                        byte[] includeBytes = AssetManager.GetBytes(includeAsset.Guid);
+                        if (includeBytes != null)
+                        {
+                            string includeSource = Encoding.UTF8.GetString(includeBytes);
+                            string includeDir = Path.GetDirectoryName(resolvedPath)?.Replace("\\", "/") ?? "";
+                            result += $"// ===== Begin include: {includePath} =====\n";
+                            result += ProcessIncludesRecursive(includeDir, includeSource);
+                            result += $"// ===== End include: {includePath} =====\n";
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[Shader] Warning: Could not read include: {resolvedPath}");
+                            result += $"// ERROR: Could not read include: {includePath}\n";
+                        }
                     }
                     else
                     {
-                        Console.WriteLine($"[Shader] Warning: Include file not found: {normalizedPath}");
+                        Console.WriteLine($"[Shader] Warning: Include not found in AssetManager: {resolvedPath}");
                         result += $"// ERROR: Include not found: {includePath}\n";
                     }
                 }
@@ -209,33 +223,20 @@ namespace KrayonCore
             return result;
         }
 
-        // Método helper para debug: guardar shader procesado
-        public void SaveProcessedShader(string outputPath)
+        private static string NormalizePath(string path)
         {
-            if (!_isCompiled)
+            var parts = path.Split('/');
+            var stack = new Stack<string>();
+
+            foreach (var part in parts)
             {
-                Console.WriteLine("[Shader] Cannot save processed shader: shader not compiled");
-                return;
+                if (part == ".." && stack.Count > 0)
+                    stack.Pop();
+                else if (part != "." && !string.IsNullOrEmpty(part))
+                    stack.Push(part);
             }
 
-            string fullVertexPath = AssetManager.BasePath + VertexPath;
-            string fullFragmentPath = AssetManager.BasePath + FragmentPath;
-
-            if (File.Exists(fullVertexPath))
-            {
-                string vertexSource = File.ReadAllText(fullVertexPath);
-                vertexSource = ProcessIncludes(fullVertexPath, vertexSource);
-                File.WriteAllText(outputPath + ".vert", vertexSource);
-            }
-
-            if (File.Exists(fullFragmentPath))
-            {
-                string fragmentSource = File.ReadAllText(fullFragmentPath);
-                fragmentSource = ProcessIncludes(fullFragmentPath, fragmentSource);
-                File.WriteAllText(outputPath + ".frag", fragmentSource);
-            }
-
-            Console.WriteLine($"[Shader] Processed shader saved to: {outputPath}");
+            return string.Join("/", stack.Reverse());
         }
     }
 }

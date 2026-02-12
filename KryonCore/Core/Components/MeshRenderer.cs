@@ -179,7 +179,10 @@ namespace KrayonCore
 
             try
             {
-                _model = Model.Load(AssetManager.Get(Guid.Parse(path)).Path);
+                var assetInfo = AssetManager.GetBytes(Guid.Parse(path)); 
+
+                Console.WriteLine("Bytes Procesados");
+                _model = Model.LoadFromBytes(assetInfo, "fbx");
             }
             catch (Exception ex)
             {
@@ -289,33 +292,37 @@ namespace KrayonCore
             {
                 return;
             }
-
             _materials = new Material[Model.SubMeshCount];
             MaterialPaths = new string[Model.SubMeshCount];
-
             for (int i = 0; i < Model.SubMeshCount; i++)
             {
                 SubMeshInfo meshInfo = Model._subMeshes[i];
-
                 string textureFileName = PathUtils.GetFileNameWithExtension(
                     meshInfo.TextureInfo.DiffuseTexture
                 );
-
                 string texturePath = PathUtils.FindFileByName(
                     AssetManager.BasePath,
                     textureFileName
                 );
-
                 if (!string.IsNullOrEmpty(texturePath))
                 {
-                    Material G = GraphicsEngine.Instance.Materials.Create(PathUtils.GetFileNameWithoutExtension(texturePath), "shaders/basic");
-                    G.LoadAlbedoTexture(PathUtils.GetPathAfterContent(texturePath));
+                    string relativePath = PathUtils.GetPathAfterContent(texturePath);
+                    var assetRecord = AssetManager.FindByPath(relativePath);
+                    if (assetRecord == null)
+                    {
+                        Console.WriteLine($"Texture not registered in AssetManager: {relativePath}");
+                        continue;
+                    }
+
+                    Material G = GraphicsEngine.Instance.Materials.Create(
+                        PathUtils.GetFileNameWithoutExtension(texturePath), "shaders/basic"
+                    );
+                    G.LoadAlbedoTexture(assetRecord.Guid);
                     G.Roughness = 0;
                     _materials[i] = G;
                     MaterialPaths[i] = G.Name;
                 }
             }
-
             GraphicsEngine.Instance.Materials.SaveMaterialsData();
         }
     }

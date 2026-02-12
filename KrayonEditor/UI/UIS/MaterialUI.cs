@@ -33,13 +33,14 @@ namespace KrayonEditor.UI
 
         private const string PROTECTED_MATERIAL_NAME = "basic";
 
-        // Cache for texture previews in file dialog
         private Dictionary<string, TextureLoader> _previewTextureCache = new();
-        private Dictionary<string, int> _previewLoadAttempts = new(); // Track load attempts
+        private Dictionary<string, int> _previewLoadAttempts = new();
         private string _hoveredFile = "";
         private float _hoverTime = 0f;
-        private const float HOVER_DELAY = 0.3f; // Delay before showing preview
-        private const int MAX_LOAD_ATTEMPTS = 60; // Max frames to attempt loading
+        private const float HOVER_DELAY = 0.3f;
+        private const int MAX_LOAD_ATTEMPTS = 60;
+
+        private string AbsoluteBasePath => Path.GetFullPath(AssetManager.BasePath);
 
         public override void OnDrawUI()
         {
@@ -73,7 +74,6 @@ namespace KrayonEditor.UI
             }
             else
             {
-                // Clear preview cache when dialog is closed
                 ClearPreviewCache();
             }
 
@@ -201,7 +201,7 @@ namespace KrayonEditor.UI
             {
                 _fileDialogTarget = "Shader";
                 _showFileDialog = true;
-                _currentPath = AssetManager.BasePath;
+                _currentPath = AbsoluteBasePath;
                 _pendingPathChange = "";
                 RefreshFileList();
             }
@@ -259,6 +259,13 @@ namespace KrayonEditor.UI
                 var ao = _selectedMaterial.AO;
                 var emissiveColor = _selectedMaterial.EmissiveColor;
 
+                var albedoGuid = _selectedMaterial.AlbedoTextureGUID;
+                var normalGuid = _selectedMaterial.NormalTextureGUID;
+                var metallicGuid = _selectedMaterial.MetallicTextureGUID;
+                var roughnessGuid = _selectedMaterial.RoughnessTextureGUID;
+                var aoGuid = _selectedMaterial.AOTextureGUID;
+                var emissiveGuid = _selectedMaterial.EmissiveTextureGUID;
+
                 GraphicsEngine.Instance!.Materials.Remove(materialName);
 
                 var newMaterial = GraphicsEngine.Instance!.Materials.Create(materialName, _newShaderPath);
@@ -270,6 +277,14 @@ namespace KrayonEditor.UI
                     newMaterial.Roughness = roughness;
                     newMaterial.AO = ao;
                     newMaterial.EmissiveColor = emissiveColor;
+
+                    if (albedoGuid != Guid.Empty) newMaterial.LoadAlbedoTexture(albedoGuid);
+                    if (normalGuid != Guid.Empty) newMaterial.LoadNormalTexture(normalGuid);
+                    if (metallicGuid != Guid.Empty) newMaterial.LoadMetallicTexture(metallicGuid);
+                    if (roughnessGuid != Guid.Empty) newMaterial.LoadRoughnessTexture(roughnessGuid);
+                    if (aoGuid != Guid.Empty) newMaterial.LoadAOTexture(aoGuid);
+                    if (emissiveGuid != Guid.Empty) newMaterial.LoadEmissiveTexture(emissiveGuid);
+
                     newMaterial.SetPBRProperties();
 
                     _selectedMaterial = newMaterial;
@@ -303,7 +318,7 @@ namespace KrayonEditor.UI
             {
                 _fileDialogTarget = "Shader";
                 _showFileDialog = true;
-                _currentPath = AssetManager.BasePath;
+                _currentPath = AbsoluteBasePath;
                 _pendingPathChange = "";
                 RefreshFileList();
             }
@@ -369,6 +384,15 @@ namespace KrayonEditor.UI
             ImGui.Text($"Editing: {_selectedMaterial.Name}");
             ImGui.Separator();
 
+            if (_selectedMaterial.VertexShaderGUID != Guid.Empty)
+            {
+                var vertAsset = AssetManager.Get(_selectedMaterial.VertexShaderGUID);
+                var fragAsset = AssetManager.Get(_selectedMaterial.FragmentShaderGUID);
+                ImGui.TextDisabled($"Vertex: {vertAsset?.Path ?? _selectedMaterial.VertexShaderGUID.ToString()}");
+                ImGui.TextDisabled($"Fragment: {fragAsset?.Path ?? _selectedMaterial.FragmentShaderGUID.ToString()}");
+            }
+            ImGui.Separator();
+
             if (ImGui.CollapsingHeader("PBR Properties", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 DrawPBRProperties();
@@ -420,12 +444,12 @@ namespace KrayonEditor.UI
 
         private void DrawTexturesSection()
         {
-            DrawTextureProperty("Albedo Map", _selectedMaterial.AlbedoTexture, "AlbedoTexture",
+            DrawTextureProperty("Albedo Map", _selectedMaterial.AlbedoTexture, _selectedMaterial.AlbedoTextureGUID, "AlbedoTexture",
                 () => _selectedMaterial.RemoveAlbedoTexture(), () => OpenFileDialog("Albedo"));
 
             ImGui.Spacing();
 
-            DrawTextureProperty("Normal Map", _selectedMaterial.NormalTexture, "NormalTexture",
+            DrawTextureProperty("Normal Map", _selectedMaterial.NormalTexture, _selectedMaterial.NormalTextureGUID, "NormalTexture",
                 () => _selectedMaterial.RemoveNormalTexture(), () => OpenFileDialog("Normal"));
 
             if (_selectedMaterial.UseNormalMap)
@@ -439,22 +463,22 @@ namespace KrayonEditor.UI
 
             ImGui.Spacing();
 
-            DrawTextureProperty("Metallic Map", _selectedMaterial.MetallicTexture, "MetallicTexture",
+            DrawTextureProperty("Metallic Map", _selectedMaterial.MetallicTexture, _selectedMaterial.MetallicTextureGUID, "MetallicTexture",
                 () => _selectedMaterial.RemoveMetallicTexture(), () => OpenFileDialog("Metallic"));
 
             ImGui.Spacing();
 
-            DrawTextureProperty("Roughness Map", _selectedMaterial.RoughnessTexture, "RoughnessTexture",
+            DrawTextureProperty("Roughness Map", _selectedMaterial.RoughnessTexture, _selectedMaterial.RoughnessTextureGUID, "RoughnessTexture",
                 () => _selectedMaterial.RemoveRoughnessTexture(), () => OpenFileDialog("Roughness"));
 
             ImGui.Spacing();
 
-            DrawTextureProperty("Ambient Occlusion Map", _selectedMaterial.AOTexture, "AOTexture",
+            DrawTextureProperty("Ambient Occlusion Map", _selectedMaterial.AOTexture, _selectedMaterial.AOTextureGUID, "AOTexture",
                 () => _selectedMaterial.RemoveAOTexture(), () => OpenFileDialog("AO"));
 
             ImGui.Spacing();
 
-            DrawTextureProperty("Emissive Map", _selectedMaterial.EmissiveTexture, "EmissiveTexture",
+            DrawTextureProperty("Emissive Map", _selectedMaterial.EmissiveTexture, _selectedMaterial.EmissiveTextureGUID, "EmissiveTexture",
                 () => _selectedMaterial.RemoveEmissiveTexture(), () => OpenFileDialog("Emissive"));
 
             ImGui.Spacing();
@@ -465,7 +489,7 @@ namespace KrayonEditor.UI
             }
         }
 
-        private void DrawTextureProperty(string label, TextureLoader texture, string id, Action onRemove, Action onLoad)
+        private void DrawTextureProperty(string label, TextureLoader texture, Guid textureGuid, string id, Action onRemove, Action onLoad)
         {
             ImGui.Text(label);
 
@@ -495,7 +519,15 @@ namespace KrayonEditor.UI
                     ImGui.Image((IntPtr)textureId, previewSize, new Vector2(0, 1), new Vector2(1, 0));
 
                     ImGui.Text($"Size: {texture.Width}x{texture.Height}");
-                    ImGui.Text($"Path: {texture.GetTexturePath}");
+
+                    if (textureGuid != Guid.Empty)
+                    {
+                        var assetRecord = AssetManager.Get(textureGuid);
+                        if (assetRecord != null)
+                            ImGui.Text($"Asset: {assetRecord.Path}");
+                        else
+                            ImGui.TextDisabled($"GUID: {textureGuid}");
+                    }
                 }
                 else
                 {
@@ -576,7 +608,7 @@ namespace KrayonEditor.UI
         {
             _fileDialogTarget = target;
             _showFileDialog = true;
-            _currentPath = AssetManager.BasePath;
+            _currentPath = AbsoluteBasePath;
             _pendingPathChange = "";
             RefreshFileList();
         }
@@ -595,8 +627,7 @@ namespace KrayonEditor.UI
                     {
                         _currentDirectories.Add(Path.GetFileName(dir));
                     }
-                    
-                    // Ordenar directorios alfabéticamente
+
                     _currentDirectories.Sort(StringComparer.OrdinalIgnoreCase);
 
                     var allowedExtensions = _fileDialogTarget == "Shader"
@@ -612,8 +643,7 @@ namespace KrayonEditor.UI
                             _currentFiles.Add(Path.GetFileName(file));
                         }
                     }
-                    
-                    // Ordenar archivos alfabéticamente
+
                     _currentFiles.Sort(StringComparer.OrdinalIgnoreCase);
                 }
                 catch (Exception ex)
@@ -635,19 +665,17 @@ namespace KrayonEditor.UI
             ImGui.SetNextWindowSize(new Vector2(600, 400), ImGuiCond.FirstUseEver);
             ImGui.Begin($"Select {_fileDialogTarget} File", ref _showFileDialog);
 
-            ImGui.Text($"Current Path: {_currentPath}");
+            string displayPath = GetDisplayPath(_currentPath);
+            ImGui.Text($"Current Path: {displayPath}");
             ImGui.Separator();
 
             if (ImGui.Button("Parent Directory"))
             {
                 var parentPath = Directory.GetParent(_currentPath)?.FullName;
 
-                if (parentPath != null)
+                if (parentPath != null && parentPath.Length >= AbsoluteBasePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length)
                 {
-                    if (parentPath.Length >= AssetManager.BasePath.Length)
-                    {
-                        _pendingPathChange = parentPath;
-                    }
+                    _pendingPathChange = parentPath;
                 }
             }
 
@@ -668,7 +696,7 @@ namespace KrayonEditor.UI
             foreach (var file in filesCopy)
             {
                 bool isHovered = false;
-                
+
                 if (ImGui.Selectable(file, false))
                 {
                     string fullPath = Path.Combine(_currentPath, file);
@@ -694,16 +722,13 @@ namespace KrayonEditor.UI
                         _showFileDialog = false;
                     }
                 }
-                
-                // Check if item is hovered (only for texture files, not shaders)
+
                 if (ImGui.IsItemHovered() && _fileDialogTarget != "Shader")
                 {
                     isHovered = true;
-                    
-                    // Update hover tracking
+
                     if (_hoveredFile != file)
                     {
-                        Console.WriteLine($"[HOVER] Started hovering: {file}");
                         _hoveredFile = file;
                         _hoverTime = 0f;
                     }
@@ -711,22 +736,15 @@ namespace KrayonEditor.UI
                     {
                         _hoverTime += ImGui.GetIO().DeltaTime;
                     }
-                    
-                    // Show preview after hover delay
+
                     if (_hoverTime >= HOVER_DELAY)
                     {
-                        if (_hoverTime < HOVER_DELAY + 0.1f) // Log solo una vez
-                        {
-                            Console.WriteLine($"[HOVER] Delay reached ({_hoverTime:F2}s), showing preview for: {file}");
-                        }
                         DrawTexturePreview(file);
                     }
                 }
-                
-                // Reset hover state if not hovering anymore
+
                 if (!isHovered && _hoveredFile == file)
                 {
-                    Console.WriteLine($"[HOVER] Stopped hovering: {file}");
                     _hoveredFile = "";
                     _hoverTime = 0f;
                 }
@@ -747,7 +765,7 @@ namespace KrayonEditor.UI
         private void DrawTexturePreview(string fileName)
         {
             string fullPath = Path.Combine(_currentPath, fileName);
-            
+
             if (!_previewTextureCache.ContainsKey(fullPath))
             {
                 try
@@ -759,95 +777,75 @@ namespace KrayonEditor.UI
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[PREVIEW ERROR] Error creating TextureLoader: {ex.Message}");
-                    Console.WriteLine($"[PREVIEW ERROR] Stack trace: {ex.StackTrace}");
                     return;
                 }
             }
 
             var previewTexture = _previewTextureCache[fullPath];
-            
+
             if (previewTexture == null)
-            {
-                Console.WriteLine($"[PREVIEW ERROR] Preview texture is null!");
                 return;
-            }
-            
-            // Track loading attempts
+
             if (!_previewLoadAttempts.ContainsKey(fullPath))
             {
                 _previewLoadAttempts[fullPath] = 0;
             }
-            
+
             int attempts = _previewLoadAttempts[fullPath];
-            
+
             if (!previewTexture.IsLoaded && attempts < MAX_LOAD_ATTEMPTS)
             {
                 previewTexture.Load();
                 _previewLoadAttempts[fullPath]++;
-                
-                // Después de llamar Load(), verificar nuevamente
+
                 if (!previewTexture.IsLoaded)
                 {
-                    // Mostrar tooltip de "Cargando..."
                     ImGui.BeginTooltip();
                     ImGui.Text($"Loading preview: {fileName}");
                     ImGui.TextDisabled($"Please wait... ({attempts}/{MAX_LOAD_ATTEMPTS})");
                     ImGui.EndTooltip();
                     return;
                 }
-                else
-                {
-                    Console.WriteLine($"[PREVIEW] Texture loaded successfully on attempt {attempts + 1}!");
-                }
             }
 
             if (previewTexture.IsLoaded)
             {
                 ImGui.BeginTooltip();
-                
+
                 ImGui.Text($"Preview: {fileName}");
                 ImGui.Separator();
-                
-                // Calculate preview size maintaining aspect ratio
+
                 float maxPreviewSize = 256f;
                 float aspectRatio = (float)previewTexture.Width / (float)previewTexture.Height;
-                
+
                 Vector2 previewSize;
                 if (aspectRatio > 1f)
                 {
-                    // Wider than tall
                     previewSize = new Vector2(maxPreviewSize, maxPreviewSize / aspectRatio);
                 }
                 else
                 {
-                    // Taller than wide
                     previewSize = new Vector2(maxPreviewSize * aspectRatio, maxPreviewSize);
                 }
-                
-                // Draw background
+
                 var cursorPos = ImGui.GetCursorScreenPos();
                 var drawList = ImGui.GetWindowDrawList();
-                
+
                 drawList.AddRectFilled(
                     cursorPos,
                     new Vector2(cursorPos.X + previewSize.X, cursorPos.Y + previewSize.Y),
                     ImGui.GetColorU32(new Vector4(0.15f, 0.15f, 0.15f, 1.0f))
                 );
-                
-                // Draw texture
+
                 uint textureId = (uint)previewTexture.TextureId;
                 ImGui.Image((IntPtr)textureId, previewSize, new Vector2(0, 1), new Vector2(1, 0));
-                
-                // Show info
+
                 ImGui.Text($"Size: {previewTexture.Width} x {previewTexture.Height}");
-                ImGui.Text($"Texture ID: {textureId}");
-                
+
                 ImGui.EndTooltip();
             }
             else if (attempts >= MAX_LOAD_ATTEMPTS)
             {
-                Console.WriteLine($"[PREVIEW ERROR] Texture failed to load after {MAX_LOAD_ATTEMPTS} attempts!");
-                
                 ImGui.BeginTooltip();
                 ImGui.Text($"Failed to load: {fileName}");
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), "Texture could not be loaded");
@@ -870,11 +868,28 @@ namespace KrayonEditor.UI
             return path;
         }
 
+        private string GetDisplayPath(string fullPath)
+        {
+            string basePath = AbsoluteBasePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string normalizedFull = Path.GetFullPath(fullPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            if (normalizedFull.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
+            {
+                string relative = normalizedFull.Substring(basePath.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                return string.IsNullOrEmpty(relative) ? "Content/" : $"Content/{relative.Replace('\\', '/')}";
+            }
+
+            return fullPath;
+        }
+
         private string GetRelativePathFromBasePath(string fullPath)
         {
-            if (fullPath.StartsWith(AssetManager.BasePath))
+            string basePath = AbsoluteBasePath;
+            string normalizedFull = Path.GetFullPath(fullPath);
+
+            if (normalizedFull.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
             {
-                string relativePath = fullPath.Substring(AssetManager.BasePath.Length);
+                string relativePath = normalizedFull.Substring(basePath.Length);
                 relativePath = relativePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                 return relativePath.Replace('\\', '/');
             }
@@ -882,29 +897,38 @@ namespace KrayonEditor.UI
             return fullPath;
         }
 
-        private void LoadTextureForTarget(string path)
+        private void LoadTextureForTarget(string relativePath)
         {
             if (_selectedMaterial == null) return;
+
+            var assetRecord = AssetManager.FindByPath(relativePath);
+            if (assetRecord == null)
+            {
+                Console.WriteLine($"Texture not registered in AssetManager: {relativePath}");
+                return;
+            }
+
+            Guid guid = assetRecord.Guid;
 
             switch (_fileDialogTarget)
             {
                 case "Albedo":
-                    _selectedMaterial.LoadAlbedoTexture(path);
+                    _selectedMaterial.LoadAlbedoTexture(guid);
                     break;
                 case "Normal":
-                    _selectedMaterial.LoadNormalTexture(path);
+                    _selectedMaterial.LoadNormalTexture(guid);
                     break;
                 case "Metallic":
-                    _selectedMaterial.LoadMetallicTexture(path);
+                    _selectedMaterial.LoadMetallicTexture(guid);
                     break;
                 case "Roughness":
-                    _selectedMaterial.LoadRoughnessTexture(path);
+                    _selectedMaterial.LoadRoughnessTexture(guid);
                     break;
                 case "AO":
-                    _selectedMaterial.LoadAOTexture(path);
+                    _selectedMaterial.LoadAOTexture(guid);
                     break;
                 case "Emissive":
-                    _selectedMaterial.LoadEmissiveTexture(path);
+                    _selectedMaterial.LoadEmissiveTexture(guid);
                     break;
             }
 

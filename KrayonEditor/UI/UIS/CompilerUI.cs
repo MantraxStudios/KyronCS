@@ -417,7 +417,7 @@ namespace KrayonEditor.UI
 
 
                 AppendLog("Work On Game Assets Pak (Please Wait...)", LogLevel.Success);
-                KRCompiler.Build($"{AssetManager.CompilerPath}game.pak", assetsPak);
+                KRCompiler.Build($"{AssetManager.CompilerPath}Game.pak", assetsPak);
                 AppendLog($"Build succeeded in {_timer.Elapsed.TotalSeconds:F2}s", LogLevel.Success);
                 EngineEditor.LogMessage("[Compiler] Build succeeded.");
             }

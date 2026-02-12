@@ -11,6 +11,7 @@
           "AssimpNet": "4.1.0",
           "BepuPhysics": "2.4.0",
           "Jint": "4.5.0",
+          "KrayonCompiler": "1.0.0",
           "LuaCSharp": "0.5.3",
           "Newtonsoft.Json": "13.0.4",
           "OpenTK": "4.9.4",
@@ -256,6 +257,14 @@
             "fileVersion": "1.16.7.0"
           }
         }
+      },
+      "KrayonCompiler/1.0.0": {
+        "runtime": {
+          "KrayonCompiler.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
@@ -404,6 +413,11 @@
       "sha512": "sha512-NF9kOxi0iS9VunklnRKgOpAWC2knCGKRjdy7RT6XAqYNyb7LQfyPHPdl4l1fJw7TFYKrGQzQOmK1XpBONC2MoA==",
       "path": "stbimagewritesharp/1.16.7",
       "hashPath": "stbimagewritesharp.1.16.7.nupkg.sha512"
+    },
+    "KrayonCompiler/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

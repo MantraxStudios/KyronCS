@@ -17,6 +17,9 @@ namespace KrayonCore
         public Shader Shader => _shader;
         public int Program => _shader?.ProgramID ?? 0;
 
+        public Guid VertexShaderGUID { get; set; } = Guid.Empty;
+        public Guid FragmentShaderGUID { get; set; } = Guid.Empty;
+
         public TextureLoader MainTexture { get; private set; }
 
         public TextureLoader AlbedoTexture { get; private set; }
@@ -25,6 +28,13 @@ namespace KrayonCore
         public TextureLoader RoughnessTexture { get; private set; }
         public TextureLoader AOTexture { get; private set; }
         public TextureLoader EmissiveTexture { get; private set; }
+
+        public Guid AlbedoTextureGUID { get; set; } = Guid.Empty;
+        public Guid NormalTextureGUID { get; set; } = Guid.Empty;
+        public Guid MetallicTextureGUID { get; set; } = Guid.Empty;
+        public Guid RoughnessTextureGUID { get; set; } = Guid.Empty;
+        public Guid AOTextureGUID { get; set; } = Guid.Empty;
+        public Guid EmissiveTextureGUID { get; set; } = Guid.Empty;
 
         public Vector3 AlbedoColor { get; set; } = Vector3.One;
         public float Metallic { get; set; } = 0.0f;
@@ -42,25 +52,30 @@ namespace KrayonCore
         public Vector3 AmbientLight { get; set; } = new Vector3(0.03f, 0.03f, 0.03f);
         public float AmbientStrength { get; set; } = 1.0f;
 
-
-        public Material(string name, string vertexPath, string fragmentPath)
+        public Material(string name, Guid vertexGuid, Guid fragmentGuid)
         {
             Name = name;
+            VertexShaderGUID = vertexGuid;
+            FragmentShaderGUID = fragmentGuid;
             _shader = new Shader(name);
-            _shader.LoadFromFile(vertexPath, fragmentPath);
+            _shader.Load(vertexGuid, fragmentGuid);
         }
 
-        public Material(string name, string shaderBasePath)
+        public Material(string name, string shaderBaseName)
         {
             Name = name;
             _shader = new Shader(name);
-            _shader.LoadFromFile(shaderBasePath);
+            _shader.LoadFromBaseName(shaderBaseName);
+            VertexShaderGUID = _shader.VertexGUID;
+            FragmentShaderGUID = _shader.FragmentGUID;
         }
 
         public Material(string name, Shader shader)
         {
             Name = name;
             _shader = shader ?? throw new ArgumentNullException(nameof(shader));
+            VertexShaderGUID = shader.VertexGUID;
+            FragmentShaderGUID = shader.FragmentGUID;
         }
 
         public void Use()
@@ -140,93 +155,100 @@ namespace KrayonCore
             if (UseEmissiveMap) SetIntCached("u_EmissiveMap", 5);
         }
 
-        public void LoadMainTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadMainTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             MainTexture?.Dispose();
-            MainTexture = new TextureLoader("mainTexture", path, generateMipmaps, flip);
+            MainTexture = new TextureLoader("mainTexture", guid, generateMipmaps, flip);
 
             AlbedoTexture?.Dispose();
             AlbedoTexture = MainTexture;
+            AlbedoTextureGUID = guid;
 
             SetTexture("u_AlbedoMap", MainTexture, 0);
             UseAlbedoMap = true;
         }
 
-        public void LoadAlbedoTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadAlbedoTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             AlbedoTexture?.Dispose();
-            AlbedoTexture = new TextureLoader("u_AlbedoMap", path, generateMipmaps, flip);
+            AlbedoTexture = new TextureLoader("u_AlbedoMap", guid, generateMipmaps, flip);
+            AlbedoTextureGUID = guid;
             SetTexture("u_AlbedoMap", AlbedoTexture, 0);
             UseAlbedoMap = true;
         }
 
-        public void LoadNormalTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadNormalTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             NormalTexture?.Dispose();
-            NormalTexture = new TextureLoader("u_NormalMap", path, generateMipmaps, flip);
+            NormalTexture = new TextureLoader("u_NormalMap", guid, generateMipmaps, flip);
+            NormalTextureGUID = guid;
             SetTexture("u_NormalMap", NormalTexture, 1);
             UseNormalMap = true;
         }
 
-        public void LoadMetallicTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadMetallicTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             MetallicTexture?.Dispose();
-            MetallicTexture = new TextureLoader("u_MetallicMap", path, generateMipmaps, flip);
+            MetallicTexture = new TextureLoader("u_MetallicMap", guid, generateMipmaps, flip);
+            MetallicTextureGUID = guid;
             SetTexture("u_MetallicMap", MetallicTexture, 2);
             UseMetallicMap = true;
         }
 
-        public void LoadRoughnessTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadRoughnessTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             RoughnessTexture?.Dispose();
-            RoughnessTexture = new TextureLoader("u_RoughnessMap", path, generateMipmaps, flip);
+            RoughnessTexture = new TextureLoader("u_RoughnessMap", guid, generateMipmaps, flip);
+            RoughnessTextureGUID = guid;
             SetTexture("u_RoughnessMap", RoughnessTexture, 3);
             UseRoughnessMap = true;
         }
 
-        public void LoadAOTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadAOTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             AOTexture?.Dispose();
-            AOTexture = new TextureLoader("u_AOMap", path, generateMipmaps, flip);
+            AOTexture = new TextureLoader("u_AOMap", guid, generateMipmaps, flip);
+            AOTextureGUID = guid;
             SetTexture("u_AOMap", AOTexture, 4);
             UseAOMap = true;
         }
 
-        public void LoadEmissiveTexture(string path, bool generateMipmaps = true, bool flip = true)
+        public void LoadEmissiveTexture(Guid guid, bool generateMipmaps = true, bool flip = true)
         {
             EmissiveTexture?.Dispose();
-            EmissiveTexture = new TextureLoader("u_EmissiveMap", path, generateMipmaps, flip);
+            EmissiveTexture = new TextureLoader("u_EmissiveMap", guid, generateMipmaps, flip);
+            EmissiveTextureGUID = guid;
             SetTexture("u_EmissiveMap", EmissiveTexture, 5);
             UseEmissiveMap = true;
         }
 
         public void LoadPBRTextures(
-            string albedoPath = null,
-            string normalPath = null,
-            string metallicPath = null,
-            string roughnessPath = null,
-            string aoPath = null,
-            string emissivePath = null,
+            Guid? albedoGuid = null,
+            Guid? normalGuid = null,
+            Guid? metallicGuid = null,
+            Guid? roughnessGuid = null,
+            Guid? aoGuid = null,
+            Guid? emissiveGuid = null,
             bool generateMipmaps = true,
             bool flip = true)
         {
-            if (!string.IsNullOrEmpty(albedoPath))
-                LoadAlbedoTexture(albedoPath, generateMipmaps, flip);
+            if (albedoGuid.HasValue && albedoGuid.Value != Guid.Empty)
+                LoadAlbedoTexture(albedoGuid.Value, generateMipmaps, flip);
 
-            if (!string.IsNullOrEmpty(normalPath))
-                LoadNormalTexture(normalPath, generateMipmaps, flip);
+            if (normalGuid.HasValue && normalGuid.Value != Guid.Empty)
+                LoadNormalTexture(normalGuid.Value, generateMipmaps, flip);
 
-            if (!string.IsNullOrEmpty(metallicPath))
-                LoadMetallicTexture(metallicPath, generateMipmaps, flip);
+            if (metallicGuid.HasValue && metallicGuid.Value != Guid.Empty)
+                LoadMetallicTexture(metallicGuid.Value, generateMipmaps, flip);
 
-            if (!string.IsNullOrEmpty(roughnessPath))
-                LoadRoughnessTexture(roughnessPath, generateMipmaps, flip);
+            if (roughnessGuid.HasValue && roughnessGuid.Value != Guid.Empty)
+                LoadRoughnessTexture(roughnessGuid.Value, generateMipmaps, flip);
 
-            if (!string.IsNullOrEmpty(aoPath))
-                LoadAOTexture(aoPath, generateMipmaps, flip);
+            if (aoGuid.HasValue && aoGuid.Value != Guid.Empty)
+                LoadAOTexture(aoGuid.Value, generateMipmaps, flip);
 
-            if (!string.IsNullOrEmpty(emissivePath))
-                LoadEmissiveTexture(emissivePath, generateMipmaps, flip);
+            if (emissiveGuid.HasValue && emissiveGuid.Value != Guid.Empty)
+                LoadEmissiveTexture(emissiveGuid.Value, generateMipmaps, flip);
 
             SetPBRProperties();
         }
@@ -274,6 +296,7 @@ namespace KrayonCore
         {
             AlbedoTexture?.Dispose();
             AlbedoTexture = null;
+            AlbedoTextureGUID = Guid.Empty;
             RemoveTexture(0);
             UseAlbedoMap = false;
         }
@@ -282,6 +305,7 @@ namespace KrayonCore
         {
             NormalTexture?.Dispose();
             NormalTexture = null;
+            NormalTextureGUID = Guid.Empty;
             RemoveTexture(1);
             UseNormalMap = false;
         }
@@ -290,6 +314,7 @@ namespace KrayonCore
         {
             MetallicTexture?.Dispose();
             MetallicTexture = null;
+            MetallicTextureGUID = Guid.Empty;
             RemoveTexture(2);
             UseMetallicMap = false;
         }
@@ -298,6 +323,7 @@ namespace KrayonCore
         {
             RoughnessTexture?.Dispose();
             RoughnessTexture = null;
+            RoughnessTextureGUID = Guid.Empty;
             RemoveTexture(3);
             UseRoughnessMap = false;
         }
@@ -306,6 +332,7 @@ namespace KrayonCore
         {
             AOTexture?.Dispose();
             AOTexture = null;
+            AOTextureGUID = Guid.Empty;
             RemoveTexture(4);
             UseAOMap = false;
         }
@@ -314,6 +341,7 @@ namespace KrayonCore
         {
             EmissiveTexture?.Dispose();
             EmissiveTexture = null;
+            EmissiveTextureGUID = Guid.Empty;
             RemoveTexture(5);
             UseEmissiveMap = false;
         }
@@ -328,12 +356,12 @@ namespace KrayonCore
             RemoveEmissiveTexture();
         }
 
-        public void LoadTexture(string uniformName, string path, int slot = 0, bool generateMipmaps = true, bool flip = true)
+        public void LoadTexture(string uniformName, Guid guid, int slot = 0, bool generateMipmaps = true, bool flip = true)
         {
             if (_textures.ContainsKey(slot))
                 _textures[slot].Dispose();
 
-            var texture = new TextureLoader(uniformName, path, generateMipmaps, flip);
+            var texture = new TextureLoader(uniformName, guid, generateMipmaps, flip);
             SetTexture(uniformName, texture, slot);
         }
 
@@ -421,40 +449,13 @@ namespace KrayonCore
             SetInt(name, value ? 1 : 0);
         }
 
-        public void SetIntCached(string name, int value)
-        {
-            _uniformCache[name] = value;
-        }
-
-        public void SetFloatCached(string name, float value)
-        {
-            _uniformCache[name] = value;
-        }
-
-        public void SetVector2Cached(string name, Vector2 value)
-        {
-            _uniformCache[name] = value;
-        }
-
-        public void SetVector3Cached(string name, Vector3 value)
-        {
-            _uniformCache[name] = value;
-        }
-
-        public void SetVector4Cached(string name, Vector4 value)
-        {
-            _uniformCache[name] = value;
-        }
-
-        public void SetColorCached(string name, Color4 color)
-        {
-            _uniformCache[name] = color;
-        }
-
-        public void SetMatrix4Cached(string name, Matrix4 matrix)
-        {
-            _uniformCache[name] = matrix;
-        }
+        public void SetIntCached(string name, int value) => _uniformCache[name] = value;
+        public void SetFloatCached(string name, float value) => _uniformCache[name] = value;
+        public void SetVector2Cached(string name, Vector2 value) => _uniformCache[name] = value;
+        public void SetVector3Cached(string name, Vector3 value) => _uniformCache[name] = value;
+        public void SetVector4Cached(string name, Vector4 value) => _uniformCache[name] = value;
+        public void SetColorCached(string name, Color4 color) => _uniformCache[name] = color;
+        public void SetMatrix4Cached(string name, Matrix4 matrix) => _uniformCache[name] = matrix;
 
         public T GetCached<T>(string name)
         {
@@ -470,7 +471,6 @@ namespace KrayonCore
 
             location = _shader.GetUniformLocation(name);
             _uniformLocations[name] = location;
-
             return location;
         }
 
@@ -483,17 +483,12 @@ namespace KrayonCore
             _uniformLocations[name] = location;
 
             if (location == -1)
-            {
                 Console.WriteLine($"Warning: Uniform '{name}' not found in shader for material '{Name}'");
-            }
 
             return location;
         }
 
-        public void ClearCache()
-        {
-            _uniformCache.Clear();
-        }
+        public void ClearCache() => _uniformCache.Clear();
 
         public void SetAlbedo(Vector3 color)
         {
@@ -550,20 +545,11 @@ namespace KrayonCore
             float? ao = null,
             Vector3? emissive = null)
         {
-            if (albedo.HasValue)
-                AlbedoColor = albedo.Value;
-
-            if (metallic.HasValue)
-                Metallic = MathHelper.Clamp(metallic.Value, 0f, 1f);
-
-            if (roughness.HasValue)
-                Roughness = MathHelper.Clamp(roughness.Value, 0f, 1f);
-
-            if (ao.HasValue)
-                AO = MathHelper.Clamp(ao.Value, 0f, 1f);
-
-            if (emissive.HasValue)
-                EmissiveColor = emissive.Value;
+            if (albedo.HasValue) AlbedoColor = albedo.Value;
+            if (metallic.HasValue) Metallic = MathHelper.Clamp(metallic.Value, 0f, 1f);
+            if (roughness.HasValue) Roughness = MathHelper.Clamp(roughness.Value, 0f, 1f);
+            if (ao.HasValue) AO = MathHelper.Clamp(ao.Value, 0f, 1f);
+            if (emissive.HasValue) EmissiveColor = emissive.Value;
 
             SetPBRProperties();
         }

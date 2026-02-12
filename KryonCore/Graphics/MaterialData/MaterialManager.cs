@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
 using Newtonsoft.Json.Linq;
 using OpenTK.Mathematics;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace KrayonCore
 {
@@ -28,11 +30,10 @@ namespace KrayonCore
             var material = new Material(name, shader);
             _materials[name] = material;
             Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
-
             return material;
         }
 
-        public Material Create(string name, string vertexPath, string fragmentPath)
+        public Material Create(string name, Guid vertexGuid, Guid fragmentGuid)
         {
             if (_materials.ContainsKey(name))
             {
@@ -40,24 +41,11 @@ namespace KrayonCore
                 return _materials[name];
             }
 
-            if (!File.Exists(vertexPath))
-            {
-                Console.WriteLine($"[MaterialManager] Cannot create material '{name}': vertex shader not found at {vertexPath}");
-                return null;
-            }
-
-            if (!File.Exists(fragmentPath))
-            {
-                Console.WriteLine($"[MaterialManager] Cannot create material '{name}': fragment shader not found at {fragmentPath}");
-                return null;
-            }
-
             try
             {
-                var material = new Material(name, vertexPath, fragmentPath);
+                var material = new Material(name, vertexGuid, fragmentGuid);
                 _materials[name] = material;
                 Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
-
                 return material;
             }
             catch (Exception ex)
@@ -67,7 +55,7 @@ namespace KrayonCore
             }
         }
 
-        public Material Create(string name, string shaderBasePath)
+        public Material Create(string name, string shaderBaseName)
         {
             if (_materials.ContainsKey(name))
             {
@@ -75,15 +63,11 @@ namespace KrayonCore
                 return _materials[name];
             }
 
-            string vertPath = $"{shaderBasePath}.vert";
-            string fragPath = $"{shaderBasePath}.frag";
-
             try
             {
-                var material = new Material(name, shaderBasePath);
+                var material = new Material(name, shaderBaseName);
                 _materials[name] = material;
                 Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
-
                 return material;
             }
             catch (Exception ex)
@@ -154,17 +138,17 @@ namespace KrayonCore
                 JObject mat = new JObject
                 {
                     ["Name"] = MT.Name,
-                    ["ShaderPath"] = MT.Shader.VertexPath,
 
-                    // Texturas PBR
-                    ["AlbedoPath"] = MT.AlbedoTexture?.GetTexturePath,
-                    ["NormalPath"] = MT.NormalTexture?.GetTexturePath,
-                    ["MetallicPath"] = MT.MetallicTexture?.GetTexturePath,
-                    ["RoughnessPath"] = MT.RoughnessTexture?.GetTexturePath,
-                    ["AOPath"] = MT.AOTexture?.GetTexturePath,
-                    ["EmissivePath"] = MT.EmissiveTexture?.GetTexturePath,
+                    ["VertexShaderGUID"] = MT.VertexShaderGUID != Guid.Empty ? MT.VertexShaderGUID.ToString() : null,
+                    ["FragmentShaderGUID"] = MT.FragmentShaderGUID != Guid.Empty ? MT.FragmentShaderGUID.ToString() : null,
 
-                    // Propiedades PBR
+                    ["AlbedoTextureGUID"] = MT.AlbedoTextureGUID != Guid.Empty ? MT.AlbedoTextureGUID.ToString() : null,
+                    ["NormalTextureGUID"] = MT.NormalTextureGUID != Guid.Empty ? MT.NormalTextureGUID.ToString() : null,
+                    ["MetallicTextureGUID"] = MT.MetallicTextureGUID != Guid.Empty ? MT.MetallicTextureGUID.ToString() : null,
+                    ["RoughnessTextureGUID"] = MT.RoughnessTextureGUID != Guid.Empty ? MT.RoughnessTextureGUID.ToString() : null,
+                    ["AOTextureGUID"] = MT.AOTextureGUID != Guid.Empty ? MT.AOTextureGUID.ToString() : null,
+                    ["EmissiveTextureGUID"] = MT.EmissiveTextureGUID != Guid.Empty ? MT.EmissiveTextureGUID.ToString() : null,
+
                     ["AlbedoColor"] = new JObject
                     {
                         ["X"] = MT.AlbedoColor.X,
@@ -181,7 +165,6 @@ namespace KrayonCore
                         ["Z"] = MT.EmissiveColor.Z
                     },
 
-                    // Flags de uso de texturas
                     ["UseAlbedoMap"] = MT.UseAlbedoMap,
                     ["UseNormalMap"] = MT.UseNormalMap,
                     ["UseMetallicMap"] = MT.UseMetallicMap,
@@ -189,7 +172,6 @@ namespace KrayonCore
                     ["UseAOMap"] = MT.UseAOMap,
                     ["UseEmissiveMap"] = MT.UseEmissiveMap,
 
-                    // Propiedades adicionales
                     ["NormalMapIntensity"] = MT.NormalMapIntensity,
                     ["AmbientLight"] = new JObject
                     {
@@ -205,19 +187,44 @@ namespace KrayonCore
 
             data["Materials"] = materialsObj;
 
-            File.WriteAllText(AssetManager.BasePath + "materials.json", data.ToString());
+            string savePath = AssetManager.BasePath + "materials.json";
+            File.WriteAllText(savePath, data.ToString());
             Console.WriteLine($"[MaterialManager] Saved {_materials.Count} materials to materials.json");
         }
 
         public void LoadMaterialsData()
         {
-            if (!File.Exists(AssetManager.BasePath + "materials.json"))
+            string materialsPath = AssetManager.BasePath + "materials.json";
+
+            string jsonContent;
+
+            if (AppInfo.IsCompiledGame)
             {
-                Console.WriteLine("[MaterialManager] materials.json not found");
-                return;
+                var asset = AssetManager.FindByPath("materials.json");
+                if (asset == null)
+                {
+                    Console.WriteLine("[MaterialManager] materials.json not found in AssetManager");
+                    return;
+                }
+                byte[] bytes = AssetManager.GetBytes(asset.Guid);
+                if (bytes == null)
+                {
+                    Console.WriteLine("[MaterialManager] Could not read materials.json");
+                    return;
+                }
+                jsonContent = Encoding.UTF8.GetString(bytes);
+            }
+            else
+            {
+                if (!File.Exists(materialsPath))
+                {
+                    Console.WriteLine("[MaterialManager] materials.json not found");
+                    return;
+                }
+                jsonContent = File.ReadAllText(materialsPath);
             }
 
-            JObject root = JObject.Parse(File.ReadAllText(AssetManager.BasePath + "materials.json"));
+            JObject root = JObject.Parse(jsonContent);
             JObject materialsObj = (JObject)root["Materials"];
 
             if (materialsObj == null)
@@ -234,20 +241,17 @@ namespace KrayonCore
                 JObject matJson = (JObject)matProp.Value;
 
                 string name = matJson["Name"]?.ToString();
-                string fragPath = matJson["ShaderPath"]?.ToString();
 
-                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(fragPath))
+                Guid vertexGuid = ParseGuid(matJson["VertexShaderGUID"]);
+                Guid fragmentGuid = ParseGuid(matJson["FragmentShaderGUID"]);
+
+                if (string.IsNullOrEmpty(name) || vertexGuid == Guid.Empty || fragmentGuid == Guid.Empty)
                 {
                     Console.WriteLine($"[MaterialManager] Skipping invalid material entry: {key}");
                     continue;
                 }
 
-                string shaderBasePath = Path.Combine(
-                    Path.GetDirectoryName(fragPath) ?? "",
-                    Path.GetFileNameWithoutExtension(fragPath)
-                );
-
-                Material material = Create(name, shaderBasePath);
+                Material material = Create(name, vertexGuid, fragmentGuid);
 
                 if (material == null)
                 {
@@ -255,34 +259,20 @@ namespace KrayonCore
                     continue;
                 }
 
+                Guid albedoGuid = ParseGuid(matJson["AlbedoTextureGUID"]);
+                Guid normalGuid = ParseGuid(matJson["NormalTextureGUID"]);
+                Guid metallicGuid = ParseGuid(matJson["MetallicTextureGUID"]);
+                Guid roughnessGuid = ParseGuid(matJson["RoughnessTextureGUID"]);
+                Guid aoGuid = ParseGuid(matJson["AOTextureGUID"]);
+                Guid emissiveGuid = ParseGuid(matJson["EmissiveTextureGUID"]);
 
-                // Cargar texturas PBR
-                string albedoPath = matJson["AlbedoPath"]?.ToString();
-                string normalPath = matJson["NormalPath"]?.ToString();
-                string metallicPath = matJson["MetallicPath"]?.ToString();
-                string roughnessPath = matJson["RoughnessPath"]?.ToString();
-                string aoPath = matJson["AOPath"]?.ToString();
-                string emissivePath = matJson["EmissivePath"]?.ToString();
+                if (albedoGuid != Guid.Empty) material.LoadAlbedoTexture(albedoGuid);
+                if (normalGuid != Guid.Empty) material.LoadNormalTexture(normalGuid);
+                if (metallicGuid != Guid.Empty) material.LoadMetallicTexture(metallicGuid);
+                if (roughnessGuid != Guid.Empty) material.LoadRoughnessTexture(roughnessGuid);
+                if (aoGuid != Guid.Empty) material.LoadAOTexture(aoGuid);
+                if (emissiveGuid != Guid.Empty) material.LoadEmissiveTexture(emissiveGuid);
 
-                if (!string.IsNullOrEmpty(albedoPath))
-                    material.LoadAlbedoTexture(albedoPath);
-
-                if (!string.IsNullOrEmpty(normalPath))
-                    material.LoadNormalTexture(normalPath);
-
-                if (!string.IsNullOrEmpty(metallicPath))
-                    material.LoadMetallicTexture(metallicPath);
-
-                if (!string.IsNullOrEmpty(roughnessPath))
-                    material.LoadRoughnessTexture(roughnessPath);
-
-                if (!string.IsNullOrEmpty(aoPath))
-                    material.LoadAOTexture(aoPath);
-
-                if (!string.IsNullOrEmpty(emissivePath))
-                    material.LoadEmissiveTexture(emissivePath);
-
-                // Cargar propiedades PBR
                 var albedoColorObj = matJson["AlbedoColor"] as JObject;
                 if (albedoColorObj != null)
                 {
@@ -307,7 +297,6 @@ namespace KrayonCore
                     );
                 }
 
-                // Cargar flags de uso de texturas
                 material.UseAlbedoMap = matJson["UseAlbedoMap"]?.Value<bool>() ?? false;
                 material.UseNormalMap = matJson["UseNormalMap"]?.Value<bool>() ?? false;
                 material.UseMetallicMap = matJson["UseMetallicMap"]?.Value<bool>() ?? false;
@@ -315,7 +304,6 @@ namespace KrayonCore
                 material.UseAOMap = matJson["UseAOMap"]?.Value<bool>() ?? false;
                 material.UseEmissiveMap = matJson["UseEmissiveMap"]?.Value<bool>() ?? false;
 
-                // Cargar propiedades adicionales
                 material.NormalMapIntensity = matJson["NormalMapIntensity"]?.Value<float>() ?? 1f;
 
                 var ambientLightObj = matJson["AmbientLight"] as JObject;
@@ -330,13 +318,20 @@ namespace KrayonCore
 
                 material.AmbientStrength = matJson["AmbientStrength"]?.Value<float>() ?? 1f;
 
-                // Aplicar todas las propiedades PBR
                 material.SetPBRProperties();
 
-                Console.WriteLine($"[MaterialManager] ✓ Material '{name}' loaded successfully");
+                Console.WriteLine($"[MaterialManager] Material '{name}' loaded successfully");
             }
 
             Console.WriteLine($"[MaterialManager] Loaded {_materials.Count} materials from materials.json");
+        }
+
+        private static Guid ParseGuid(JToken token)
+        {
+            string str = token?.ToString();
+            if (!string.IsNullOrEmpty(str) && Guid.TryParse(str, out Guid result))
+                return result;
+            return Guid.Empty;
         }
     }
 }

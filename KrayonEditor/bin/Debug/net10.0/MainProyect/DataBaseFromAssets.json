@@ -14401,11 +14401,6 @@
       "Type": "Unknown"
     },
     {
-      "Guid": "dafbc388-1606-4749-b0b3-7e7d1525e43a",
-      "Path": "materials.json",
-      "Type": "Unknown"
-    },
-    {
       "Guid": "eeb854a7-209b-414a-8283-5a0633450b34",
       "Path": "scenes/GameScene.scene",
       "Type": "Unknown"
@@ -14466,9 +14461,14 @@
       "Type": "Unknown"
     },
     {
-      "Guid": "b0ecb1cd-f353-4616-b1fc-76710310f771",
-      "Path": "scripts/Move.cs",
+      "Guid": "d97bb481-4644-41dd-980a-edb01acce0a5",
+      "Path": "scripts/JumpOnTrigger.cs",
       "Type": "Script"
+    },
+    {
+      "Guid": "f74927e5-5805-48fb-986c-67254abc5fbd",
+      "Path": "materials.json",
+      "Type": "Unknown"
     }
   ],
   "Folders": [

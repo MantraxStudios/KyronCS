@@ -725,7 +725,11 @@
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj": {
+                "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

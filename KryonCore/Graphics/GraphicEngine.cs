@@ -47,17 +47,15 @@ namespace KrayonCore
 
         private void CreateDefaultMaterials()
         {
-            var textureMaterial = _materials.Create("basic", "shaders/basic");
+            Guid basicVertGuid = Guid.Parse("52ccc06b-314c-4014-afbc-b0996db89a63"); // basic.vert
+            Guid basicFragGuid = Guid.Parse("81d9e26e-76d6-4f53-a5e0-265526ea6135"); // basic.frag
+            Guid fullscreenVertGuid = Guid.Parse("3c4df83f-75b0-4c42-8ceb-479039ca80c5"); // fullscreen.vert
+            Guid fullscreenFragGuid = Guid.Parse("30053d51-0fc7-4754-ba24-e4c347e44971"); // fullscreen.frag
+
+            var textureMaterial = _materials.Create("basic", basicVertGuid, basicFragGuid);
             textureMaterial?.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
 
-            if (textureMaterial != null)
-            {
-                textureMaterial.LoadMainTexture("textures/sprites/Environment/dirt.png",
-                                               generateMipmaps: true, flip: true);
-            }
-
-            _materials.Create("fullscreen", "shaders/fullscreen");
-            _materials.Create("screen", "shaders/screen");
+            _materials.Create("fullscreen", fullscreenVertGuid, fullscreenFragGuid);
         }
 
         private void ConfigureDefaultPostProcessing()

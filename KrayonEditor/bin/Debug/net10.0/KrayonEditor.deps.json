@@ -300,6 +300,7 @@
           "AssimpNet": "4.1.0",
           "BepuPhysics": "2.4.0",
           "Jint": "4.5.0",
+          "KrayonCompiler": "1.0.0",
           "LuaCSharp": "0.5.3",
           "Newtonsoft.Json": "13.0.4",
           "OpenTK": "4.9.4",

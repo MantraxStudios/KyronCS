@@ -167,6 +167,34 @@ namespace KrayonCore
             return model;
         }
 
+        public static Model LoadFromBytes(byte[] data, string extension)
+        {
+            var model = new Model();
+
+            AssimpContext importer = new AssimpContext();
+
+            using MemoryStream ms = new MemoryStream(data);
+
+            Scene scene = importer.ImportFileFromStream(
+                ms,
+                PostProcessSteps.Triangulate |
+                PostProcessSteps.FlipUVs |
+                PostProcessSteps.CalculateTangentSpace,
+                extension 
+            );
+
+            if (scene == null || scene.SceneFlags.HasFlag(SceneFlags.Incomplete) || scene.RootNode == null)
+                throw new Exception("Error loading model from memory");
+
+            model.ProcessMaterials(scene, "InMemory:" + extension);
+            model.ProcessNode(scene.RootNode, scene);
+            model.CombineSubMeshes();
+            model.CalculateAABB();
+
+
+            return model;
+        }
+
         private void ProcessMaterials(Scene scene, string modelPath)
         {
             string modelDirectory = System.IO.Path.GetDirectoryName(modelPath) ?? "";

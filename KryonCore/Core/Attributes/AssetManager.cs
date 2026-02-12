@@ -12,10 +12,12 @@ namespace KrayonCore.Core.Attributes
         public static string DataBase = "MainProyect/DataBaseFromAssets.json";
         public static string CompilerPath = "MainProyect/CompileData/";
         public static string ClientDLLPath = "MainProyect/bin/Debug/net10.0/";
+        public static string GamePak = "MainProyect/CompileData/Game.Pak";
         public static string VSProyect = "MainProyect/";
         public static string CSProj = "MainProyect/KrayonClient.csproj";
         private static Dictionary<Guid, AssetRecord> _assets = new();
         private static Dictionary<Guid, FolderRecord> _folders = new();
+
 
         public static void Initialize()
         {
@@ -30,6 +32,37 @@ namespace KrayonCore.Core.Attributes
 
         public static AssetRecord Get(Guid guid)
             => _assets.TryGetValue(guid, out var asset) ? asset : null;
+
+        public static byte[] GetBytes(Guid guid)
+        {
+            if (!_assets.TryGetValue(guid, out var asset))
+            {
+                Console.WriteLine($"Asset {guid} not found");
+                return null;
+            }
+
+            try
+            {
+                if (AppInfo.IsCompiledGame)
+                {
+                    using var pak = new KrayonCompiler.PakFile(GamePak);
+                    return pak.Load(asset.Guid.ToString());
+                }
+
+                string fullPath = Path.Combine(BasePath, asset.Path);
+                if (!File.Exists(fullPath))
+                {
+                    Console.WriteLine($"File not found: {fullPath}");
+                    return null;
+                }
+                return File.ReadAllBytes(fullPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading asset bytes: {ex.Message}");
+                return null;
+            }
+        }
 
         public static IEnumerable<AssetRecord> All()
             => _assets.Values;
