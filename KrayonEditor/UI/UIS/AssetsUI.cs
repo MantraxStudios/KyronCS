@@ -452,7 +452,11 @@ namespace KrayonEditor.UI
                 string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
                 if (ext == ".cs")
                 {
-                    OpenVSCodeProject();
+                    string fullFilePath = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path));
+                    if (File.Exists(fullFilePath))
+                        OpenVSCodeProject(fullFilePath);
+                    else
+                        OpenVSCodeProject();
                 }
             }
 
@@ -505,7 +509,8 @@ namespace KrayonEditor.UI
         }
 
         private static readonly string DefaultScriptTemplate =
-@"using KrayonClient;
+@"using KrayonCore;
+using OpenTK.Mathematics;
 
 public class {SCRIPT_NAME} : KrayonBehaviour
 {
@@ -557,7 +562,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
                 string previewPath = string.IsNullOrEmpty(_newScriptFolder)
                     ? $"{_newScriptName}.cs"
                     : $"{_newScriptFolder}/{_newScriptName}.cs";
-                string fullPath = Path.Combine(AssetManager.VSProyect, previewPath);
+                string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
                 bool alreadyExists = File.Exists(fullPath);
 
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
@@ -612,7 +617,10 @@ public class {SCRIPT_NAME} : KrayonBehaviour
                 string content = DefaultScriptTemplate.Replace("{SCRIPT_NAME}", _newScriptName);
                 File.WriteAllText(fullPath, content);
 
-                OpenVSCodeProject();
+                AssetManager.Import(relativePath);
+                MarkDirty();
+
+                OpenVSCodeProject(fullPath);
             }
             catch (System.Exception ex)
             {
@@ -974,7 +982,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
             }
         }
 
-        private static void OpenVSCodeProject()
+        private static void OpenVSCodeProject(string filePath = null)
         {
             string codePath = FindVSCodePath();
 
@@ -982,10 +990,14 @@ public class {SCRIPT_NAME} : KrayonBehaviour
             {
                 try
                 {
+                    string args = $"\"{AssetManager.VSProyect}\"";
+                    if (!string.IsNullOrEmpty(filePath))
+                        args += $" \"{filePath}\"";
+
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = codePath,
-                        Arguments = $"\"{AssetManager.VSProyect}\"",
+                        Arguments = args,
                         UseShellExecute = false
                     });
                 }

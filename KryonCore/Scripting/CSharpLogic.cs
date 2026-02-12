@@ -1,4 +1,5 @@
 ﻿using KrayonCore.Core.Attributes;
+using KrayonCore.Physics;
 using System;
 using System.Reflection;
 
@@ -11,6 +12,17 @@ namespace KrayonCore.Core.Components
         private MethodInfo _startMethod = null;
         private MethodInfo _updateMethod = null;
         private MethodInfo _destroyMethod = null;
+
+        // Collision/Trigger methods (resolved via reflection)
+        private MethodInfo _onCollisionEnterMethod = null;
+        private MethodInfo _onCollisionStayMethod = null;
+        private MethodInfo _onCollisionExitMethod = null;
+        private MethodInfo _onTriggerEnterMethod = null;
+        private MethodInfo _onTriggerStayMethod = null;
+        private MethodInfo _onTriggerExitMethod = null;
+
+        private Rigidbody _rigidbody = null;
+        private bool _subscribedToEvents = false;
 
         [ToStorage]
         public string Script
@@ -26,7 +38,6 @@ namespace KrayonCore.Core.Components
 
         public override void Awake()
         {
-            // Asegurar que el manager está inicializado
             CSharpScriptManager.Instance.Initialize();
 
             if (!string.IsNullOrEmpty(_script))
@@ -53,6 +64,7 @@ namespace KrayonCore.Core.Components
 
         public override void OnDestroy()
         {
+            UnsubscribeFromCollisionEvents();
             InvokeMethod(_destroyMethod);
             _scriptInstance = null;
         }
@@ -68,10 +80,21 @@ namespace KrayonCore.Core.Components
 
                 if (_scriptInstance == null) return;
 
-                // Obtener métodos
+                // Obtener métodos de lifecycle
                 _startMethod = CSharpScriptManager.Instance.GetMethod(_script, "Start");
                 _updateMethod = CSharpScriptManager.Instance.GetMethod(_script, "Update");
                 _destroyMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnDestroy");
+
+                // Obtener métodos de colisión/trigger
+                _onCollisionEnterMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnCollisionEnter");
+                _onCollisionStayMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnCollisionStay");
+                _onCollisionExitMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnCollisionExit");
+                _onTriggerEnterMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnTriggerEnter");
+                _onTriggerStayMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnTriggerStay");
+                _onTriggerExitMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnTriggerExit");
+
+                // Suscribirse a eventos del Rigidbody si hay métodos de colisión
+                SubscribeToCollisionEvents();
 
                 Console.WriteLine($"[CSharp] Script '{_script}' inicializado en {GameObject.Name}");
             }
@@ -94,7 +117,8 @@ namespace KrayonCore.Core.Components
 
             Console.WriteLine($"[CSharp] Reiniciando script '{_script}' en {GameObject.Name}...");
 
-            // Llamar OnDestroy de la instancia actual
+            // Desuscribir eventos y llamar OnDestroy de la instancia actual
+            UnsubscribeFromCollisionEvents();
             InvokeMethod(_destroyMethod);
 
             // Limpiar la instancia actual
@@ -102,6 +126,12 @@ namespace KrayonCore.Core.Components
             _startMethod = null;
             _updateMethod = null;
             _destroyMethod = null;
+            _onCollisionEnterMethod = null;
+            _onCollisionStayMethod = null;
+            _onCollisionExitMethod = null;
+            _onTriggerEnterMethod = null;
+            _onTriggerStayMethod = null;
+            _onTriggerExitMethod = null;
 
             // Cargar nueva instancia
             LoadScript();
@@ -124,5 +154,74 @@ namespace KrayonCore.Core.Components
                 Console.WriteLine($"[CSharp Error] {ex.InnerException?.Message ?? ex.Message}");
             }
         }
+
+        // ─────────────────────────────────────────────────────────
+        //  Collision / Trigger event wiring
+        // ─────────────────────────────────────────────────────────
+
+        private void SubscribeToCollisionEvents()
+        {
+            UnsubscribeFromCollisionEvents();
+
+            bool hasAnyCollisionMethod =
+                _onCollisionEnterMethod != null || _onCollisionStayMethod != null || _onCollisionExitMethod != null ||
+                _onTriggerEnterMethod != null || _onTriggerStayMethod != null || _onTriggerExitMethod != null;
+
+            if (!hasAnyCollisionMethod) return;
+
+            _rigidbody = GameObject?.GetComponent<Rigidbody>();
+            if (_rigidbody == null) return;
+
+            if (_onCollisionEnterMethod != null) _rigidbody.CollisionEnter += HandleCollisionEnter;
+            if (_onCollisionStayMethod != null) _rigidbody.CollisionStay += HandleCollisionStay;
+            if (_onCollisionExitMethod != null) _rigidbody.CollisionExit += HandleCollisionExit;
+            if (_onTriggerEnterMethod != null) _rigidbody.TriggerEnter += HandleTriggerEnter;
+            if (_onTriggerStayMethod != null) _rigidbody.TriggerStay += HandleTriggerStay;
+            if (_onTriggerExitMethod != null) _rigidbody.TriggerExit += HandleTriggerExit;
+
+            _subscribedToEvents = true;
+        }
+
+        private void UnsubscribeFromCollisionEvents()
+        {
+            if (!_subscribedToEvents || _rigidbody == null) return;
+
+            _rigidbody.CollisionEnter -= HandleCollisionEnter;
+            _rigidbody.CollisionStay -= HandleCollisionStay;
+            _rigidbody.CollisionExit -= HandleCollisionExit;
+            _rigidbody.TriggerEnter -= HandleTriggerEnter;
+            _rigidbody.TriggerStay -= HandleTriggerStay;
+            _rigidbody.TriggerExit -= HandleTriggerExit;
+
+            _rigidbody = null;
+            _subscribedToEvents = false;
+        }
+
+        private GameObject ResolveOtherGameObject(ContactInfo contact)
+        {
+            var eventSystem = GameObject?.Scene?.PhysicsWorld?.EventSystem;
+            return eventSystem?.GetGameObject(contact.OtherCollidable);
+        }
+
+        private void InvokeCollisionMethod(MethodInfo method, ContactInfo contact)
+        {
+            if (method == null || _scriptInstance == null) return;
+            try
+            {
+                var otherGo = ResolveOtherGameObject(contact);
+                method.Invoke(_scriptInstance, new object[] { otherGo });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CSharp Collision Error] {ex.InnerException?.Message ?? ex.Message}");
+            }
+        }
+
+        private void HandleCollisionEnter(ContactInfo contact) => InvokeCollisionMethod(_onCollisionEnterMethod, contact);
+        private void HandleCollisionStay(ContactInfo contact) => InvokeCollisionMethod(_onCollisionStayMethod, contact);
+        private void HandleCollisionExit(ContactInfo contact) => InvokeCollisionMethod(_onCollisionExitMethod, contact);
+        private void HandleTriggerEnter(ContactInfo contact) => InvokeCollisionMethod(_onTriggerEnterMethod, contact);
+        private void HandleTriggerStay(ContactInfo contact) => InvokeCollisionMethod(_onTriggerStayMethod, contact);
+        private void HandleTriggerExit(ContactInfo contact) => InvokeCollisionMethod(_onTriggerExitMethod, contact);
     }
 }

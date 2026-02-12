@@ -2,21 +2,215 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "9492e629-85d3-46c7-af31-481a9d792360",
-      "Name": "GameObject_0",
+      "Id": "615e51da-49b6-47ba-87b6-805e0a8f1b9a",
+      "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "01904cb3-0f99-494d-9ceb-b261cdc1cb0d",
+          "ComponentId": "6d4f1e72-2fe7-4352-ad37-77d5cda8e1a4",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 7.223895,
+              "x": 0,
+              "y": -1.5266985,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
               "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 5,
+              "y": 1,
+              "z": 5
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "4cce9784-4201-4e27-9d94-7ec6a60ad3b3",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "3d361d14-7340-48cd-b35c-0968515455a0",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "64fc9562-c87c-4959-8b84-4becf6aab27a",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.BodyMotionType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Dynamic"
+            },
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Mass": 1,
+            "UseGravity": true,
+            "SleepThreshold": 0.01,
+            "IsKinematic": true,
+            "Layer": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Physics.PhysicsLayer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Default"
+            },
+            "IsTrigger": false,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": false,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": false,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
+          }
+        }
+      ]
+    },
+    {
+      "Id": "32e5f837-3b9c-4539-9d3f-506963cf78f7",
+      "Name": "Cube_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "d4dc0c8a-73d6-49fe-a5be-6b1ec6abd068",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 1.6156095E-07,
+              "y": 0.4730255,
+              "z": -1.2038144E-11
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 1.2565886E-12,
+              "y": -7.705201E-09,
+              "z": -6.0793987E-12,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "493e0fbf-ad16-4db4-888d-7b3caa4dcd78",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "3d361d14-7340-48cd-b35c-0968515455a0",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "afb7ebe0-438f-42f8-92e8-38896ba4ceac",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.BodyMotionType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Dynamic"
+            },
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Mass": 1,
+            "UseGravity": false,
+            "SleepThreshold": 0.01,
+            "IsKinematic": true,
+            "Layer": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Physics.PhysicsLayer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Default"
+            },
+            "IsTrigger": true,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": false,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": false,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Core.Components.CSharpLogic, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "0be6a99d-6355-45cc-a620-6b8efb9207df",
+          "Enabled": true,
+          "SerializedFields": {
+            "Script": "Move"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "0a3c5aba-21dd-412f-a50e-18102d0b3e05",
+      "Name": "Cube_2",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "fdbde697-47d3-4369-a98f-a9338a514011",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 6.127541,
               "z": 0
             },
             "Rotation": {
@@ -35,11 +229,61 @@
           }
         },
         {
-          "TypeName": "KrayonCore.Core.Components.CSharpLogic, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b66c57d9-c9d3-4d26-a9a5-9ae4dced21c1",
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "d68f454e-f4dc-453c-9d1b-7bb46b0f0b44",
           "Enabled": true,
           "SerializedFields": {
-            "Script": "MyFirstScript"
+            "ModelPath": "3d361d14-7340-48cd-b35c-0968515455a0",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "c754af8f-377c-4e72-b3ab-e50a971fa604",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.BodyMotionType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Dynamic"
+            },
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Mass": 1,
+            "UseGravity": true,
+            "SleepThreshold": 0.01,
+            "IsKinematic": false,
+            "Layer": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Physics.PhysicsLayer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Default"
+            },
+            "IsTrigger": false,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": false,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": false,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
           }
         }
       ]

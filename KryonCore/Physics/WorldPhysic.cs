@@ -188,6 +188,16 @@ namespace KrayonCore.Physics
             return handler;
         }
 
+        /// <summary>
+        /// Resolves a CollidableId to its owning GameObject (if the handler is a Component).
+        /// </summary>
+        public GameObject GetGameObject(CollidableId id)
+        {
+            if (_handlers.TryGetValue(id, out var handler) && handler is Component comp)
+                return comp.GameObject;
+            return null;
+        }
+
         // ── Called from narrow phase (multithreaded!) ──
 
         internal struct PairReport
