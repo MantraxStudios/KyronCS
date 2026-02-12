@@ -54,6 +54,8 @@ namespace KrayonCore
 
         public override void Awake()
         {
+            Console.WriteLine($"MATERIAL EN ESTE OBJETO {MaterialPaths.Length}");
+
             foreach (var item in MaterialPaths)
             {
                 Console.WriteLine($"Material: {item} | Object: {GameObject.Name}");
@@ -93,6 +95,7 @@ namespace KrayonCore
                     if (material != null)
                     {
                         _materials[i] = material;
+                        Console.WriteLine($"Material Cargado '{MaterialPaths[i]}' para el índice {i}");
                     }
                     else
                     {
@@ -207,7 +210,6 @@ namespace KrayonCore
 
             _materials[index] = material;
 
-            // Actualizar MaterialPaths para que se guarde correctamente
             if (index >= MaterialPaths.Length)
             {
                 var newPaths = new string[index + 1];

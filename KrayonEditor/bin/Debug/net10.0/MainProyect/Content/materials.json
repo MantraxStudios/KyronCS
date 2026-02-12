@@ -147,6 +147,376 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "metal_mp_5": {
+      "Name": "metal_mp_5",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "fa9e8fc9-3adb-45f0-bd05-71e7f3816a6a",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "old_mattress_mp_1": {
+      "Name": "old_mattress_mp_1",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "bbfbf1fc-49af-41b8-8162-38eee17c2212",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "floor_1": {
+      "Name": "floor_1",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "1ce96d43-8c41-42d1-9dd3-be8272c45372",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "concrete_1": {
+      "Name": "concrete_1",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "39bb846f-cc9b-41b5-be57-34d2218b9b52",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "wall_6": {
+      "Name": "wall_6",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "df2da68b-883a-4ee7-8f8e-8f79c2eb91dd",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "door_frame_wood_1": {
+      "Name": "door_frame_wood_1",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "e5900e36-83e3-4dd1-91d0-768d9feea886",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "window_2": {
+      "Name": "window_2",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "cd6d11e7-b6a2-4e10-b3de-9cc4b76ba47d",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "lamp_3": {
+      "Name": "lamp_3",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "6ea87544-101a-4215-bc90-e66f45255880",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "wood_6": {
+      "Name": "wood_6",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "11e5aa63-6e47-41de-8979-c546c7684e12",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "pillow_mp_1": {
+      "Name": "pillow_mp_1",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "b8ab1c6a-a86e-40e9-807a-fa6ae5e3decc",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }

@@ -28,7 +28,7 @@ namespace KrayonCore
         public event Action? CloseEvent;
 
         public event Action<TextInputEventArgs>? TextInputEvent;
-        public event Action<string[]>? FileDropEvent;  // NUEVO: Evento para archivos arrastrados
+        public event Action<string[]>? FileDropEvent; 
 
         public static GraphicsEngine? Instance { get; private set; }
 

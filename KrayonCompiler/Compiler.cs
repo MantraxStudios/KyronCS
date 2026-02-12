@@ -16,13 +16,26 @@ namespace KrayonCompiler
     {
         public static ulong Hash(string text)
         {
+            // Normalize: lowercase + forward slashes
+            text = Normalize(text);
+
             ulong hash = 14695981039346656037UL;
-            foreach (char c in text)
+            // Use UTF-8 bytes instead of truncating chars to byte
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            foreach (byte b in bytes)
             {
-                hash ^= (byte)c;
+                hash ^= b;
                 hash *= 1099511628211UL;
             }
             return hash;
+        }
+
+        public static string Normalize(string assetName)
+        {
+            return assetName
+                .Replace('\\', '/')
+                .ToLowerInvariant()
+                .TrimStart('/');
         }
     }
 
@@ -41,6 +54,23 @@ namespace KrayonCompiler
     {
         public static void Build(string pakPath, Dictionary<string, string> assets)
         {
+            var hashToName = new Dictionary<ulong, string>();
+            foreach (var pair in assets)
+            {
+                string normalized = HashUtil.Normalize(pair.Key);
+                ulong id = HashUtil.Hash(pair.Key);
+
+                if (hashToName.TryGetValue(id, out string existing))
+                {
+                    if (existing != normalized)
+                        throw new Exception($"Hash collision between '{existing}' and '{normalized}'");
+                    else
+                        Console.WriteLine($"[KRCompiler] Warning: duplicate asset name '{normalized}', skipping.");
+                    continue;
+                }
+                hashToName[id] = normalized;
+            }
+
             using var fs = new FileStream(pakPath, FileMode.Create);
             using var bw = new BinaryWriter(fs);
 
@@ -55,6 +85,12 @@ namespace KrayonCompiler
             {
                 string assetName = pair.Key;
                 string filePath = pair.Value;
+
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine($"[KRCompiler] Warning: file not found '{filePath}', skipping asset '{assetName}'");
+                    continue;
+                }
 
                 byte[] data = File.ReadAllBytes(filePath);
                 Crypto.Apply(data);
@@ -71,6 +107,7 @@ namespace KrayonCompiler
             }
 
             long tocOffset = fs.Position;
+
             foreach (var entry in toc)
             {
                 bw.Write(entry.Id);
@@ -78,7 +115,8 @@ namespace KrayonCompiler
                 bw.Write(entry.Size);
             }
 
-            fs.Seek(4 + 4 + 4, SeekOrigin.Begin);
+            fs.Seek(4 + 4, SeekOrigin.Begin);
+            bw.Write(toc.Count);
             bw.Write(tocOffset);
         }
     }
@@ -103,6 +141,7 @@ namespace KrayonCompiler
             long tocOffset = _br.ReadInt64();
 
             _fs.Seek(tocOffset, SeekOrigin.Begin);
+
             for (int i = 0; i < count; i++)
             {
                 AssetEntry entry = new AssetEntry
@@ -111,21 +150,38 @@ namespace KrayonCompiler
                     Offset = _br.ReadInt64(),
                     Size = _br.ReadInt32()
                 };
+
+                if (_assets.ContainsKey(entry.Id))
+                {
+                    Console.WriteLine($"[PakFile] Warning: duplicate hash {entry.Id:X16} in TOC, overwriting.");
+                }
+
                 _assets[entry.Id] = entry;
             }
+
+            Console.WriteLine($"[PakFile] Loaded {_assets.Count} assets from '{pakPath}'");
         }
 
         public byte[] Load(string assetName)
         {
             ulong id = HashUtil.Hash(assetName);
+
             if (!_assets.TryGetValue(id, out var entry))
-                throw new Exception($"Asset not found: {assetName}");
+            {
+                Console.WriteLine($"[PakFile] Asset not found: '{assetName}' (normalized: '{HashUtil.Normalize(assetName)}', hash: {id:X16})");
+                return null;
+            }
 
             _fs.Seek(entry.Offset, SeekOrigin.Begin);
             byte[] data = _br.ReadBytes(entry.Size);
             Crypto.Apply(data);
-
             return data;
+        }
+
+        public bool Contains(string assetName)
+        {
+            ulong id = HashUtil.Hash(assetName);
+            return _assets.ContainsKey(id);
         }
 
         public void Dispose()
