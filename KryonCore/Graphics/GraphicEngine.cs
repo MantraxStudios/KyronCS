@@ -51,11 +51,14 @@ namespace KrayonCore
             Guid basicFragGuid = Guid.Parse("81d9e26e-76d6-4f53-a5e0-265526ea6135"); // basic.frag
             Guid fullscreenVertGuid = Guid.Parse("3c4df83f-75b0-4c42-8ceb-479039ca80c5"); // fullscreen.vert
             Guid fullscreenFragGuid = Guid.Parse("30053d51-0fc7-4754-ba24-e4c347e44971"); // fullscreen.frag
+            // Guid dirtTextureGuid = Guid.Parse("XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"); // dirt.png
 
             var textureMaterial = _materials.Create("basic", basicVertGuid, basicFragGuid);
             textureMaterial?.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));
+            // textureMaterial?.LoadMainTexture(dirtTextureGuid, generateMipmaps: true, flip: true);
 
             _materials.Create("fullscreen", fullscreenVertGuid, fullscreenFragGuid);
+            // _materials.Create("screen", screenVertGuid, screenFragGuid);
         }
 
         private void ConfigureDefaultPostProcessing()
