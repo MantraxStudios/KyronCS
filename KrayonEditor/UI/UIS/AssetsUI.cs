@@ -339,7 +339,7 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginPopupContextItem($"FolderCtx_{node.Path}"))
             {
-                if (ImGui.MenuItem("New JavaScript Script"))
+                if (ImGui.MenuItem("New Script"))
                 {
                     _newScriptFolder = node.Path;
                     _newScriptName = "newScript";
@@ -542,15 +542,15 @@ namespace KrayonEditor.UI
         // ─────────────────────────────────────────────────────────
 
         private static readonly string DefaultScriptTemplate =
-@"let timer = 0.0;
+@"local timer = 0.0
 
-function OnStart() {
-    console.log('{SCRIPT_NAME} started');
-}
+function OnStart()
+    print('{SCRIPT_NAME} started')
+end
 
-function OnTick(deltaTime) {
-    timer += deltaTime;
-}
+function OnTick(deltaTime)
+    timer = timer + deltaTime
+end
 ";
 
         private void DrawNewScriptPopup()
@@ -582,8 +582,8 @@ function OnTick(deltaTime) {
                                  _newScriptName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
 
                 string previewPath = string.IsNullOrEmpty(_newScriptFolder)
-                    ? $"{_newScriptName}.js"
-                    : $"{_newScriptFolder}/{_newScriptName}.js";
+                    ? $"{_newScriptName}.lua"
+                    : $"{_newScriptFolder}/{_newScriptName}.lua";
                 string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
                 bool alreadyExists = File.Exists(fullPath);
 

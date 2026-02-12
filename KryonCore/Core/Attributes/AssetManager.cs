@@ -11,6 +11,9 @@ namespace KrayonCore.Core.Attributes
         public static string BasePath = "MainProyect/Content/";
         public static string DataBase = "MainProyect/DataBaseFromAssets.json";
         public static string CompilerPath = "MainProyect/CompileData/";
+        public static string ClientDLLPath = "MainProyect/bin/Debug/net10.0/";
+        public static string VSProyect = "MainProyect/";
+        public static string CSProj = "MainProyect/KrayonClient.csproj";
         private static Dictionary<Guid, AssetRecord> _assets = new();
         private static Dictionary<Guid, FolderRecord> _folders = new();
 

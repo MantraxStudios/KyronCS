@@ -132,6 +132,15 @@
           }
         }
       },
+      "LuaCSharp/0.5.3": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Lua.dll": {}
+        },
+        "runtime": {
+          "lib/net10.0/Lua.dll": {}
+        }
+      },
       "Microsoft.NETCore.Platforms/1.1.0": {
         "type": "package",
         "compile": {
@@ -379,6 +388,7 @@
           "AssimpNet": "4.1.0",
           "BepuPhysics": "2.4.0",
           "Jint": "4.5.0",
+          "LuaCSharp": "0.5.3",
           "Newtonsoft.Json": "13.0.4",
           "OpenTK": "4.9.4",
           "StbImageSharp": "2.30.15",
@@ -508,6 +518,24 @@
         "lib/netstandard2.0/Jint.xml",
         "lib/netstandard2.1/Jint.dll",
         "lib/netstandard2.1/Jint.xml"
+      ]
+    },
+    "LuaCSharp/0.5.3": {
+      "sha512": "qpgmCaNx08+eiWOmz7U/mXOH8DXUyLW8fsCukKjN8hVled2y4HrapsZlmrnIf9iaNfEQusUR/8d1M2XX6NIzbQ==",
+      "type": "package",
+      "path": "luacsharp/0.5.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "README.md",
+        "analyzers/dotnet/cs/Lua.SourceGenerator.dll",
+        "lib/net10.0/Lua.dll",
+        "lib/net6.0/Lua.dll",
+        "lib/net8.0/Lua.dll",
+        "lib/netstandard2.1/Lua.dll",
+        "luacsharp.0.5.3.nupkg.sha512",
+        "luacsharp.nuspec"
       ]
     },
     "Microsoft.NETCore.Platforms/1.1.0": {
