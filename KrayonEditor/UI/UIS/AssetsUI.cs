@@ -19,7 +19,7 @@ namespace KrayonEditor.UI
         private bool _treeDirty = true;
 
         private bool _showNewScriptPopup = false;
-        private string _newScriptName = "newScript";
+        private string _newScriptName = "NewScript";
         private string _newScriptFolder = "";
 
         private bool _showNewFolderPopup = false;
@@ -53,16 +53,6 @@ namespace KrayonEditor.UI
 
         public void MarkDirty() => _treeDirty = true;
 
-        // ─────────────────────────────────────────────────────────
-        //  External Drop Handler (llamar desde el backend)
-        // ─────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Método público para manejar archivos/carpetas arrastrados desde el sistema operativo.
-        /// Debe ser llamado desde el backend cuando se detecta un drop externo.
-        /// </summary>
-        /// <param name="externalPaths">Lista de rutas completas de archivos o carpetas arrastrados</param>
-        /// <param name="targetFolder">Carpeta de destino en el proyecto (vacío para root)</param>
         public void HandleExternalDrop(string[] externalPaths, string targetFolder = "")
         {
             if (externalPaths == null || externalPaths.Length == 0)
@@ -98,7 +88,6 @@ namespace KrayonEditor.UI
                 : $"{targetFolder}/{fileName}";
             string destPath = Path.Combine(AssetManager.BasePath, relativePath);
 
-            // Evitar sobrescribir archivos existentes
             if (File.Exists(destPath))
             {
                 string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
@@ -116,15 +105,12 @@ namespace KrayonEditor.UI
                 }
             }
 
-            // Crear directorio si no existe
             string directory = Path.GetDirectoryName(destPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            // Copiar archivo
             File.Copy(sourceFilePath, destPath, false);
 
-            // Registrar en AssetManager
             AssetManager.Import(relativePath);
 
             System.Console.WriteLine($"Imported file: {relativePath}");
@@ -138,7 +124,6 @@ namespace KrayonEditor.UI
                 : $"{targetFolder}/{folderName}";
             string destPath = Path.Combine(AssetManager.BasePath, relativePath);
 
-            // Evitar sobrescribir carpetas existentes
             if (Directory.Exists(destPath))
             {
                 int counter = 1;
@@ -153,13 +138,10 @@ namespace KrayonEditor.UI
                 }
             }
 
-            // Copiar carpeta recursivamente
             CopyDirectory(sourceFolderPath, destPath);
 
-            // Registrar carpeta en AssetManager
             AssetManager.CreateFolder(targetFolder, folderName);
 
-            // Importar todos los archivos de la carpeta
             ImportFolderContents(relativePath);
 
             System.Console.WriteLine($"Imported folder: {relativePath}");
@@ -169,7 +151,6 @@ namespace KrayonEditor.UI
         {
             Directory.CreateDirectory(destDir);
 
-            // Copiar archivos
             foreach (string file in Directory.GetFiles(sourceDir))
             {
                 string fileName = Path.GetFileName(file);
@@ -177,7 +158,6 @@ namespace KrayonEditor.UI
                 File.Copy(file, destFile, false);
             }
 
-            // Copiar subdirectorios recursivamente
             foreach (string dir in Directory.GetDirectories(sourceDir))
             {
                 string dirName = new DirectoryInfo(dir).Name;
@@ -190,7 +170,6 @@ namespace KrayonEditor.UI
         {
             string fullPath = Path.Combine(AssetManager.BasePath, folderPath);
 
-            // Importar todos los archivos
             foreach (string file in Directory.GetFiles(fullPath))
             {
                 string fileName = Path.GetFileName(file);
@@ -198,16 +177,13 @@ namespace KrayonEditor.UI
                 AssetManager.Import(relativePath);
             }
 
-            // Importar subdirectorios recursivamente
             foreach (string dir in Directory.GetDirectories(fullPath))
             {
                 string dirName = new DirectoryInfo(dir).Name;
                 string subFolderPath = $"{folderPath}/{dirName}";
 
-                // Crear carpeta en AssetManager
                 AssetManager.CreateFolder(folderPath, dirName);
 
-                // Importar contenidos recursivamente
                 ImportFolderContents(subFolderPath);
             }
         }
@@ -227,11 +203,8 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginChild("AssetTree", new Vector2(0, 0)))
             {
-                // Detectar drop de archivos externos en toda la ventana
                 if (ImGui.BeginDragDropTarget())
                 {
-                    // Intentar aceptar payload de archivos externos (esto depende del backend)
-                    // Nota: Esto requiere que el backend esté configurado para pasar drops externos a ImGui
                     var payload = ImGui.AcceptDragDropPayload("EXTERNAL_FILE");
                     unsafe
                     {
@@ -241,7 +214,6 @@ namespace KrayonEditor.UI
                             Marshal.Copy(payload.Data, data, 0, payload.DataSize);
                             string pathsData = System.Text.Encoding.UTF8.GetString(data);
 
-                            // El formato esperado es rutas separadas por newline
                             string[] paths = pathsData.Split(new[] { '\n', '\r' },
                                 System.StringSplitOptions.RemoveEmptyEntries);
 
@@ -342,7 +314,7 @@ namespace KrayonEditor.UI
                 if (ImGui.MenuItem("New Script"))
                 {
                     _newScriptFolder = node.Path;
-                    _newScriptName = "newScript";
+                    _newScriptName = "NewScript";
                     _showNewScriptPopup = true;
                 }
 
@@ -377,7 +349,6 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginDragDropTarget())
             {
-                // Drop interno de assets
                 var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
                 unsafe
                 {
@@ -395,7 +366,6 @@ namespace KrayonEditor.UI
                     }
                 }
 
-                // Drop interno de carpetas
                 var folderPayload = ImGui.AcceptDragDropPayload("FOLDER_PATH");
                 unsafe
                 {
@@ -413,7 +383,6 @@ namespace KrayonEditor.UI
                     }
                 }
 
-                // Drop externo de archivos/carpetas del sistema
                 var externalPayload = ImGui.AcceptDragDropPayload("EXTERNAL_FILE");
                 unsafe
                 {
@@ -481,10 +450,9 @@ namespace KrayonEditor.UI
             if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
                 string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
-                if (ext == ".js")
+                if (ext == ".cs")
                 {
-                    string fullPath = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path));
-                    OpenInVSCode(fullPath);
+                    OpenVSCodeProject();
                 }
             }
 
@@ -492,13 +460,12 @@ namespace KrayonEditor.UI
             {
                 string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
 
-                if (ext == ".js" && ImGui.MenuItem("Open in VSCode"))
+                if (ext == ".cs" && ImGui.MenuItem("Open Project"))
                 {
-                    string fullPath = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path));
-                    OpenInVSCode(fullPath);
+                    OpenVSCodeProject();
                 }
 
-                if (ext == ".js")
+                if (ext == ".cs")
                     ImGui.Separator();
 
                 if (ImGui.MenuItem("Rename"))
@@ -537,20 +504,26 @@ namespace KrayonEditor.UI
             ImGui.PopID();
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  New Script Popup
-        // ─────────────────────────────────────────────────────────
-
         private static readonly string DefaultScriptTemplate =
-@"local timer = 0.0
+@"using KrayonClient;
 
-function OnStart()
-    print('{SCRIPT_NAME} started')
-end
+public class {SCRIPT_NAME} : KrayonBehaviour
+{
+    public override void Start()
+    {
+        
+    }
 
-function OnTick(deltaTime)
-    timer = timer + deltaTime
-end
+    public override void Update(float deltaTime)
+    {
+        
+    }
+
+    public override void OnDestroy()
+    {
+        
+    }
+}
 ";
 
         private void DrawNewScriptPopup()
@@ -582,9 +555,9 @@ end
                                  _newScriptName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
 
                 string previewPath = string.IsNullOrEmpty(_newScriptFolder)
-                    ? $"{_newScriptName}.lua"
-                    : $"{_newScriptFolder}/{_newScriptName}.lua";
-                string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
+                    ? $"{_newScriptName}.cs"
+                    : $"{_newScriptFolder}/{_newScriptName}.cs";
+                string fullPath = Path.Combine(AssetManager.VSProyect, previewPath);
                 bool alreadyExists = File.Exists(fullPath);
 
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
@@ -639,19 +612,13 @@ end
                 string content = DefaultScriptTemplate.Replace("{SCRIPT_NAME}", _newScriptName);
                 File.WriteAllText(fullPath, content);
 
-                AssetManager.Import(relativePath);
-                MarkDirty();
-                OpenInVSCode(fullPath);
+                OpenVSCodeProject();
             }
             catch (System.Exception ex)
             {
                 System.Console.WriteLine($"Error creating script: {ex.Message}");
             }
         }
-
-        // ─────────────────────────────────────────────────────────
-        //  New Folder Popup
-        // ─────────────────────────────────────────────────────────
 
         private void DrawNewFolderPopup()
         {
@@ -728,10 +695,6 @@ end
                 ImGui.EndPopup();
             }
         }
-
-        // ─────────────────────────────────────────────────────────
-        //  Rename Asset Popup
-        // ─────────────────────────────────────────────────────────
 
         private void DrawRenameAssetPopup()
         {
@@ -823,10 +786,6 @@ end
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Rename Folder Popup
-        // ─────────────────────────────────────────────────────────
-
         private void DrawRenameFolderPopup()
         {
             if (_showRenameFolderPopup)
@@ -913,10 +872,6 @@ end
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Delete Asset Popup
-        // ─────────────────────────────────────────────────────────
-
         private void DrawDeleteAssetPopup()
         {
             if (_showDeleteAssetPopup)
@@ -967,10 +922,6 @@ end
                 ImGui.EndPopup();
             }
         }
-
-        // ─────────────────────────────────────────────────────────
-        //  Delete Folder Popup
-        // ─────────────────────────────────────────────────────────
 
         private void DrawDeleteFolderPopup()
         {
@@ -1023,11 +974,7 @@ end
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  VSCode
-        // ─────────────────────────────────────────────────────────
-
-        private static void OpenInVSCode(string filePath)
+        private static void OpenVSCodeProject()
         {
             string codePath = FindVSCodePath();
 
@@ -1038,7 +985,7 @@ end
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = codePath,
-                        Arguments = $"\"{filePath}\"",
+                        Arguments = $"\"{AssetManager.VSProyect}\"",
                         UseShellExecute = false
                     });
                 }

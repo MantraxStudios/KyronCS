@@ -14466,13 +14466,8 @@
       "Type": "Unknown"
     },
     {
-      "Guid": "755338e6-834f-40f3-8330-e8d8f0d01267",
-      "Path": "scripts/Test.lua",
-      "Type": "Unknown"
-    },
-    {
       "Guid": "2d2cf237-a0f0-4030-904b-ff75e6062d22",
-      "Path": "MyFirstScript.cs",
+      "Path": "scripts/MyFirstScript.cs",
       "Type": "Script"
     }
   ],
