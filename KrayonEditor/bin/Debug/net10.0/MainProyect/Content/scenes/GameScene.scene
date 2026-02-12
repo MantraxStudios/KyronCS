@@ -2,7 +2,7 @@
   "SceneName": "GameScene",
   "GameObjects": [
     {
-      "Id": "ca2e40fd-1518-49d1-bed3-907e42609be2",
+      "Id": "9c6268c5-9a17-4861-a884-e0579dcc09ee",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a60d1aa4-25ae-4934-bfb1-654ba8f758b3",
+          "ComponentId": "a45c69b4-25d7-4b15-b2d3-20ab0cdd5c29",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5a362a6a-f7cd-45c7-b176-6b61a1da9384",
+          "ComponentId": "31899789-d106-459c-8063-ff3289d61425",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "d2ab27a0-5630-484a-86dd-fba08a0d8e00",
@@ -53,7 +53,7 @@
       ]
     },
     {
-      "Id": "221005fa-2d74-4d54-9037-cb5a066f85d7",
+      "Id": "d0d80e95-16c1-4a5a-a123-75f945a0c7f4",
       "Name": "Cube_2",
       "Tag": "Untagged",
       "Active": true,
@@ -61,7 +61,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8e100f5d-2ce5-4f4e-a816-3c492dd7b396",
+          "ComponentId": "43a60cea-5fa7-454b-a185-037c7aa06eea",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -87,7 +87,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "e3458bd6-6d8f-4b0d-9f04-902edf600260",
+          "ComponentId": "2f3bc8f4-5234-4ca0-ad25-4bc5ada818c3",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -104,7 +104,7 @@
       ]
     },
     {
-      "Id": "796c17da-94dc-4a0f-967f-a2cf4d5713a9",
+      "Id": "f55d2d2f-1d75-4c47-967d-34b547c25af1",
       "Name": "Cube_2 (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -112,7 +112,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2483c5d3-df5d-4676-8b41-8a1201a0045c",
+          "ComponentId": "5a04184b-f277-49dd-9e50-f135759aaff3",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -138,7 +138,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "85210ca9-b815-4c20-bf15-03a5af339add",
+          "ComponentId": "f4fe6beb-83ad-4f3d-a945-792e99572792",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -155,7 +155,7 @@
       ]
     },
     {
-      "Id": "208074f1-90a5-4cbc-88e5-cb0b670d669d",
+      "Id": "25ab5d87-e227-4770-806a-056fb5c8561f",
       "Name": "Cube_2 (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -163,7 +163,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "305dd2e3-4a16-41e3-b08b-c7d7df8045e6",
+          "ComponentId": "e7d87a41-b2f1-4c7d-b6ab-68c4c39be8fa",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -189,7 +189,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7f8560e6-b8bc-4ddd-95a1-c7b82dbc6fb6",
+          "ComponentId": "5b7aaf0b-e5d9-483c-8b31-1b151bf345f7",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -206,7 +206,7 @@
       ]
     },
     {
-      "Id": "158c1d99-3c79-4c90-854e-6e0185ed343a",
+      "Id": "f6db338e-9dcd-4316-a9b1-a23b985f4a9e",
       "Name": "Cube_2 (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -214,7 +214,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6cf27a76-d833-4d69-a0b5-6dd992b36b40",
+          "ComponentId": "a9ca475b-3edd-49af-8c59-4815fb6af033",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -240,7 +240,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c971b576-60be-4df0-8295-9d790d42c5a9",
+          "ComponentId": "4b5ab570-ef8c-4fc6-bd00-d16408e4bb4c",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -257,7 +257,7 @@
       ]
     },
     {
-      "Id": "1261a6ad-3edf-447a-af28-bf661a9decfe",
+      "Id": "51be1c66-6d5c-4c28-8c15-71a9debd7e17",
       "Name": "Cube_6",
       "Tag": "Untagged",
       "Active": true,
@@ -265,7 +265,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "62c9c040-9291-462a-bcca-8396e6dee477",
+          "ComponentId": "d7f7c746-b038-4bc6-81d4-5f7a244afdf5",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -291,7 +291,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "af0dc55a-d6de-4090-a6cc-d01829d1833a",
+          "ComponentId": "df143c00-11e2-4b07-ab0f-50308bde9a0f",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -308,7 +308,7 @@
       ]
     },
     {
-      "Id": "34515643-3de7-435f-b91a-0b4143250534",
+      "Id": "eda6f945-9389-40c8-b75d-7a07da5e3cc2",
       "Name": "Cube_6 (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -316,7 +316,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "771d9aa0-81f0-4808-be0d-85cdddfac0bb",
+          "ComponentId": "af947762-554f-4b79-9721-05aec6c8aaec",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -342,7 +342,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "08ff6686-fe96-4c76-a635-763fe3646d08",
+          "ComponentId": "4331f1b0-8404-44a3-bcec-96cbdef631d5",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -359,7 +359,7 @@
       ]
     },
     {
-      "Id": "f4678c7b-db4b-4713-870a-bfd158a43946",
+      "Id": "ce0ff848-8788-4d4c-9632-f1395f16a68c",
       "Name": "Cube_6 (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -367,7 +367,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "99015a49-f826-4462-ae19-4ad2dbc31cfc",
+          "ComponentId": "36537db3-3554-4d60-9d7f-241455f4d3dc",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -393,7 +393,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2fea8451-6c66-491a-825c-4c104a7747a9",
+          "ComponentId": "70abf5f2-f633-4d3b-af13-a636c0e57332",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -410,7 +410,7 @@
       ]
     },
     {
-      "Id": "3d4c6707-55a6-4d91-afd2-6b3308b1f80f",
+      "Id": "3bba5bfc-f893-4bd6-8ea2-7f374baa2776",
       "Name": "Cube_6 (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -418,7 +418,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2fc1a96d-ca07-439e-97f9-be75762a189c",
+          "ComponentId": "d1e87a16-0ae6-4822-8b74-58e455eb9e6f",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -444,7 +444,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ac434e62-5764-4be2-ac71-154eb8ee2a0f",
+          "ComponentId": "c5bc0de5-9d8b-4bd2-a045-b8695fd45e5a",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -461,7 +461,7 @@
       ]
     },
     {
-      "Id": "cbf72a9d-52d5-4f0c-9012-9af3d1f181f6",
+      "Id": "eff5bd24-5e76-41b7-9663-9cfa3e19b514",
       "Name": "Cube_6 (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -469,7 +469,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "28bb9196-533d-425c-86d2-114abdd59953",
+          "ComponentId": "2522aab3-059c-4a22-9cd1-547942d78e7b",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -495,7 +495,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "e3d6bb57-52e0-4f9c-856d-9e05ed336668",
+          "ComponentId": "eb3c8108-a95d-425b-bb22-72f4e98261b6",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -512,7 +512,7 @@
       ]
     },
     {
-      "Id": "3c992e7c-15e1-4701-9ae3-18a1029da68e",
+      "Id": "3d7514a5-c2a6-4941-a99e-0d7625c14609",
       "Name": "Cube_6 (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -520,7 +520,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "e5007afe-c32e-452a-94fb-452af04b911a",
+          "ComponentId": "dee75f5a-5424-4195-b4f1-aef7b49b1e27",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -546,7 +546,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1fddf41f-8827-4467-b184-24f8be12a22c",
+          "ComponentId": "444defce-312e-435e-ba91-5907a74a6153",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "a720c062-51a4-46bc-ba5f-fa0be16b817b",
@@ -564,7 +564,7 @@
       ]
     },
     {
-      "Id": "a409c1ed-e569-4c68-b87a-bebeccd1b49a",
+      "Id": "e3250a66-3872-45cd-a9b4-3d33605f7cef",
       "Name": "Cube_6 (Clone) (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -572,7 +572,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "103dda33-bd65-44ca-a5ab-ccca87313f16",
+          "ComponentId": "630e8ca4-d0d3-4175-8d08-4519788c3ece",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -598,7 +598,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "233ac1eb-9f51-4e31-9f43-f56286dc3c5f",
+          "ComponentId": "c5751f27-6493-42ef-88b9-ff60cd7e7628",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -615,7 +615,7 @@
       ]
     },
     {
-      "Id": "05301bb2-838f-456f-a2ac-de80269ba97e",
+      "Id": "bcb38e77-f8b9-4990-b7c3-f8273741a9ea",
       "Name": "Cube_2 (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -623,7 +623,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "aa89ad66-144d-4285-83ef-639b45d89cf5",
+          "ComponentId": "c69389e7-b808-47db-b8af-b79e31c0e2bb",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -649,7 +649,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "aef85283-7a02-439d-a7b8-1434fd498c32",
+          "ComponentId": "a95dc54e-8cfc-4e8d-a816-dc541af84563",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -666,7 +666,7 @@
       ]
     },
     {
-      "Id": "f7f47a15-5894-48da-954d-fb10c01619d0",
+      "Id": "0b4bafac-72a4-411e-bc09-ad1edfd781d5",
       "Name": "Cube_2 (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -674,7 +674,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2f61798f-2d78-40c4-acbd-656b97b4d7e8",
+          "ComponentId": "88b844e8-5aaf-4a64-80d0-24ac1ef90859",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -700,7 +700,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6575f722-95b7-412a-81f3-d1792d5c2c93",
+          "ComponentId": "e1b81d56-811b-4a42-a6dc-06125f39b3b4",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -717,7 +717,7 @@
       ]
     },
     {
-      "Id": "8113b83c-22aa-4205-ba4e-d10e7633cf89",
+      "Id": "617a9823-c450-40ec-a944-b1f4b85e6bd9",
       "Name": "Cube_2 (Clone) (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -725,7 +725,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "00d415d1-8619-439e-980a-cdc36b03daa0",
+          "ComponentId": "d8045dc3-9172-4678-aaf5-9014c689916e",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -751,7 +751,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "641f92dc-1c65-47d6-a4c3-8fb3d05b27a5",
+          "ComponentId": "561fc216-925f-448c-a0af-aa3f7bbf3a2c",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -768,7 +768,7 @@
       ]
     },
     {
-      "Id": "d0cbdc04-ae97-4921-95e6-df8e170f6c06",
+      "Id": "2319958c-c047-4bf6-8fdc-08c5a89cf536",
       "Name": "Cube_2 (Clone) (Clone) (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -776,7 +776,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b752fd13-1df3-4ad7-8d4d-9a0ca360d450",
+          "ComponentId": "65595d0a-cf49-455c-9e88-5bc83ffff3ab",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -802,7 +802,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f161d3ff-9b31-4a96-b164-a049fe70706b",
+          "ComponentId": "bb496313-3084-45be-b355-b13fec531d29",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1057ca88-3ee9-4180-b3cf-1ea48feb2db1",
@@ -819,15 +819,15 @@
       ]
     },
     {
-      "Id": "451088ee-309c-4395-bf00-b06b27e9e0de",
+      "Id": "e18e482e-2909-4f1a-b277-c57871537c55",
       "Name": "PointLight_1 (Clone) (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
-      "ParentId": "ece621b4-01e1-49a3-a27d-95a394b30c0e",
+      "ParentId": "5021c8e2-58e1-48ef-ad47-49fb1d317130",
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "28f0f52e-3d5e-4587-9f73-3a56798b3544",
+          "ComponentId": "50281369-5bfb-46de-8a9b-ff04ad1db21c",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -853,7 +853,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c0c598e3-05ea-4706-987c-fee0d67f124b",
+          "ComponentId": "b163c45d-050f-47fd-b409-ee8b97adf84e",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -878,7 +878,7 @@
       ]
     },
     {
-      "Id": "c5b41bfb-c087-4316-b95e-5d3f42bf7b2a",
+      "Id": "ecdc434e-742f-4aa2-908e-12c13adb5dc1",
       "Name": "Cube_22",
       "Tag": "Untagged",
       "Active": true,
@@ -886,7 +886,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1d0a1cd9-14b4-403b-9af5-08e2400bf3af",
+          "ComponentId": "820ce6bc-b7ea-4fc1-a94a-5ff7e44ece05",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -912,7 +912,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "0f762e00-3f64-4406-9979-e6f6ce38a23a",
+          "ComponentId": "f2e1a9f9-68f1-4d48-a579-df54b26f9c3e",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "fc40635e-ac6d-43a9-88f1-834e8900b979",
@@ -928,7 +928,7 @@
       ]
     },
     {
-      "Id": "9caeac71-fc04-4806-a6e6-9b13ea7fc44b",
+      "Id": "b10696a0-0a32-4d08-bcd0-ecc131be87ea",
       "Name": "Cube_22 (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -936,7 +936,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d1533d5f-2003-41bd-b0b7-5e368e22bb4b",
+          "ComponentId": "08652a74-5b1f-464d-b359-c9fb61b84864",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -962,7 +962,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8fd84cb2-248d-40d6-9977-5fe0c2a25c75",
+          "ComponentId": "343bf4c4-0e83-4286-9306-94feb0c7779e",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "fc40635e-ac6d-43a9-88f1-834e8900b979",
@@ -978,15 +978,15 @@
       ]
     },
     {
-      "Id": "d17250d3-eba5-4b5f-a471-7b6bdbcd9039",
+      "Id": "354c79cc-c717-4286-8fae-9d4082f38bab",
       "Name": "PointLight_1 (Clone) (Clone) (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
-      "ParentId": "ece621b4-01e1-49a3-a27d-95a394b30c0e",
+      "ParentId": "5021c8e2-58e1-48ef-ad47-49fb1d317130",
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6d9923e1-dd0c-4baa-a696-30af1d7dc3f8",
+          "ComponentId": "f7435adc-7ecb-4cb0-8010-b543810a9e18",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1012,7 +1012,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "046b7a62-3afb-4d53-9230-f1d3bccacea5",
+          "ComponentId": "8cadc65d-520f-4a1d-9d6f-0ec9cbd902c6",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -1037,7 +1037,7 @@
       ]
     },
     {
-      "Id": "c372ee5d-bb00-40ec-aa31-7a02355e42ba",
+      "Id": "83a87764-d2da-4ff9-b7d3-f52108e9913e",
       "Name": "Cube_6 (Clone) (Clone) (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -1045,7 +1045,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "bab8caf1-33a3-453a-acf4-8916f729cc1c",
+          "ComponentId": "2fc05a94-c957-4580-a2a0-f3653940de2c",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1071,7 +1071,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9495bb5e-2b29-4435-a533-3a69773f5ed3",
+          "ComponentId": "adf56ec5-4624-4baf-ab07-50471abf4604",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "e0e14f9a-19a7-4537-a14e-8dae7ef0d109",
@@ -1088,7 +1088,7 @@
       ]
     },
     {
-      "Id": "ece621b4-01e1-49a3-a27d-95a394b30c0e",
+      "Id": "5021c8e2-58e1-48ef-ad47-49fb1d317130",
       "Name": "Lights",
       "Tag": "Untagged",
       "Active": true,
@@ -1096,7 +1096,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "13d7dfb1-369c-4109-ad84-01e94c8a8762",
+          "ComponentId": "a66b18ae-1e54-476d-9630-13d4e315fb0e",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1123,7 +1123,7 @@
       ]
     },
     {
-      "Id": "50a19249-fe46-4392-a210-41dae5e37f08",
+      "Id": "23032566-b866-4ce3-ab09-294749edab15",
       "Name": "Cube_24",
       "Tag": "Untagged",
       "Active": true,
@@ -1131,7 +1131,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f40e17e0-2f1f-44cd-9b6f-b0f24675c218",
+          "ComponentId": "cbb97910-1791-4a9f-a3fb-478a0af075db",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1157,7 +1157,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2075def3-934e-4963-956d-4c3cbb2bc3fb",
+          "ComponentId": "8002237d-e245-4397-9af1-67ef0e61c320",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "964c5a5f-bb1e-413d-a497-50d75f20cc1c",
@@ -1173,7 +1173,7 @@
       ]
     },
     {
-      "Id": "a776355a-067d-492e-9998-9f49a2d7166c",
+      "Id": "8b8d16bb-f6e5-481b-80e5-54c907421e6c",
       "Name": "Cube_24 (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -1181,7 +1181,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a94a22e5-f4fc-4c66-b7a7-ed2d476df031",
+          "ComponentId": "282f289f-5673-4351-84ff-9702dfa0a606",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1207,7 +1207,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f01a70c6-ec01-4729-8713-ee76799bf376",
+          "ComponentId": "1f4ca0b8-dad3-452f-a4e7-8bea4c62b612",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "964c5a5f-bb1e-413d-a497-50d75f20cc1c",
@@ -1223,7 +1223,7 @@
       ]
     },
     {
-      "Id": "5ca3cb48-b218-4ae0-b6b8-7fff47c0f361",
+      "Id": "bbceb941-f244-4dd2-aed3-cba311087119",
       "Name": "Cube_24 (Clone) (Clone)",
       "Tag": "Untagged",
       "Active": true,
@@ -1231,7 +1231,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "dfcd87b0-568f-4fa2-bfc8-b5bd6b0411fb",
+          "ComponentId": "96ae1360-3f3c-4952-8ed5-b62a2a9999f8",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1257,7 +1257,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "273eb95d-4c9f-4e33-bbbe-6ffdafe62283",
+          "ComponentId": "47d79c69-85ef-4e64-a61b-ed86627989ba",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "964c5a5f-bb1e-413d-a497-50d75f20cc1c",
@@ -1273,7 +1273,7 @@
       ]
     },
     {
-      "Id": "fc2788c9-7bbc-480b-9705-7ae5541d39ba",
+      "Id": "c13d229e-706a-4891-bbff-3e14a01716c4",
       "Name": "Cube_27",
       "Tag": "Untagged",
       "Active": true,
@@ -1281,7 +1281,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "998287f1-fd54-472d-82ce-1196d6ae63a9",
+          "ComponentId": "322142cd-9c01-43e0-9173-90aa8d38db98",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1307,7 +1307,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3a9a3658-44b7-4de5-8c00-43d442ac0f28",
+          "ComponentId": "ad9f65ed-f9a7-4e16-b1e1-a887ab4564c8",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "541c82ad-9129-4f95-b787-d64570cc01f1",
@@ -1323,7 +1323,7 @@
       ]
     },
     {
-      "Id": "60e8147d-a9b1-407c-b8ed-272e605cb76e",
+      "Id": "e6713593-b906-46ed-ab3b-b4bd15f89c8b",
       "Name": "Cube_26",
       "Tag": "Untagged",
       "Active": true,
@@ -1331,7 +1331,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b23d8068-3687-4c48-9a54-d5295c4be066",
+          "ComponentId": "56823220-0356-4a07-b106-419b505bf785",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -1357,7 +1357,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5e12e053-74de-4d80-b86e-62c689ec6176",
+          "ComponentId": "a1d582b9-73b8-4d05-925f-d4f8c68fb787",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "3d361d14-7340-48cd-b35c-0968515455a0",
@@ -1368,14 +1368,6 @@
                 "basic"
               ]
             }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.GameScript, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "cb1eaf45-7928-4a4f-ba2a-d75d5ecdf746",
-          "Enabled": true,
-          "SerializedFields": {
-            "ScriptPath": "scripts/game.js"
           }
         }
       ]

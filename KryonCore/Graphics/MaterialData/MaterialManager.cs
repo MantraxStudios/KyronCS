@@ -13,26 +13,6 @@ namespace KrayonCore
     {
         private readonly Dictionary<string, Material> _materials = new();
 
-        public Material Create(string name, Shader shader)
-        {
-            if (_materials.ContainsKey(name))
-            {
-                Console.WriteLine($"[MaterialManager] Material '{name}' already exists. Returning existing material.");
-                return _materials[name];
-            }
-
-            if (shader == null)
-            {
-                Console.WriteLine($"[MaterialManager] Cannot create material '{name}': shader is null");
-                return null;
-            }
-
-            var material = new Material(name, shader);
-            _materials[name] = material;
-            Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
-            return material;
-        }
-
         public Material Create(string name, Guid vertexGuid, Guid fragmentGuid)
         {
             if (_materials.ContainsKey(name))
@@ -44,28 +24,6 @@ namespace KrayonCore
             try
             {
                 var material = new Material(name, vertexGuid, fragmentGuid);
-                _materials[name] = material;
-                Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
-                return material;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[MaterialManager] Error creating material '{name}': {ex.Message}");
-                return null;
-            }
-        }
-
-        public Material Create(string name, string shaderBaseName)
-        {
-            if (_materials.ContainsKey(name))
-            {
-                Console.WriteLine($"[MaterialManager] Material '{name}' already exists. Returning existing material.");
-                return _materials[name];
-            }
-
-            try
-            {
-                var material = new Material(name, shaderBaseName);
                 _materials[name] = material;
                 Console.WriteLine($"[MaterialManager] Material '{name}' created successfully");
                 return material;

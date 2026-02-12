@@ -1,42 +1,5 @@
 {
   "Materials": {
-    "NewMaterial": {
-      "Name": "NewMaterial",
-      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
-      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
-      "AlbedoTextureGUID": "6edf047f-0664-46b2-a2b9-f6e73adab52e",
-      "NormalTextureGUID": null,
-      "MetallicTextureGUID": null,
-      "RoughnessTextureGUID": null,
-      "AOTextureGUID": null,
-      "EmissiveTextureGUID": null,
-      "AlbedoColor": {
-        "X": 1.0,
-        "Y": 1.0,
-        "Z": 1.0
-      },
-      "Metallic": 0.0,
-      "Roughness": 0.5,
-      "AO": 1.0,
-      "EmissiveColor": {
-        "X": 0.0,
-        "Y": 0.0,
-        "Z": 0.0
-      },
-      "UseAlbedoMap": true,
-      "UseNormalMap": false,
-      "UseMetallicMap": false,
-      "UseRoughnessMap": false,
-      "UseAOMap": false,
-      "UseEmissiveMap": false,
-      "NormalMapIntensity": 1.0,
-      "AmbientLight": {
-        "X": 0.03,
-        "Y": 0.03,
-        "Z": 0.03
-      },
-      "AmbientStrength": 1.0
-    },
     "basic": {
       "Name": "basic",
       "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
@@ -98,6 +61,80 @@
         "Z": 0.0
       },
       "UseAlbedoMap": false,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "cardboard_box_2": {
+      "Name": "cardboard_box_2",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "3b7fed5b-0b78-4926-8d9d-49734b95d1ed",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "wooden_crate_3": {
+      "Name": "wooden_crate_3",
+      "VertexShaderGUID": "52ccc06b-314c-4014-afbc-b0996db89a63",
+      "FragmentShaderGUID": "81d9e26e-76d6-4f53-a5e0-265526ea6135",
+      "AlbedoTextureGUID": "8169e388-8842-4871-9745-8947d7fef61d",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
       "UseNormalMap": false,
       "UseMetallicMap": false,
       "UseRoughnessMap": false,

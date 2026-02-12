@@ -308,6 +308,9 @@ namespace KrayonCore
                 {
                     string relativePath = PathUtils.GetPathAfterContent(texturePath);
                     var assetRecord = AssetManager.FindByPath(relativePath);
+
+                    Console.WriteLine($"Relative Path Found: {assetRecord.Guid}");
+
                     if (assetRecord == null)
                     {
                         Console.WriteLine($"Texture not registered in AssetManager: {relativePath}");
@@ -315,8 +318,7 @@ namespace KrayonCore
                     }
 
                     Material G = GraphicsEngine.Instance.Materials.Create(
-                        PathUtils.GetFileNameWithoutExtension(texturePath), "shaders/basic"
-                    );
+                        PathUtils.GetFileNameWithoutExtension(texturePath), Guid.Parse("52ccc06b-314c-4014-afbc-b0996db89a63"), Guid.Parse("81d9e26e-76d6-4f53-a5e0-265526ea6135"));
                     G.LoadAlbedoTexture(assetRecord.Guid);
                     G.Roughness = 0;
                     _materials[i] = G;

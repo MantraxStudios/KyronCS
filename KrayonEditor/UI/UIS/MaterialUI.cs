@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using KrayonCore;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -268,7 +269,9 @@ namespace KrayonEditor.UI
 
                 GraphicsEngine.Instance!.Materials.Remove(materialName);
 
-                var newMaterial = GraphicsEngine.Instance!.Materials.Create(materialName, _newShaderPath);
+                var newMaterial = GraphicsEngine.Instance!.Materials.Create(materialName, 
+                                                                            AssetManager.FindFolderByPath(_newShaderPath + ".vert").Guid, 
+                                                                            AssetManager.FindFolderByPath(_newShaderPath + ".frag").Guid);
 
                 if (newMaterial != null)
                 {
@@ -369,7 +372,7 @@ namespace KrayonEditor.UI
                     return;
                 }
 
-                var newMaterial = GraphicsEngine.Instance!.Materials.Create(_newMaterialName, _selectedShaderPath);
+                var newMaterial = GraphicsEngine.Instance!.Materials.Create(_newMaterialName, Guid.Parse("52ccc06b-314c-4014-afbc-b0996db89a63"), Guid.Parse("81d9e26e-76d6-4f53-a5e0-265526ea6135"));
                 _selectedMaterial = newMaterial;
                 Console.WriteLine($"Material created: {_newMaterialName}");
             }
