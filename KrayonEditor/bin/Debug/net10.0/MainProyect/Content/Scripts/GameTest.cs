@@ -5,29 +5,24 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 public class GameTest : KrayonBehaviour
 {
-    public bool Colisiono;
+    private Vector3 center;     // punto alrededor del cual gira
+    private float angle = 0f;   // ángulo acumulado
+    private float radius = 5f;  // distancia al centro
+    private float speed = 1f;   // velocidad de giro
 
     public override void Start()
     {
-        
+        center = GameObject.Transform.GetWorldPosition();
     }
 
     public override void Update(float deltaTime)
     {
-        if (InputSystem.GetKeyReleased(Keys.G))
-        {
-            GameObject.GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, 5.0f, 0.0f));
-            Console.WriteLine("Hola");
-        }
-    }
+        angle += speed * deltaTime;
 
-    public override void OnCollisionEnter(GameObject other)
-    {
-        Colisiono = true;
-    }
+        float x = center.X + MathF.Cos(angle) * radius;
+        float z = center.Z + MathF.Sin(angle) * radius;
 
-    public override void OnCollisionExit(GameObject other)
-    {
-        Colisiono = false;
+        Vector3 newPos = new Vector3(x, center.Y, z);
+        GameObject.Transform.SetWorldPosition(newPos);
     }
 }
