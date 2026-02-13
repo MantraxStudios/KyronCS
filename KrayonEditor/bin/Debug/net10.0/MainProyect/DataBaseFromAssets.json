@@ -41,76 +41,6 @@
       "Type": "Shader"
     },
     {
-      "Guid": "2c5ccde5-e2f4-40ba-b71a-265ac37f15b3",
-      "Path": "models/source/fnaf.fbx",
-      "Type": "Model"
-    },
-    {
-      "Guid": "b2e07441-13aa-42d1-9931-940065140282",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_BaseColor.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "fda74237-5764-4ca2-985a-37c05d4ceb31",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_BaseColor.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "fcab845c-367c-4048-9d8a-fdeb1b67da3c",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Emissive.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "45852922-0798-4591-9b69-0cd89c719fd4",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Metallic.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "37f82b7e-77dd-410f-bf47-fb614931d2d9",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Normal.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "8c7c23da-4e4a-4e6c-82de-efa6c65fa4cc",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Occlusion.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "75ec5d94-30dc-4d4e-907d-f353502509a8",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_OcclusionRo.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "dfdf8af2-97a8-432b-af5e-91bd290e13a8",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Endo_Roughness.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "ab6238a3-7a70-4d42-b8ee-d4a611a29eee",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Metallic.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "affc9703-11ee-4ec9-b503-7528089cc4a6",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Normal.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "29a9ad0a-8902-4b0e-9708-f635e968c781",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Occlusion.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "ac47666d-2faa-4f8a-bb68-ba8a5cdee9be",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_OcclusionRoughne.png",
-      "Type": "Texture"
-    },
-    {
-      "Guid": "cdc9b904-035a-4d90-8e7f-5f2069292e73",
-      "Path": "models/textures/Char_Tex_Nightmare_Freddy_Roughness.png",
-      "Type": "Texture"
-    },
-    {
       "Guid": "47b6f826-b7cf-4ea4-bae1-528a27ee2924",
       "Path": "shaders/includes/lighting_ambient.glsl",
       "Type": "Unknown"
@@ -321,16 +251,6 @@
       "Guid": "d75a775e-6187-441c-adf7-fada9cb59251",
       "Path": "shaders",
       "CreatedAt": "2026-02-11T20:54:08.0267951-03:00"
-    },
-    {
-      "Guid": "4a632bd2-ba64-4e8e-ac62-c0707b19a617",
-      "Path": "models/source",
-      "CreatedAt": "2026-02-11T20:54:08.026828-03:00"
-    },
-    {
-      "Guid": "8f27a316-db8f-4833-b5c2-afc18c10177b",
-      "Path": "models/textures",
-      "CreatedAt": "2026-02-11T20:54:08.0269692-03:00"
     },
     {
       "Guid": "f906599e-7836-48b7-a8b1-79b609d1d4fb",

@@ -103,7 +103,6 @@ namespace KrayonCore.GraphicsData
         {
             _window = new GameWindowInternal(width, height, title, this);
 
-            // ✅ Aquí _window ya existe: se puede crear el InputSystem
             _inputSystem = new InputSystem(_window);
         }
 

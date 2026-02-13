@@ -21,11 +21,29 @@ namespace KrayonEditor.UI
             if (EditorActions.SelectedObject != null)
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.9f, 0.9f, 0.9f, 1.0f));
+
+                float totalWidth = ImGui.GetContentRegionAvail().X;
+                float labelNameWidth = ImGui.CalcTextSize("Name").X + ImGui.GetStyle().ItemInnerSpacing.X;
+                float labelTagWidth = ImGui.CalcTextSize("Tag").X + ImGui.GetStyle().ItemInnerSpacing.X;
+                float spacing = ImGui.GetStyle().ItemSpacing.X;
+                float inputWidth = (totalWidth - labelNameWidth - labelTagWidth - spacing) / 2f;
+
                 string name = EditorActions.SelectedObject.Name;
+                ImGui.SetNextItemWidth(inputWidth);
                 if (ImGui.InputText("Name", ref name, 256))
                 {
                     EditorActions.SelectedObject.Name = name;
                 }
+
+                ImGui.SameLine();
+
+                string tag = EditorActions.SelectedObject.Tag;
+                ImGui.SetNextItemWidth(inputWidth);
+                if (ImGui.InputText("Tag", ref tag, 256))
+                {
+                    EditorActions.SelectedObject.Tag = tag;
+                }
+
                 ImGui.PopStyleColor();
                 ImGui.Separator();
 
@@ -82,7 +100,7 @@ namespace KrayonEditor.UI
 
         private void DrawComponents()
         {
-            var components = EditorActions.SelectedObject!.GetAllComponents();
+            var components = EditorActions.SelectedObject!.GetAllComponents().ToList(); // copia
             int componentIndex = 0;
 
             foreach (var component in components)
