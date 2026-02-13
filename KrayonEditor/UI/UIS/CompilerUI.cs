@@ -233,7 +233,7 @@ namespace KrayonEditor.UI
             ImGui.TextWrapped(progressText);
             ImGui.Spacing();
 
-            ImGui.ProgressBar(_progress, new Vector2(-1, 24), $"{_progress * 100f:F0}%%");
+            ImGui.ProgressBar(_progress, new Vector2(-1, 24), $"{_progress * 100f:F0}%");
 
             if (_state == BuildState.Building)
             {
