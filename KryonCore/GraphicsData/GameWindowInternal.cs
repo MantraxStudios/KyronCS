@@ -50,6 +50,9 @@ namespace KrayonCore.GraphicsData
             GL.CullFace(CullFaceMode.Back);
             GL.FrontFace(FrontFaceDirection.Ccw);
 
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
             // Suscribirse a eventos
             TextInput += OnTextInput;
             FileDrop += OnFileDrop;

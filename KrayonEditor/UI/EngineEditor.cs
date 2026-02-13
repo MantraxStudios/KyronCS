@@ -227,7 +227,6 @@ namespace KrayonEditor.UI
             if (_renderer == null)
                 return;
 
-            // Crear cámara de editor independiente
             _editorCamera = _renderer.GetCamera();
             _editorCamera.Position = _initialCameraPosition;
             _editorCamera.AspectRatio = 1280f / 800f;
@@ -240,7 +239,6 @@ namespace KrayonEditor.UI
 
             _editorCamera.Position = _initialCameraPosition;
 
-            // Resetear yaw y pitch usando reflexión o propiedades públicas si están disponibles
             var cameraType = _editorCamera.GetType();
 
             var yawProperty = cameraType.GetProperty("Yaw");

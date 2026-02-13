@@ -107,7 +107,7 @@ namespace KrayonEditor.UI
 
             if (keyboard.IsKeyPressed(Keys.D1))
             {
-                SceneManager.LoadScene("Content/scenes/DefaultScene.scene");
+                SceneManager.LoadScene("/DefaultScene.scene");
                 Console.WriteLine("Loaded Scene1");
             }
             if (keyboard.IsKeyPressed(Keys.D2))

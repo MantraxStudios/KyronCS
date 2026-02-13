@@ -37,6 +37,7 @@ uniform int u_UseMetallicMap;
 uniform int u_UseRoughnessMap;
 uniform int u_UseAOMap;
 uniform int u_UseEmissiveMap;
+uniform float u_Alpha = 1.0;
 
 uniform vec3 u_CameraPos;
 uniform vec3 u_AmbientLight;
@@ -64,6 +65,12 @@ vec3 getNormalFromMap()
 
 void main()
 {
+    // Sacar el alpha por separado
+    float alpha = u_UseAlbedoMap == 1 ? texture(u_AlbedoMap, TexCoord).a : 1.0;
+    
+    // Multiplicar por alpha uniforme si tienes uno (opcional)
+    alpha *= u_Alpha; // uniform float u_Alpha = 1.0 por defecto
+    
     MaterialPBR material;
     material.albedo = u_UseAlbedoMap == 1 ? pow(texture(u_AlbedoMap, TexCoord).rgb, vec3(2.2)) : u_AlbedoColor;
     material.metallic = u_UseMetallicMap == 1 ? texture(u_MetallicMap, TexCoord).r : u_Metallic;
@@ -87,8 +94,11 @@ void main()
     
     color = ApplyToneMapping(color);
     
-    FragColor = vec4(color, 1.0);
-    EmissionColor = vec4(emissive, 1.0);
+    // Discard si alpha es muy bajo (opcional, para cutout)
+    if (alpha < 0.01) discard;
+    
+    FragColor = vec4(color, alpha); // <-- alpha aquí
+    EmissionColor = vec4(emissive, alpha);
     
     mat3 viewNormalMatrix = mat3(u_View);
     vec3 viewSpaceNormal = normalize(viewNormalMatrix * ctx.N);

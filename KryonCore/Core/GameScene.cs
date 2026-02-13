@@ -173,10 +173,8 @@ namespace KrayonCore
             if (gameObject == null || !_gameObjects.ContainsKey(gameObject.Id))
                 return;
 
-            // Primero destruir hijos recursivamente
             DestroyChildren(gameObject);
 
-            // Luego destruir el objeto mismo
             gameObject.OnComponentAdded -= NotifyComponentAdded;
             gameObject.OnComponentRemoved -= NotifyComponentRemoved;
 
@@ -195,7 +193,7 @@ namespace KrayonCore
                 var child = childTransform.GameObject;
                 if (child != null && _gameObjects.ContainsKey(child.Id))
                 {
-                    DestroyChildren(child); // primero los nietos
+                    DestroyChildren(child);
 
                     child.OnComponentAdded -= NotifyComponentAdded;
                     child.OnComponentRemoved -= NotifyComponentRemoved;

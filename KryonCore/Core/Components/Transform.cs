@@ -313,13 +313,19 @@ namespace KrayonCore
         public void SetPosition(float x, float y, float z)
         {
             Position = new Vector3(x, y, z);
+
+            if (GameObject.HasComponent<Rigidbody>())
+                GameObject.GetComponent<Rigidbody>().MovePosition(new Vector3(x, y, z));
         }
 
         public void SetPosition(Vector3 position)
         {
             Position = position;
-        }
 
+            if (GameObject.HasComponent<Rigidbody>())
+                GameObject.GetComponent<Rigidbody>().MovePosition(Position);
+        }
+         
         public void Translate(float x, float y, float z)
         {
             Position += new Vector3(x, y, z);
