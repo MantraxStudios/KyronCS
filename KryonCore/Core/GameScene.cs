@@ -170,36 +170,41 @@ namespace KrayonCore
 
         public void DestroyGameObject(GameObject gameObject)
         {
-            if (gameObject != null && _gameObjects.ContainsKey(gameObject.Id))
-            {
-                gameObject.DestroyComponents();
-                _toDestroy.Add(gameObject);
+            if (gameObject == null || !_gameObjects.ContainsKey(gameObject.Id))
+                return;
 
-                // También destruir todos los hijos recursivamente
-                DestroyChildren(gameObject);
-            }
+            // Primero destruir hijos recursivamente
+            DestroyChildren(gameObject);
+
+            // Luego destruir el objeto mismo
+            gameObject.OnComponentAdded -= NotifyComponentAdded;
+            gameObject.OnComponentRemoved -= NotifyComponentRemoved;
+
+            gameObject.DestroyComponents();
+            _gameObjects.Remove(gameObject.Id);
+            _gameObjectsList.Remove(gameObject);
+
+            OnGameObjectRemoved?.Invoke(gameObject);
+            OnSceneChanged?.Invoke();
         }
 
         private void DestroyChildren(GameObject parent)
         {
-            // Crear una copia de la lista de hijos porque será modificada durante la destrucción
-            var children = parent.Transform.Children.ToList();
-
-            foreach (var childTransform in children)
+            foreach (var childTransform in parent.Transform.Children.ToList())
             {
                 var child = childTransform.GameObject;
-                child.DestroyComponents();
-
                 if (child != null && _gameObjects.ContainsKey(child.Id))
                 {
-                    // Agregar el hijo a la lista de destrucción
-                    if (!_toDestroy.Contains(child))
-                    {
-                        _toDestroy.Add(child);
-                    }
+                    DestroyChildren(child); // primero los nietos
 
-                    // Recursivamente destruir los hijos del hijo
-                    DestroyChildren(child);
+                    child.OnComponentAdded -= NotifyComponentAdded;
+                    child.OnComponentRemoved -= NotifyComponentRemoved;
+
+                    child.DestroyComponents();
+                    _gameObjects.Remove(child.Id);
+                    _gameObjectsList.Remove(child);
+
+                    OnGameObjectRemoved?.Invoke(child);
                 }
             }
         }
