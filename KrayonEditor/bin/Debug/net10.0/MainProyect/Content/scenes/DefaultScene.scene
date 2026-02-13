@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "b180cd0e-f35b-4c0b-9607-09c26ba0f740",
+      "Id": "6808e4c4-6895-48f7-b3e5-6b9e1cbb4449",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "994ab748-6ec4-4326-822c-176ce45c9d45",
+          "ComponentId": "80b874f8-17b0-4418-9b12-378f5596afbd",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c376c289-521d-4564-b35d-eae96c822597",
+          "ComponentId": "ce89f322-c794-44f7-b391-d42f51f38935",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1b467368-606c-462c-af3f-a23a3d08d12c",
@@ -52,7 +52,7 @@
       ]
     },
     {
-      "Id": "c4ef4695-0360-457c-8e96-552a4528b0c4",
+      "Id": "edc4cc9e-7ce8-4787-a34f-1abb1e563119",
       "Name": "PointLight_1",
       "Tag": "Untagged",
       "Active": true,
@@ -60,7 +60,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1aca4284-79af-465d-8578-db9ca7ce756b",
+          "ComponentId": "4253b151-3d9d-4383-8a47-ee5db291ac18",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -86,7 +86,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b3c6ef45-681b-4196-a997-4dcc096fbe3c",
+          "ComponentId": "ef6921c3-25d9-4561-a77e-6dc8dd0ed469",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -110,7 +110,7 @@
         },
         {
           "TypeName": "KrayonCore.Core.Components.CSharpLogic, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7f95bbad-7a02-40e9-a713-0c4b055ed2ab",
+          "ComponentId": "b0ab87b4-b3f2-43c6-a472-51884e99e373",
           "Enabled": true,
           "SerializedFields": {
             "Script": "GameTest"
@@ -119,7 +119,7 @@
       ]
     },
     {
-      "Id": "73bf8813-2937-425e-b78a-407a65d0ee4e",
+      "Id": "c246a8b5-7f84-43db-a9c7-2b8aa6b0284c",
       "Name": "Cube_2",
       "Tag": "Untagged",
       "Active": true,
@@ -127,7 +127,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6473a08c-d0bd-4574-b053-b3d93d43dbfa",
+          "ComponentId": "b416477c-60d7-4805-a973-286045da2614",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -153,7 +153,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3bec8d46-c220-4d29-a674-a3a3d1de81b4",
+          "ComponentId": "ec1b8d0c-0659-40cc-9b19-0d76eb29909b",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "d3df3849-ff3b-4d5b-b995-e81decf0098d",
@@ -168,7 +168,7 @@
         },
         {
           "TypeName": "KrayonCore.Core.Components.CSharpLogic, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "c46fb44a-0028-48ae-97b8-9e7e046dbf34",
+          "ComponentId": "d66a7243-fb12-4e75-b699-9a78ae6bff07",
           "Enabled": true,
           "SerializedFields": {
             "Script": "GameTest"
