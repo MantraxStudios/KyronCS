@@ -1,7 +1,9 @@
-﻿using ImGuiNET;
+﻿using Assimp;
+using ImGuiNET;
 using KrayonCompiler;
 using KrayonCore;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Utilities;
 using Newtonsoft.Json.Linq;
 using OpenTK.Graphics.ES11;
 using System;
@@ -32,6 +34,9 @@ namespace KrayonEditor.UI
         private int _errorCount = 0;
         private bool _autoScroll = true;
         private bool _scrollBottom = false;
+
+        // Stores the final elapsed time once the build finishes (success or fail/cancel)
+        private double _finalElapsedSeconds = 0.0;
 
         private CancellationTokenSource _cts;
         private readonly Stopwatch _timer = new();
@@ -70,7 +75,7 @@ namespace KrayonEditor.UI
 
             DrawHeader();
             ImGui.Dummy(new Vector2(0, SectionGap));
-            DrawToolbar();          // platform + actions in one row
+            DrawToolbar();
             ImGui.Dummy(new Vector2(0, SectionGap));
             DrawProgressSection();
             ImGui.Dummy(new Vector2(0, SectionGap));
@@ -90,11 +95,9 @@ namespace KrayonEditor.UI
             float textH = ImGui.GetTextLineHeight();
             float centerY = (46f - textH) * 0.5f;
 
-            // Title
             ImGui.SetCursorPos(new Vector2(Pad, centerY));
             ImGui.TextColored(TextNormal, "Krayon Compiler");
 
-            // State badge
             string stateText = _state switch
             {
                 BuildState.Building => "● Building",
@@ -119,7 +122,7 @@ namespace KrayonEditor.UI
             ImGui.PopStyleColor();
         }
 
-        // ─── Toolbar  (platform selector + build buttons side by side) ───────
+        // ─── Toolbar ─────────────────────────────────────────────────────────
         private void DrawToolbar()
         {
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
@@ -178,10 +181,18 @@ namespace KrayonEditor.UI
             ImGui.PopStyleVar();
             ImGui.PopStyleColor(3);
 
-            // ── Elapsed timer (right-aligned) ────────────────────────────────
-            if (isBuilding)
+            // ── Elapsed timer right-aligned ──────────────────────────────────
+            // While building: live counter. After finish: frozen total time.
+            string elapsed = _state switch
             {
-                string elapsed = $"{_timer.Elapsed.TotalSeconds:F1}s";
+                BuildState.Building => $"{_timer.Elapsed.TotalSeconds:F1}s",
+                BuildState.Success => $"{_finalElapsedSeconds:F1}s",
+                BuildState.Failed => $"{_finalElapsedSeconds:F1}s",
+                _ => string.Empty
+            };
+
+            if (!string.IsNullOrEmpty(elapsed))
+            {
                 float elapsedW = ImGui.CalcTextSize(elapsed).X;
                 float winW2 = ImGui.GetWindowWidth();
                 ImGui.SetCursorPos(new Vector2(winW2 - elapsedW - Pad, btnY + 4f));
@@ -213,7 +224,6 @@ namespace KrayonEditor.UI
         // ─── Progress ────────────────────────────────────────────────────────
         private void DrawProgressSection()
         {
-            // ── Step label + bar ─────────────────────────────────────────────
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
             ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
             ImGui.BeginChild("##progress_area", new Vector2(0, 60));
@@ -221,8 +231,8 @@ namespace KrayonEditor.UI
             string stepText = _state switch
             {
                 BuildState.Building => _currentStep,
-                BuildState.Success => $"Build succeeded in {_timer.Elapsed.TotalSeconds:F2}s",
-                BuildState.Failed => $"Build failed after {_timer.Elapsed.TotalSeconds:F2}s",
+                BuildState.Success => $"Build succeeded in {_finalElapsedSeconds:F2}s",
+                BuildState.Failed => $"Build failed after {_finalElapsedSeconds:F2}s",
                 _ => "Ready to build"
             };
             Vector4 stepColor = _state switch
@@ -321,6 +331,8 @@ namespace KrayonEditor.UI
             List<LogEntry> snapshot;
             lock (_logLock) { snapshot = new List<LogEntry>(_log); }
 
+            float bodyWidth = ImGui.GetContentRegionAvail().X;
+
             foreach (var entry in snapshot)
             {
                 Vector4 col = entry.Level switch
@@ -331,9 +343,15 @@ namespace KrayonEditor.UI
                     _ => TextNormal
                 };
 
-                ImGui.TextColored(TextMuted, entry.Timestamp);
-                ImGui.SameLine(0, 8);
+                // Mensaje a la izquierda, timestamp a la derecha en la misma línea
+                float tsWidth = ImGui.CalcTextSize(entry.Timestamp).X;
+                float cursorY = ImGui.GetCursorPosY();
+
                 ImGui.TextColored(col, entry.Message);
+
+                // Sobreimprimir timestamp alineado al borde derecho de la misma fila
+                ImGui.SetCursorPos(new Vector2(bodyWidth - tsWidth, cursorY));
+                ImGui.TextColored(TextMuted, entry.Timestamp);
             }
 
             if (_autoScroll && _scrollBottom)
@@ -347,7 +365,7 @@ namespace KrayonEditor.UI
             ImGui.PopStyleColor();
         }
 
-        // ─── Build logic (sin cambios) ────────────────────────────────────────
+        // ─── Build logic ─────────────────────────────────────────────────────
         private void StartBuild()
         {
             if (!Directory.Exists(AssetManager.CompilerPath))
@@ -358,6 +376,7 @@ namespace KrayonEditor.UI
             _progress = 0f;
             _warningCount = 0;
             _errorCount = 0;
+            _finalElapsedSeconds = 0.0;
             lock (_logLock) { _log.Clear(); }
             _timer.Restart();
 
@@ -368,8 +387,9 @@ namespace KrayonEditor.UI
         private void CancelBuild()
         {
             _cts?.Cancel();
-            _state = BuildState.Failed;
+            _finalElapsedSeconds = _timer.Elapsed.TotalSeconds;
             _timer.Stop();
+            _state = BuildState.Failed;
             AppendLog("Build cancelled by user.", LogLevel.Warning);
         }
 
@@ -384,7 +404,8 @@ namespace KrayonEditor.UI
         {
             try
             {
-                var steps = _platform == BuildPlatform.Android
+                // ── Definir pasos de compilación ─────────────────────────────
+                var compileSteps = _platform == BuildPlatform.Android
                     ? new (string Label, int Ms)[]
                       {
                           ("Scanning assets",          300),
@@ -404,27 +425,52 @@ namespace KrayonEditor.UI
                           ("Finalizing",               200),
                       };
 
-                for (int i = 0; i < steps.Length; i++)
-                {
-                    token.ThrowIfCancellationRequested();
-                    _currentStep = steps[i].Label;
-                    AppendLog(steps[i].Label, LogLevel.Info);
-                    Thread.Sleep(steps[i].Ms);
-                    _progress = (i + 1f) / steps.Length;
-                }
-
-                _state = BuildState.Success;
-                _timer.Stop();
-
+                // ── Pre-cargar assets para calcular total de pasos ────────────
+                // Se hace ANTES de avanzar progreso para que la barra sea exacta.
                 string jsonData = File.ReadAllText($"{AssetManager.DataBase}");
                 JObject dataJson = JObject.Parse(jsonData);
                 JArray assets = (JArray)dataJson["Assets"];
+                int assetCount = assets.Count;
+
+                // Desglose total de pasos:
+                //   compileSteps.Length  → fase 1: compilación
+                //   assetCount           → fase 2: un paso por asset
+                //   1                    → fase 3: preparar pak
+                //   1                    → fase 4: copiar ejecutable
+                //   1                    → fase 5: construir pak
+                int totalSteps = compileSteps.Length + assetCount + 3;
+                int completedSteps = 0;
+
+                void Advance()
+                {
+                    completedSteps++;
+                    _progress = Math.Min((float)completedSteps / totalSteps, 1f);
+                }
+
+                // ── Fase 1: pasos de compilación ─────────────────────────────
+                for (int i = 0; i < compileSteps.Length; i++)
+                {
+                    token.ThrowIfCancellationRequested();
+                    _currentStep = compileSteps[i].Label;
+                    AppendLog(compileSteps[i].Label, LogLevel.Info);
+                    Thread.Sleep(compileSteps[i].Ms);
+                    Advance();
+                }
+
+                // ── Fase 2: procesamiento de assets ──────────────────────────
                 var assetsPak = new Dictionary<string, string>();
 
                 foreach (JToken asset in assets)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     string? path = asset["Path"]?.ToString();
-                    if (path == null) { AppendLog("Asset sin campo 'Path'", LogLevel.Error); continue; }
+                    if (path == null)
+                    {
+                        AppendLog("Asset sin campo 'Path'", LogLevel.Error);
+                        Advance();
+                        continue;
+                    }
 
                     string fullPath = AssetManager.BasePath + path;
                     if (File.Exists(fullPath))
@@ -433,30 +479,70 @@ namespace KrayonEditor.UI
                         AppendLog($"Error on try compile file: {fullPath}", LogLevel.Error);
 
                     AppendLog($"Working On Asset: {path}", LogLevel.Info);
+                    _currentStep = $"Processing asset: {path}";
+                    Advance();
                 }
 
-                AppendLog("Work On Game Assets Pak (Please Wait...)", LogLevel.Success);
+                // ── Fase 3: preparar pak ─────────────────────────────────────
+                token.ThrowIfCancellationRequested();
+                _currentStep = "Preparing Game.pak...";
+                AppendLog("Work On Game Assets Pak (Please Wait...)", LogLevel.Info);
 
                 if (File.Exists($"{AssetManager.CompilerPath}Game.pak"))
                 {
-                    AppendLog("Replacing previous Game.Pak (Please Wait...)", LogLevel.Warning);
+                    AppendLog("Replacing previous Game.pak (Please Wait...)", LogLevel.Warning);
                     File.Delete($"{AssetManager.CompilerPath}Game.pak");
                 }
                 else
                 {
-                    AppendLog("Generating new Game.pak (Please Wait...)", LogLevel.Success);
+                    AppendLog("Generating new Game.pak (Please Wait...)", LogLevel.Info);
                 }
+                Advance();
 
+                // ── Fase 4: copiar datos del ejecutable ──────────────────────
+                token.ThrowIfCancellationRequested();
+                _currentStep = "Copying executable data...";
+                AppendLog("Copying executable data (Please Wait...)", LogLevel.Info);
+
+                PathUtils.CopyAllDataTo("CompileData/Windows/", AssetManager.CompilerPath);
+                PathUtils.CopyAllDataTo(AssetManager.BasePath, AssetManager.CompilerPath + "/Content");
+                File.Copy(AssetManager.DataBase, AssetManager.CompilerPath + "/DataBaseFromAssets.json", true);
+                File.Copy($"{AssetManager.ClientDLLPath}/KrayonClient.dll", $"{AssetManager.CompilerPath}/KrayonClient.dll", true);
+                AppendLog("Executable data copied.", LogLevel.Info);
+                Advance();
+
+                // ── Fase 5: compilar pak ─────────────────────────────────────
+                token.ThrowIfCancellationRequested();
+                _currentStep = "Compiling Game.pak...";
+                AppendLog("Starting compilation of Game.pak (Please Wait...)", LogLevel.Info);
                 KRCompiler.Build($"{AssetManager.CompilerPath}Game.pak", assetsPak);
-                AppendLog($"Build succeeded in {_timer.Elapsed.TotalSeconds:F2}s", LogLevel.Success);
+                AppendLog("Game.pak successfully compiled.", LogLevel.Info);
+                Advance(); // _progress llega a 1.0 aquí
+
+                string url = Path.GetFullPath(AssetManager.CompilerPath);
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+
+                // ── Finalizado con éxito ──────────────────────────────────────
+                _finalElapsedSeconds = _timer.Elapsed.TotalSeconds;
+                _timer.Stop();
+                _state = BuildState.Success;
+                _progress = 1f;
+
+                AppendLog($"Build succeeded in {_finalElapsedSeconds:F2}s", LogLevel.Success);
                 EngineEditor.LogMessage("[Compiler] Build succeeded.");
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 _errorCount++;
-                _state = BuildState.Failed;
+                _finalElapsedSeconds = _timer.Elapsed.TotalSeconds;
                 _timer.Stop();
+                _state = BuildState.Failed;
                 AppendLog($"Error: {ex.Message}", LogLevel.Error);
                 EngineEditor.LogMessage($"[Compiler] Build failed: {ex.Message}");
             }

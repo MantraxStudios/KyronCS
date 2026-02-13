@@ -12,6 +12,7 @@ namespace KrayonEditor
             AssetManager.BasePath = "Content/";
             AssetManager.DataBase = "DataBaseFromAssets.json";
             AssetManager.GamePak = "Game.pak";
+            AssetManager.ClientDLLPath = "";
             AppInfo.IsCompiledGame = true;
             EngineLoader.Run();
         }

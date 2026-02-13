@@ -372,8 +372,9 @@ namespace KrayonEditor.UI
                     Console.WriteLine($"Material with name '{_newMaterialName}' already exists. Please choose a different name.");
                     return;
                 }
+                Console.WriteLine("*******" + _newShaderPath + ".vert");
 
-                var newMaterial = GraphicsEngine.Instance!.Materials.Create(_newMaterialName, Guid.Parse("52ccc06b-314c-4014-afbc-b0996db89a63"), Guid.Parse("81d9e26e-76d6-4f53-a5e0-265526ea6135"));
+                var newMaterial = GraphicsEngine.Instance!.Materials.Create(_newMaterialName, Guid.Parse("f3df852d-4e51-4e3c-ae64-81184e1b1182"), Guid.Parse("94804744-32d4-4fa3-8aa0-d7f8f19fc3fb"));
                 _selectedMaterial = newMaterial;
                 Console.WriteLine($"Material created: {_newMaterialName}");
             }

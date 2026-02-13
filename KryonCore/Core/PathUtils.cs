@@ -72,5 +72,27 @@ namespace KrayonCore.Utilities
 
             return Path.GetFileNameWithoutExtension(path);
         }
+
+        public static void CopyAllDataTo(string origen, string destino)
+        {
+            DirectoryInfo dir = new DirectoryInfo(origen);
+
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException("La carpeta origen no existe");
+
+            Directory.CreateDirectory(destino);
+
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string rutaDestino = Path.Combine(destino, file.Name);
+                file.CopyTo(rutaDestino, true); 
+            }
+
+            foreach (DirectoryInfo subDir in dir.GetDirectories())
+            {
+                string nuevaRutaDestino = Path.Combine(destino, subDir.Name);
+                CopyAllDataTo(subDir.FullName, nuevaRutaDestino);
+            }
+        }
     }
 }

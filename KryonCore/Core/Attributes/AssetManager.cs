@@ -22,8 +22,12 @@ namespace KrayonCore.Core.Attributes
         public static void Initialize()
         {
             LoadDatabase();
-            ScanFileSystem();
-            SaveDatabase();
+
+            if (!AppInfo.IsCompiledGame)
+            {
+                ScanFileSystem();
+                SaveDatabase();
+            }
             Console.WriteLine($"AssetManager initialized. Assets: {_assets.Count}, Folders: {_folders.Count}");
         }
 

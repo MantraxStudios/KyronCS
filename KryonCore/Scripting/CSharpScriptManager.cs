@@ -40,7 +40,6 @@ namespace KrayonCore.Core.Components
                 using var ms = new MemoryStream(bytes);
                 _clientAssembly = _loadContext.LoadFromStream(ms);
 
-                // Cachear todos los tipos de scripts
                 var scriptTypes = _clientAssembly.GetTypes()
                     .Where(t => t.BaseType?.Name == "KrayonBehaviour");
 
