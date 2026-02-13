@@ -2,7 +2,7 @@
   "SceneName": "GameScene",
   "GameObjects": [
     {
-      "Id": "c00b106d-3d69-4b9a-9eb6-acb9eab0fdaf",
+      "Id": "355cc827-4ca7-482d-ad4b-4ada99f8db88",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "54be1a3e-f4b5-4a31-8295-bfbb70457923",
+          "ComponentId": "e84fa5cf-6cdd-4655-aab1-671eb7f64e46",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f6c40931-1648-4fb7-9ea0-e99801613262",
+          "ComponentId": "a7e37145-fffb-4c74-af0c-d215ef35ab4f",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "1b467368-606c-462c-af3f-a23a3d08d12c",
@@ -44,7 +44,7 @@
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
               "values": [
-                "basic"
+                "Bird"
               ]
             }
           }

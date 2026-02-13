@@ -43,13 +43,16 @@ namespace KrayonCore.Core.Components
         [ToStorage] public AudioRolloffMode RolloffMode { get; set; } = AudioRolloffMode.Logarithmic;
         [ToStorage] public float StereoPanBlend { get; set; } = 1f;
 
+        [ToStorage] public bool PlayOnAwake { get; set; } = true;
+
+
         public AudioHandle? ThisAudio = null;
         private bool _started = false;
 
         public override void Start()
         {
             _started = true;
-            if (!string.IsNullOrEmpty(_audioPath))
+            if (PlayOnAwake && !string.IsNullOrEmpty(_audioPath))
                 LoadAudio();
         }
 
