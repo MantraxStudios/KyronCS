@@ -13,8 +13,7 @@ namespace KrayonEditor
         {
             if (args.Length != 0)
             {
-                AssetManager.BasePath = $"{args[0]}/Content/";
-                AssetManager.DataBase = $"{args[0]}/DataBaseFromAssets.json";
+                AssetManager.TotalBase = $"{args[0]}";
             }
 
             ScriptWatcher _scriptWatcher;

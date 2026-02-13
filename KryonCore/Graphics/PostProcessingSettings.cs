@@ -1,5 +1,7 @@
+using KrayonCore.Core.Attributes;
 using OpenTK.Mathematics;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -124,15 +126,35 @@ namespace KrayonCore.Core.Rendering
 
         public void Load(string filePath)
         {
-            if (!File.Exists(filePath))
+            string json;
+
+            if (AppInfo.IsCompiledGame)
             {
-                Reset();
-                return;
+                // Leer desde Pak
+                byte[] bytes = AssetManager.GetBytes("Engine.VFX");
+                if (bytes == null)
+                {
+                    Console.WriteLine("[PostProcessing] Could not read settings from pak");
+                    Reset();
+                    return;
+                }
+
+                json = Encoding.UTF8.GetString(bytes);
+            }
+            else
+            {
+                // Leer desde filesystem
+                if (!File.Exists(filePath))
+                {
+                    Reset();
+                    return;
+                }
+
+                json = File.ReadAllText(filePath);
             }
 
-            string json = File.ReadAllText(filePath);
             var loaded = JsonSerializer.Deserialize<PostProcessingSettings>(json);
-            
+
             if (loaded != null)
             {
                 Enabled = loaded.Enabled;

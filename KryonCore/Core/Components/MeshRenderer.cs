@@ -27,29 +27,56 @@ namespace KrayonCore
             }
         }
 
-        [ToStorage, NoSerializeToInspector] public string[] MaterialPaths { get; set; } = new string[0];
+        [ToStorage]
+        public string[] MaterialPaths { get; set; } = new string[0];
 
-        [NoSerializeToInspector] private Material[] _materials = new Material[0];
         [NoSerializeToInspector] private Model? _model;
         [NoSerializeToInspector] private bool _isInitialized = false;
 
-        [NoSerializeToInspector] public Model? Model
+        [NoSerializeToInspector]
+        public Model? Model
         {
             get => _model;
             set => _model = value;
         }
 
+        [NoSerializeToInspector]
         public Material[] Materials
         {
-            get => _materials;
-            set => _materials = value ?? new Material[0];
+            get
+            {
+                var materials = new Material[MaterialPaths.Length];
+                for (int i = 0; i < MaterialPaths.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(MaterialPaths[i]))
+                    {
+                        materials[i] = GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]);
+                    }
+                }
+                return materials;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    MaterialPaths = new string[0];
+                    return;
+                }
+
+                MaterialPaths = new string[value.Length];
+                for (int i = 0; i < value.Length; i++)
+                {
+                    MaterialPaths[i] = value[i]?.Name ?? "";
+                }
+            }
         }
 
-        [NoSerializeToInspector] public int MaterialCount => _materials.Length;
+        [NoSerializeToInspector]
+        public int MaterialCount => MaterialPaths.Length;
 
         public MeshRenderer()
         {
-            _materials = new Material[0];
+            MaterialPaths = new string[0];
         }
 
         public override void Awake()
@@ -60,46 +87,22 @@ namespace KrayonCore
             {
                 Console.WriteLine($"Material: {item} | Object: {GameObject.Name}");
             }
-            
+
             if (!string.IsNullOrEmpty(ModelPath))
             {
                 LoadModelFromPath(ModelPath);
-                
+
                 if (_model != null && _model.SubMeshCount > 0)
                 {
-                    if (_materials == null || _materials.Length != _model.SubMeshCount)
+                    if (MaterialPaths.Length != _model.SubMeshCount)
                     {
-                        var oldMaterials = _materials ?? new Material[0];
-                        _materials = new Material[_model.SubMeshCount];
-                        
-                        for (int i = 0; i < Math.Min(oldMaterials.Length, _materials.Length); i++)
-                        {
-                            _materials[i] = oldMaterials[i];
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (_materials == null)
-                {
-                    _materials = new Material[0];
-                }
-            }
+                        var oldPaths = MaterialPaths;
+                        MaterialPaths = new string[_model.SubMeshCount];
 
-            for (int i = 0; i < MaterialPaths.Length && i < _materials.Length; i++)
-            {
-                if (_materials[i] == null && !string.IsNullOrEmpty(MaterialPaths[i]))
-                {
-                    var material = GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]);
-                    if (material != null)
-                    {
-                        _materials[i] = material;
-                        Console.WriteLine($"Material Cargado '{MaterialPaths[i]}' para el índice {i}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"No se pudo cargar el material '{MaterialPaths[i]}' para el índice {i}");
+                        for (int i = 0; i < Math.Min(oldPaths.Length, MaterialPaths.Length); i++)
+                        {
+                            MaterialPaths[i] = oldPaths[i];
+                        }
                     }
                 }
             }
@@ -112,10 +115,13 @@ namespace KrayonCore
             if (_model == null && !string.IsNullOrEmpty(ModelPath))
             {
                 LoadModelFromPath(ModelPath);
-                
-                if (_model != null && _materials.Length != _model.SubMeshCount)
+
+                if (_model != null && MaterialPaths.Length != _model.SubMeshCount)
                 {
-                    Array.Resize(ref _materials, _model.SubMeshCount);
+                    // CAMBIO: No usar Array.Resize con propiedad
+                    var newPaths = new string[_model.SubMeshCount];
+                    Array.Copy(MaterialPaths, newPaths, Math.Min(MaterialPaths.Length, newPaths.Length));
+                    MaterialPaths = newPaths;
                 }
             }
         }
@@ -131,21 +137,18 @@ namespace KrayonCore
             {
                 if (!string.IsNullOrEmpty(ModelPath))
                 {
-                    _materials = new Material[0];
                     MaterialPaths = new string[0];
 
                     LoadModelFromPath(ModelPath);
 
                     if (_model != null && _model.SubMeshCount > 0)
                     {
-                        _materials = new Material[_model.SubMeshCount];
                         MaterialPaths = new string[_model.SubMeshCount];
                     }
                 }
                 else
                 {
                     _model = null;
-                    _materials = new Material[0];
                     MaterialPaths = new string[0];
                 }
             }
@@ -163,12 +166,10 @@ namespace KrayonCore
 
             if (model != null && model.SubMeshCount > 0)
             {
-                _materials = new Material[model.SubMeshCount];
                 MaterialPaths = new string[model.SubMeshCount];
             }
             else
             {
-                _materials = new Material[0];
                 MaterialPaths = new string[0];
             }
         }
@@ -182,7 +183,7 @@ namespace KrayonCore
 
             try
             {
-                var assetInfo = AssetManager.GetBytes(Guid.Parse(path)); 
+                var assetInfo = AssetManager.GetBytes(Guid.Parse(path));
 
                 Console.WriteLine("Bytes Procesados");
                 _model = Model.LoadFromBytes(assetInfo, "fbx");
@@ -202,16 +203,9 @@ namespace KrayonCore
         {
             if (index < 0) return;
 
-            if (index >= _materials.Length)
-            {
-                int newSize = index + 1;
-                Array.Resize(ref _materials, newSize);
-            }
-
-            _materials[index] = material;
-
             if (index >= MaterialPaths.Length)
             {
+                // CAMBIO: No usar Array.Resize con propiedad
                 var newPaths = new string[index + 1];
                 Array.Copy(MaterialPaths, newPaths, MaterialPaths.Length);
                 MaterialPaths = newPaths;
@@ -222,9 +216,13 @@ namespace KrayonCore
 
         public Material GetMaterial(int index)
         {
-            if (index < 0 || index >= _materials.Length)
+            if (index < 0 || index >= MaterialPaths.Length)
                 return null;
-            return _materials[index];
+
+            if (string.IsNullOrEmpty(MaterialPaths[index]))
+                return null;
+
+            return GraphicsEngine.Instance.Materials.Get(MaterialPaths[index]);
         }
 
         public void AddMaterial(Material material)
@@ -232,59 +230,38 @@ namespace KrayonCore
             if (material == null)
                 return;
 
-            Array.Resize(ref _materials, _materials.Length + 1);
-            _materials[_materials.Length - 1] = material;
-
-            // Sincronizar MaterialPaths
-            var newPaths = new string[_materials.Length];
-            Array.Copy(MaterialPaths, newPaths, Math.Min(MaterialPaths.Length, newPaths.Length));
-            newPaths[newPaths.Length - 1] = material?.Name ?? "";
+            // CAMBIO: No usar Array.Resize con propiedad
+            var newPaths = new string[MaterialPaths.Length + 1];
+            Array.Copy(MaterialPaths, newPaths, MaterialPaths.Length);
+            newPaths[newPaths.Length - 1] = material.Name;
             MaterialPaths = newPaths;
         }
 
         public void RemoveMaterial(int index)
         {
-            if (index < 0 || index >= _materials.Length)
+            if (index < 0 || index >= MaterialPaths.Length)
                 return;
 
-            var newMaterials = new Material[_materials.Length - 1];
-            for (int i = 0, j = 0; i < _materials.Length; i++)
+            var newPaths = new string[MaterialPaths.Length - 1];
+            for (int i = 0, j = 0; i < MaterialPaths.Length; i++)
             {
                 if (i != index)
                 {
-                    newMaterials[j++] = _materials[i];
+                    newPaths[j++] = MaterialPaths[i];
                 }
             }
-            _materials = newMaterials;
-
-            // Sincronizar MaterialPaths
-            if (index < MaterialPaths.Length)
-            {
-                var newPaths = new string[Math.Max(0, _materials.Length)];
-                for (int i = 0, j = 0; i < MaterialPaths.Length && i < _materials.Length + 1; i++)
-                {
-                    if (i != index)
-                    {
-                        if (j < newPaths.Length)
-                        {
-                            newPaths[j++] = MaterialPaths[i];
-                        }
-                    }
-                }
-                MaterialPaths = newPaths;
-            }
+            MaterialPaths = newPaths;
         }
 
         public void ClearMaterials()
         {
-            _materials = new Material[0];
             MaterialPaths = new string[0];
         }
 
         public override void OnDestroy()
         {
             _model = null;
-            _materials = new Material[0];
+            MaterialPaths = new string[0];
         }
 
         [CallEvent("Setup Materials")]
@@ -294,8 +271,9 @@ namespace KrayonCore
             {
                 return;
             }
-            _materials = new Material[Model.SubMeshCount];
+
             MaterialPaths = new string[Model.SubMeshCount];
+
             for (int i = 0; i < Model.SubMeshCount; i++)
             {
                 SubMeshInfo meshInfo = Model._subMeshes[i];
@@ -320,10 +298,11 @@ namespace KrayonCore
                     }
 
                     Material G = GraphicsEngine.Instance.Materials.Create(
-                        PathUtils.GetFileNameWithoutExtension(texturePath), Guid.Parse("f3df852d-4e51-4e3c-ae64-81184e1b1182"), Guid.Parse("94804744-32d4-4fa3-8aa0-d7f8f19fc3fb"));
+                        PathUtils.GetFileNameWithoutExtension(texturePath),
+                        Guid.Parse("f3df852d-4e51-4e3c-ae64-81184e1b1182"),
+                        Guid.Parse("94804744-32d4-4fa3-8aa0-d7f8f19fc3fb"));
                     G.LoadAlbedoTexture(assetRecord.Guid);
                     G.Roughness = 0;
-                    _materials[i] = G;
                     MaterialPaths[i] = G.Name;
                 }
             }

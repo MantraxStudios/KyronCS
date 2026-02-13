@@ -173,7 +173,7 @@ namespace KrayonCore.GraphicsData
                 _screenQuad.SetMaterial(screenMaterial);
 
             ConfigureDefaultPostProcessing();
-            PostProcessing?.Load($"{AssetManager.BasePath}VFXData.json");
+            PostProcessing?.Load(AssetManager.VFXPath);
 
             if (AppInfo.IsCompiledGame)
                 CSharpScriptManager.Instance.Reload();

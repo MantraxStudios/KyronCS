@@ -2,19 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace KrayonCore.Core.Attributes
 {
     public static class AssetManager
     {
-        public static string BasePath = "MainProyect/Content/";
-        public static string DataBase = "MainProyect/DataBaseFromAssets.json";
-        public static string CompilerPath = "MainProyect/CompileData/";
-        public static string ClientDLLPath = "MainProyect/bin/Debug/net10.0/";
-        public static string GamePak = "MainProyect/CompileData/Game.Pak";
-        public static string VSProyect = "MainProyect/";
-        public static string CSProj = "MainProyect/KrayonClient.csproj";
+        // DONT TOUCH THIS VAR. THIS WORK WITH START EDITOR
+        public static string TotalBase = "MainProyect/";
+
+        public static string BasePath = $"{TotalBase}Content/";
+        public static string DataBase = $"{TotalBase}/DataBaseFromAssets.json";
+        public static string CompilerPath = $"{TotalBase}/CompileData/";
+        public static string ClientDLLPath = $"{TotalBase}/bin/Debug/net10.0/";
+        public static string GamePak = $"{TotalBase}/CompileData/Game.Pak";
+        public static string VSProyect = $"{TotalBase}/";
+        public static string CSProj = $"{TotalBase}KrayonClient.csproj";
+        public static string MaterialsPath = $"{TotalBase}EngineMaterials.json";
+        public static string VFXPath = $"{TotalBase}VFXData.json";
+
+
         private static Dictionary<Guid, AssetRecord> _assets = new();
         private static Dictionary<Guid, FolderRecord> _folders = new();
 
@@ -64,6 +72,34 @@ namespace KrayonCore.Core.Attributes
             catch (Exception ex)
             {
                 Console.WriteLine($"Error reading asset bytes: {ex.Message}");
+                return null;
+            }
+        }
+
+        public static byte[] GetBytes(string key)
+        {
+            try
+            {
+                if (AppInfo.IsCompiledGame)
+                {
+                    using var pak = new KrayonCompiler.PakFile(GamePak);
+                    return pak.Load(key);
+                }
+
+                // Modo editor / sin compilar
+                string fullPath = Path.Combine(BasePath, key);
+
+                if (!File.Exists(fullPath))
+                {
+                    Console.WriteLine($"File not found: {fullPath}");
+                    return null;
+                }
+
+                return File.ReadAllBytes(fullPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading bytes: {ex.Message}");
                 return null;
             }
         }
@@ -619,14 +655,27 @@ namespace KrayonCore.Core.Attributes
 
         private static void LoadDatabase()
         {
-            if (!File.Exists(DataBase))
-                return;
-
             try
             {
-                var json = File.ReadAllText(DataBase);
-                var data = JsonSerializer.Deserialize<DatabaseContainer>(json);
+                string json;
 
+                if (AppInfo.IsCompiledGame)
+                {
+                    byte[] bytes = GetBytes("Engine.AssetsData");
+                    if (bytes == null)
+                        return;
+
+                    json = Encoding.UTF8.GetString(bytes);
+                }
+                else
+                {
+                    if (!File.Exists(DataBase))
+                        return;
+
+                    json = File.ReadAllText(DataBase);
+                }
+
+                var data = JsonSerializer.Deserialize<DatabaseContainer>(json);
                 if (data == null)
                     return;
 
@@ -653,6 +702,7 @@ namespace KrayonCore.Core.Attributes
                 Console.WriteLine($"Error loading database: {ex.Message}");
             }
         }
+
 
         private static void SaveDatabase()
         {

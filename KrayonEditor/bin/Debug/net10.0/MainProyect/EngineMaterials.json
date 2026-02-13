@@ -111,11 +111,11 @@
       },
       "AmbientStrength": 1.0
     },
-    "tap": {
-      "Name": "tap",
+    "Floor": {
+      "Name": "Floor",
       "VertexShaderGUID": "f3df852d-4e51-4e3c-ae64-81184e1b1182",
       "FragmentShaderGUID": "94804744-32d4-4fa3-8aa0-d7f8f19fc3fb",
-      "AlbedoTextureGUID": "a826943d-32a8-4b9f-a14d-68b86252baf8",
+      "AlbedoTextureGUID": "fe04e652-1a38-4138-ba7a-d3fd7651f7ba",
       "NormalTextureGUID": null,
       "MetallicTextureGUID": null,
       "RoughnessTextureGUID": null,

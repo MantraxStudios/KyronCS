@@ -1,4 +1,105 @@
 {
   "SceneName": "DefaultScene",
-  "GameObjects": []
+  "GameObjects": [
+    {
+      "Id": "ea64ab77-1edd-4286-8ae9-c73978c246c4",
+      "Name": "Cube_0",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "979d5711-0679-4fda-9330-52ed16d16511",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 5,
+              "y": 1,
+              "z": 5
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "a6a88ce3-0edf-47a1-a59e-df64cb93e023",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "1b467368-606c-462c-af3f-a23a3d08d12c",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Floor"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "917b9ba0-d1e3-4af1-844c-c2b04c471aa0",
+      "Name": "Cube_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "39acb3af-5934-4613-86c8-5a462310ad4f",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 3.4886239,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "db90d7a2-5b3a-4ba1-963b-e15aa8a61e34",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "0f9c53d3-63ce-4eb4-aea1-992a8fb7875e",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

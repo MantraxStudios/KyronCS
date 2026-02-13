@@ -1,4 +1,5 @@
 ﻿using KrayonCore.Core;
+using KrayonCore.Core.Attributes;
 using KrayonCore.GraphicsData;
 using System.Collections.Generic;
 using System.IO;
@@ -37,26 +38,40 @@ namespace KrayonCore
         {
             GameScene sceneToLoad = null;
 
-            // Verificar si es una ruta de archivo
-            if (nameOrPath.EndsWith(".scene") || System.IO.File.Exists(nameOrPath))
+            bool isFile = nameOrPath.EndsWith(".scene", StringComparison.OrdinalIgnoreCase);
+
+            if (isFile)
             {
-                // Cargar desde archivo
-                if (!System.IO.File.Exists(nameOrPath))
-                {
-                    System.Console.WriteLine($"Error: No se encontró el archivo '{nameOrPath}'");
-                    return;
-                }
-
-                // Descargar escena actual
                 if (_activeScene != null)
-                {
                     _activeScene.OnUnload();
+
+                if (AppInfo.IsCompiledGame)
+                {
+                    string key = $"Scene.{Path.GetFileNameWithoutExtension(nameOrPath)}";
+                    byte[] bytes = AssetManager.GetBytes(key);
+
+                    if (bytes == null)
+                    {
+                        Console.WriteLine($"Error: No se pudo cargar la escena '{nameOrPath}' desde Pak");
+                        return;
+                    }
+
+                    sceneToLoad = SceneSaveSystem.LoadScene(bytes);
+                }
+                else
+                {
+                    if (!File.Exists(nameOrPath))
+                    {
+                        Console.WriteLine($"Error: No se encontró el archivo '{nameOrPath}'");
+                        return;
+                    }
+
+                    sceneToLoad = SceneSaveSystem.LoadScene(nameOrPath);
                 }
 
-                // Cargar escena desde archivo
-                sceneToLoad = SceneSaveSystem.LoadScene(nameOrPath);
+                if (sceneToLoad == null)
+                    return;
 
-                // Si ya existe una escena con ese nombre en el diccionario, reemplazarla
                 if (_scenes.ContainsKey(sceneToLoad.Name))
                 {
                     var oldScene = _scenes[sceneToLoad.Name];
@@ -67,35 +82,29 @@ namespace KrayonCore
                     }
                 }
 
-                // Agregar al diccionario
                 _scenes[sceneToLoad.Name] = sceneToLoad;
             }
             else
             {
-                // Cargar escena por nombre desde el diccionario
                 if (!_scenes.ContainsKey(nameOrPath))
                 {
-                    System.Console.WriteLine($"Error: No se encontró la escena '{nameOrPath}'");
+                    Console.WriteLine($"Error: No se encontró la escena '{nameOrPath}'");
                     return;
                 }
 
                 sceneToLoad = _scenes[nameOrPath];
 
-                // Descargar escena actual
                 if (_activeScene != null)
-                {
                     _activeScene.OnUnload();
-                }
             }
 
-            // Shutdown del renderer
             GraphicsEngine.Instance.GetSceneRenderer().Shutdown();
 
-            // Activar la nueva escena
             _activeScene = sceneToLoad;
             _activeScene.OnLoad();
             _activeScene.Start();
         }
+
 
         public static GameScene GetScene(string name)
         {

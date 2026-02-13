@@ -87,6 +87,8 @@ namespace KrayonCore
 
         public void SaveMaterialsData()
         {
+            if (AppInfo.IsCompiledGame) return;
+
             JObject data = new JObject();
             JObject materialsObj = new JObject();
 
@@ -145,26 +147,20 @@ namespace KrayonCore
 
             data["Materials"] = materialsObj;
 
-            string savePath = AssetManager.BasePath + "materials.json";
+            string savePath = AssetManager.MaterialsPath;
             File.WriteAllText(savePath, data.ToString());
             Console.WriteLine($"[MaterialManager] Saved {_materials.Count} materials to materials.json");
         }
 
         public void LoadMaterialsData()
         {
-            string materialsPath = AssetManager.BasePath + "materials.json";
+            string materialsPath = AssetManager.MaterialsPath;
 
             string jsonContent;
 
             if (AppInfo.IsCompiledGame)
             {
-                var asset = AssetManager.FindByPath("materials.json");
-                if (asset == null)
-                {
-                    Console.WriteLine("[MaterialManager] materials.json not found in AssetManager");
-                    return;
-                }
-                byte[] bytes = AssetManager.GetBytes(asset.Guid);
+                byte[] bytes = AssetManager.GetBytes("Engine.Materials");
                 if (bytes == null)
                 {
                     Console.WriteLine("[MaterialManager] Could not read materials.json");

@@ -189,7 +189,7 @@ namespace KrayonEditor.UI
                 EngineEditor.LogMessage($"Escena guardada: {sceneName}");
 
                 SaveAllMaterials();
-                GraphicsEngine.Instance._fullscreenQuad.GetSettings().Save($"{AssetManager.BasePath}VFXData.json");
+                GraphicsEngine.Instance._fullscreenQuad.GetSettings().Save(AssetManager.VFXPath);
 
                 EditorPrefs.SetString(PREF_LAST_SCENE, sceneName);
                 EditorPrefs.Save();

@@ -1,6 +1,9 @@
-﻿using System;
+﻿using KrayonCore.Core;
+using KrayonCore.Core.Attributes;
+using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -41,10 +44,24 @@ namespace KrayonCore
 
         public static GameScene LoadScene(string filePath)
         {
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException($"No se encontró el archivo: {filePath}");
+            string json;
 
-            var json = File.ReadAllText(filePath);
+            if (AppInfo.IsCompiledGame)
+            {
+                byte[] bytes = AssetManager.GetBytes($"Scene.{Path.GetFileNameWithoutExtension(filePath)}");
+                if (bytes == null)
+                    throw new FileNotFoundException($"No se encontró la escena en Pak: {filePath}");
+
+                json = Encoding.UTF8.GetString(bytes);
+            }
+            else
+            {
+                if (!File.Exists(filePath))
+                    throw new FileNotFoundException($"No se encontró el archivo: {filePath}");
+
+                json = File.ReadAllText(filePath);
+            }
+
             var sceneData = JsonSerializer.Deserialize<SceneData>(json, JsonOptions);
 
             if (sceneData == null)
@@ -56,6 +73,19 @@ namespace KrayonCore
 
             return scene;
         }
+
+        public static GameScene LoadScene(byte[] bytes)
+        {
+            var json = Encoding.UTF8.GetString(bytes);
+
+            var sceneData = JsonSerializer.Deserialize<SceneData>(json, JsonOptions);
+
+            if (sceneData == null)
+                throw new Exception("Error al deserializar los datos de la escena");
+
+            return DeserializeScene(sceneData);
+        }
+
 
         private static SceneData SerializeScene(GameScene scene)
         {

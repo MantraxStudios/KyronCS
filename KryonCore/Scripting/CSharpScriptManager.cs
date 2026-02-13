@@ -26,15 +26,31 @@ namespace KrayonCore.Core.Components
 
             try
             {
-                string filePath = AssetManager.ClientDLLPath + "KrayonClient.dll";
+                byte[] bytes;
 
-                if (!File.Exists(filePath))
+                if (AppInfo.IsCompiledGame)
                 {
-                    Console.WriteLine($"[ScriptManager Error] No se encontró el DLL en: {filePath}");
-                    return;
+                    bytes = AssetManager.GetBytes("Engine.Client.KrayonClient");
+
+                    if (bytes == null)
+                    {
+                        Console.WriteLine("[ScriptManager Error] No se pudo leer KrayonClient.dll desde Pak");
+                        return;
+                    }
+                }
+                else
+                {
+                    string filePath = Path.Combine(AssetManager.ClientDLLPath, "KrayonClient.dll");
+
+                    if (!File.Exists(filePath))
+                    {
+                        Console.WriteLine($"[ScriptManager Error] No se encontró el DLL en: {filePath}");
+                        return;
+                    }
+
+                    bytes = File.ReadAllBytes(filePath);
                 }
 
-                byte[] bytes = File.ReadAllBytes(filePath);
                 _loadContext = new AssemblyLoadContext("KrayonScriptContext", isCollectible: true);
 
                 using var ms = new MemoryStream(bytes);
@@ -49,6 +65,7 @@ namespace KrayonCore.Core.Components
                 }
 
                 _isLoaded = true;
+
                 Console.WriteLine($"[ScriptManager] DLL cargado correctamente. {_scriptTypes.Count} scripts encontrados.");
             }
             catch (Exception ex)

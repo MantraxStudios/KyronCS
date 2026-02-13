@@ -141,18 +141,8 @@
       "Type": "Unknown"
     },
     {
-      "Guid": "70dcae87-2c02-41ab-9dbf-fc39be61dc92",
-      "Path": "VFXData.json",
-      "Type": "Unknown"
-    },
-    {
       "Guid": "2404d3b7-bfa7-448e-b998-b5a7d1e0e259",
       "Path": "scenes/DefaultScene.scene",
-      "Type": "Unknown"
-    },
-    {
-      "Guid": "708f7da4-66d8-4719-8922-0835d407d6f1",
-      "Path": "scenes/GameScene.scene",
       "Type": "Unknown"
     },
     {
@@ -14444,11 +14434,6 @@
       "Guid": "8285f39c-1236-4e7a-9f24-7907f4b9ddc7",
       "Path": "psx/Models/other-formats/OBJ/Small Props/vhs_tape_1.obj",
       "Type": "Model"
-    },
-    {
-      "Guid": "fc75b26b-cdd1-4088-8d14-d9499ded6b0c",
-      "Path": "materials.json",
-      "Type": "Unknown"
     },
     {
       "Guid": "9cd8c265-1e11-4c1e-b233-c7b8c7f1f8ab",

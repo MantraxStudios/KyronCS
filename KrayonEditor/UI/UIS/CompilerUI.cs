@@ -460,6 +460,11 @@ namespace KrayonEditor.UI
                 // ── Fase 2: procesamiento de assets ──────────────────────────
                 var assetsPak = new Dictionary<string, string>();
 
+                assetsPak.Add("Engine.AssetsData", AssetManager.DataBase);
+                assetsPak.Add("Engine.VFX", AssetManager.VFXPath);
+                assetsPak.Add("Engine.Materials", AssetManager.MaterialsPath);
+                assetsPak.Add("Engine.Client.KrayonClient", $"{AssetManager.ClientDLLPath}/KrayonClient.dll");
+
                 foreach (JToken asset in assets)
                 {
                     token.ThrowIfCancellationRequested();
@@ -473,15 +478,33 @@ namespace KrayonEditor.UI
                     }
 
                     string fullPath = AssetManager.BasePath + path;
-                    if (File.Exists(fullPath))
-                        assetsPak.Add(asset["Guid"]?.ToString(), fullPath);
-                    else
-                        AppendLog($"Error on try compile file: {fullPath}", LogLevel.Error);
 
-                    AppendLog($"Working On Asset: {path}", LogLevel.Info);
+                    if (File.Exists(fullPath))
+                    {
+                        string ext = Path.GetExtension(fullPath);
+
+                        if (ext.Equals(".scene", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string sceneName = Path.GetFileNameWithoutExtension(fullPath);
+                            assetsPak.Add($"Scene.{sceneName}", fullPath);
+                            AppendLog($"Working On Scene: {sceneName}", LogLevel.Info);
+                        }
+                        else
+                        {
+                            assetsPak.Add(asset["Guid"]?.ToString(), fullPath);
+                            AppendLog($"Working On Asset: {path}", LogLevel.Info);
+                        }
+                    }
+                    else
+                    {
+                        AppendLog($"Error on try compile file: {fullPath}", LogLevel.Error);
+                    }
+
                     _currentStep = $"Processing asset: {path}";
                     Advance();
                 }
+
+
 
                 // ── Fase 3: preparar pak ─────────────────────────────────────
                 token.ThrowIfCancellationRequested();
@@ -505,9 +528,9 @@ namespace KrayonEditor.UI
                 AppendLog("Copying executable data (Please Wait...)", LogLevel.Info);
 
                 PathUtils.CopyAllDataTo("CompileData/Windows/", AssetManager.CompilerPath);
-                PathUtils.CopyAllDataTo(AssetManager.BasePath, AssetManager.CompilerPath + "/Content");
-                File.Copy(AssetManager.DataBase, AssetManager.CompilerPath + "/DataBaseFromAssets.json", true);
-                File.Copy($"{AssetManager.ClientDLLPath}/KrayonClient.dll", $"{AssetManager.CompilerPath}/KrayonClient.dll", true);
+                // PathUtils.CopyAllDataTo(AssetManager.BasePath, AssetManager.CompilerPath + "/Content");
+                // File.Copy(AssetManager.DataBase, AssetManager.CompilerPath + "/DataBaseFromAssets.json", true);
+                // File.Copy($"{AssetManager.ClientDLLPath}/KrayonClient.dll", $"{AssetManager.CompilerPath}/KrayonClient.dll", true);
                 AppendLog("Executable data copied.", LogLevel.Info);
                 Advance();
 
