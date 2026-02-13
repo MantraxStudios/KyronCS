@@ -1,4 +1,5 @@
 ﻿using Assimp;
+using KrayonCore.Audio;
 using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core.Components;
@@ -42,13 +43,13 @@ namespace KrayonCore.GraphicsData
         public InputSystem? Input => _inputSystem;
 
         public PostProcessingSettings? PostProcessing => _fullscreenQuad?.GetSettings();
+        public readonly AudioManager _audio = new AudioManager();
 
         public GraphicsEngine()
         {
             Instance = this;
             _materials = new MaterialManager();
             _sceneRenderer = new SceneRenderer();
-            // ⚠️ InputSystem NO se crea aquí: _window todavía es null
         }
 
         private void CreateDefaultMaterials()
@@ -97,6 +98,7 @@ namespace KrayonCore.GraphicsData
             }
 
             _fullscreenQuad?.GetSettings().Load($"{AssetManager.BasePath}VFXData.json");
+
         }
 
         public void CreateWindow(int width, int height, string title)

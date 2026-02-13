@@ -122,7 +122,7 @@ namespace KrayonEditor.UI
             var keyboard = _engine.GetKeyboardState();
             var mouse = _engine.GetMouseState();
 
-            if (!mouse.IsButtonDown(MouseButton.Right))
+            if (!mouse.IsButtonDown(MouseButton.Right) && EditorActions.IsHoveringScene)
             {
                 if (keyboard.IsKeyPressed(Keys.Q))
                 {

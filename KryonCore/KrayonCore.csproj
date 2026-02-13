@@ -16,6 +16,7 @@
     <PackageReference Include="BepuPhysics" Version="2.4.0" />
     <PackageReference Include="Jint" Version="4.5.0" />
     <PackageReference Include="LuaCSharp" Version="0.5.3" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
     <PackageReference Include="StbImageSharp" Version="2.30.15" />

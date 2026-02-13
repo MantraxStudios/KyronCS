@@ -81,7 +81,7 @@ namespace KrayonEditor.UI
             newEditorCameraSpeed = _sceneView.EditorCameraSpeed;
             newLastSceneViewportSize = _sceneView.LastViewportSize;
 
-            if (EditorActions.IsHoveringScene && GraphicsEngine.Instance.GetKeyboardState().IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftControl) && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D))
+            if (!GraphicsEngine.Instance.GetMouseState().IsButtonDown(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) && EditorActions.IsHoveringScene && GraphicsEngine.Instance.GetKeyboardState().IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftControl) && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D))
             {
                 if (EditorActions.SelectedObject != null)
                 {

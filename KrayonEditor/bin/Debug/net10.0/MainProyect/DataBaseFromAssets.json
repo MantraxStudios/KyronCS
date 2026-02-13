@@ -239,6 +239,16 @@
       "Guid": "0bdac595-d060-4acc-b069-8984d4e15b11",
       "Path": "Scripts/MoveAndReset.cs",
       "Type": "Script"
+    },
+    {
+      "Guid": "e07bacf1-928a-48af-9189-ad638b0faf33",
+      "Path": "Audio/6ix9ine - FEFE ft. Nicki Minaj, Murda Beatz.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "d17d6178-5184-4923-b00c-8fc1d3cd9bc3",
+      "Path": "Audio/Vista Al Mar - Quevedo.mp3",
+      "Type": "Audio"
     }
   ],
   "Folders": [
@@ -291,6 +301,11 @@
       "Guid": "3414c8b8-f29a-46fa-8710-a1047d2da55a",
       "Path": "Scripts",
       "CreatedAt": "2026-02-13T17:58:53.9083016-03:00"
+    },
+    {
+      "Guid": "396d08c9-01dc-4edf-bb33-00b8ace15579",
+      "Path": "Audio",
+      "CreatedAt": "2026-02-13T19:34:06.9503472-03:00"
     }
   ]
 }
