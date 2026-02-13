@@ -124,7 +124,7 @@ namespace KrayonCore.GraphicsData
                 return _sceneFrameBuffer;
 
             if (_postProcessFrameBuffer == null)
-                _postProcessFrameBuffer = new FrameBuffer(1280, 720, false, false);
+                _postProcessFrameBuffer = new FrameBuffer(1920, 1080, false, false);
 
             return _postProcessFrameBuffer;
         }

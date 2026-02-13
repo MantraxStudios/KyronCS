@@ -38,6 +38,8 @@ namespace KrayonCore.Core.Components
 
         public override void Awake()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             CSharpScriptManager.Instance.Initialize();
 
             if (!string.IsNullOrEmpty(_script))
@@ -46,11 +48,15 @@ namespace KrayonCore.Core.Components
 
         public override void Start()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             InvokeMethod(_startMethod);
         }
 
         public override void Update(float deltaTime)
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             if (_updateMethod == null) return;
             try
             {
@@ -64,6 +70,8 @@ namespace KrayonCore.Core.Components
 
         public override void OnDestroy()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             UnsubscribeFromCollisionEvents();
             InvokeMethod(_destroyMethod);
             _scriptInstance = null;
@@ -144,6 +152,8 @@ namespace KrayonCore.Core.Components
 
         private void InvokeMethod(MethodInfo method)
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             if (method == null) return;
             try
             {
@@ -161,6 +171,8 @@ namespace KrayonCore.Core.Components
 
         private void SubscribeToCollisionEvents()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             UnsubscribeFromCollisionEvents();
 
             bool hasAnyCollisionMethod =
@@ -184,6 +196,8 @@ namespace KrayonCore.Core.Components
 
         private void UnsubscribeFromCollisionEvents()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             if (!_subscribedToEvents || _rigidbody == null) return;
 
             _rigidbody.CollisionEnter -= HandleCollisionEnter;
@@ -205,6 +219,8 @@ namespace KrayonCore.Core.Components
 
         private void InvokeCollisionMethod(MethodInfo method, ContactInfo contact)
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             if (method == null || _scriptInstance == null) return;
             try
             {

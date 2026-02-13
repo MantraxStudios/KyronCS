@@ -249,6 +249,11 @@
       "Guid": "d17d6178-5184-4923-b00c-8fc1d3cd9bc3",
       "Path": "Audio/Vista Al Mar - Quevedo.mp3",
       "Type": "Audio"
+    },
+    {
+      "Guid": "0f182cbd-737f-4a19-a706-907c890c0457",
+      "Path": "scenes/GameScene.scene",
+      "Type": "Unknown"
     }
   ],
   "Folders": [

@@ -39,7 +39,6 @@ namespace KrayonEditor.UI
         {
             _engine = new GraphicsEngine();
             GameWindow? window = null;
-            //_engine.RenderToFrameBuffer = false;
 
             _engine.LoadEvent += () =>
             {
