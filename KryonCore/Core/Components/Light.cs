@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using KrayonCore.GraphicsData;
+using OpenTK.Mathematics;
 using System;
 
 namespace KrayonCore.Components
@@ -73,10 +74,8 @@ namespace KrayonCore.Components
             AddLightToManager();
         }
 
-        public override void Update(float deltaTime)
+        public override void OnWillRenderObject()
         {
-            base.Update(deltaTime);
-
             if (_currentLight != null)
             {
                 UpdateLightProperties();

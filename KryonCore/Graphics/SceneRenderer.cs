@@ -1,6 +1,6 @@
 ﻿using Assimp;
-using KrayonCore;
 using KrayonCore.Graphics;
+using KrayonCore.GraphicsData;
 using LightingSystem;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;

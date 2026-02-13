@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using KrayonCore;
 using KrayonCore.Core.Attributes;
+using KrayonCore.GraphicsData;
 using System;
 using System.IO;
 using System.Linq;

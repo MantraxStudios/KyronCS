@@ -1,5 +1,5 @@
-﻿using KrayonCore;
-using KrayonCore.Core.Attributes;
+﻿using KrayonCore.Core.Attributes;
+using KrayonCore.GraphicsData;
 using KrayonCore.Utilities;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -11,7 +11,7 @@ namespace KrayonCore
 {
     public class MeshRenderer : Component
     {
-        private string _modelPath = "3d361d14-7340-48cd-b35c-0968515455a0";
+        private string _modelPath = "1b467368-606c-462c-af3f-a23a3d08d12c";
 
         [ToStorage]
         public string ModelPath

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using KrayonCore.Core;
+using KrayonCore.GraphicsData;
+using System.Collections.Generic;
 using System.IO;
 
 namespace KrayonCore
@@ -118,7 +120,13 @@ namespace KrayonCore
 
         public static void Update(float deltaTime)
         {
-            _activeScene?.Update(deltaTime);
+            if (AppInfo.IsCompiledGame)
+                _activeScene?.Update(deltaTime);
+        }
+
+        public static void Render()
+        {
+            _activeScene?.Render();
         }
 
         public static IEnumerable<GameScene> GetAllScenes()

@@ -18,6 +18,7 @@ namespace KrayonCore
         public virtual void Awake() { }
         public virtual void Start() { }
         public virtual void Update(float deltaTime) { }
+        public virtual void OnWillRenderObject() { }
         public virtual void OnDestroy() { }
         public virtual void OnReloadComponent() { }
 

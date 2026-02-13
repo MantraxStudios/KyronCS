@@ -1,4 +1,5 @@
 ﻿using KrayonCore;
+using KrayonCore.GraphicsData;
 using System;
 
 namespace KrayonEditor.UI

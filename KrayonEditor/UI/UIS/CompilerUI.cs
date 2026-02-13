@@ -53,42 +53,54 @@ namespace KrayonEditor.UI
         private static readonly Vector4 TextNormal = new(0.80f, 0.80f, 0.82f, 1f);
         private static readonly Vector4 Separator = new(0.20f, 0.20f, 0.22f, 1f);
 
+        // ─── layout constants ────────────────────────────────────────────────
+        private const float Pad = 12f;
+        private const float Rounding = 6f;
+        private const float SectionGap = 6f;
+
         public override void OnDrawUI()
         {
             if (!_isVisible) return;
 
             PushWindowStyle();
-            ImGui.SetNextWindowSize(new Vector2(660, 480), ImGuiCond.FirstUseEver);
-            ImGui.SetNextWindowSizeConstraints(new Vector2(500, 360), new Vector2(1200, 900));
-            ImGui.Begin("Krayon Compiler", ref _isVisible);
+            ImGui.SetNextWindowSize(new Vector2(700, 520), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSizeConstraints(new Vector2(520, 380), new Vector2(1280, 960));
+            ImGui.Begin("  Krayon Compiler", ref _isVisible);
             PopWindowStyle();
 
             DrawHeader();
-            ImGui.Spacing();
-            DrawPlatformSelector();
-            ImGui.Spacing();
-            DrawBuildActions();
-            ImGui.Spacing();
+            ImGui.Dummy(new Vector2(0, SectionGap));
+            DrawToolbar();          // platform + actions in one row
+            ImGui.Dummy(new Vector2(0, SectionGap));
             DrawProgressSection();
-            ImGui.Spacing();
+            ImGui.Dummy(new Vector2(0, SectionGap));
             DrawLogPanel();
 
             ImGui.End();
         }
 
+        // ─── Header ──────────────────────────────────────────────────────────
         private void DrawHeader()
         {
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
-            ImGui.BeginChild("##header", new Vector2(0, 38));
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
+            ImGui.BeginChild("##header", new Vector2(0, 46));
 
             float winW = ImGui.GetWindowWidth();
+            float textH = ImGui.GetTextLineHeight();
+            float centerY = (46f - textH) * 0.5f;
 
+            // Title
+            ImGui.SetCursorPos(new Vector2(Pad, centerY));
+            ImGui.TextColored(TextNormal, "Krayon Compiler");
+
+            // State badge
             string stateText = _state switch
             {
-                BuildState.Building => "Building",
-                BuildState.Success => "Success",
-                BuildState.Failed => "Failed",
-                _ => "Idle"
+                BuildState.Building => "● Building",
+                BuildState.Success => "● Success",
+                BuildState.Failed => "● Failed",
+                _ => "● Idle"
             };
             Vector4 stateCol = _state switch
             {
@@ -98,42 +110,86 @@ namespace KrayonEditor.UI
                 _ => TextMuted
             };
 
-            float stateW = ImGui.CalcTextSize(stateText).X;
-
-            ImGui.SetCursorPos(new Vector2(10f, 10f));
-            ImGui.TextColored(TextNormal, "Krayon Compiler");
-
-            ImGui.SetCursorPos(new Vector2(winW - stateW - 12f, 10f));
+            float badgeW = ImGui.CalcTextSize(stateText).X;
+            ImGui.SetCursorPos(new Vector2(winW - badgeW - Pad, centerY));
             ImGui.TextColored(stateCol, stateText);
 
             ImGui.EndChild();
-            ImGui.PopStyleColor();
-
-            ImGui.PushStyleColor(ImGuiCol.Separator, Separator);
-            ImGui.Separator();
+            ImGui.PopStyleVar();
             ImGui.PopStyleColor();
         }
 
-        private void DrawPlatformSelector()
+        // ─── Toolbar  (platform selector + build buttons side by side) ───────
+        private void DrawToolbar()
         {
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
-            ImGui.BeginChild("##platforms", new Vector2(0, 52));
-
-            ImGui.SetCursorPos(new Vector2(10f, 8f));
-            ImGui.TextColored(TextMuted, "Target Platform");
-
-            ImGui.SetCursorPos(new Vector2(10f, 28f));
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
+            ImGui.BeginChild("##toolbar", new Vector2(0, 46));
 
             bool isBuilding = _state == BuildState.Building;
+            float childH = 46f;
+            float btnH = 26f;
+            float btnY = (childH - btnH) * 0.5f;
+
+            ImGui.SetCursorPos(new Vector2(Pad, btnY));
+
+            // ── Platform toggle ──────────────────────────────────────────────
             if (isBuilding) ImGui.BeginDisabled();
-
-            DrawPlatformButton(BuildPlatform.Windows, "Windows");
-            ImGui.SameLine(0, 6);
-            DrawPlatformButton(BuildPlatform.Android, "Android");
-
+            DrawPlatformButton(BuildPlatform.Windows, "  Windows  ");
+            ImGui.SameLine(0, 4);
+            DrawPlatformButton(BuildPlatform.Android, "  Android  ");
             if (isBuilding) ImGui.EndDisabled();
 
+            // ── Divider ──────────────────────────────────────────────────────
+            ImGui.SameLine(0, 14);
+            float divX = ImGui.GetCursorPosX();
+            ImGui.SetCursorPosY(8f);
+            ImGui.PushStyleColor(ImGuiCol.Separator, Separator);
+            ImGui.PopStyleColor();
+            ImGui.SameLine(divX + 14f, 0);
+            ImGui.SetCursorPosY(btnY);
+
+            // ── Action buttons ───────────────────────────────────────────────
+            if (isBuilding) ImGui.BeginDisabled();
+            PushButtonStyle(Accent, AccentHover, AccentPress);
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Rounding);
+            if (ImGui.Button("  Build  ", new Vector2(0, btnH))) StartBuild();
+            ImGui.PopStyleVar();
+            PopButtonStyle();
+            if (isBuilding) ImGui.EndDisabled();
+
+            ImGui.SameLine(0, 4);
+
+            if (!isBuilding) ImGui.BeginDisabled();
+            PushButtonStyle(Danger, DangerHover, DangerPress);
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Rounding);
+            if (ImGui.Button("  Cancel  ", new Vector2(0, btnH))) CancelBuild();
+            ImGui.PopStyleVar();
+            PopButtonStyle();
+            if (!isBuilding) ImGui.EndDisabled();
+
+            ImGui.SameLine(0, 4);
+
+            ImGui.PushStyleColor(ImGuiCol.Button, Bg2);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.22f, 0.22f, 0.25f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.18f, 0.18f, 0.20f, 1f));
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Rounding);
+            if (ImGui.Button("  Clear Log  ", new Vector2(0, btnH))) ClearLog();
+            ImGui.PopStyleVar();
+            ImGui.PopStyleColor(3);
+
+            // ── Elapsed timer (right-aligned) ────────────────────────────────
+            if (isBuilding)
+            {
+                string elapsed = $"{_timer.Elapsed.TotalSeconds:F1}s";
+                float elapsedW = ImGui.CalcTextSize(elapsed).X;
+                float winW2 = ImGui.GetWindowWidth();
+                ImGui.SetCursorPos(new Vector2(winW2 - elapsedW - Pad, btnY + 4f));
+                ImGui.TextColored(TextMuted, elapsed);
+            }
+
             ImGui.EndChild();
+            ImGui.PopStyleVar();
             ImGui.PopStyleColor();
         }
 
@@ -141,69 +197,26 @@ namespace KrayonEditor.UI
         {
             bool active = _platform == platform;
 
-            Vector4 btnBg = active ? Accent : Bg2;
-            Vector4 btnHover = active ? AccentHover : new Vector4(0.22f, 0.22f, 0.25f, 1f);
-            Vector4 btnPress = active ? AccentPress : new Vector4(0.18f, 0.18f, 0.20f, 1f);
-
-            ImGui.PushStyleColor(ImGuiCol.Button, btnBg);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, btnHover);
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, btnPress);
+            ImGui.PushStyleColor(ImGuiCol.Button, active ? Accent : Bg2);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, active ? AccentHover : new Vector4(0.22f, 0.22f, 0.25f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, active ? AccentPress : new Vector4(0.18f, 0.18f, 0.20f, 1f));
             ImGui.PushStyleColor(ImGuiCol.Text, active ? Vector4.One : TextNormal);
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Rounding);
 
-            if (ImGui.Button(label, new Vector2(96, 18)))
+            if (ImGui.Button(label, new Vector2(0, 26f)))
                 _platform = platform;
 
             ImGui.PopStyleVar();
             ImGui.PopStyleColor(4);
         }
 
-        private void DrawBuildActions()
-        {
-            bool isBuilding = _state == BuildState.Building;
-
-            if (isBuilding) ImGui.BeginDisabled();
-            PushButtonStyle(Accent, AccentHover, AccentPress);
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
-            if (ImGui.Button("Build", new Vector2(90, 26))) StartBuild();
-            ImGui.PopStyleVar();
-            PopButtonStyle();
-            if (isBuilding) ImGui.EndDisabled();
-
-            ImGui.SameLine(0, 6);
-
-            if (!isBuilding) ImGui.BeginDisabled();
-            PushButtonStyle(Danger, DangerHover, DangerPress);
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
-            if (ImGui.Button("Cancel", new Vector2(90, 26))) CancelBuild();
-            ImGui.PopStyleVar();
-            PopButtonStyle();
-            if (!isBuilding) ImGui.EndDisabled();
-
-            ImGui.SameLine(0, 6);
-
-            ImGui.PushStyleColor(ImGuiCol.Button, Bg2);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.22f, 0.22f, 0.25f, 1f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.18f, 0.18f, 0.20f, 1f));
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
-            if (ImGui.Button("Clear Log", new Vector2(90, 26))) ClearLog();
-            ImGui.PopStyleVar();
-            ImGui.PopStyleColor(3);
-
-            if (isBuilding)
-            {
-                ImGui.SameLine(0, 12);
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 4f);
-                ImGui.TextColored(TextMuted, $"{_timer.Elapsed.TotalSeconds:F1}s elapsed");
-            }
-        }
-
+        // ─── Progress ────────────────────────────────────────────────────────
         private void DrawProgressSection()
         {
+            // ── Step label + bar ─────────────────────────────────────────────
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
-            ImGui.BeginChild("##progress_area", new Vector2(0, 58));
-
-            ImGui.SetCursorPos(new Vector2(10f, 8f));
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
+            ImGui.BeginChild("##progress_area", new Vector2(0, 60));
 
             string stepText = _state switch
             {
@@ -219,76 +232,94 @@ namespace KrayonEditor.UI
                 _ => TextNormal
             };
 
+            ImGui.SetCursorPos(new Vector2(Pad, 10f));
             ImGui.TextColored(stepColor, stepText);
 
-            ImGui.SetCursorPos(new Vector2(10f, 30f));
-
-            float barWidth = ImGui.GetContentRegionAvail().X - 10f;
-            string overlay = $"{_progress * 100f:F0}%";
+            ImGui.SetCursorPos(new Vector2(Pad, 32f));
+            float barWidth = ImGui.GetContentRegionAvail().X - Pad;
 
             ImGui.PushStyleColor(ImGuiCol.PlotHistogram, Accent);
             ImGui.PushStyleColor(ImGuiCol.FrameBg, Bg2);
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 3f);
-            ImGui.ProgressBar(_progress, new Vector2(barWidth, 14f), overlay);
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Rounding);
+            ImGui.ProgressBar(_progress, new Vector2(barWidth, 16f), $"{_progress * 100f:F0}%");
             ImGui.PopStyleVar();
             ImGui.PopStyleColor(2);
 
             ImGui.EndChild();
+            ImGui.PopStyleVar();
             ImGui.PopStyleColor();
 
-            ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
-            ImGui.BeginChild("##build_stats", new Vector2(0, 28));
+            ImGui.Dummy(new Vector2(0, 2f));
 
-            ImGui.SetCursorPos(new Vector2(10f, 6f));
-            ImGui.TextColored(TextMuted, "Warnings:");
-            ImGui.SameLine(0, 4);
+            // ── Stats row ────────────────────────────────────────────────────
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
+            ImGui.BeginChild("##build_stats", new Vector2(0, 30));
+
+            float statH = ImGui.GetTextLineHeight();
+            float statY = (30f - statH) * 0.5f;
+            ImGui.SetCursorPos(new Vector2(Pad, statY));
+
+            ImGui.TextColored(TextMuted, "Warnings");
+            ImGui.SameLine(0, 5);
             ImGui.TextColored(_warningCount > 0 ? Yellow : TextMuted, $"{_warningCount}");
-            ImGui.SameLine(0, 20);
-            ImGui.TextColored(TextMuted, "Errors:");
-            ImGui.SameLine(0, 4);
+
+            ImGui.SameLine(0, 18);
+            ImGui.TextColored(Separator, "|");
+            ImGui.SameLine(0, 18);
+
+            ImGui.TextColored(TextMuted, "Errors");
+            ImGui.SameLine(0, 5);
             ImGui.TextColored(_errorCount > 0 ? Danger : TextMuted, $"{_errorCount}");
-            ImGui.SameLine(0, 20);
-            ImGui.TextColored(TextMuted, "Platform:");
-            ImGui.SameLine(0, 4);
+
+            ImGui.SameLine(0, 18);
+            ImGui.TextColored(Separator, "|");
+            ImGui.SameLine(0, 18);
+
+            ImGui.TextColored(TextMuted, "Platform");
+            ImGui.SameLine(0, 5);
             ImGui.TextColored(TextNormal, _platform.ToString());
 
             ImGui.EndChild();
+            ImGui.PopStyleVar();
             ImGui.PopStyleColor();
         }
 
+        // ─── Log Panel ───────────────────────────────────────────────────────
         private void DrawLogPanel()
         {
+            // Header bar
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg1);
-            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 4f);
-            ImGui.BeginChild("##log_header", new Vector2(0, 24));
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
+            ImGui.BeginChild("##log_header", new Vector2(0, 30));
 
             float winW = ImGui.GetWindowWidth();
             float frameH = ImGui.GetFrameHeight();
             float textH = ImGui.GetTextLineHeight();
             float checkW = ImGui.CalcTextSize("Auto-scroll").X + frameH + ImGui.GetStyle().ItemInnerSpacing.X;
-            float centerY = (24f - frameH) * 0.5f;
 
-            ImGui.SetCursorPos(new Vector2(10f, (24f - textH) * 0.5f));
+            ImGui.SetCursorPos(new Vector2(Pad, (30f - textH) * 0.5f));
             ImGui.TextColored(TextMuted, "Output");
 
-            ImGui.SetCursorPos(new Vector2(winW - checkW - 10f, centerY));
+            ImGui.SetCursorPos(new Vector2(winW - checkW - Pad, (30f - frameH) * 0.5f));
             ImGui.Checkbox("Auto-scroll", ref _autoScroll);
 
             ImGui.EndChild();
             ImGui.PopStyleVar();
             ImGui.PopStyleColor();
 
+            ImGui.Dummy(new Vector2(0, 2f));
+
+            // Body
             float logHeight = ImGui.GetContentRegionAvail().Y - 4f;
 
             ImGui.PushStyleColor(ImGuiCol.ChildBg, Bg0);
-            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 4f);
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, Rounding);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(Pad, 8f));
             ImGui.BeginChild("##log_body", new Vector2(0, logHeight));
 
             List<LogEntry> snapshot;
-            lock (_logLock)
-            {
-                snapshot = new List<LogEntry>(_log);
-            }
+            lock (_logLock) { snapshot = new List<LogEntry>(_log); }
 
             foreach (var entry in snapshot)
             {
@@ -301,7 +332,7 @@ namespace KrayonEditor.UI
                 };
 
                 ImGui.TextColored(TextMuted, entry.Timestamp);
-                ImGui.SameLine(0, 6);
+                ImGui.SameLine(0, 8);
                 ImGui.TextColored(col, entry.Message);
             }
 
@@ -312,16 +343,15 @@ namespace KrayonEditor.UI
             }
 
             ImGui.EndChild();
-            ImGui.PopStyleVar();
+            ImGui.PopStyleVar(2);
             ImGui.PopStyleColor();
         }
 
+        // ─── Build logic (sin cambios) ────────────────────────────────────────
         private void StartBuild()
         {
             if (!Directory.Exists(AssetManager.CompilerPath))
-            {
                 Directory.CreateDirectory(AssetManager.CompilerPath);
-            }
 
             _cts = new CancellationTokenSource();
             _state = BuildState.Building;
@@ -394,29 +424,29 @@ namespace KrayonEditor.UI
                 foreach (JToken asset in assets)
                 {
                     string? path = asset["Path"]?.ToString();
-
-                    if (path == null)
-                    {
-                        AppendLog("Asset sin campo 'Path'", LogLevel.Error);
-                        continue;
-                    }
+                    if (path == null) { AppendLog("Asset sin campo 'Path'", LogLevel.Error); continue; }
 
                     string fullPath = AssetManager.BasePath + path;
-
                     if (File.Exists(fullPath))
-                    {
                         assetsPak.Add(asset["Guid"]?.ToString(), fullPath);
-                    }
                     else
-                    {
                         AppendLog($"Error on try compile file: {fullPath}", LogLevel.Error);
-                    }
 
                     AppendLog($"Working On Asset: {path}", LogLevel.Info);
                 }
 
-
                 AppendLog("Work On Game Assets Pak (Please Wait...)", LogLevel.Success);
+
+                if (File.Exists($"{AssetManager.CompilerPath}Game.pak"))
+                {
+                    AppendLog("Replacing previous Game.Pak (Please Wait...)", LogLevel.Warning);
+                    File.Delete($"{AssetManager.CompilerPath}Game.pak");
+                }
+                else
+                {
+                    AppendLog("Generating new Game.pak (Please Wait...)", LogLevel.Success);
+                }
+
                 KRCompiler.Build($"{AssetManager.CompilerPath}Game.pak", assetsPak);
                 AppendLog($"Build succeeded in {_timer.Elapsed.TotalSeconds:F2}s", LogLevel.Success);
                 EngineEditor.LogMessage("[Compiler] Build succeeded.");
@@ -435,21 +465,19 @@ namespace KrayonEditor.UI
         private void AppendLog(string message, LogLevel level)
         {
             string ts = DateTime.Now.ToString("HH:mm:ss");
-            lock (_logLock)
-            {
-                _log.Add(new LogEntry(message, level, $"[{ts}]"));
-            }
+            lock (_logLock) { _log.Add(new LogEntry(message, level, $"[{ts}]")); }
             _scrollBottom = true;
         }
 
+        // ─── Style helpers ────────────────────────────────────────────────────
         private static void PushWindowStyle()
         {
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.09f, 0.09f, 0.10f, 1f));
-            ImGui.PushStyleColor(ImGuiCol.TitleBg, new Vector4(0.09f, 0.09f, 0.10f, 1f));
-            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(0.12f, 0.12f, 0.13f, 1f));
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(10, 10));
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6, 4));
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6f);
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Bg0);
+            ImGui.PushStyleColor(ImGuiCol.TitleBg, Bg0);
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, Bg1);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12, 12));
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(8, 6));
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, Rounding);
         }
 
         private static void PopWindowStyle()

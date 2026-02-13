@@ -1,4 +1,4 @@
-﻿using KrayonCore;
+﻿using KrayonCore.GraphicsData;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;

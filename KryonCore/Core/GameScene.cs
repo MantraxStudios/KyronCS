@@ -275,6 +275,14 @@ namespace KrayonCore
             ProcessDestructions();
         }
 
+        internal void Render()
+        {
+            foreach (var go in _gameObjectsList)
+            {
+                go.RenderComponents();
+            }
+        }
+
         private void UpdatePhysics(float deltaTime)
         {
             if (_physicsWorld != null)

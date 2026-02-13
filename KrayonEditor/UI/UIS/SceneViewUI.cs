@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using KrayonCore;
 using KrayonCore.EventSystem;
+using KrayonCore.GraphicsData;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;

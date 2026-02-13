@@ -5,6 +5,7 @@ using System;
 using System.Numerics;
 using System.Reflection;
 using KrayonEditor;
+using KrayonCore.GraphicsData;
 
 namespace KrayonEditor.UI
 {

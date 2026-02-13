@@ -31,15 +31,12 @@ namespace KrayonCore
             Transform = AddComponent<Transform>();
         }
 
-        // MÉTODO DE CLONADO COMPLETO
         public GameObject Clone(bool cloneChildren = true)
         {
-            // Crear nuevo GameObject
             GameObject clone = new GameObject(this.Name + " (Clone)");
             clone.Tag = this.Tag;
             clone.Active = this.Active;
 
-            // Clonar Transform (posición, rotación, escala)
             clone.Transform.SetPosition(
                 this.Transform.X,
                 this.Transform.Y,
@@ -56,7 +53,6 @@ namespace KrayonCore
                 this.Transform.ScaleZ
             );
 
-            // Clonar todos los componentes (excepto Transform que ya existe)
             foreach (var component in _componentsList)
             {
                 if (component is Transform)
@@ -65,7 +61,6 @@ namespace KrayonCore
                 CloneComponent(component, clone);
             }
 
-            // Clonar hijos recursivamente
             if (cloneChildren)
             {
                 foreach (var child in this.Transform.Children)
@@ -75,7 +70,6 @@ namespace KrayonCore
                 }
             }
 
-            // Agregar a la escena activa
             if (SceneManager.ActiveScene != null)
             {
                 SceneManager.ActiveScene.AddGameObject(clone);
@@ -88,17 +82,14 @@ namespace KrayonCore
         {
             Type componentType = original.GetType();
 
-            // Crear componente del mismo tipo
             Component newComponent = target.AddComponent(componentType);
 
-            // Copiar todas las propiedades públicas
             PropertyInfo[] properties = componentType.GetProperties(
                 BindingFlags.Public | BindingFlags.Instance
             );
 
             foreach (var property in properties)
             {
-                // Saltar propiedades que no se pueden escribir o que son referencias al GameObject
                 if (!property.CanWrite || 
                     !property.CanRead || 
                     property.Name == "GameObject" ||
@@ -109,7 +100,6 @@ namespace KrayonCore
                 {
                     object value = property.GetValue(original);
                     
-                    // Copiar valor profundo si es necesario
                     if (value != null && IsCloneableType(property.PropertyType))
                     {
                         value = DeepCloneValue(value);
@@ -123,7 +113,6 @@ namespace KrayonCore
                 }
             }
 
-            // Copiar todos los campos públicos
             FieldInfo[] fields = componentType.GetFields(
                 BindingFlags.Public | BindingFlags.Instance
             );
@@ -134,7 +123,6 @@ namespace KrayonCore
                 {
                     object value = field.GetValue(original);
                     
-                    // Copiar valor profundo si es necesario
                     if (value != null && IsCloneableType(field.FieldType))
                     {
                         value = DeepCloneValue(value);
@@ -405,6 +393,19 @@ namespace KrayonCore
                 if (component.Enabled && component._started)
                 {
                     component.Update(deltaTime);
+                }
+            }
+        }
+
+        internal void RenderComponents()
+        {
+            if (!Active) return;
+
+            foreach (var component in _componentsList)
+            {
+                if (component.Enabled)
+                {
+                    component.OnWillRenderObject();
                 }
             }
         }

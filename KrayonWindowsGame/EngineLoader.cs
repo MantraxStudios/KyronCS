@@ -1,4 +1,5 @@
 ﻿using KrayonCore;
+using KrayonCore.GraphicsData;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
@@ -106,7 +107,7 @@ namespace KrayonEditor.UI
 
             if (keyboard.IsKeyPressed(Keys.D1))
             {
-                SceneManager.LoadScene("Content/scenes/GameScene.scene");
+                SceneManager.LoadScene("Content/scenes/DefaultScene.scene");
                 Console.WriteLine("Loaded Scene1");
             }
             if (keyboard.IsKeyPressed(Keys.D2))
@@ -172,7 +173,6 @@ namespace KrayonEditor.UI
 
             var position = _editorCamera.Position;
 
-            // Obtener Yaw y Pitch usando reflexión
             var cameraType = _editorCamera.GetType();
 
             var yawProperty = cameraType.GetProperty("Yaw");
@@ -195,6 +195,7 @@ namespace KrayonEditor.UI
             LogMessage("CAMERA INFO:");
             LogMessage($"Position: ({position.X:F2}, {position.Y:F2}, {position.Z:F2})");
             LogMessage($"Rotation: Yaw={yaw:F2}°, Pitch={pitch:F2}°");
+            LogMessage($"Tipo: {_editorCamera.ProjectionMode.ToString()}");
             LogMessage("================================");
         }
 
