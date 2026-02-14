@@ -1,7 +1,10 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Components;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Core.Components;
 using KrayonCore.GraphicsData;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
@@ -85,6 +88,169 @@ namespace KrayonEditor.UI
 
             EditorUI.Initialize();
             SetupCamera();
+
+            var sceneRenderer = GraphicsEngine.Instance.GetSceneRenderer();
+
+            sceneRenderer.AttachRender("gizmo_cubo", (view, projection, cameraPos) =>
+            {
+                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<Rigidbody>())
+                {
+                    Vector4 color = new Vector4(0.0f, 1.0f, 1.0f, 1.0f);
+
+                    Matrix4 model = Matrix4.CreateScale(2.0f) * EditorActions.SelectedObject.Transform.GetWorldMatrix();
+
+                    GizmoCube.Draw(model, view, projection, color, lineWidth: 15.5f);
+                }
+            });
+
+            sceneRenderer.AttachRender("gizmo_audio", (view, projection, cameraPos) =>
+            {
+                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<AudioSource>())
+                {
+                    var audioSource = EditorActions.SelectedObject.GetComponent<AudioSource>();
+                    var position = EditorActions.SelectedObject.Transform.Position;
+
+                    float minDistance = audioSource.MinDistance;
+                    float maxDistance = audioSource.MaxDistance;
+
+                    Matrix4 modelMin = Matrix4.CreateScale(minDistance * 2.0f) * Matrix4.CreateTranslation(position);
+                    Vector4 colorMin = new Vector4(0.0f, 1.0f, 0.0f, 1.0f); 
+                    GizmoSphere.Draw(modelMin, view, projection, colorMin, lineWidth: 2.0f);
+
+                    Matrix4 modelMax = Matrix4.CreateScale(maxDistance * 2.0f) * Matrix4.CreateTranslation(position);
+                    Vector4 colorMax = new Vector4(1.0f, 0.0f, 0.0f, 1.0f); 
+                    GizmoSphere.Draw(modelMax, view, projection, colorMax, lineWidth: 1.5f);
+                }
+            });
+
+            sceneRenderer.AttachRender("gizmo_lights", (view, projection, cameraPos) =>
+            {
+                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<Light>())
+                {
+                    var light = EditorActions.SelectedObject.GetComponent<Light>();
+                    var position = light.GetPosition();
+                    var direction = light.GetDirection();
+
+                    switch (light.Type)
+                    {
+                        case LightType.Point:
+                            float radius = CalculateLightRadius(light.Intensity, light.Constant, light.Linear, light.Quadratic);
+
+                            Vector4 colorPoint = new Vector4(1.0f, 1.0f, 0.0f, 1.0f);
+
+                            Matrix4 modelXY = Matrix4.CreateScale(radius * 2.0f) * Matrix4.CreateTranslation(position);
+                            GizmoCircle.Draw(modelXY, view, projection, colorPoint, 2.0f);
+
+                            Matrix4 modelXZ = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(90)) *
+                                              Matrix4.CreateScale(radius * 2.0f) *
+                                              Matrix4.CreateTranslation(position);
+                            GizmoCircle.Draw(modelXZ, view, projection, colorPoint, 2.0f);
+
+                            Matrix4 modelYZ = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(90)) *
+                                              Matrix4.CreateScale(radius * 2.0f) *
+                                              Matrix4.CreateTranslation(position);
+                            GizmoCircle.Draw(modelYZ, view, projection, colorPoint, 2.0f);
+                            break;
+
+                        case LightType.Spot:
+                            float coneLength = CalculateLightRadius(light.Intensity, light.Constant, light.Linear, light.Quadratic);
+                            float coneRadius = MathF.Tan(MathHelper.DegreesToRadians(light.OuterCutOffDegrees)) * coneLength;
+
+                            Matrix4 rotation = CreateLookAtRotation(Vector3.UnitZ, direction);
+                            Matrix4 modelSpot = Matrix4.CreateScale(coneRadius * 2.0f, coneRadius * 2.0f, coneLength) *
+                                                rotation *
+                                                Matrix4.CreateTranslation(position);
+
+                            Vector4 colorSpot = new Vector4(1.0f, 0.5f, 0.0f, 1.0f); 
+                            GizmoCone.Draw(modelSpot, view, projection, colorSpot, 2.0f);
+
+                            Matrix4 arrowModel = Matrix4.CreateScale(0.5f) * rotation * Matrix4.CreateTranslation(position);
+                            GizmoArrow.Draw(arrowModel, view, projection, new Vector4(1, 1, 1, 1), 2.5f);
+                            break;
+
+                        case LightType.Directional:
+                            Matrix4 rotDir = CreateLookAtRotation(Vector3.UnitZ, direction);
+                            Matrix4 modelDir = Matrix4.CreateScale(2.0f) * rotDir * Matrix4.CreateTranslation(position);
+
+                            Vector4 colorDir = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+                            GizmoArrow.Draw(modelDir, view, projection, colorDir, 3.0f);
+                            break;
+                    }
+                }
+            });
+
+            sceneRenderer.AttachRender("gizmo_camera", (view, projection, cameraPos) =>
+            {
+                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<CameraComponent>())
+                {
+                    var cameraComp = EditorActions.SelectedObject.GetComponent<CameraComponent>();
+                    var transform = EditorActions.SelectedObject.GetComponent<Transform>();
+
+                    if (cameraComp.RenderCamera == null || transform == null) return;
+
+                    var cam = cameraComp.RenderCamera.Camera;
+                    Vector3 position = transform.GetWorldPosition();
+                    Vector3 forward = transform.Forward;
+                    Vector3 up = transform.Up;
+
+                    Vector4 color = new Vector4(0.0f, 1.0f, 0.5f, 1.0f);
+
+                    if (cameraComp.ProjectionMode == ProjectionMode.Perspective)
+                    {
+                        GizmoFrustum.DrawPerspective(
+                            position, forward, up,
+                            cameraComp.Fov,
+                            cameraComp.AspectRatio,
+                            cameraComp.NearPlane,
+                            cameraComp.FarPlane,
+                            view, projection, color, 2.5f
+                        );
+                    }
+                    else // Orthographic
+                    {
+                        GizmoFrustum.DrawOrthographic(
+                            position, forward, up,
+                            cameraComp.OrthoSize,
+                            cameraComp.AspectRatio,
+                            cameraComp.NearPlane,
+                            cameraComp.FarPlane,
+                            view, projection, color, 2.5f
+                        );
+                    }
+                }
+            });
+        }
+
+        static float CalculateLightRadius(float intensity, float constant, float linear, float quadratic)
+        {
+            float threshold = 5.0f / 256.0f;
+            float maxIntensity = intensity;
+
+            float a = quadratic;
+            float b = linear;
+            float c = constant - (maxIntensity / threshold);
+
+            float discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) return 10.0f; 
+
+            float radius = (-b + MathF.Sqrt(discriminant)) / (2 * a);
+            return MathF.Max(radius, 1.0f);
+        }
+
+        static Matrix4 CreateLookAtRotation(Vector3 from, Vector3 to)
+        {
+            Vector3 forward = Vector3.Normalize(to);
+            Vector3 right = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, forward));
+            if (right.LengthSquared < 0.001f) 
+                right = Vector3.Normalize(Vector3.Cross(Vector3.UnitX, forward));
+            Vector3 up = Vector3.Cross(forward, right);
+
+            return new Matrix4(
+                new Vector4(right, 0),
+                new Vector4(up, 0),
+                new Vector4(forward, 0),
+                new Vector4(0, 0, 0, 1)
+            );
         }
 
         private static void HandleUpdate(float dt)

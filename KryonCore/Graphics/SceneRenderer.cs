@@ -16,6 +16,9 @@ namespace KrayonCore
             _meshInstanceGroups = new(),
             _spriteInstanceGroups = new();
 
+        // ── Render Attachments ───────────────────────────────────────────────
+        private readonly Dictionary<string, Action<Matrix4, Matrix4, Vector3>> _renderAttachments = new();
+
         public bool WireframeMode { get; set; } = false;
 
         public SceneRenderer()
@@ -39,6 +42,53 @@ namespace KrayonCore
                 WindowConfig.Width / (float)WindowConfig.Height,
                 priority: 0
             );
+        }
+
+        // ── API de Render Attachments ────────────────────────────────────────
+
+        /// <summary>
+        /// Agrega un callback de renderizado que se ejecuta después de renderizar la escena.
+        /// </summary>
+        /// <param name="name">Nombre único del attachment</param>
+        /// <param name="renderCallback">Callback que recibe (view, projection, cameraPos)</param>
+        public void AttachRender(string name, Action<Matrix4, Matrix4, Vector3> renderCallback)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("El nombre no puede estar vacío", nameof(name));
+
+            _renderAttachments[name] = renderCallback;
+        }
+
+        /// <summary>
+        /// Remueve un render attachment por nombre.
+        /// </summary>
+        public bool DetachRender(string name)
+        {
+            return _renderAttachments.Remove(name);
+        }
+
+        /// <summary>
+        /// Limpia todos los render attachments.
+        /// </summary>
+        public void ClearRenderAttachments()
+        {
+            _renderAttachments.Clear();
+        }
+
+        /// <summary>
+        /// Obtiene un render attachment por nombre.
+        /// </summary>
+        public Action<Matrix4, Matrix4, Vector3>? GetRenderAttachment(string name)
+        {
+            return _renderAttachments.TryGetValue(name, out var callback) ? callback : null;
+        }
+
+        /// <summary>
+        /// Verifica si existe un render attachment con el nombre dado.
+        /// </summary>
+        public bool HasRenderAttachment(string name)
+        {
+            return _renderAttachments.ContainsKey(name);
         }
 
         // ── Render ───────────────────────────────────────────────────────────
@@ -97,8 +147,31 @@ namespace KrayonCore
             RenderSpriteRenderers(view, projection, cameraPos);
             RenderTileRenderers(view, projection, cameraPos);
 
+            // Ejecutar render attachments
+            RenderAttachments(view, projection, cameraPos);
+
             ClearInstanceGroups();
             target.Unbind();
+        }
+
+        /// <summary>
+        /// Ejecuta todos los render attachments registrados con las matrices de la cámara actual.
+        /// </summary>
+        private void RenderAttachments(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
+        {
+            if (_renderAttachments.Count == 0) return;
+
+            foreach (var kvp in _renderAttachments)
+            {
+                try
+                {
+                    kvp.Value?.Invoke(view, projection, cameraPos);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[SceneRenderer] Error en render attachment '{kvp.Key}': {ex.Message}");
+                }
+            }
         }
 
         // ── Instanciado ──────────────────────────────────────────────────────
@@ -381,6 +454,7 @@ namespace KrayonCore
         public void Shutdown()
         {
             ClearInstanceGroups();
+            ClearRenderAttachments();
             //CameraManager.Instance.Clear();
         }
 
