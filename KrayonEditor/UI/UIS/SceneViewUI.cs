@@ -504,11 +504,15 @@ namespace KrayonEditor.UI
             Vector2 viewportSize = ImGui.GetContentRegionAvail();
             if (viewportSize.X <= 0 || viewportSize.Y <= 0) return;
 
+            var gameCamera = GetGameCamera();
+
+            // Solo redimensionar si es una cámara de juego válida (no la del editor)
             if (LastViewportSize.X != viewportSize.X || LastViewportSize.Y != viewportSize.Y)
             {
                 LastViewportSize = viewportSize;
-                var gameCamera = GetGameCamera();
-                if (gameCamera is not null)
+
+                // Solo redimensionar si la cámara NO es "main" (que es la del editor)
+                if (gameCamera is not null && gameCamera.Name != "main")
                 {
                     gameCamera.ResizeBuffer((int)viewportSize.X, (int)viewportSize.Y);
                     gameCamera.Camera.UpdateAspectRatio((int)viewportSize.X, (int)viewportSize.Y);
@@ -516,7 +520,6 @@ namespace KrayonEditor.UI
             }
 
             int textureId = GetGameCameraTextureId();
-
             if (textureId == 0)
             {
                 DrawNoCameraMessage(viewportSize);
@@ -536,7 +539,6 @@ namespace KrayonEditor.UI
             // Fondo oscuro
             var drawList = ImGui.GetWindowDrawList();
             var cursorPos = ImGui.GetCursorScreenPos();
-
             drawList.AddRectFilled(
                 cursorPos,
                 new Vector2(cursorPos.X + viewportSize.X, cursorPos.Y + viewportSize.Y),
@@ -546,7 +548,6 @@ namespace KrayonEditor.UI
             // Texto centrado
             const string line1 = "No Camera Available";
             const string line2 = "Add a GameObject with a CameraComponent to render the scene.";
-
             var textSize1 = ImGui.CalcTextSize(line1);
             var textSize2 = ImGui.CalcTextSize(line2);
             float totalHeight = textSize1.Y + 8f + textSize2.Y;
@@ -586,6 +587,7 @@ namespace KrayonEditor.UI
                 {
                     var comp = go.GetComponent<CameraComponent>();
                     if (comp?.RenderCamera is null) continue;
+
                     if (comp.Priority < bestPriority)
                     {
                         bestPriority = comp.Priority;
@@ -597,7 +599,8 @@ namespace KrayonEditor.UI
                     return bestComp.RenderCamera;
             }
 
-            return CameraManager.Instance.Main;
+            // No retornar fallback - mejor retornar null
+            return null;
         }
 
         private int GetGameCameraTextureId()
