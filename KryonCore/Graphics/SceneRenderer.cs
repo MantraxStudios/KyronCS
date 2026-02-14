@@ -456,14 +456,14 @@ namespace KrayonCore
             ClearInstanceGroups();
             //ClearRenderAttachments();
 
-            var cameras = CameraManager.Instance.GetRenderOrder().ToList();
-            foreach (var cam in cameras)
-            {
-                if (cam.Name != "main")
-                {
-                    CameraManager.Instance.Remove(cam.Name);
-                }
-            }
+            //var cameras = CameraManager.Instance.GetRenderOrder().ToList();
+            //foreach (var cam in cameras)
+            //{
+            //    if (cam.Name != "main")
+            //    {
+            //        CameraManager.Instance.Remove(cam.Name);
+            //    }
+            //}
         }
 
         /// <summary>Devuelve la cámara principal para uso del editor.</summary>
