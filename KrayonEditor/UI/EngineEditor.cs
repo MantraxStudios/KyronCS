@@ -91,15 +91,19 @@ namespace KrayonEditor.UI
 
             var sceneRenderer = GraphicsEngine.Instance.GetSceneRenderer();
 
-            sceneRenderer.AttachRender("gizmo_cubo", (view, projection, cameraPos) =>
+            sceneRenderer.AttachRender("gizmo_rigidbody", (view, projection, cameraPos) =>
             {
                 if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<Rigidbody>())
                 {
-                    Vector4 color = new Vector4(0.0f, 1.0f, 1.0f, 1.0f);
+                    var rb = EditorActions.SelectedObject.GetComponent<Rigidbody>();
+                    Vector3 shapeSize = rb.ShapeSize;
 
-                    Matrix4 model = Matrix4.CreateScale(2.0f) * EditorActions.SelectedObject.Transform.GetWorldMatrix();
+                    // Multiplicar el ShapeSize por 2 para que coincida con el tamaño del cubo gizmo
+                    Vector4 color = new Vector4(0.0f, 1.0f, 1.0f, 1.0f); // Cyan
+                    Matrix4 model = Matrix4.CreateScale(shapeSize * 2.0f) *
+                                    EditorActions.SelectedObject.Transform.GetWorldMatrix();
 
-                    GizmoCube.Draw(model, view, projection, color, lineWidth: 15.5f);
+                    GizmoCube.Draw(model, view, projection, color, lineWidth: 2.5f);
                 }
             });
 
