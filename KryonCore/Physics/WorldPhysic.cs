@@ -12,14 +12,6 @@ using BepuUtilities.Memory;
 
 namespace KrayonCore.Physics
 {
-    // ─────────────────────────────────────────────────────────────
-    //  Data types
-    // ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Identifies one collidable in a collision/trigger pair.
-    /// Works for both Bodies (dynamic/kinematic) and Statics.
-    /// </summary>
     public readonly struct CollidableId : IEquatable<CollidableId>
     {
         public readonly CollidableMobility Mobility;
@@ -44,9 +36,6 @@ namespace KrayonCore.Physics
         public static bool operator !=(CollidableId a, CollidableId b) => !a.Equals(b);
     }
 
-    /// <summary>
-    /// An ordered pair of collidables. A is always <= B to ensure uniqueness.
-    /// </summary>
     public readonly struct CollisionPairKey : IEquatable<CollisionPairKey>
     {
         public readonly CollidableId A;
@@ -54,7 +43,6 @@ namespace KrayonCore.Physics
 
         public CollisionPairKey(CollidableId a, CollidableId b)
         {
-            // Canonical ordering to avoid duplicate pairs
             if (a.GetHashCode() <= b.GetHashCode()) { A = a; B = b; }
             else { A = b; B = a; }
         }
@@ -64,9 +52,6 @@ namespace KrayonCore.Physics
         public override int GetHashCode() => HashCode.Combine(A, B);
     }
 
-    /// <summary>
-    /// Contact data passed to collision event handlers.
-    /// </summary>
     public struct ContactInfo
     {
         public Vector3 ContactPosition;
@@ -75,9 +60,6 @@ namespace KrayonCore.Physics
         public CollidableId OtherCollidable;
     }
 
-    /// <summary>
-    /// Collision event types.
-    /// </summary>
     public enum CollisionEventType
     {
         CollisionEnter,
@@ -88,9 +70,6 @@ namespace KrayonCore.Physics
         TriggerExit
     }
 
-    /// <summary>
-    /// A deferred collision/trigger event ready to be dispatched on the main thread.
-    /// </summary>
     public struct DeferredCollisionEvent
     {
         public CollisionEventType EventType;
@@ -99,14 +78,6 @@ namespace KrayonCore.Physics
         public ContactInfo Contact;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Trigger registry
-    // ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Tracks which collidables are triggers (overlap-only, no physics response).
-    /// Thread-safe for reads during narrow phase.
-    /// </summary>
     public class TriggerRegistry
     {
         private readonly HashSet<CollidableId> _triggers = new();
@@ -119,13 +90,6 @@ namespace KrayonCore.Physics
         public bool IsTrigger(CollidableReference reference) => IsTrigger(new CollidableId(reference));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Collision event handler interface
-    // ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Implement this on components to receive collision/trigger events.
-    /// </summary>
     public interface ICollisionEventHandler
     {
         void OnCollisionEnter(ContactInfo contact) { }
@@ -136,41 +100,21 @@ namespace KrayonCore.Physics
         void OnTriggerExit(ContactInfo contact) { }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Collision Event System
-    // ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Collects contact manifold data from the narrow phase (multithreaded)
-    /// and produces deferred Enter/Stay/Exit events dispatched on the main thread.
-    /// </summary>
     public class CollisionEventSystem
     {
-        // Handler registration: CollidableId -> handler
         private readonly Dictionary<CollidableId, ICollisionEventHandler> _handlers = new();
-
-        // Pair tracking for Enter / Stay / Exit detection
         private readonly HashSet<CollisionPairKey> _activePairsThisFrame = new();
         private readonly HashSet<CollisionPairKey> _activePairsLastFrame = new();
-
-        // Trigger pair tracking (separate because trigger pairs don't generate constraints)
         private readonly HashSet<CollisionPairKey> _activeTriggerPairsThisFrame = new();
         private readonly HashSet<CollisionPairKey> _activeTriggerPairsLastFrame = new();
-
-        // Thread-safe queue filled during narrow phase
         private readonly ConcurrentBag<PairReport> _narrowPhaseReports = new();
-
-        // Deferred events dispatched on main thread
         private readonly List<DeferredCollisionEvent> _deferredEvents = new();
-
         private readonly TriggerRegistry _triggerRegistry;
 
         public CollisionEventSystem(TriggerRegistry triggerRegistry)
         {
             _triggerRegistry = triggerRegistry;
         }
-
-        // ── Handler registration ──
 
         public void RegisterHandler(CollidableId id, ICollisionEventHandler handler)
         {
@@ -188,17 +132,12 @@ namespace KrayonCore.Physics
             return handler;
         }
 
-        /// <summary>
-        /// Resolves a CollidableId to its owning GameObject (if the handler is a Component).
-        /// </summary>
         public GameObject GetGameObject(CollidableId id)
         {
             if (_handlers.TryGetValue(id, out var handler) && handler is Component comp)
                 return comp.GameObject;
             return null;
         }
-
-        // ── Called from narrow phase (multithreaded!) ──
 
         internal struct PairReport
         {
@@ -210,9 +149,6 @@ namespace KrayonCore.Physics
             public bool IsTrigger;
         }
 
-        /// <summary>
-        /// Called from INarrowPhaseCallbacks.ConfigureContactManifold on worker threads.
-        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void ReportContact(CollidableReference refA, CollidableReference refB,
             Vector3 contactPosition, Vector3 contactNormal, float depth, bool isTrigger)
@@ -228,17 +164,10 @@ namespace KrayonCore.Physics
             });
         }
 
-        // ── Main thread: call after Simulation.Timestep ──
-
-        /// <summary>
-        /// Process all narrow phase reports and dispatch Enter/Stay/Exit events.
-        /// Must be called on the main thread after each simulation timestep.
-        /// </summary>
         public void FlushEvents()
         {
             _deferredEvents.Clear();
 
-            // Move last frame -> swap
             _activePairsLastFrame.Clear();
             foreach (var p in _activePairsThisFrame) _activePairsLastFrame.Add(p);
             _activePairsThisFrame.Clear();
@@ -247,7 +176,6 @@ namespace KrayonCore.Physics
             foreach (var p in _activeTriggerPairsThisFrame) _activeTriggerPairsLastFrame.Add(p);
             _activeTriggerPairsThisFrame.Clear();
 
-            // Process all reports from narrow phase
             while (_narrowPhaseReports.TryTake(out var report))
             {
                 var pairKey = new CollisionPairKey(report.A, report.B);
@@ -270,7 +198,6 @@ namespace KrayonCore.Physics
                 }
             }
 
-            // Detect Exit: pairs that were active last frame but not this frame
             foreach (var pairKey in _activePairsLastFrame)
             {
                 if (!_activePairsThisFrame.Contains(pairKey))
@@ -287,13 +214,11 @@ namespace KrayonCore.Physics
                 }
             }
 
-            // Dispatch all deferred events to handlers
             DispatchEvents();
         }
 
         private void EnqueueEvent(CollisionEventType type, in PairReport report)
         {
-            // Enqueue for A (other = B)
             if (_handlers.ContainsKey(report.A))
             {
                 _deferredEvents.Add(new DeferredCollisionEvent
@@ -311,7 +236,6 @@ namespace KrayonCore.Physics
                 });
             }
 
-            // Enqueue for B (other = A)
             if (_handlers.ContainsKey(report.B))
             {
                 _deferredEvents.Add(new DeferredCollisionEvent
@@ -395,24 +319,10 @@ namespace KrayonCore.Physics
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Narrow Phase Callbacks (replaces the old simple one)
-    // ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// NarrowPhase callbacks that feed contact data into the CollisionEventSystem
-    /// and handle trigger (sensor) bodies by suppressing constraint generation.
-    /// </summary>
     public struct CollisionNarrowPhaseCallbacks : INarrowPhaseCallbacks
     {
         public SpringSettings ContactSpringiness;
         public float FrictionCoefficient;
-
-        /// <summary>
-        /// Shared references (boxed/heap) accessible from the struct.
-        /// Because INarrowPhaseCallbacks must be a struct, we hold references to the
-        /// shared systems through a helper object.
-        /// </summary>
         public CollisionCallbackSharedData Shared;
 
         public CollisionNarrowPhaseCallbacks(SpringSettings contactSpringiness, float friction,
@@ -429,9 +339,6 @@ namespace KrayonCore.Physics
         public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b,
             ref float speculativeMargin)
         {
-            // Always generate contacts so we can detect triggers too.
-            // At minimum one must be dynamic for a constraint to be meaningful,
-            // but we also want kinematic-kinematic trigger detection.
             return a.Mobility == CollidableMobility.Dynamic
                 || b.Mobility == CollidableMobility.Dynamic
                 || Shared.TriggerRegistry.IsTrigger(a)
@@ -453,29 +360,24 @@ namespace KrayonCore.Physics
             bool bIsTrigger = Shared.TriggerRegistry.IsTrigger(pair.B);
             bool isTriggerPair = aIsTrigger || bIsTrigger;
 
-            // Extract first contact point for the event report
             Vector3 contactPos = Vector3.Zero;
             Vector3 contactNormal = Vector3.Zero;
             float depth = 0;
 
             if (manifold.Count > 0)
             {
-                // Get the first contact's data
                 manifold.GetContact(0, out var offset, out contactNormal, out depth, out _);
                 contactPos = offset;
             }
 
-            // Report to the event system
             Shared.EventSystem.ReportContact(pair.A, pair.B, contactPos, contactNormal, depth, isTriggerPair);
 
             if (isTriggerPair)
             {
-                // Triggers: generate no constraint (objects pass through each other)
                 pairMaterial = default;
                 return false;
             }
 
-            // Normal collision: generate constraint
             pairMaterial.FrictionCoefficient = FrictionCoefficient;
             pairMaterial.MaximumRecoveryVelocity = 2f;
             pairMaterial.SpringSettings = ContactSpringiness;
@@ -492,9 +394,6 @@ namespace KrayonCore.Physics
         public void Dispose() { }
     }
 
-    /// <summary>
-    /// Heap-allocated shared data accessible from the NarrowPhaseCallbacks struct.
-    /// </summary>
     public class CollisionCallbackSharedData
     {
         public CollisionEventSystem EventSystem;
@@ -506,10 +405,6 @@ namespace KrayonCore.Physics
             TriggerRegistry = triggerRegistry;
         }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    //  Pose Integrator Callbacks (unchanged)
-    // ─────────────────────────────────────────────────────────────
 
     public struct PoseIntegratorCallbacks : IPoseIntegratorCallbacks
     {
@@ -551,15 +446,12 @@ namespace KrayonCore.Physics
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  WorldPhysic (updated with event system + triggers)
-    // ─────────────────────────────────────────────────────────────
-
     public class WorldPhysic : IDisposable
     {
         private BufferPool _bufferPool;
         private ThreadDispatcher _threadDispatcher;
         private Simulation _simulation;
+        private PoseIntegratorCallbacks _poseIntegrator;
         private readonly List<BodyHandle> _dynamicBodies = new();
         private readonly List<StaticHandle> _staticBodies = new();
 
@@ -567,6 +459,12 @@ namespace KrayonCore.Physics
         public CollisionEventSystem EventSystem { get; private set; }
         public PhysicsLayerRegistry LayerRegistry { get; private set; }
         public Simulation Simulation => _simulation;
+
+        public Vector3 Gravity
+        {
+            get => _poseIntegrator.Gravity;
+            set => _poseIntegrator.Gravity = value;
+        }
 
         public WorldPhysic()
         {
@@ -584,26 +482,23 @@ namespace KrayonCore.Physics
 
             var sharedData = new CollisionCallbackSharedData(EventSystem, TriggerRegistry);
 
+            _poseIntegrator = new PoseIntegratorCallbacks(new Vector3(0, -9.81f, 0));
+
             _simulation = Simulation.Create(
                 _bufferPool,
                 new CollisionNarrowPhaseCallbacks(
                     new SpringSettings(30, 1),
                     1f,
                     sharedData),
-                new PoseIntegratorCallbacks(new Vector3(0, -9.81f, 0)),
+                _poseIntegrator,
                 new SolveDescription(8, 1));
         }
 
-        /// <summary>
-        /// Steps the simulation and flushes collision/trigger events.
-        /// </summary>
         public void Update(float deltaTime)
         {
             _simulation?.Timestep(deltaTime, _threadDispatcher);
             EventSystem?.FlushEvents();
         }
-
-        // ── Body creation ──
 
         public BodyHandle CreateBox(
             in Vector3 halfExtent,
@@ -717,8 +612,6 @@ namespace KrayonCore.Physics
             return handle;
         }
 
-        // ── Removal ──
-
         public void RemoveBody(BodyHandle handle)
         {
             if (_simulation.Bodies.BodyExists(handle))
@@ -748,8 +641,6 @@ namespace KrayonCore.Physics
                 _staticBodies.Remove(handle);
             }
         }
-
-        // ── Helpers ──
 
         public BodyReference GetBodyReference(BodyHandle handle) => _simulation.Bodies[handle];
 

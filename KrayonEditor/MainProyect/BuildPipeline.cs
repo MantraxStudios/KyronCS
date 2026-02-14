@@ -2,11 +2,13 @@
 using KrayonCore;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Utilities;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -116,9 +118,7 @@ namespace KrayonEditor.Compiler
             var compileSteps = GetCompileSteps(platform);
             var assetsPak = new Dictionary<string, string>();
 
-            string jsonData = File.ReadAllText(AssetManager.DataBase);
-            JObject dataJson = JObject.Parse(jsonData);
-            JArray assets = (JArray)dataJson["Assets"];
+            var assets = AssetManager.All().ToList();
             int assetCount = assets.Count;
 
             int totalSteps = compileSteps.Length + assetCount + 3;
@@ -152,11 +152,9 @@ namespace KrayonEditor.Compiler
             BuildPakFile(assetsPak, token, ReportProgress);
 
             if (platform == BuildPlatform.Windows)
-            {
                 OpenBuildDirectory();
-            }
 
-            Log($"Build completed successfully", BuildLogEventArgs.LogLevel.Success);
+            Log("Build completed successfully", BuildLogEventArgs.LogLevel.Success);
 
             return new BuildInfo
             {
@@ -170,46 +168,55 @@ namespace KrayonEditor.Compiler
             return platform == BuildPlatform.Android
                 ? new (string Label, int Ms)[]
                   {
-                      ("Scanning assets", 300),
-                      ("Resolving dependencies", 350),
-                      ("Compiling shaders (GLSL)", 500),
-                      ("Packaging APK resources", 400),
-                      ("Signing package", 250),
-                      ("Finalizing", 200),
+                      ("Scanning assets",           300),
+                      ("Resolving dependencies",    350),
+                      ("Compiling shaders (GLSL)",  500),
+                      ("Packaging APK resources",   400),
+                      ("Signing package",           250),
+                      ("Finalizing",                200),
                   }
                 : new (string Label, int Ms)[]
                   {
-                      ("Scanning assets", 300),
-                      ("Resolving dependencies", 350),
-                      ("Compiling shaders (HLSL)", 500),
-                      ("Packaging resources", 400),
-                      ("Linking executable", 250),
-                      ("Finalizing", 200),
+                      ("Scanning assets",           300),
+                      ("Resolving dependencies",    350),
+                      ("Compiling shaders (HLSL)",  500),
+                      ("Packaging resources",       400),
+                      ("Linking executable",        250),
+                      ("Finalizing",                200),
                   };
         }
 
-        private void ProcessAssets(JArray assets, Dictionary<string, string> assetsPak,
-            CancellationToken token, Action<string> reportProgress)
+        private void ProcessAssets(
+            List<AssetRecord> assets,
+            Dictionary<string, string> assetsPak,
+            CancellationToken token,
+            Action<string> reportProgress)
         {
-            assetsPak.Add("Engine.AssetsData", AssetManager.DataBase);
+            // Write the asset index as UTF-8 WITHOUT BOM.
+            // File.WriteAllText on Windows defaults to UTF-8 with BOM which
+            // survives the XOR round-trip and makes JsonSerializer throw on load.
+            string assetsIndexTmp = Path.Combine(AssetManager.CompilerPath, "_AssetsData.tmp.json");
+            string assetsIndexJson = JsonSerializer.Serialize(assets, new JsonSerializerOptions { WriteIndented = false });
+            File.WriteAllText(assetsIndexTmp, assetsIndexJson, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            assetsPak.Add("Engine.AssetsData", assetsIndexTmp);
             assetsPak.Add("Engine.VFX", AssetManager.VFXPath);
             assetsPak.Add("Engine.Materials", AssetManager.MaterialsPath);
             assetsPak.Add("Engine.Client.KrayonClient", $"{AssetManager.ClientDLLPath}/KrayonClient.dll");
 
-            foreach (JToken asset in assets)
+            foreach (var asset in assets)
             {
                 token.ThrowIfCancellationRequested();
 
-                string path = asset["Path"]?.ToString();
-                if (string.IsNullOrEmpty(path))
+                if (string.IsNullOrEmpty(asset.Path))
                 {
-                    Log("Asset missing 'Path' field", BuildLogEventArgs.LogLevel.Error);
+                    Log("Asset missing Path field", BuildLogEventArgs.LogLevel.Error);
                     _errorCount++;
                     reportProgress("Processing assets");
                     continue;
                 }
 
-                string fullPath = AssetManager.BasePath + path;
+                string fullPath = AssetManager.BasePath + asset.Path;
 
                 if (!File.Exists(fullPath))
                 {
@@ -229,15 +236,11 @@ namespace KrayonEditor.Compiler
                 }
                 else
                 {
-                    string guid = asset["Guid"]?.ToString();
-                    if (!string.IsNullOrEmpty(guid))
-                    {
-                        assetsPak.Add(guid, fullPath);
-                        Log($"Processing asset: {Path.GetFileName(path)}", BuildLogEventArgs.LogLevel.Info);
-                    }
+                    assetsPak.Add(asset.Guid.ToString(), fullPath);
+                    Log($"Processing asset: {Path.GetFileName(asset.Path)}", BuildLogEventArgs.LogLevel.Info);
                 }
 
-                reportProgress($"Processing: {Path.GetFileName(path)}");
+                reportProgress($"Processing: {Path.GetFileName(asset.Path)}");
             }
         }
 
@@ -264,10 +267,9 @@ namespace KrayonEditor.Compiler
             token.ThrowIfCancellationRequested();
 
             Log("Copying executable data", BuildLogEventArgs.LogLevel.Info);
-
             PathUtils.CopyAllDataTo("CompileData/Windows/", AssetManager.CompilerPath);
-
             Log("Executable data copied", BuildLogEventArgs.LogLevel.Info);
+
             reportProgress("Copying executable data");
         }
 
@@ -280,6 +282,11 @@ namespace KrayonEditor.Compiler
 
             string pakPath = $"{AssetManager.CompilerPath}Game.pak";
             KRCompiler.Build(pakPath, assetsPak);
+
+            // Clean up the temporary index file
+            string assetsIndexTmp = Path.Combine(AssetManager.CompilerPath, "_AssetsData.tmp.json");
+            if (File.Exists(assetsIndexTmp))
+                File.Delete(assetsIndexTmp);
 
             Log("Game.pak created successfully", BuildLogEventArgs.LogLevel.Success);
             reportProgress("Building Game.pak");

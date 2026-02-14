@@ -1,9 +1,9 @@
 {
-  "Enabled": true,
+  "Enabled": false,
   "ColorCorrectionEnabled": true,
   "Brightness": -0,
-  "Contrast": 1.35,
-  "Saturation": 1.19,
+  "Contrast": 1.3,
+  "Saturation": 1.07,
   "ColorFilter": {
     "X": 1,
     "Y": 1,

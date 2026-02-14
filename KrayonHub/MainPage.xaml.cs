@@ -308,7 +308,7 @@ public partial class MainPage : ContentPage
             File.WriteAllText(jsonPath, jsonContent);
 
             string zipPath = @"Data/Content.zip";
-            string extractPath = $"{projectPath}/Content/";
+            string extractPath = $"{projectPath}/";
 
             Directory.CreateDirectory(extractPath);
 
@@ -331,23 +331,25 @@ public partial class MainPage : ContentPage
             if (project != null)
             {
                 string appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string projectPath = Path.Combine(appDataRoaming, "Proyects", project.Name);
+                string projectPath = Path.Combine(appDataRoaming, "Proyects", project.Name) + "/";
 
                 if (Directory.Exists(projectPath))
                 {
                     await DisplayAlert("Open Project", $"Opening \"{project.Name}\" from:\n{projectPath}", "OK");
                     string carpetaEjecutable = AppContext.BaseDirectory;
                     string exePath = $"{carpetaEjecutable}/Engine/KrayonEditor.exe";
+                    string workingDir = $"{carpetaEjecutable}/Engine/";
 
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = exePath,
                         Arguments = $"\"{projectPath}\"",
-                        UseShellExecute = true,           
-                        CreateNoWindow = false            
+                        WorkingDirectory = workingDir, 
+                        UseShellExecute = true
                     };
 
                     Process.Start(psi);
+
                 }
                 else
                 {

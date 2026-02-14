@@ -54,12 +54,12 @@ namespace KrayonCore.GraphicsData
 
         private void CreateDefaultMaterials()
         {
-            Guid basicVertGuid = Guid.Parse("f3df852d-4e51-4e3c-ae64-81184e1b1182");
-            Guid basicFragGuid = Guid.Parse("94804744-32d4-4fa3-8aa0-d7f8f19fc3fb");
-            Guid fullscreenVertGuid = Guid.Parse("35a94454-46ed-4515-96f6-74fe0aaea757");
-            Guid fullscreenFragGuid = Guid.Parse("6958d1ac-f610-4a05-b979-b04fa8ebde78");
-            Guid screenFragGuid = Guid.Parse("9cd8c265-1e11-4c1e-b233-c7b8c7f1f8ab");
-            Guid screenVertGuid = Guid.Parse("ec2339a5-2a65-4cbe-af5c-304ae4d061b9");
+            Guid basicVertGuid = Guid.Parse("9557923a-76ad-432c-abc9-17ed77e82311");
+            Guid basicFragGuid = Guid.Parse("5ed03f4d-deb0-4de7-a5d6-182e3a60df7f");
+            Guid fullscreenVertGuid = Guid.Parse("1e6bf414-5684-458e-8d8b-4e9761dfa320");
+            Guid fullscreenFragGuid = Guid.Parse("ddcb17f8-2875-4229-a74f-63353d482808");
+            Guid screenFragGuid = Guid.Parse("91c14d42-adb9-45c8-a527-ff6335115397");
+            Guid screenVertGuid = Guid.Parse("ffbdd214-94e0-467c-b2ec-f220b5788c2b");
 
             var textureMaterial = _materials.Create("basic", basicVertGuid, basicFragGuid);
             textureMaterial?.SetVector3Cached("u_Color", new Vector3(1.0f, 1.0f, 1.0f));

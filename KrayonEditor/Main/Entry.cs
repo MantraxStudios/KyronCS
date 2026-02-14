@@ -11,9 +11,9 @@ namespace KrayonEditor
     {
         static void Main(string[] args)
         {
-            if (args.Length != 0)
+            if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
             {
-                AssetManager.TotalBase = $"{args[0]}";
+                AssetManager.TotalBase = args[0];
             }
 
             ScriptWatcher _scriptWatcher;

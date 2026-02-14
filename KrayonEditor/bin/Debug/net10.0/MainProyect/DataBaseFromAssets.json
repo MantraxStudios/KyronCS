@@ -176,19 +176,94 @@
       "Type": "Script"
     },
     {
-      "Guid": "e07bacf1-928a-48af-9189-ad638b0faf33",
-      "Path": "Audio/6ix9ine - FEFE ft. Nicki Minaj, Murda Beatz.mp3",
-      "Type": "Audio"
-    },
-    {
-      "Guid": "d17d6178-5184-4923-b00c-8fc1d3cd9bc3",
-      "Path": "Audio/Vista Al Mar - Quevedo.mp3",
-      "Type": "Audio"
-    },
-    {
       "Guid": "0f182cbd-737f-4a19-a706-907c890c0457",
       "Path": "scenes/GameScene.scene",
       "Type": "Unknown"
+    },
+    {
+      "Guid": "6914d072-e500-4d21-beef-efc3eddc56a7",
+      "Path": "Audio/Tiny Pack/Readme \u0026 License.txt",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "7d7e57aa-d53a-4ef8-9b5e-a3f43191aba1",
+      "Path": "Audio/Tiny Pack/MP3/17_new_season_stinger_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "c10b773d-cacc-4b8c-9767-aa5440405ef8",
+      "Path": "Audio/Tiny Pack/MP3/1_new_life_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "dabe7b71-9155-4122-8025-c548b873ea62",
+      "Path": "Audio/Tiny Pack/MP3/24_too_late!_stinger_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "75763d02-85b8-4f48-a23a-7dcd4b60879c",
+      "Path": "Audio/Tiny Pack/MP3/2_cafe_avenue_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "4ed3d47e-a3aa-4940-a254-c3819258fac7",
+      "Path": "Audio/Tiny Pack/MP3/3_fireflies_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "afdad0ee-8c68-4d46-b357-929a1650e1a0",
+      "Path": "Audio/Tiny Pack/MP3/4_working_time_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "0d3a228c-e88e-4f10-b216-e159eb9a6ba1",
+      "Path": "Audio/Tiny Pack/MP3/5_frog_pond_master.mp3",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "7d5a1b9e-a447-4844-8070-b811882f4409",
+      "Path": "Audio/Tiny Pack/OGG/17_new_season_stinger_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "3b28105a-f2e1-471e-9132-8a820f2486d3",
+      "Path": "Audio/Tiny Pack/OGG/1_new_life_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "5c7a331f-1383-4d07-83a8-5bd08635ed7a",
+      "Path": "Audio/Tiny Pack/OGG/24_too_late!_stinger_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "37996053-b66b-4651-8f1e-8114b6d2a358",
+      "Path": "Audio/Tiny Pack/OGG/2_cafe_avenue_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "6433400b-3f66-442c-a882-3b7344eb1f70",
+      "Path": "Audio/Tiny Pack/OGG/3_fireflies_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "f0d389fb-ab3c-437b-a938-2bd6d2d6300a",
+      "Path": "Audio/Tiny Pack/OGG/4_working_time_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "4dea6fce-5dc6-4ef9-a989-572b5814d9b6",
+      "Path": "Audio/Tiny Pack/OGG/5_frog_pond_master.ogg",
+      "Type": "Unknown"
+    },
+    {
+      "Guid": "332345fd-925c-45eb-8c1e-fdb5348fd5c9",
+      "Path": "Audio/Tiny Pack/WAV/17_new_season_stinger_master.wav",
+      "Type": "Audio"
+    },
+    {
+      "Guid": "c6d40944-3449-4e48-b5b1-d41d4b1dad43",
+      "Path": "Audio/Tiny Pack/WAV/24_too_late!_stinger_master.wav",
+      "Type": "Audio"
     }
   ],
   "Folders": [
@@ -246,6 +321,26 @@
       "Guid": "a2738292-626d-4d3b-980c-66fc0df52203",
       "Path": "Farm RPG FREE 16x16 - Tiny Asset Pack/Tileset",
       "CreatedAt": "2026-02-13T20:25:27.4721686-03:00"
+    },
+    {
+      "Guid": "d15d67af-a695-4cd3-81d7-402903528994",
+      "Path": "Audio/Tiny Pack",
+      "CreatedAt": "2026-02-13T22:44:41.9360643-03:00"
+    },
+    {
+      "Guid": "7c15afdd-2b34-4e39-acfa-7d41a072ec96",
+      "Path": "Audio/Tiny Pack/MP3",
+      "CreatedAt": "2026-02-13T22:44:41.9363391-03:00"
+    },
+    {
+      "Guid": "2dcf5515-97fc-422f-83db-8c9d6633dd49",
+      "Path": "Audio/Tiny Pack/OGG",
+      "CreatedAt": "2026-02-13T22:44:41.9363731-03:00"
+    },
+    {
+      "Guid": "128d87d3-6033-438f-a2b4-69a58edf7dfb",
+      "Path": "Audio/Tiny Pack/WAV",
+      "CreatedAt": "2026-02-13T22:44:41.9363976-03:00"
     }
   ]
 }

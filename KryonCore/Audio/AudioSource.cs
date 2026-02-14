@@ -51,6 +51,7 @@ namespace KrayonCore.Core.Components
 
         public override void Start()
         {
+            if (!AppInfo.IsCompiledGame) return;
             _started = true;
             if (PlayOnAwake && !string.IsNullOrEmpty(_audioPath))
                 LoadAudio();

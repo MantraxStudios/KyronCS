@@ -53,6 +53,7 @@ namespace KrayonEditor.UI
                     ImGui.Text($"Yaw: {MainCamera.Yaw:F1}");
                     ImGui.Text($"Pitch: {MainCamera.Pitch:F1}");
                     ImGui.Text($"FOV: {MainCamera.Fov:F1}");
+                    ImGui.Text($"ORTHO SIZE: {MainCamera.OrthoSize:F1}");
                 }
             }
         }

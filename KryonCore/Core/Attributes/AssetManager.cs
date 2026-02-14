@@ -12,38 +12,55 @@ namespace KrayonCore.Core.Attributes
         // DONT TOUCH THIS VAR. THIS WORK WITH START EDITOR
         public static string TotalBase = "MainProyect/";
 
-        public static string BasePath = $"{TotalBase}Content/";
-        public static string DataBase = $"{TotalBase}/DataBaseFromAssets.json";
-        public static string CompilerPath = $"{TotalBase}/CompileData/";
-        public static string ClientDLLPath = $"{TotalBase}/bin/Debug/net10.0/";
-        public static string GamePak = $"{TotalBase}/CompileData/Game.Pak";
-        public static string VSProyect = $"{TotalBase}/";
-        public static string CSProj = $"{TotalBase}KrayonClient.csproj";
-        public static string MaterialsPath = $"{TotalBase}EngineMaterials.json";
-        public static string VFXPath = $"{TotalBase}VFXData.json";
+        public static string BasePath => $"{TotalBase}Content/";
+        public static string CompilerPath => $"{TotalBase}CompileData/";
+        public static string ClientDLLPath => $"{TotalBase}bin/Debug/net10.0/";
+        public static string GamePak => AppInfo.IsCompiledGame ? "Game.pak" : $"{TotalBase}CompileData/Game.Pak";
+        public static string VSProyect => $"{TotalBase}";
+        public static string CSProj => $"{TotalBase}KrayonClient.csproj";
+        public static string MaterialsPath => $"{TotalBase}EngineMaterials.json";
+        public static string VFXPath => $"{TotalBase}VFXData.json";
 
+        private const string DataExt = ".data";
 
         private static Dictionary<Guid, AssetRecord> _assets = new();
         private static Dictionary<Guid, FolderRecord> _folders = new();
 
 
+        // ─────────────────────────────────────────────
+        //  INIT
+        // ─────────────────────────────────────────────
+
         public static void Initialize()
         {
-            LoadDatabase();
-
             if (!AppInfo.IsCompiledGame)
-            {
                 ScanFileSystem();
-                SaveDatabase();
-            }
+            else
+                LoadFromPak();
+
             Console.WriteLine($"AssetManager initialized. Assets: {_assets.Count}, Folders: {_folders.Count}");
         }
 
-        public static bool Exists(Guid guid)
-            => _assets.ContainsKey(guid);
 
-        public static AssetRecord Get(Guid guid)
-            => _assets.TryGetValue(guid, out var asset) ? asset : null;
+        // ─────────────────────────────────────────────
+        //  QUERY
+        // ─────────────────────────────────────────────
+
+        public static bool Exists(Guid guid) => _assets.ContainsKey(guid);
+        public static AssetRecord Get(Guid guid) => _assets.TryGetValue(guid, out var a) ? a : null;
+        public static IEnumerable<AssetRecord> All() => _assets.Values;
+        public static AssetRecord FindByPath(string path) => _assets.Values.FirstOrDefault(a => a.Path == path);
+
+        public static bool FolderExists(Guid guid) => _folders.ContainsKey(guid);
+        public static FolderRecord GetFolder(Guid guid) => _folders.TryGetValue(guid, out var f) ? f : null;
+        public static IEnumerable<FolderRecord> AllFolders() => _folders.Values;
+        public static FolderRecord FindFolderByPath(string p) => _folders.Values.FirstOrDefault(f => f.Path == p);
+        public static bool IsFolderRegistered(string p) => _folders.Values.Any(f => f.Path == p);
+
+
+        // ─────────────────────────────────────────────
+        //  READ BYTES
+        // ─────────────────────────────────────────────
 
         public static byte[] GetBytes(Guid guid)
         {
@@ -86,15 +103,12 @@ namespace KrayonCore.Core.Attributes
                     return pak.Load(key);
                 }
 
-                // Modo editor / sin compilar
                 string fullPath = Path.Combine(BasePath, key);
-
                 if (!File.Exists(fullPath))
                 {
                     Console.WriteLine($"File not found: {fullPath}");
                     return null;
                 }
-
                 return File.ReadAllBytes(fullPath);
             }
             catch (Exception ex)
@@ -104,26 +118,10 @@ namespace KrayonCore.Core.Attributes
             }
         }
 
-        public static IEnumerable<AssetRecord> All()
-            => _assets.Values;
 
-        public static AssetRecord FindByPath(string relativePath)
-            => _assets.Values.FirstOrDefault(a => a.Path == relativePath);
-
-        public static bool FolderExists(Guid guid)
-            => _folders.ContainsKey(guid);
-
-        public static FolderRecord GetFolder(Guid guid)
-            => _folders.TryGetValue(guid, out var folder) ? folder : null;
-
-        public static IEnumerable<FolderRecord> AllFolders()
-            => _folders.Values;
-
-        public static FolderRecord FindFolderByPath(string relativePath)
-            => _folders.Values.FirstOrDefault(f => f.Path == relativePath);
-
-        public static bool IsFolderRegistered(string folderPath)
-            => _folders.Values.Any(f => f.Path == folderPath);
+        // ─────────────────────────────────────────────
+        //  IMPORT
+        // ─────────────────────────────────────────────
 
         public static Guid? Import(string relativePath)
         {
@@ -149,11 +147,12 @@ namespace KrayonCore.Core.Attributes
                 {
                     Guid = Guid.NewGuid(),
                     Path = relativePath,
-                    Type = DetectType(fullPath)
+                    Type = DetectType(fullPath),
+                    ImportedAt = DateTime.Now
                 };
 
                 _assets.Add(record.Guid, record);
-                SaveDatabase();
+                WriteSidecar(record);
 
                 Console.WriteLine($"Imported: {relativePath} ({record.Type})");
                 return record.Guid;
@@ -165,12 +164,63 @@ namespace KrayonCore.Core.Attributes
             }
         }
 
+        public static Guid? ImportAsset(string fullPath, string assetType)
+        {
+            try
+            {
+                if (!File.Exists(fullPath))
+                {
+                    Console.WriteLine($"File not found: {fullPath}");
+                    return null;
+                }
+
+                string relativePath = Path.GetRelativePath(BasePath, fullPath).Replace("\\", "/");
+
+                var existing = FindByPath(relativePath);
+                if (existing != null)
+                {
+                    Console.WriteLine($"Asset already registered: {relativePath}");
+                    return existing.Guid;
+                }
+
+                relativePath = ResolveNameConflict(relativePath);
+
+                var record = new AssetRecord
+                {
+                    Guid = Guid.NewGuid(),
+                    Path = relativePath,
+                    Type = assetType,
+                    ImportedAt = DateTime.Now
+                };
+
+                _assets.Add(record.Guid, record);
+                WriteSidecar(record);
+
+                Console.WriteLine($"Imported asset: {relativePath} as {assetType}");
+                return record.Guid;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error importing asset: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        // ─────────────────────────────────────────────
+        //  REFRESH
+        // ─────────────────────────────────────────────
+
         public static void Refresh()
         {
             ScanFileSystem();
-            SaveDatabase();
             Console.WriteLine($"Refreshed. Assets: {_assets.Count}, Folders: {_folders.Count}");
         }
+
+
+        // ─────────────────────────────────────────────
+        //  MOVE
+        // ─────────────────────────────────────────────
 
         public static bool MoveAsset(Guid guid, string newFolderPath)
         {
@@ -184,24 +234,21 @@ namespace KrayonCore.Core.Attributes
             {
                 string oldFullPath = Path.Combine(BasePath, asset.Path);
                 string fileName = Path.GetFileName(asset.Path);
-                string newRelativePath = string.IsNullOrEmpty(newFolderPath)
-                    ? fileName
-                    : $"{newFolderPath}/{fileName}";
-                string newFullPath = Path.Combine(BasePath, newRelativePath);
+                string newRelative = string.IsNullOrEmpty(newFolderPath) ? fileName : $"{newFolderPath}/{fileName}";
+                string newFullPath = Path.Combine(BasePath, newRelative);
 
                 if (File.Exists(newFullPath))
                 {
-                    Console.WriteLine($"File already exists at destination: {newRelativePath}");
+                    Console.WriteLine($"File already exists at destination: {newRelative}");
                     return false;
                 }
 
-                string newDirectory = Path.GetDirectoryName(newFullPath);
-                if (!string.IsNullOrEmpty(newDirectory) && !Directory.Exists(newDirectory))
-                    Directory.CreateDirectory(newDirectory);
-
+                EnsureDirectory(newFullPath);
                 File.Move(oldFullPath, newFullPath);
-                asset.Path = newRelativePath;
-                SaveDatabase();
+                MoveSidecar(asset.Path, newRelative);
+
+                asset.Path = newRelative;
+                WriteSidecar(asset);
 
                 Console.WriteLine($"Moved asset: {oldFullPath} -> {newFullPath}");
                 return true;
@@ -231,52 +278,41 @@ namespace KrayonCore.Core.Attributes
                     return false;
                 }
 
-                var assetsToMove = _assets.Values
-                    .Where(a => a.Path.StartsWith(sourceFolderPath + "/"))
-                    .ToList();
-
+                var assetsToMove = _assets.Values.Where(a => a.Path.StartsWith(sourceFolderPath + "/")).ToList();
                 var foldersToMove = _folders.Values
                     .Where(f => f.Path.StartsWith(sourceFolderPath + "/") || f.Path == sourceFolderPath)
                     .ToList();
 
                 foreach (var asset in assetsToMove)
                 {
-                    string oldFullPath = Path.Combine(BasePath, asset.Path);
+                    string oldRelative = asset.Path;
                     string relativePart = asset.Path.Substring(sourceFolderPath.Length + 1);
-                    string newRelativePath = string.IsNullOrEmpty(newFolderPath)
-                        ? relativePart
-                        : $"{newFolderPath}/{relativePart}";
-                    string newFullPath = Path.Combine(BasePath, newRelativePath);
+                    string newRelative = $"{newFolderPath}/{relativePart}";
+                    string oldFullPath = Path.Combine(BasePath, oldRelative);
+                    string newFullPath = Path.Combine(BasePath, newRelative);
 
-                    string newDirectory = Path.GetDirectoryName(newFullPath);
-                    if (!string.IsNullOrEmpty(newDirectory) && !Directory.Exists(newDirectory))
-                        Directory.CreateDirectory(newDirectory);
+                    EnsureDirectory(newFullPath);
 
                     if (File.Exists(oldFullPath))
                     {
                         File.Move(oldFullPath, newFullPath);
-                        asset.Path = newRelativePath;
+                        MoveSidecar(oldRelative, newRelative);
+                        asset.Path = newRelative;
+                        WriteSidecar(asset);
                     }
                 }
 
                 foreach (var folder in foldersToMove)
                 {
-                    if (folder.Path == sourceFolderPath)
-                    {
-                        folder.Path = newFolderPath;
-                    }
-                    else
-                    {
-                        string relativePart = folder.Path.Substring(sourceFolderPath.Length + 1);
-                        folder.Path = $"{newFolderPath}/{relativePart}";
-                    }
+                    folder.Path = folder.Path == sourceFolderPath
+                        ? newFolderPath
+                        : $"{newFolderPath}/{folder.Path.Substring(sourceFolderPath.Length + 1)}";
                 }
 
-                string oldFolderFullPath = Path.Combine(BasePath, sourceFolderPath);
-                if (Directory.Exists(oldFolderFullPath))
-                    DeleteEmptyDirectories(oldFolderFullPath);
+                string oldFolderFull = Path.Combine(BasePath, sourceFolderPath);
+                if (Directory.Exists(oldFolderFull))
+                    DeleteEmptyDirectories(oldFolderFull);
 
-                SaveDatabase();
                 Console.WriteLine($"Moved folder: {sourceFolderPath} -> {newFolderPath}");
                 return true;
             }
@@ -286,6 +322,11 @@ namespace KrayonCore.Core.Attributes
                 return false;
             }
         }
+
+
+        // ─────────────────────────────────────────────
+        //  RENAME
+        // ─────────────────────────────────────────────
 
         public static bool RenameAsset(Guid guid, string newName)
         {
@@ -297,29 +338,30 @@ namespace KrayonCore.Core.Attributes
 
             try
             {
-                string oldFullPath = Path.Combine(BasePath, asset.Path);
-                string directory = Path.GetDirectoryName(asset.Path)?.Replace("\\", "/") ?? "";
-                string extension = Path.GetExtension(asset.Path);
+                string oldRelative = asset.Path;
+                string oldFullPath = Path.Combine(BasePath, oldRelative);
+                string directory = Path.GetDirectoryName(oldRelative)?.Replace("\\", "/") ?? "";
+                string extension = Path.GetExtension(oldRelative);
 
                 if (!newName.EndsWith(extension))
                     newName += extension;
 
-                string newRelativePath = string.IsNullOrEmpty(directory)
-                    ? newName
-                    : $"{directory}/{newName}";
-                string newFullPath = Path.Combine(BasePath, newRelativePath);
+                string newRelative = string.IsNullOrEmpty(directory) ? newName : $"{directory}/{newName}";
+                string newFullPath = Path.Combine(BasePath, newRelative);
 
                 if (File.Exists(newFullPath))
                 {
-                    Console.WriteLine($"File already exists: {newRelativePath}");
+                    Console.WriteLine($"File already exists: {newRelative}");
                     return false;
                 }
 
                 File.Move(oldFullPath, newFullPath);
-                asset.Path = newRelativePath;
-                SaveDatabase();
+                MoveSidecar(oldRelative, newRelative);
 
-                Console.WriteLine($"Renamed asset: {asset.Path} -> {newRelativePath}");
+                asset.Path = newRelative;
+                WriteSidecar(asset);
+
+                Console.WriteLine($"Renamed asset: {oldRelative} -> {newRelative}");
                 return true;
             }
             catch (Exception ex)
@@ -335,58 +377,47 @@ namespace KrayonCore.Core.Attributes
             {
                 folderPath = folderPath.Trim('/');
 
-                string parentPath = "";
-                if (folderPath.Contains('/'))
-                    parentPath = string.Join("/", folderPath.Split('/').SkipLast(1));
+                string parentPath = folderPath.Contains('/')
+                    ? string.Join("/", folderPath.Split('/').SkipLast(1))
+                    : "";
 
-                string newFolderPath = string.IsNullOrEmpty(parentPath)
-                    ? newName
-                    : $"{parentPath}/{newName}";
+                string newFolderPath = string.IsNullOrEmpty(parentPath) ? newName : $"{parentPath}/{newName}";
 
-                var assetsToRename = _assets.Values
-                    .Where(a => a.Path.StartsWith(folderPath + "/"))
-                    .ToList();
-
+                var assetsToRename = _assets.Values.Where(a => a.Path.StartsWith(folderPath + "/")).ToList();
                 var foldersToRename = _folders.Values
                     .Where(f => f.Path.StartsWith(folderPath + "/") || f.Path == folderPath)
                     .ToList();
 
                 foreach (var asset in assetsToRename)
                 {
-                    string oldFullPath = Path.Combine(BasePath, asset.Path);
+                    string oldRelative = asset.Path;
                     string relativePart = asset.Path.Substring(folderPath.Length + 1);
-                    string newRelativePath = $"{newFolderPath}/{relativePart}";
-                    string newFullPath = Path.Combine(BasePath, newRelativePath);
+                    string newRelative = $"{newFolderPath}/{relativePart}";
+                    string oldFullPath = Path.Combine(BasePath, oldRelative);
+                    string newFullPath = Path.Combine(BasePath, newRelative);
 
-                    string newDirectory = Path.GetDirectoryName(newFullPath);
-                    if (!string.IsNullOrEmpty(newDirectory) && !Directory.Exists(newDirectory))
-                        Directory.CreateDirectory(newDirectory);
+                    EnsureDirectory(newFullPath);
 
                     if (File.Exists(oldFullPath))
                     {
                         File.Move(oldFullPath, newFullPath);
-                        asset.Path = newRelativePath;
+                        MoveSidecar(oldRelative, newRelative);
+                        asset.Path = newRelative;
+                        WriteSidecar(asset);
                     }
                 }
 
                 foreach (var folder in foldersToRename)
                 {
-                    if (folder.Path == folderPath)
-                    {
-                        folder.Path = newFolderPath;
-                    }
-                    else
-                    {
-                        string relativePart = folder.Path.Substring(folderPath.Length + 1);
-                        folder.Path = $"{newFolderPath}/{relativePart}";
-                    }
+                    folder.Path = folder.Path == folderPath
+                        ? newFolderPath
+                        : $"{newFolderPath}/{folder.Path.Substring(folderPath.Length + 1)}";
                 }
 
-                string oldFolderFullPath = Path.Combine(BasePath, folderPath);
-                if (Directory.Exists(oldFolderFullPath))
-                    Directory.Delete(oldFolderFullPath, true);
+                string oldFolderFull = Path.Combine(BasePath, folderPath);
+                if (Directory.Exists(oldFolderFull))
+                    Directory.Delete(oldFolderFull, true);
 
-                SaveDatabase();
                 Console.WriteLine($"Renamed folder: {folderPath} -> {newFolderPath}");
                 return true;
             }
@@ -396,6 +427,11 @@ namespace KrayonCore.Core.Attributes
                 return false;
             }
         }
+
+
+        // ─────────────────────────────────────────────
+        //  DELETE
+        // ─────────────────────────────────────────────
 
         public static bool DeleteAsset(Guid guid)
         {
@@ -411,8 +447,8 @@ namespace KrayonCore.Core.Attributes
                 if (File.Exists(fullPath))
                     File.Delete(fullPath);
 
+                DeleteSidecar(asset.Path);
                 _assets.Remove(guid);
-                SaveDatabase();
 
                 Console.WriteLine($"Deleted asset: {asset.Path}");
                 return true;
@@ -430,27 +466,26 @@ namespace KrayonCore.Core.Attributes
             {
                 folderPath = folderPath.Trim('/');
 
-                var assetsToDelete = _assets.Values
+                var guidsToDelete = _assets.Values
                     .Where(a => a.Path.StartsWith(folderPath + "/"))
                     .Select(a => a.Guid)
                     .ToList();
 
-                foreach (var guid in assetsToDelete)
+                foreach (var guid in guidsToDelete)
                     DeleteAsset(guid);
 
-                var foldersToDelete = _folders.Values
+                var folderGuids = _folders.Values
                     .Where(f => f.Path.StartsWith(folderPath + "/") || f.Path == folderPath)
                     .Select(f => f.Guid)
                     .ToList();
 
-                foreach (var guid in foldersToDelete)
+                foreach (var guid in folderGuids)
                     _folders.Remove(guid);
 
                 string fullPath = Path.Combine(BasePath, folderPath);
                 if (Directory.Exists(fullPath))
                     Directory.Delete(fullPath, true);
 
-                SaveDatabase();
                 Console.WriteLine($"Deleted folder: {folderPath}");
                 return true;
             }
@@ -460,6 +495,11 @@ namespace KrayonCore.Core.Attributes
                 return false;
             }
         }
+
+
+        // ─────────────────────────────────────────────
+        //  CREATE FOLDER
+        // ─────────────────────────────────────────────
 
         public static bool CreateFolder(string parentFolderPath, string folderName)
         {
@@ -487,7 +527,6 @@ namespace KrayonCore.Core.Attributes
                 };
 
                 _folders.Add(folderRecord.Guid, folderRecord);
-                SaveDatabase();
 
                 Console.WriteLine($"Created folder: {newFolderPath}");
                 return true;
@@ -499,59 +538,131 @@ namespace KrayonCore.Core.Attributes
             }
         }
 
-        public static Guid? ImportAsset(string fullPath, string assetType)
+
+        // ─────────────────────────────────────────────
+        //  SIDECAR  (.data)
+        // ─────────────────────────────────────────────
+
+        private static string SidecarFullPath(string assetRelativePath)
+            => Path.Combine(BasePath, assetRelativePath + DataExt);
+
+        private static void WriteSidecar(AssetRecord record)
         {
             try
             {
-                if (!File.Exists(fullPath))
-                {
-                    Console.WriteLine($"File not found: {fullPath}");
-                    return null;
-                }
-
-                string relativePath = Path.GetRelativePath(BasePath, fullPath)
-                    .Replace("\\", "/");
-
-                var existing = FindByPath(relativePath);
-                if (existing != null)
-                {
-                    Console.WriteLine($"Asset already registered: {relativePath}");
-                    return existing.Guid;
-                }
-
-                relativePath = ResolveNameConflict(relativePath);
-
-                var record = new AssetRecord
-                {
-                    Guid = Guid.NewGuid(),
-                    Path = relativePath,
-                    Type = assetType
-                };
-
-                _assets.Add(record.Guid, record);
-                SaveDatabase();
-
-                Console.WriteLine($"Imported asset: {relativePath} as {assetType}");
-                return record.Guid;
+                string sidecarPath = SidecarFullPath(record.Path);
+                string json = JsonSerializer.Serialize(record, new JsonSerializerOptions { WriteIndented = true });
+                // Always write without BOM so the file is portable and JsonSerializer-safe
+                File.WriteAllText(sidecarPath, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error importing asset: {ex.Message}");
+                Console.WriteLine($"Error writing sidecar for {record.Path}: {ex.Message}");
+            }
+        }
+
+        private static AssetRecord ReadSidecar(string sidecarFullPath)
+        {
+            try
+            {
+                string json = File.ReadAllText(sidecarFullPath);
+                return JsonSerializer.Deserialize<AssetRecord>(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading sidecar {sidecarFullPath}: {ex.Message}");
                 return null;
             }
         }
+
+        private static void DeleteSidecar(string assetRelativePath)
+        {
+            try
+            {
+                string sidecarPath = SidecarFullPath(assetRelativePath);
+                if (File.Exists(sidecarPath))
+                    File.Delete(sidecarPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting sidecar for {assetRelativePath}: {ex.Message}");
+            }
+        }
+
+        private static void MoveSidecar(string oldRelativePath, string newRelativePath)
+        {
+            try
+            {
+                string oldSidecar = SidecarFullPath(oldRelativePath);
+                string newSidecar = SidecarFullPath(newRelativePath);
+
+                if (File.Exists(oldSidecar))
+                {
+                    EnsureDirectory(newSidecar);
+                    File.Move(oldSidecar, newSidecar);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error moving sidecar {oldRelativePath} -> {newRelativePath}: {ex.Message}");
+            }
+        }
+
+
+        // ─────────────────────────────────────────────
+        //  SCAN FILE SYSTEM
+        // ─────────────────────────────────────────────
 
         private static void ScanFileSystem()
         {
             if (!Directory.Exists(BasePath))
                 Directory.CreateDirectory(BasePath);
 
-            var files = Directory.GetFiles(BasePath, "*.*", SearchOption.AllDirectories);
+            _assets.Clear();
+            _folders.Clear();
 
-            foreach (var file in files)
+            // ── Read existing .data sidecars ──────────────────────────────────
+            var sidecars = Directory.GetFiles(BasePath, "*" + DataExt, SearchOption.AllDirectories);
+
+            foreach (var sidecarPath in sidecars)
             {
-                var relativePath = Path.GetRelativePath(BasePath, file)
+                var record = ReadSidecar(sidecarPath);
+                if (record == null)
+                    continue;
+
+                // Derive path from physical location, not from what's stored inside.
+                // Handles files moved manually on disk.
+                string derivedRelativePath = Path
+                    .GetRelativePath(BasePath, sidecarPath[..^DataExt.Length])
                     .Replace("\\", "/");
+
+                string assetFullPath = Path.Combine(BasePath, derivedRelativePath);
+                if (!File.Exists(assetFullPath))
+                {
+                    Console.WriteLine($"Asset missing, orphan sidecar: {sidecarPath}");
+                    continue;
+                }
+
+                if (record.Path != derivedRelativePath)
+                {
+                    Console.WriteLine($"Sidecar path mismatch, healing: '{record.Path}' -> '{derivedRelativePath}'");
+                    record.Path = derivedRelativePath;
+                    WriteSidecar(record);
+                }
+
+                if (!_assets.ContainsKey(record.Guid))
+                    _assets.Add(record.Guid, record);
+            }
+
+            // ── Detect new files with no sidecar yet ─────────────────────────
+            var allFiles = Directory.GetFiles(BasePath, "*.*", SearchOption.AllDirectories);
+
+            foreach (var file in allFiles)
+            {
+                if (file.EndsWith(DataExt, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string relativePath = Path.GetRelativePath(BasePath, file).Replace("\\", "/");
 
                 if (_assets.Values.Any(a => a.Path == relativePath))
                     continue;
@@ -562,19 +673,32 @@ namespace KrayonCore.Core.Attributes
                 {
                     Guid = Guid.NewGuid(),
                     Path = relativePath,
-                    Type = DetectType(file)
+                    Type = DetectType(file),
+                    ImportedAt = DateTime.Now
                 };
 
                 _assets.Add(record.Guid, record);
-                Console.WriteLine($"New asset detected: {relativePath}");
+                WriteSidecar(record);
+                Console.WriteLine($"New asset detected, sidecar created: {relativePath}");
             }
 
+            // ── Remove stale in-memory entries ────────────────────────────────
+            var staleAssets = _assets.Values
+                .Where(a => !File.Exists(Path.Combine(BasePath, a.Path)))
+                .ToList();
+
+            foreach (var asset in staleAssets)
+            {
+                _assets.Remove(asset.Guid);
+                Console.WriteLine($"Removed missing asset: {asset.Path}");
+            }
+
+            // ── Folders ───────────────────────────────────────────────────────
             var directories = Directory.GetDirectories(BasePath, "*", SearchOption.AllDirectories);
 
-            foreach (var directory in directories)
+            foreach (var dir in directories)
             {
-                var relativePath = Path.GetRelativePath(BasePath, directory)
-                    .Replace("\\", "/");
+                string relativePath = Path.GetRelativePath(BasePath, dir).Replace("\\", "/");
 
                 if (_folders.Values.Any(f => f.Path == relativePath))
                     continue;
@@ -590,26 +714,56 @@ namespace KrayonCore.Core.Attributes
                 Console.WriteLine($"New folder detected: {relativePath}");
             }
 
-            var assetsToRemove = _assets.Values
-                .Where(a => !File.Exists(Path.Combine(BasePath, a.Path)))
-                .ToList();
-
-            foreach (var asset in assetsToRemove)
-            {
-                _assets.Remove(asset.Guid);
-                Console.WriteLine($"Removed missing asset: {asset.Path}");
-            }
-
-            var foldersToRemove = _folders.Values
+            var staleFolders = _folders.Values
                 .Where(f => !Directory.Exists(Path.Combine(BasePath, f.Path)))
                 .ToList();
 
-            foreach (var folder in foldersToRemove)
+            foreach (var folder in staleFolders)
             {
                 _folders.Remove(folder.Guid);
                 Console.WriteLine($"Removed missing folder: {folder.Path}");
             }
         }
+
+
+        // ─────────────────────────────────────────────
+        //  COMPILED GAME: load from .pak
+        // ─────────────────────────────────────────────
+
+        private static void LoadFromPak()
+        {
+            try
+            {
+                byte[] bytes = GetBytes("Engine.AssetsData");
+                if (bytes == null)
+                    return;
+
+                // Strip UTF-8 BOM (EF BB BF) defensively — should never be present
+                // since BuildPipeline writes without BOM, but just in case.
+                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+                    bytes = bytes[3..];
+
+                string json = Encoding.UTF8.GetString(bytes);
+                var list = JsonSerializer.Deserialize<List<AssetRecord>>(json);
+                if (list == null)
+                    return;
+
+                foreach (var record in list)
+                {
+                    if (!_assets.ContainsKey(record.Guid))
+                        _assets.Add(record.Guid, record);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading assets from pak: {ex.Message}");
+            }
+        }
+
+
+        // ─────────────────────────────────────────────
+        //  HELPERS
+        // ─────────────────────────────────────────────
 
         private static string ResolveNameConflict(string relativePath, string physicalFile = null)
         {
@@ -617,121 +771,41 @@ namespace KrayonCore.Core.Attributes
             string nameWithoutExt = Path.GetFileNameWithoutExtension(relativePath);
             string extension = Path.GetExtension(relativePath);
 
-            string fileName = Path.GetFileName(relativePath);
+            bool pathExists = _assets.Values.Any(a =>
+                a.Path.Equals(relativePath, StringComparison.OrdinalIgnoreCase));
 
-            bool nameExists = _assets.Values.Any(a =>
-                Path.GetFileName(a.Path).Equals(fileName, StringComparison.OrdinalIgnoreCase));
-
-            if (!nameExists)
+            if (!pathExists)
                 return relativePath;
 
-            string candidateName = nameWithoutExt + "_clone";
+            string candidate = nameWithoutExt + "_clone";
             int counter = 1;
 
+            string CandidatePath() => string.IsNullOrEmpty(directory)
+                ? candidate + extension
+                : $"{directory}/{candidate}{extension}";
+
             while (_assets.Values.Any(a =>
-                Path.GetFileName(a.Path).Equals(candidateName + extension, StringComparison.OrdinalIgnoreCase)))
+                a.Path.Equals(CandidatePath(), StringComparison.OrdinalIgnoreCase)))
             {
-                candidateName = nameWithoutExt + "_clone" + counter;
+                candidate = nameWithoutExt + "_clone" + counter;
                 counter++;
             }
 
-            string newRelativePath = string.IsNullOrEmpty(directory)
-                ? candidateName + extension
-                : $"{directory}/{candidateName}{extension}";
+            string newRelativePath = CandidatePath();
 
             if (physicalFile != null)
             {
                 string newFullPath = Path.Combine(BasePath, newRelativePath);
-                string newDir = Path.GetDirectoryName(newFullPath);
-                if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
-                    Directory.CreateDirectory(newDir);
-
+                EnsureDirectory(newFullPath);
                 File.Move(physicalFile, newFullPath);
-                Console.WriteLine($"Duplicate name detected, renamed: {fileName} -> {candidateName}{extension}");
+                Console.WriteLine($"Duplicate path detected, renamed: {relativePath} -> {newRelativePath}");
             }
 
             return newRelativePath;
         }
 
-        private static void LoadDatabase()
-        {
-            try
-            {
-                string json;
-
-                if (AppInfo.IsCompiledGame)
-                {
-                    byte[] bytes = GetBytes("Engine.AssetsData");
-                    if (bytes == null)
-                        return;
-
-                    json = Encoding.UTF8.GetString(bytes);
-                }
-                else
-                {
-                    if (!File.Exists(DataBase))
-                        return;
-
-                    json = File.ReadAllText(DataBase);
-                }
-
-                var data = JsonSerializer.Deserialize<DatabaseContainer>(json);
-                if (data == null)
-                    return;
-
-                if (data.Assets != null)
-                {
-                    foreach (var asset in data.Assets)
-                    {
-                        if (!_assets.ContainsKey(asset.Guid))
-                            _assets.Add(asset.Guid, asset);
-                    }
-                }
-
-                if (data.Folders != null)
-                {
-                    foreach (var folder in data.Folders)
-                    {
-                        if (!_folders.ContainsKey(folder.Guid))
-                            _folders.Add(folder.Guid, folder);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading database: {ex.Message}");
-            }
-        }
-
-
-        private static void SaveDatabase()
-        {
-            try
-            {
-                var container = new DatabaseContainer
-                {
-                    Assets = _assets.Values.ToList(),
-                    Folders = _folders.Values.ToList()
-                };
-
-                var json = JsonSerializer.Serialize(
-                    container,
-                    new JsonSerializerOptions { WriteIndented = true }
-                );
-
-                File.WriteAllText(DataBase, json);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving database: {ex.Message}");
-            }
-        }
-
-        public static void SaveDatabasePublic() => SaveDatabase();
-
-        private static string DetectType(string file)
-        {
-            return Path.GetExtension(file).ToLower() switch
+        private static string DetectType(string file) =>
+            Path.GetExtension(file).ToLower() switch
             {
                 ".png" or ".jpg" or ".jpeg" => "Texture",
                 ".fbx" or ".obj" => "Model",
@@ -742,14 +816,20 @@ namespace KrayonCore.Core.Attributes
                 ".cs" => "Script",
                 _ => "Unknown"
             };
+
+        private static void EnsureDirectory(string fullFilePath)
+        {
+            string dir = Path.GetDirectoryName(fullFilePath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
         }
 
         private static void DeleteEmptyDirectories(string directory)
         {
             try
             {
-                foreach (var subDir in Directory.GetDirectories(directory))
-                    DeleteEmptyDirectories(subDir);
+                foreach (var sub in Directory.GetDirectories(directory))
+                    DeleteEmptyDirectories(sub);
 
                 if (!Directory.EnumerateFileSystemEntries(directory).Any())
                     Directory.Delete(directory);
@@ -758,12 +838,6 @@ namespace KrayonCore.Core.Attributes
             {
                 Console.WriteLine($"Error deleting empty directory {directory}: {ex.Message}");
             }
-        }
-
-        private class DatabaseContainer
-        {
-            public List<AssetRecord> Assets { get; set; } = new();
-            public List<FolderRecord> Folders { get; set; } = new();
         }
     }
 }

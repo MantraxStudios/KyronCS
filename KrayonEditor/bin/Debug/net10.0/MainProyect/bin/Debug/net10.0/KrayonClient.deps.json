@@ -158,62 +158,6 @@
             "fileVersion": "1.0.0.0"
           }
         }
-      },
-      "Newtonsoft.Json/13.0.0.0": {
-        "runtime": {
-          "Newtonsoft.Json.dll": {
-            "assemblyVersion": "13.0.0.0",
-            "fileVersion": "13.0.4.30916"
-          }
-        }
-      },
-      "StbImageSharp/2.30.15.0": {
-        "runtime": {
-          "StbImageSharp.dll": {
-            "assemblyVersion": "2.30.15.0",
-            "fileVersion": "2.30.15.0"
-          }
-        }
-      },
-      "AssimpNet/4.1.0.0": {
-        "runtime": {
-          "AssimpNet.dll": {
-            "assemblyVersion": "4.1.0.0",
-            "fileVersion": "4.1.0.0"
-          }
-        }
-      },
-      "BepuPhysics/2.4.0.0": {
-        "runtime": {
-          "BepuPhysics.dll": {
-            "assemblyVersion": "2.4.0.0",
-            "fileVersion": "2.4.0.0"
-          }
-        }
-      },
-      "BepuUtilities/2.4.0.0": {
-        "runtime": {
-          "BepuUtilities.dll": {
-            "assemblyVersion": "2.4.0.0",
-            "fileVersion": "2.4.0.0"
-          }
-        }
-      },
-      "StbImageWriteSharp/1.16.7.0": {
-        "runtime": {
-          "StbImageWriteSharp.dll": {
-            "assemblyVersion": "1.16.7.0",
-            "fileVersion": "1.16.7.0"
-          }
-        }
-      },
-      "KrayonCompiler/1.0.0.0": {
-        "runtime": {
-          "KrayonCompiler.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
       }
     }
   },
@@ -301,41 +245,6 @@
       "hashPath": "opentk.windowing.graphicslibraryframework.4.9.4.nupkg.sha512"
     },
     "KrayonCore/1.0.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "Newtonsoft.Json/13.0.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "StbImageSharp/2.30.15.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "AssimpNet/4.1.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "BepuPhysics/2.4.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "BepuUtilities/2.4.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "StbImageWriteSharp/1.16.7.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "KrayonCompiler/1.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

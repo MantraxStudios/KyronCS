@@ -19,7 +19,10 @@ namespace KrayonEditor.UI
         private bool _showSaveDialog = false;
         private bool _showOpenDialog = false;
         private bool _showNewSceneDialog = false;
+        private bool _showOverwriteConfirmDialog = false;
+        private bool _showQuickSaveConfirmDialog = false;  // NUEVO: Para Ctrl+S
         private string _sceneNameInput = "";
+        private string _sceneNameToOverwrite = "";
         private string[] _availableScenes = new string[0];
         private int _selectedSceneIndex = 0;
 
@@ -135,9 +138,11 @@ namespace KrayonEditor.UI
             DrawNewSceneDialog();
             DrawSaveDialog();
             DrawOpenDialog();
+            DrawOverwriteConfirmDialog();
+            DrawQuickSaveConfirmDialog();  // NUEVO: Diálogo para Ctrl+S
             HandleKeyboardShortcuts();
 
-            if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) && ImGui.IsKeyPressed(ImGuiKey.S))
+            if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) && ImGui.IsKeyPressed(ImGuiKey.S) && !ImGui.IsKeyDown(ImGuiKey.MouseRight))
             {
                 SaveCurrentScene();
             }
@@ -172,6 +177,7 @@ namespace KrayonEditor.UI
             }
         }
 
+        // MODIFICADO: Ahora verifica si el archivo existe antes de guardar
         private void SaveCurrentScene()
         {
             try
@@ -185,14 +191,18 @@ namespace KrayonEditor.UI
                 string sceneName = SceneManager.ActiveScene.Name;
                 string sceneFilePath = GetSceneFilePath(sceneName);
 
-                SceneManager.SaveActiveScene(sceneFilePath);
-                EngineEditor.LogMessage($"Escena guardada: {sceneName}");
-
-                SaveAllMaterials();
-                GraphicsEngine.Instance._fullscreenQuad.GetSettings().Save(AssetManager.VFXPath);
-
-                EditorPrefs.SetString(PREF_LAST_SCENE, sceneName);
-                EditorPrefs.Save();
+                // Verificar si el archivo ya existe
+                if (File.Exists(sceneFilePath))
+                {
+                    // Mostrar diálogo de confirmación
+                    _sceneNameToOverwrite = sceneName;
+                    _showQuickSaveConfirmDialog = true;
+                }
+                else
+                {
+                    // Es un archivo nuevo, guardar directamente
+                    PerformSaveScene(sceneName);
+                }
             }
             catch (Exception ex)
             {
@@ -285,11 +295,36 @@ namespace KrayonEditor.UI
 
         private void OnExit()
         {
-            // Guardar todos los materiales antes de salir
             SaveAllMaterials();
-
             EditorPrefs.AutoSave();
             EngineEditor.LogMessage("Exit requested");
+        }
+
+        // Ejecuta el guardado después de la confirmación
+        private void PerformSaveScene(string sceneName)
+        {
+            try
+            {
+                string filePath = GetSceneFilePath(sceneName);
+
+                if (SceneManager.ActiveScene != null)
+                {
+                    SceneManager.ActiveScene.Name = sceneName;
+                }
+
+                SceneManager.SaveActiveScene(filePath);
+                SaveAllMaterials();
+                GraphicsEngine.Instance._fullscreenQuad.GetSettings().Save(AssetManager.VFXPath);
+
+                EngineEditor.LogMessage($"Escena guardada como: {sceneName}");
+
+                EditorPrefs.SetString(PREF_LAST_SCENE, sceneName);
+                EditorPrefs.Save();
+            }
+            catch (Exception ex)
+            {
+                EngineEditor.LogMessage($"Error al guardar: {ex.Message}");
+            }
         }
 
         #endregion
@@ -383,11 +418,13 @@ namespace KrayonEditor.UI
                 ImGui.InputText("##scenename", ref _sceneNameInput, 100);
 
                 string filePath = GetSceneFilePath(_sceneNameInput);
-                if (File.Exists(filePath) && !string.IsNullOrWhiteSpace(_sceneNameInput))
+                bool fileExists = File.Exists(filePath) && !string.IsNullOrWhiteSpace(_sceneNameInput);
+
+                if (fileExists)
                 {
                     ImGui.Spacing();
                     ImGui.TextColored(new System.Numerics.Vector4(1, 0.8f, 0, 1),
-                        "¡Ya existe una escena con este nombre!");
+                        "⚠ Ya existe una escena con este nombre");
                 }
 
                 ImGui.Spacing();
@@ -398,29 +435,18 @@ namespace KrayonEditor.UI
                 {
                     if (!string.IsNullOrWhiteSpace(_sceneNameInput))
                     {
-                        try
+                        // Si el archivo existe, mostrar confirmación
+                        if (fileExists)
                         {
-                            filePath = GetSceneFilePath(_sceneNameInput);
-
-                            if (SceneManager.ActiveScene != null)
-                            {
-                                SceneManager.ActiveScene.Name = _sceneNameInput;
-                            }
-
-                            SceneManager.SaveActiveScene(filePath);
-                            SaveAllMaterials(); // Guardar materiales globales
-
-                            EngineEditor.LogMessage($"Escena guardada como: {_sceneNameInput}");
-
-                            EditorPrefs.SetString(PREF_LAST_SCENE, _sceneNameInput);
-                            EditorPrefs.Save();
-
+                            _sceneNameToOverwrite = _sceneNameInput;
+                            _showOverwriteConfirmDialog = true;
+                        }
+                        else
+                        {
+                            // Archivo nuevo, guardar directamente
+                            PerformSaveScene(_sceneNameInput);
                             _showSaveDialog = false;
                             _sceneNameInput = "";
-                        }
-                        catch (Exception ex)
-                        {
-                            EngineEditor.LogMessage($"Error al guardar: {ex.Message}");
                         }
                     }
                     else
@@ -438,6 +464,124 @@ namespace KrayonEditor.UI
                 }
 
                 ImGui.EndPopup();
+            }
+        }
+
+        // Confirmación de sobrescritura para "Save Scene As..."
+        private void DrawOverwriteConfirmDialog()
+        {
+            if (!_showOverwriteConfirmDialog)
+                return;
+
+            ImGui.OpenPopup("Confirmar Sobrescritura");
+
+            bool isOpen = _showOverwriteConfirmDialog;
+            if (ImGui.BeginPopupModal("Confirmar Sobrescritura", ref isOpen, ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, new System.Numerics.Vector4(1, 0.8f, 0, 1));
+                ImGui.Text("⚠ ADVERTENCIA");
+                ImGui.PopStyleColor();
+
+                ImGui.Spacing();
+                ImGui.Text($"La escena '{_sceneNameToOverwrite}' ya existe.");
+                ImGui.Text("¿Deseas sobrescribir el archivo existente?");
+                ImGui.Spacing();
+
+                ImGui.TextColored(new System.Numerics.Vector4(0.8f, 0.3f, 0.3f, 1),
+                    "Esta acción no se puede deshacer.");
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                // Botón de Sobrescribir (rojo)
+                ImGui.PushStyleColor(ImGuiCol.Button, new System.Numerics.Vector4(0.8f, 0.2f, 0.2f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new System.Numerics.Vector4(1.0f, 0.3f, 0.3f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new System.Numerics.Vector4(0.7f, 0.1f, 0.1f, 1.0f));
+
+                if (ImGui.Button("Sobrescribir", new System.Numerics.Vector2(145, 0)))
+                {
+                    PerformSaveScene(_sceneNameToOverwrite);
+                    _showOverwriteConfirmDialog = false;
+                    _showSaveDialog = false;
+                    _sceneNameInput = "";
+                    _sceneNameToOverwrite = "";
+                }
+
+                ImGui.PopStyleColor(3);
+                ImGui.SameLine();
+
+                // Botón de Cancelar
+                if (ImGui.Button("Cancelar", new System.Numerics.Vector2(145, 0)))
+                {
+                    _showOverwriteConfirmDialog = false;
+                    _sceneNameToOverwrite = "";
+                }
+
+                ImGui.EndPopup();
+            }
+
+            if (!isOpen)
+            {
+                _showOverwriteConfirmDialog = false;
+            }
+        }
+
+        // NUEVO: Confirmación de sobrescritura para Ctrl+S / "Save Scene"
+        private void DrawQuickSaveConfirmDialog()
+        {
+            if (!_showQuickSaveConfirmDialog)
+                return;
+
+            ImGui.OpenPopup("Confirmar Guardado");
+
+            bool isOpen = _showQuickSaveConfirmDialog;
+            if (ImGui.BeginPopupModal("Confirmar Guardado", ref isOpen, ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, new System.Numerics.Vector4(1, 0.8f, 0, 1));
+                ImGui.Text("⚠ ADVERTENCIA");
+                ImGui.PopStyleColor();
+
+                ImGui.Spacing();
+                ImGui.Text($"La escena '{_sceneNameToOverwrite}' ya existe.");
+                ImGui.Text("¿Deseas sobrescribir el archivo existente?");
+                ImGui.Spacing();
+
+                ImGui.TextColored(new System.Numerics.Vector4(0.8f, 0.3f, 0.3f, 1),
+                    "Esta acción no se puede deshacer.");
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                // Botón de Sobrescribir (rojo)
+                ImGui.PushStyleColor(ImGuiCol.Button, new System.Numerics.Vector4(0.8f, 0.2f, 0.2f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new System.Numerics.Vector4(1.0f, 0.3f, 0.3f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new System.Numerics.Vector4(0.7f, 0.1f, 0.1f, 1.0f));
+
+                if (ImGui.Button("Sobrescribir", new System.Numerics.Vector2(145, 0)))
+                {
+                    PerformSaveScene(_sceneNameToOverwrite);
+                    _showQuickSaveConfirmDialog = false;
+                    _sceneNameToOverwrite = "";
+                }
+
+                ImGui.PopStyleColor(3);
+                ImGui.SameLine();
+
+                // Botón de Cancelar
+                if (ImGui.Button("Cancelar", new System.Numerics.Vector2(145, 0)))
+                {
+                    _showQuickSaveConfirmDialog = false;
+                    _sceneNameToOverwrite = "";
+                }
+
+                ImGui.EndPopup();
+            }
+
+            if (!isOpen)
+            {
+                _showQuickSaveConfirmDialog = false;
             }
         }
 

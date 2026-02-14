@@ -10,10 +10,7 @@ namespace KrayonEditor
     {
         static void Main(string[] args)
         {
-            AssetManager.BasePath = "Content/";
-            AssetManager.DataBase = "DataBaseFromAssets.json";
-            AssetManager.GamePak = "Game.pak";
-            AssetManager.ClientDLLPath = "";
+            AssetManager.TotalBase = "";
             AppInfo.IsCompiledGame = true;
             EngineLoader.Run();
         }

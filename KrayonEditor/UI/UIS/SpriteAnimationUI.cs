@@ -21,38 +21,150 @@ namespace KrayonEditor.UI
         private int _hoveredTileX = -1;
         private int _hoveredTileY = -1;
 
+        // Drag & Drop para reordenar frames
+        private int _dragSourceFrame = -1;
+        private bool _isDraggingFrame = false;
+
+        // Cache de textura
+        private IntPtr _cachedTextureId = IntPtr.Zero;
+        private bool _hasCachedTexture = false;
+        private float _cachedTexWidth = 1f;
+        private float _cachedTexHeight = 1f;
+
+        // Colores del tema
+        private static readonly Vector4 ColAccent = new Vector4(0.30f, 0.65f, 1.00f, 1.00f);
+        private static readonly Vector4 ColAccentDim = new Vector4(0.30f, 0.65f, 1.00f, 0.25f);
+        private static readonly Vector4 ColSuccess = new Vector4(0.25f, 0.85f, 0.45f, 1.00f);
+        private static readonly Vector4 ColDanger = new Vector4(0.90f, 0.30f, 0.30f, 1.00f);
+        private static readonly Vector4 ColDangerDim = new Vector4(0.90f, 0.30f, 0.30f, 0.20f);
+        private static readonly Vector4 ColHeader = new Vector4(0.75f, 0.88f, 1.00f, 1.00f);
+        private static readonly Vector4 ColMuted = new Vector4(0.50f, 0.55f, 0.65f, 1.00f);
+        private static readonly Vector4 ColBg = new Vector4(0.10f, 0.11f, 0.14f, 1.00f);
+        private static readonly Vector4 ColBgPanel = new Vector4(0.13f, 0.14f, 0.18f, 1.00f);
+        private static readonly Vector4 ColBorder = new Vector4(0.22f, 0.24f, 0.30f, 1.00f);
+
+        // --- Utilidades de color ---
+        private uint C(Vector4 v) => ImGui.GetColorU32(v);
+
+        private void SectionLabel(string text)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, ColHeader);
+            ImGui.TextUnformatted(text);
+            ImGui.PopStyleColor();
+            ImGui.PushStyleColor(ImGuiCol.Separator, ColBorder);
+            ImGui.Separator();
+            ImGui.PopStyleColor();
+            ImGui.Spacing();
+        }
+
+        private bool SmallButton(string label, Vector4 color, float width = 0)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Button, color with { W = 0.18f });
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, color with { W = 0.35f });
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, color with { W = 0.55f });
+            ImGui.PushStyleColor(ImGuiCol.Text, color);
+            bool result = ImGui.Button(label, width > 0 ? new Vector2(width, 26) : new Vector2(0, 26));
+            ImGui.PopStyleColor(4);
+            return result;
+        }
+
+        // --- Cache de textura ---
+        private void RefreshTextureCache()
+        {
+            _hasCachedTexture = false;
+            _cachedTextureId = IntPtr.Zero;
+            _cachedTexWidth = 1f;
+            _cachedTexHeight = 1f;
+
+            if (_selectedSprite == null) return;
+
+            try
+            {
+                if (_selectedSprite.Material.AlbedoTexture != null)
+                {
+                    var id = _selectedSprite.Material.AlbedoTexture.TextureId;
+                    if (id != IntPtr.Zero)
+                    {
+                        _cachedTextureId = id;
+                        _hasCachedTexture = true;
+                        _cachedTexWidth = _selectedSprite.TextureWidth;
+                        _cachedTexHeight = _selectedSprite.TextureHeight;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private (float u0, float v0, float u1, float v1) GetTileUV(int tx, int ty)
+        {
+            float tw = _selectedSprite.TileWidth;
+            float th = _selectedSprite.TileHeight;
+            float u0 = (tx * tw) / _cachedTexWidth;
+            float v0 = ((ty + 1) * th) / _cachedTexHeight;  // invertido Y
+            float u1 = ((tx + 1) * tw) / _cachedTexWidth;
+            float v1 = (ty * th) / _cachedTexHeight;
+            return (u0, v0, u1, v1);
+        }
+
+        // --- Punto de entrada ---
         public override void OnDrawUI()
         {
             if (_selectedSprite != null && !IsSpriteValid())
-            {
                 ClearSelection();
-            }
 
-            ImGui.SetNextWindowSize(new Vector2(1200, 700), ImGuiCond.FirstUseEver);
-            ImGui.Begin("Animation Editor", ImGuiWindowFlags.MenuBar);
+            ImGui.SetNextWindowSize(new Vector2(1280, 740), ImGuiCond.FirstUseEver);
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, ColBg);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+            ImGui.Begin("Animation Editor", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar);
+            ImGui.PopStyleVar();
+            ImGui.PopStyleColor();
 
             DrawMenuBar();
 
-            var windowSize = ImGui.GetContentRegionAvail();
+            // Layout de 3 columnas
+            var avail = ImGui.GetContentRegionAvail();
+            const float LEFT = 200f;
+            const float MIDDLE = 280f;
 
-            float leftWidth = 220;
-            ImGui.BeginChild("SpriteSelector", new Vector2(leftWidth, windowSize.Y));
+            // Columna izquierda: sprites
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, ColBgPanel);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12, 12));
+            ImGui.BeginChild("SpriteSelector", new Vector2(LEFT, avail.Y));
+            ImGui.PopStyleVar();
+            ImGui.PopStyleColor();
             DrawSpriteSelector();
             ImGui.EndChild();
 
-            ImGui.SameLine();
+            ImGui.SameLine(0, 1);
+
+            // Linea divisoria
+            var p = ImGui.GetCursorScreenPos();
+            ImGui.GetWindowDrawList().AddRectFilled(p, new Vector2(p.X + 1, p.Y + avail.Y), C(ColBorder));
+            ImGui.SetCursorScreenPos(new Vector2(p.X + 1, p.Y));
 
             if (_selectedSprite != null)
             {
-                float middleWidth = 300;
-                ImGui.BeginChild("AnimationPanel", new Vector2(middleWidth, windowSize.Y));
+                // Columna central: animaciones
+                ImGui.PushStyleColor(ImGuiCol.ChildBg, ColBgPanel);
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(12, 12));
+                ImGui.BeginChild("AnimPanel", new Vector2(MIDDLE, avail.Y));
+                ImGui.PopStyleVar();
+                ImGui.PopStyleColor();
                 DrawAnimationPanel();
                 ImGui.EndChild();
 
-                ImGui.SameLine();
+                ImGui.SameLine(0, 1);
+                p = ImGui.GetCursorScreenPos();
+                ImGui.GetWindowDrawList().AddRectFilled(p, new Vector2(p.X + 1, p.Y + avail.Y), C(ColBorder));
+                ImGui.SetCursorScreenPos(new Vector2(p.X + 1, p.Y));
 
-                float rightWidth = windowSize.X - leftWidth - middleWidth - 30;
-                ImGui.BeginChild("TimelinePanel", new Vector2(rightWidth, windowSize.Y));
+                // Columna derecha: timeline
+                float rightW = avail.X - LEFT - MIDDLE - 3;
+                ImGui.PushStyleColor(ImGuiCol.ChildBg, ColBg);
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(14, 12));
+                ImGui.BeginChild("TimelinePanel", new Vector2(rightW, avail.Y));
+                ImGui.PopStyleVar();
+                ImGui.PopStyleColor();
                 DrawTimelinePanel();
                 ImGui.EndChild();
             }
@@ -66,15 +178,19 @@ namespace KrayonEditor.UI
             ImGui.End();
 
             if (_showGridPicker && _selectedSprite != null && _selectedClip != null)
-            {
                 DrawGridPicker();
-            }
         }
 
+        // --- Menu ---
         private void DrawMenuBar()
         {
             if (ImGui.BeginMenuBar())
             {
+                ImGui.PushStyleColor(ImGuiCol.Text, ColAccent);
+                ImGui.Text("Animation Editor");
+                ImGui.PopStyleColor();
+                ImGui.Separator();
+
                 if (ImGui.BeginMenu("File"))
                 {
                     if (ImGui.MenuItem("Save All Animations")) { }
@@ -82,136 +198,149 @@ namespace KrayonEditor.UI
                     if (ImGui.MenuItem("Close")) { }
                     ImGui.EndMenu();
                 }
-
                 if (ImGui.BeginMenu("Help"))
                 {
                     if (ImGui.MenuItem("Quick Start Guide")) { }
                     ImGui.EndMenu();
                 }
-
                 ImGui.EndMenuBar();
             }
         }
 
+        // --- Panel izquierdo: lista de sprites ---
         private void DrawSpriteSelector()
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.9f, 1.0f, 1.0f));
-            ImGui.Text("SPRITES");
-            ImGui.PopStyleColor();
-            ImGui.Separator();
-            ImGui.Spacing();
+            SectionLabel("SPRITES");
 
             var scene = SceneManager.ActiveScene;
             if (scene == null)
             {
-                ImGui.TextDisabled("No active scene loaded");
+                ImGui.TextColored(ColMuted, "No active scene loaded");
                 return;
             }
 
             var gameObjects = scene.GetAllGameObjects();
-            bool foundSprites = false;
+            bool found = false;
 
             foreach (var go in gameObjects)
             {
                 var sprite = go.GetComponent<SpriteRenderer>();
-                if (sprite != null)
-                {
-                    foundSprites = true;
-                    bool isSelected = _selectedSprite == sprite;
+                if (sprite == null) continue;
+                found = true;
 
-                    if (isSelected)
-                        ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.3f, 0.5f, 0.8f, 0.8f));
+                bool isSelected = _selectedSprite == sprite;
+                var dl = ImGui.GetWindowDrawList();
+                var pos = ImGui.GetCursorScreenPos();
+                float w = ImGui.GetContentRegionAvail().X;
 
-                    if (ImGui.Selectable($"{go.Name}##{go.GetHashCode()}", isSelected, ImGuiSelectableFlags.None, new Vector2(0, 30)))
-                    {
-                        SelectSprite(sprite);
-                    }
+                // Fondo del item
+                if (isSelected)
+                    dl.AddRectFilled(pos, new Vector2(pos.X + w, pos.Y + 52), C(ColAccentDim), 6f);
 
-                    if (isSelected)
-                        ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, ColAccentDim);
+                ImGui.PushStyleColor(ImGuiCol.HeaderActive, ColAccentDim);
+                if (ImGui.Selectable($"##spr{go.GetHashCode()}", isSelected, ImGuiSelectableFlags.None, new Vector2(w, 52)))
+                    SelectSprite(sprite);
+                ImGui.PopStyleColor(2);
 
-                    if (isSelected)
-                    {
-                        ImGui.Indent();
-                        ImGui.TextDisabled($"{sprite.TilesPerRow}x{sprite.TilesPerColumn} grid");
-                        ImGui.TextDisabled($"{sprite.Animations.Count} animations");
-                        ImGui.Unindent();
-                    }
+                // Contenido encima del selectable
+                ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 8));
+                ImGui.TextColored(isSelected ? ColAccent : new Vector4(0.9f, 0.9f, 0.95f, 1f), go.Name);
 
-                    ImGui.Spacing();
-                }
+                ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 28));
+                ImGui.TextColored(ColMuted, $"{sprite.TilesPerRow}x{sprite.TilesPerColumn} - {sprite.Animations.Count} anims");
+
+                // Acento lateral si esta seleccionado
+                if (isSelected)
+                    dl.AddRectFilled(pos, new Vector2(pos.X + 3, pos.Y + 52), C(ColAccent), 2f);
+
+                ImGui.Spacing();
             }
 
-            if (!foundSprites)
+            if (!found)
             {
-                ImGui.TextDisabled("No sprites in scene");
                 ImGui.Spacing();
-                ImGui.TextWrapped("Add a SpriteRenderer component to a GameObject to get started.");
+                ImGui.TextColored(ColMuted, "No sprites in scene.");
+                ImGui.Spacing();
+                ImGui.TextWrapped("Add a SpriteRenderer to a GameObject to get started.");
             }
         }
 
+        // --- Panel central: clips de animacion ---
         private void DrawAnimationPanel()
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.9f, 1.0f, 1.0f));
-            ImGui.Text("ANIMATIONS");
-            ImGui.PopStyleColor();
-            ImGui.Separator();
-            ImGui.Spacing();
-
+            SectionLabel("PLAYBACK");
             DrawQuickActions();
 
             ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
+            SectionLabel("ANIMATIONS");
 
-            ImGui.Text("Animation Clips:");
-            ImGui.BeginChild("AnimationList", new Vector2(0, 200));
-
+            // Lista de clips
+            ImGui.BeginChild("ClipList", new Vector2(0, 180));
             for (int i = 0; i < _selectedSprite.Animations.Count; i++)
             {
                 var clip = _selectedSprite.Animations[i];
-                bool isSelected = _selectedClip == clip;
+                bool isSel = _selectedClip == clip;
 
-                if (isSelected)
-                    ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.3f, 0.5f, 0.8f, 0.8f));
+                var pos = ImGui.GetCursorScreenPos();
+                float w = ImGui.GetContentRegionAvail().X;
+                var dl = ImGui.GetWindowDrawList();
 
-                string icon = clip.Loop ? "[LOOP]" : "[ONCE]";
-                if (ImGui.Selectable($"{icon} {clip.Name}##{i}", isSelected, ImGuiSelectableFlags.None, new Vector2(0, 25)))
-                {
+                if (isSel)
+                    dl.AddRectFilled(pos, new Vector2(pos.X + w, pos.Y + 40), C(ColAccentDim), 5f);
+
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, ColAccentDim);
+                ImGui.PushStyleColor(ImGuiCol.HeaderActive, ColAccentDim);
+                if (ImGui.Selectable($"##clip{i}", isSel, ImGuiSelectableFlags.None, new Vector2(w, 40)))
                     SelectClip(clip);
-                }
+                ImGui.PopStyleColor(2);
 
-                if (isSelected)
-                    ImGui.PopStyleColor();
+                // Icono + nombre
+                ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 6));
+                string icon = clip.Loop ? "[Loop]" : "[Once]";
+                ImGui.TextColored(isSel ? ColAccent : ColMuted, icon);
+                ImGui.SameLine();
+                ImGui.TextColored(isSel ? new Vector4(1f, 1f, 1f, 1f) : new Vector4(0.8f, 0.8f, 0.9f, 1f), clip.Name);
+
+                // Metadata
+                ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 24));
+                ImGui.TextColored(ColMuted, $"{clip.Frames.Count} frames - {clip.FrameRate:F0} fps");
+
+                if (isSel)
+                    dl.AddRectFilled(pos, new Vector2(pos.X + 3, pos.Y + 40), C(ColAccent), 2f);
 
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text($"{clip.Frames.Count} frames @ {clip.FrameRate:F1} fps");
-                    ImGui.Text(clip.Loop ? "Looping" : "One-shot");
+                    ImGui.TextColored(ColAccent, clip.Name);
+                    ImGui.TextColored(ColMuted, $"{clip.Frames.Count} frames @ {clip.FrameRate:F1} fps - {(clip.Loop ? "Loop" : "One-shot")}");
                     ImGui.EndTooltip();
                 }
             }
-
             ImGui.EndChild();
 
             ImGui.Spacing();
-            ImGui.InputTextWithHint("##NewAnimName", "New animation name...", ref _newClipName, 128);
 
+            // Crear nueva animacion
+            ImGui.SetNextItemWidth(-1);
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.18f, 0.20f, 0.26f, 1f));
+            ImGui.InputTextWithHint("##NewName", "New animation name...", ref _newClipName, 128);
+            ImGui.PopStyleColor();
+
+            ImGui.Spacing();
             bool canCreate = !string.IsNullOrWhiteSpace(_newClipName);
             if (!canCreate) ImGui.BeginDisabled();
-
-            if (ImGui.Button("+ Create Animation", new Vector2(-1, 30)))
-            {
+            if (SmallButton("+ Create Animation", ColAccent, -1))
                 CreateNewAnimation();
-            }
-
             if (!canCreate) ImGui.EndDisabled();
 
+            // Settings del clip seleccionado
             if (_selectedClip != null)
             {
                 ImGui.Spacing();
+                ImGui.PushStyleColor(ImGuiCol.Separator, ColBorder);
                 ImGui.Separator();
+                ImGui.PopStyleColor();
                 ImGui.Spacing();
                 DrawAnimationSettings();
             }
@@ -219,471 +348,405 @@ namespace KrayonEditor.UI
 
         private void DrawQuickActions()
         {
-            ImGui.Text("Playback:");
-
+            // Playing toggle
             bool isPlaying = _selectedSprite.IsPlaying;
-            if (ImGui.Checkbox("Playing", ref isPlaying))
-            {
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, ColSuccess);
+            if (ImGui.Checkbox("Playing in scene", ref isPlaying))
                 _selectedSprite.IsPlaying = isPlaying;
-            }
+            ImGui.PopStyleColor();
 
+            ImGui.Spacing();
+
+            // Speed slider
             float speed = _selectedSprite.AnimationSpeed;
+            ImGui.TextColored(ColMuted, "Speed");
+            ImGui.SameLine();
             ImGui.SetNextItemWidth(-1);
-            if (ImGui.SliderFloat("##Speed", ref speed, 0.1f, 3.0f, "Speed: %.1fx"))
-            {
+            ImGui.PushStyleColor(ImGuiCol.SliderGrab, ColAccent);
+            if (ImGui.SliderFloat("##Speed", ref speed, 0.1f, 3.0f, "%.1fx"))
                 _selectedSprite.AnimationSpeed = speed;
-            }
+            ImGui.PopStyleColor();
         }
 
         private void DrawAnimationSettings()
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.9f, 0.7f, 1.0f));
-            ImGui.Text($"Settings: {_selectedClip.Name}");
+            ImGui.TextColored(ColHeader, $"  {_selectedClip.Name}");
+            ImGui.Spacing();
+
+            // Nombre
+            string name = _selectedClip.Name;
+            ImGui.TextColored(ColMuted, "Name");
+            ImGui.SetNextItemWidth(-1);
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.18f, 0.20f, 0.26f, 1f));
+            if (ImGui.InputText("##ClipName", ref name, 256))
+                _selectedClip.Name = name;
             ImGui.PopStyleColor();
 
             ImGui.Spacing();
 
-            string name = _selectedClip.Name;
-            ImGui.Text("Name:");
+            // FPS
+            float fps = _selectedClip.FrameRate;
+            ImGui.TextColored(ColMuted, "Frame Rate");
             ImGui.SetNextItemWidth(-1);
-            if (ImGui.InputText("##ClipName", ref name, 256))
-            {
-                _selectedClip.Name = name;
-            }
+            ImGui.PushStyleColor(ImGuiCol.SliderGrab, ColAccent);
+            if (ImGui.SliderFloat("##FPS", ref fps, 1f, 60f, "%.0f fps"))
+                _selectedClip.FrameRate = fps;
+            ImGui.PopStyleColor();
 
             ImGui.Spacing();
-            float frameRate = _selectedClip.FrameRate;
-            ImGui.Text("Frame Rate:");
-            ImGui.SetNextItemWidth(-1);
-            if (ImGui.SliderFloat("##FrameRate", ref frameRate, 1.0f, 60.0f, "%.1f fps"))
-            {
-                _selectedClip.FrameRate = frameRate;
-            }
 
-            ImGui.Spacing();
+            // Loop
             bool loop = _selectedClip.Loop;
-            if (ImGui.Checkbox("Loop Animation", ref loop))
-            {
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, ColAccent);
+            if (ImGui.Checkbox("Loop", ref loop))
                 _selectedClip.Loop = loop;
-            }
+            ImGui.PopStyleColor();
 
             ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
 
-            if (ImGui.Button("Play This Animation", new Vector2(-1, 25)))
-            {
+            // Acciones
+            if (SmallButton("Play This Animation", ColSuccess, -1))
                 _selectedSprite.Play(_selectedClip.Name);
-            }
 
-            if (ImGui.Button("Delete Animation", new Vector2(-1, 25)))
-            {
-                if (_selectedSprite.Animations.Count > 1)
-                {
-                    _selectedSprite.RemoveAnimation(_selectedClip.Name);
-                    SelectClip(null);
-                }
-            }
+            ImGui.Spacing();
 
-            if (_selectedSprite.Animations.Count <= 1)
+            bool canDelete = _selectedSprite.Animations.Count > 1;
+            if (!canDelete) ImGui.BeginDisabled();
+            if (SmallButton("Delete Animation", ColDanger, -1))
             {
-                ImGui.TextDisabled("(Keep at least 1 animation)");
+                _selectedSprite.RemoveAnimation(_selectedClip.Name);
+                SelectClip(null);
+            }
+            if (!canDelete)
+            {
+                ImGui.EndDisabled();
+                ImGui.TextColored(ColMuted, "  Keep at least 1 animation");
             }
         }
 
+        // --- Panel derecho: preview + timeline ---
         private void DrawTimelinePanel()
         {
             if (_selectedClip == null)
             {
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 200);
-                var textSize = ImGui.CalcTextSize("Select an animation to edit");
-                ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - textSize.X) * 0.5f);
-                ImGui.TextDisabled("Select an animation to edit");
+                DrawTimelinePlaceholder("Select an animation to edit its frames");
                 return;
             }
 
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.9f, 1.0f, 1.0f));
-            ImGui.Text("PREVIEW");
-            ImGui.PopStyleColor();
-            ImGui.Separator();
-            ImGui.Spacing();
-
+            SectionLabel("PREVIEW");
             DrawPreviewControls();
 
             ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Separator, ColBorder);
             ImGui.Separator();
-            ImGui.Spacing();
-
-            DrawVisualPreview();
-
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.9f, 1.0f, 1.0f));
-            ImGui.Text("TIMELINE");
             ImGui.PopStyleColor();
-            ImGui.Separator();
             ImGui.Spacing();
 
+            SectionLabel("FRAMES");
             DrawTimeline();
         }
 
+        private void DrawTimelinePlaceholder(string msg)
+        {
+            var avail = ImGui.GetContentRegionAvail();
+            var sz = ImGui.CalcTextSize(msg);
+            ImGui.SetCursorPos(new Vector2((avail.X - sz.X) * 0.5f, (avail.Y - sz.Y) * 0.5f));
+            ImGui.TextColored(ColMuted, msg);
+        }
+
+        // --- Controles de preview ---
         private void DrawPreviewControls()
         {
             if (_selectedClip.Frames.Count == 0)
             {
-                ImGui.TextDisabled("No frames yet. Add frames below!");
+                ImGui.TextColored(ColMuted, "No frames yet - add frames in the timeline below.");
                 return;
             }
 
-            string playButtonText = _isPreviewPlaying ? "Pause" : "Play";
-            if (ImGui.Button(playButtonText, new Vector2(100, 30)))
+            // Fila de botones + contador
+            string playLabel = _isPreviewPlaying ? "Pause" : "Play";
+            if (SmallButton(playLabel, ColAccent, 90))
             {
                 _isPreviewPlaying = !_isPreviewPlaying;
                 if (_isPreviewPlaying)
                 {
-                    _previewTimer = 0.0f;
+                    _previewTimer = 0f;
                     _previewFrameIndex = Math.Max(0, Math.Min(_previewFrameIndex, _selectedClip.Frames.Count - 1));
                 }
             }
 
             ImGui.SameLine();
-
-            if (ImGui.Button("Stop", new Vector2(100, 30)))
+            if (SmallButton("Stop", ColMuted, 80))
             {
                 _isPreviewPlaying = false;
                 _previewFrameIndex = 0;
-                _previewTimer = 0.0f;
-
+                _previewTimer = 0f;
                 if (_selectedClip.Frames.Count > 0)
                 {
-                    var frame = _selectedClip.Frames[0];
-                    _selectedSprite.SetTile(frame.TileIndexX, frame.TileIndexY);
+                    var f = _selectedClip.Frames[0];
+                    _selectedSprite.SetTile(f.TileIndexX, f.TileIndexY);
                 }
             }
 
             ImGui.SameLine();
+            ImGui.TextColored(ColMuted, $"   Frame {_previewFrameIndex + 1} / {_selectedClip.Frames.Count}");
+            ImGui.SameLine();
+            float dur = _selectedClip.Frames.Count / _selectedClip.FrameRate;
+            ImGui.TextColored(ColMuted, $"  {dur:F2}s @ {_selectedClip.FrameRate:F0} fps");
 
-            ImGui.Text($"  Frame: {_previewFrameIndex + 1} / {_selectedClip.Frames.Count}");
-
-            float duration = _selectedClip.Frames.Count / _selectedClip.FrameRate;
-            ImGui.Text($"Duration: {duration:F2}s @ {_selectedClip.FrameRate:F1} fps");
-
+            // Progress bar
             ImGui.Spacing();
             float progress = _selectedClip.Frames.Count > 1
                 ? (float)_previewFrameIndex / (_selectedClip.Frames.Count - 1)
                 : 0f;
-            ImGui.ProgressBar(progress, new Vector2(-1, 20));
+            ImGui.PushStyleColor(ImGuiCol.PlotHistogram, ColAccent);
+            ImGui.ProgressBar(progress, new Vector2(-1, 6));
+            ImGui.PopStyleColor();
 
-            int scrubFrame = _previewFrameIndex;
+            // Scrubber
+            int scrub = _previewFrameIndex;
             ImGui.SetNextItemWidth(-1);
-            if (ImGui.SliderInt("##Scrubber", ref scrubFrame, 0, _selectedClip.Frames.Count - 1, "Frame %d"))
+            ImGui.PushStyleColor(ImGuiCol.SliderGrab, ColAccent);
+            if (ImGui.SliderInt("##Scrub", ref scrub, 0, _selectedClip.Frames.Count - 1, "Frame %d"))
             {
-                _previewFrameIndex = scrubFrame;
+                _previewFrameIndex = scrub;
                 _isPreviewPlaying = false;
-
                 if (_previewFrameIndex >= 0 && _previewFrameIndex < _selectedClip.Frames.Count)
                 {
-                    var frame = _selectedClip.Frames[_previewFrameIndex];
-                    _selectedSprite.SetTile(frame.TileIndexX, frame.TileIndexY);
+                    var f = _selectedClip.Frames[_previewFrameIndex];
+                    _selectedSprite.SetTile(f.TileIndexX, f.TileIndexY);
                 }
             }
+            ImGui.PopStyleColor();
+
+            // Preview visual
+            ImGui.Spacing();
+            DrawVisualPreview();
 
             if (_isPreviewPlaying)
-            {
                 UpdatePreviewAnimation();
-            }
         }
 
         private void DrawVisualPreview()
         {
-            if (_selectedClip.Frames.Count == 0)
+            if (_selectedClip.Frames.Count == 0) return;
+            if (_previewFrameIndex < 0 || _previewFrameIndex >= _selectedClip.Frames.Count) return;
+
+            var frame = _selectedClip.Frames[_previewFrameIndex];
+            var dl = ImGui.GetWindowDrawList();
+            var avail = ImGui.GetContentRegionAvail();
+
+            const float SZ = 96f;
+            var cursorPos = ImGui.GetCursorScreenPos();
+            float cx = cursorPos.X + (avail.X - SZ) * 0.5f;
+            float cy = cursorPos.Y;
+
+            var min = new Vector2(cx, cy);
+            var max = new Vector2(cx + SZ, cy + SZ);
+
+            // Fondo
+            dl.AddRectFilled(min, max, C(ColBgPanel), 8f);
+
+            if (_hasCachedTexture)
             {
-                return;
+                var (u0, v0, u1, v1) = GetTileUV(frame.TileIndexX, frame.TileIndexY);
+                dl.AddImage(_cachedTextureId, min, max, new Vector2(u0, v0), new Vector2(u1, v1));
+            }
+            else
+            {
+                string t = $"[{frame.TileIndexX},{frame.TileIndexY}]";
+                var ts = ImGui.CalcTextSize(t);
+                dl.AddText(new Vector2(cx + (SZ - ts.X) * 0.5f, cy + (SZ - ts.Y) * 0.5f), C(ColMuted), t);
             }
 
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.9f, 1.0f, 1.0f));
-            ImGui.Text("VISUAL PREVIEW");
-            ImGui.PopStyleColor();
-            ImGui.Separator();
+            // Borde
+            dl.AddRect(min, max, C(ColBorder), 8f, ImDrawFlags.None, 1.5f);
+
+            // Indicador de reproduccion
+            if (_isPreviewPlaying)
+                dl.AddCircleFilled(new Vector2(cx + SZ - 10, cy + 10), 5f, C(ColSuccess));
+
+            // Avanzar cursor
+            ImGui.SetCursorScreenPos(new Vector2(cursorPos.X, cy + SZ + 4));
+
+            string frameLabel = $"Frame {_previewFrameIndex + 1} / {_selectedClip.Frames.Count}";
+            var fsz = ImGui.CalcTextSize(frameLabel);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (avail.X - fsz.X) * 0.5f);
+            ImGui.TextColored(ColMuted, frameLabel);
             ImGui.Spacing();
-
-            ImGui.BeginChild("VisualPreviewArea", new Vector2(0, 180));
-
-            if (_previewFrameIndex >= 0 && _previewFrameIndex < _selectedClip.Frames.Count)
-            {
-                var currentFrame = _selectedClip.Frames[_previewFrameIndex];
-
-                var regionAvail = ImGui.GetContentRegionAvail();
-                float previewSize = 100f;
-                float startX = (regionAvail.X - previewSize) * 0.5f;
-                float startY = (180 - previewSize - 30) * 0.5f;
-
-                ImGui.SetCursorPosX(startX);
-                ImGui.SetCursorPosY(startY);
-
-                var drawList = ImGui.GetWindowDrawList();
-                var cursorPos = ImGui.GetCursorScreenPos();
-
-                // Intentar obtener la textura
-                IntPtr textureId = IntPtr.Zero;
-                bool hasTexture = false;
-                float texWidth = 1f;
-                float texHeight = 1f;
-                float tileWidth = _selectedSprite.TileWidth;
-                float tileHeight = _selectedSprite.TileHeight;
-
-                try
-                {
-                    if (_selectedSprite.Material.AlbedoTexture != null)
-                    {
-                        textureId = _selectedSprite.Material.AlbedoTexture.TextureId;
-                        if (textureId != IntPtr.Zero)
-                        {
-                            hasTexture = true;
-                            texWidth = _selectedSprite.TextureWidth;
-                            texHeight = _selectedSprite.TextureHeight;
-                        }
-                    }
-                }
-                catch
-                {
-                    hasTexture = false;
-                }
-
-                if (hasTexture)
-                {
-                    // Calcular UVs con inversión vertical (intercambiar v0 y v1)
-                    float u0 = (currentFrame.TileIndexX * tileWidth) / texWidth;
-                    float v0 = ((currentFrame.TileIndexY + 1) * tileHeight) / texHeight;
-                    float u1 = ((currentFrame.TileIndexX + 1) * tileWidth) / texWidth;
-                    float v1 = (currentFrame.TileIndexY * tileHeight) / texHeight;
-
-                    // Dibujar la imagen del tile (v0 y v1 intercambiados invierte verticalmente)
-                    drawList.AddImage(
-                        textureId,
-                        cursorPos,
-                        new Vector2(cursorPos.X + previewSize, cursorPos.Y + previewSize),
-                        new Vector2(u0, v0),
-                        new Vector2(u1, v1)
-                    );
-
-                    // Borde alrededor de la imagen
-                    drawList.AddRect(
-                        cursorPos,
-                        new Vector2(cursorPos.X + previewSize, cursorPos.Y + previewSize),
-                        ImGui.GetColorU32(new Vector4(0.5f, 0.5f, 0.6f, 1.0f)),
-                        5f,
-                        ImDrawFlags.None,
-                        2f
-                    );
-                }
-                else
-                {
-                    // Fallback si no hay textura
-                    drawList.AddRectFilled(
-                        cursorPos,
-                        new Vector2(cursorPos.X + previewSize, cursorPos.Y + previewSize),
-                        ImGui.GetColorU32(new Vector4(0.15f, 0.15f, 0.2f, 1.0f)),
-                        5f
-                    );
-
-                    drawList.AddRect(
-                        cursorPos,
-                        new Vector2(cursorPos.X + previewSize, cursorPos.Y + previewSize),
-                        ImGui.GetColorU32(new Vector4(0.5f, 0.5f, 0.6f, 1.0f)),
-                        5f,
-                        ImDrawFlags.None,
-                        2f
-                    );
-
-                    // Texto del tile (solo si no hay textura)
-                    string tileText = $"Tile [{currentFrame.TileIndexX}, {currentFrame.TileIndexY}]";
-                    var textSize = ImGui.CalcTextSize(tileText);
-                    var textPos = new Vector2(
-                        cursorPos.X + (previewSize - textSize.X) * 0.5f,
-                        cursorPos.Y + (previewSize - textSize.Y) * 0.5f
-                    );
-                    drawList.AddText(textPos, ImGui.GetColorU32(new Vector4(1f, 1f, 1f, 0.9f)), tileText);
-                }
-
-                // Indicador de reproducción
-                if (_isPreviewPlaying)
-                {
-                    drawList.AddCircleFilled(
-                        new Vector2(cursorPos.X + 10, cursorPos.Y + 10),
-                        5f,
-                        ImGui.GetColorU32(new Vector4(0.2f, 0.8f, 0.2f, 1f))
-                    );
-                }
-
-                // Mueve el cursor DENTRO del child para el texto del frame
-                ImGui.SetCursorPosX(startX);
-                ImGui.SetCursorPosY(startY + previewSize + 5);
-
-                // Usa ImGui.Text normal en lugar de DrawList
-                string frameText = $"Frame {_previewFrameIndex + 1}/{_selectedClip.Frames.Count}";
-                var frameTextSize = ImGui.CalcTextSize(frameText);
-                ImGui.SetCursorPosX((regionAvail.X - frameTextSize.X) * 0.5f);
-                ImGui.TextColored(new Vector4(0.8f, 0.8f, 0.9f, 1f), frameText);
-            }
-
-            ImGui.EndChild();
         }
 
         private void UpdatePreviewAnimation()
         {
-            float deltaTime = ImGui.GetIO().DeltaTime;
-            _previewTimer += deltaTime;
+            _previewTimer += ImGui.GetIO().DeltaTime;
+            float frameDur = 1f / _selectedClip.FrameRate;
 
-            float frameDuration = 1.0f / _selectedClip.FrameRate;
-
-            if (_previewTimer >= frameDuration)
+            while (_previewTimer >= frameDur)
             {
-                _previewTimer -= frameDuration;
+                _previewTimer -= frameDur;
                 _previewFrameIndex++;
 
                 if (_previewFrameIndex >= _selectedClip.Frames.Count)
                 {
                     if (_selectedClip.Loop)
-                    {
                         _previewFrameIndex = 0;
-                    }
                     else
                     {
                         _previewFrameIndex = _selectedClip.Frames.Count - 1;
                         _isPreviewPlaying = false;
+                        break;
                     }
                 }
+            }
 
-                if (_previewFrameIndex >= 0 && _previewFrameIndex < _selectedClip.Frames.Count)
-                {
-                    var frame = _selectedClip.Frames[_previewFrameIndex];
-                    _selectedSprite.SetTile(frame.TileIndexX, frame.TileIndexY);
-                }
+            if (_previewFrameIndex >= 0 && _previewFrameIndex < _selectedClip.Frames.Count)
+            {
+                var f = _selectedClip.Frames[_previewFrameIndex];
+                _selectedSprite.SetTile(f.TileIndexX, f.TileIndexY);
             }
         }
 
+        // --- Timeline de frames (horizontal con drag&drop) ---
         private void DrawTimeline()
         {
-            if (ImGui.Button("+ Add Frame from Grid", new Vector2(-1, 30)))
+            if (SmallButton("+ Add Frame from Grid", ColAccent, -1))
             {
+                RefreshTextureCache();
                 _showGridPicker = true;
             }
 
             ImGui.Spacing();
-            ImGui.Text($"{_selectedClip.Frames.Count} frames:");
-            ImGui.Separator();
 
-            ImGui.BeginChild("FramesTimeline", new Vector2(0, 0));
-
-            float thumbnailSize = 60f;
-            float frameHeight = 120f;
-
-            // Intentar obtener la textura
-            IntPtr textureId = IntPtr.Zero;
-            bool hasTexture = false;
-            float texWidth = 1f;
-            float texHeight = 1f;
-            float tileWidth = _selectedSprite.TileWidth;
-            float tileHeight = _selectedSprite.TileHeight;
-
-            try
+            if (_selectedClip.Frames.Count == 0)
             {
-                if (_selectedSprite.Material.AlbedoTexture != null)
-                {
-                    textureId = _selectedSprite.Material.AlbedoTexture.TextureId;
-                    if (textureId != IntPtr.Zero)
-                    {
-                        hasTexture = true;
-                        texWidth = _selectedSprite.TextureWidth;
-                        texHeight = _selectedSprite.TextureHeight;
-                    }
-                }
+                ImGui.TextColored(ColMuted, "No frames yet. Click the button above to add some!");
+                return;
             }
-            catch
-            {
-                hasTexture = false;
-            }
+
+            ImGui.TextColored(ColMuted, $"{_selectedClip.Frames.Count} frame(s) - drag to reorder");
+            ImGui.Spacing();
+
+            // Scroll horizontal
+            ImGui.BeginChild("FramesScroll", new Vector2(0, 0));
+
+            const float THUMB = 72f;
+            const float CARD_W = 88f;
+            const float CARD_H = 150f;
+            const float GAP = 8f;
+
+            RefreshTextureCache();
+
+            int frameToDelete = -1;
+            int dragTarget = -1;
 
             for (int i = 0; i < _selectedClip.Frames.Count; i++)
             {
                 ImGui.PushID(i);
 
                 var frame = _selectedClip.Frames[i];
-                bool isSelected = _selectedFrameIndex == i;
+                bool isSel = _selectedFrameIndex == i;
                 bool isPreview = _previewFrameIndex == i;
 
-                var startPos = ImGui.GetCursorPos();
-                var cursorPos = ImGui.GetCursorScreenPos();
+                var cardMin = ImGui.GetCursorScreenPos();
+                var cardMax = new Vector2(cardMin.X + CARD_W, cardMin.Y + CARD_H);
+                var dl = ImGui.GetWindowDrawList();
 
-                // Dibuja el fondo si está seleccionado o en preview
-                if (isSelected)
+                // Fondo de la tarjeta
+                uint bgCol = isSel ? C(ColAccentDim)
+                           : isPreview ? C(new Vector4(0.25f, 0.8f, 0.4f, 0.18f))
+                                       : C(ColBgPanel);
+                dl.AddRectFilled(cardMin, cardMax, bgCol, 8f);
+
+                // Borde
+                uint borderCol = isSel ? C(ColAccent)
+                               : isPreview ? C(ColSuccess)
+                                           : C(ColBorder);
+                dl.AddRect(cardMin, cardMax, borderCol, 8f, ImDrawFlags.None, isSel ? 2f : 1f);
+
+                // Thumbnail del tile
+                var thumbMin = new Vector2(cardMin.X + (CARD_W - THUMB) * 0.5f, cardMin.Y + 8f);
+                var thumbMax = new Vector2(thumbMin.X + THUMB, thumbMin.Y + THUMB);
+
+                if (_hasCachedTexture)
                 {
-                    ImGui.GetWindowDrawList().AddRectFilled(
-                        cursorPos,
-                        new Vector2(cursorPos.X + thumbnailSize + 120, cursorPos.Y + frameHeight),
-                        ImGui.GetColorU32(new Vector4(0.3f, 0.5f, 0.8f, 0.3f)),
-                        5f
-                    );
+                    var (u0, v0, u1, v1) = GetTileUV(frame.TileIndexX, frame.TileIndexY);
+                    dl.AddRectFilled(thumbMin, thumbMax, C(ColBg), 4f);
+                    dl.AddImage(_cachedTextureId, thumbMin, thumbMax, new Vector2(u0, v0), new Vector2(u1, v1));
+                    dl.AddRect(thumbMin, thumbMax, C(ColBorder), 4f, ImDrawFlags.None, 1f);
                 }
-                else if (isPreview)
+                else
                 {
-                    ImGui.GetWindowDrawList().AddRectFilled(
-                        cursorPos,
-                        new Vector2(cursorPos.X + thumbnailSize + 120, cursorPos.Y + frameHeight),
-                        ImGui.GetColorU32(new Vector4(0.3f, 0.8f, 0.3f, 0.2f)),
-                        5f
-                    );
-                }
-
-                // Número del frame
-                ImGui.GetWindowDrawList().AddRectFilled(
-                    cursorPos,
-                    new Vector2(cursorPos.X + 30, cursorPos.Y + 20),
-                    ImGui.GetColorU32(new Vector4(0.2f, 0.2f, 0.3f, 0.9f)),
-                    3f
-                );
-
-                ImGui.SetCursorPos(new Vector2(startPos.X + 5, startPos.Y + 2));
-                ImGui.Text($"{i + 1}");
-
-                // Dibujar thumbnail del sprite
-                if (hasTexture)
-                {
-                    ImGui.SetCursorPos(new Vector2(startPos.X, startPos.Y + 25));
-                    
-                    // Calcular UVs con inversión vertical (intercambiar v0 y v1)
-                    float u0 = (frame.TileIndexX * tileWidth) / texWidth;
-                    float v0 = ((frame.TileIndexY + 1) * tileHeight) / texHeight;
-                    float u1 = ((frame.TileIndexX + 1) * tileWidth) / texWidth;
-                    float v1 = (frame.TileIndexY * tileHeight) / texHeight;
-
-                    ImGui.Image(textureId, new Vector2(thumbnailSize, thumbnailSize),
-                        new Vector2(u0, v0), new Vector2(u1, v1));
+                    dl.AddRectFilled(thumbMin, thumbMax, C(ColBg), 4f);
+                    string t = $"{frame.TileIndexX},{frame.TileIndexY}";
+                    var ts = ImGui.CalcTextSize(t);
+                    dl.AddText(new Vector2(thumbMin.X + (THUMB - ts.X) * 0.5f, thumbMin.Y + (THUMB - ts.Y) * 0.5f),
+                               C(ColMuted), t);
+                    dl.AddRect(thumbMin, thumbMax, C(ColBorder), 4f, ImDrawFlags.None, 1f);
                 }
 
-                ImGui.SetCursorPos(new Vector2(startPos.X + thumbnailSize + 5, startPos.Y + 25));
-                ImGui.Text($"Tile [{frame.TileIndexX}, {frame.TileIndexY}]");
+                // Numero de frame (badge)
+                string num = $"{i + 1}";
+                var ns = ImGui.CalcTextSize(num);
+                dl.AddRectFilled(new Vector2(cardMin.X + 4, cardMin.Y + 4),
+                                 new Vector2(cardMin.X + 4 + ns.X + 6, cardMin.Y + 4 + ns.Y + 2),
+                                 C(new Vector4(0.1f, 0.1f, 0.15f, 0.85f)), 3f);
+                dl.AddText(new Vector2(cardMin.X + 7, cardMin.Y + 5), C(ColMuted), num);
 
-                // Botón invisible para clics
-                ImGui.SetCursorPos(startPos);
-                ImGui.InvisibleButton($"##frame{i}", new Vector2(thumbnailSize + 120, 50));
+                // Tile label
+                string tileLabel = $"[{frame.TileIndexX},{frame.TileIndexY}]";
+                var tlSz = ImGui.CalcTextSize(tileLabel);
+                dl.AddText(new Vector2(cardMin.X + (CARD_W - tlSz.X) * 0.5f, thumbMin.Y + THUMB + 6),
+                           C(ColMuted), tileLabel);
+
+                // Botones < > dentro de la tarjeta (solo si esta seleccionado)
+                if (isSel)
+                {
+                    float btnY = cardMin.Y + THUMB + 28f;
+                    float btnW = (CARD_W - 20) * 0.5f;
+
+                    // Move Left
+                    ImGui.SetCursorScreenPos(new Vector2(cardMin.X + 8, btnY));
+                    bool canLeft = i > 0;
+                    if (!canLeft) ImGui.BeginDisabled();
+                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.3f, 0.5f, 0.4f));
+                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.3f, 0.5f, 0.8f, 0.6f));
+                    ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.4f, 0.6f, 1.0f, 0.8f));
+                    if (ImGui.Button("<", new Vector2(btnW, 24))) MoveFrameUp(i);
+                    ImGui.PopStyleColor(3);
+                    if (!canLeft) ImGui.EndDisabled();
+
+                    ImGui.SameLine(0, 4);
+
+                    // Move Right
+                    bool canRight = i < _selectedClip.Frames.Count - 1;
+                    if (!canRight) ImGui.BeginDisabled();
+                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.3f, 0.5f, 0.4f));
+                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.3f, 0.5f, 0.8f, 0.6f));
+                    ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.4f, 0.6f, 1.0f, 0.8f));
+                    if (ImGui.Button(">", new Vector2(btnW, 24))) MoveFrameDown(i);
+                    ImGui.PopStyleColor(3);
+                    if (!canRight) ImGui.EndDisabled();
+
+                    // Delete (centrado abajo)
+                    float delW = CARD_W - 16f;
+                    ImGui.SetCursorScreenPos(new Vector2(cardMin.X + 8, btnY + 30));
+                    ImGui.PushStyleColor(ImGuiCol.Button, ColDangerDim);
+                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.9f, 0.3f, 0.3f, 0.35f));
+                    ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.9f, 0.3f, 0.3f, 0.55f));
+                    ImGui.PushStyleColor(ImGuiCol.Text, ColDanger);
+                    if (ImGui.Button("Delete", new Vector2(delW, 22)))
+                        frameToDelete = i;
+                    ImGui.PopStyleColor(4);
+                }
+
+                // Area invisible de click (toda la tarjeta, para seleccion)
+                ImGui.SetCursorScreenPos(cardMin);
+                ImGui.InvisibleButton($"##card{i}", new Vector2(CARD_W, isSel ? CARD_H : THUMB + 24));
 
                 if (ImGui.IsItemClicked())
                 {
                     _selectedFrameIndex = i;
                     _selectedSprite.SetTile(frame.TileIndexX, frame.TileIndexY);
-                }
-
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
-                    ImGui.BeginTooltip();
-                    ImGui.Text($"Frame {i + 1}: Tile [{frame.TileIndexX}, {frame.TileIndexY}]");
-                    ImGui.Text("Click to select - Double-click to preview");
-                    ImGui.EndTooltip();
                 }
 
                 if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
@@ -693,148 +756,128 @@ namespace KrayonEditor.UI
                     _selectedSprite.SetTile(frame.TileIndexX, frame.TileIndexY);
                 }
 
-                // Botones de control (solo si está seleccionado)
-                if (isSelected)
+                if (ImGui.IsItemHovered())
                 {
-                    ImGui.SetCursorPos(new Vector2(startPos.X + 10, startPos.Y + 55));
-
-                    if (ImGui.Button("Move Up", new Vector2(70, 25)))
+                    ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                    if (!isSel)
                     {
-                        MoveFrameUp(i);
+                        ImGui.BeginTooltip();
+                        ImGui.TextColored(ColAccent, $"Frame {i + 1}");
+                        ImGui.TextColored(ColMuted, $"Tile [{frame.TileIndexX}, {frame.TileIndexY}]");
+                        ImGui.TextColored(ColMuted, "Click to select - Double-click to preview");
+                        ImGui.EndTooltip();
                     }
-                    if (ImGui.IsItemHovered())
-                        ImGui.SetTooltip("Move frame up");
-
-                    ImGui.SameLine();
-
-                    if (ImGui.Button("Move Down", new Vector2(70, 25)))
-                    {
-                        MoveFrameDown(i);
-                    }
-                    if (ImGui.IsItemHovered())
-                        ImGui.SetTooltip("Move frame down");
-
-                    ImGui.SameLine();
-
-                    if (ImGui.Button("Delete", new Vector2(60, 25)))
-                    {
-                        DeleteFrame(i);
-                    }
-                    if (ImGui.IsItemHovered())
-                        ImGui.SetTooltip("Delete frame");
                 }
 
-                // Avanza al siguiente frame
-                ImGui.SetCursorPos(new Vector2(startPos.X, startPos.Y + frameHeight));
-                ImGui.Separator();
-                ImGui.Spacing();
+                // Drag & Drop (reordenar)
+                if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.SourceAllowNullID))
+                {
+                    _dragSourceFrame = i;
+                    ImGui.SetDragDropPayload("FRAME_REORDER", IntPtr.Zero, 0);
+                    ImGui.TextColored(ColAccent, $"Moving Frame {i + 1}");
+                    ImGui.EndDragDropSource();
+                }
 
+                if (ImGui.BeginDragDropTarget())
+                {
+                    unsafe
+                    {
+                        var payload = ImGui.AcceptDragDropPayload("FRAME_REORDER");
+                        if (payload.NativePtr != null && _dragSourceFrame >= 0 && _dragSourceFrame != i)
+                        {
+                            // Mover el frame de _dragSourceFrame a i
+                            var temp = _selectedClip.Frames[_dragSourceFrame];
+                            _selectedClip.Frames.RemoveAt(_dragSourceFrame);
+                            _selectedClip.Frames.Insert(i, temp);
+                            _selectedFrameIndex = i;
+                            _dragSourceFrame = -1;
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+
+                // Siguiente tarjeta
+                ImGui.SetCursorScreenPos(new Vector2(cardMax.X + GAP, cardMin.Y));
                 ImGui.PopID();
             }
 
-            if (_selectedClip.Frames.Count == 0)
-            {
-                ImGui.Spacing();
-                ImGui.TextDisabled("No frames in this animation.");
-                ImGui.TextDisabled("Click 'Add Frame from Grid' to start!");
-            }
+            // Dummy para que el child tenga altura
+            ImGui.SetCursorScreenPos(new Vector2(
+                ImGui.GetCursorScreenPos().X,
+                ImGui.GetWindowPos().Y + 8 + CARD_H + 20));
+            ImGui.Dummy(Vector2.Zero);
 
             ImGui.EndChild();
+
+            // Aplicar eliminacion fuera del loop
+            if (frameToDelete >= 0)
+                DeleteFrame(frameToDelete);
         }
 
+        // --- Grid Picker ---
         private void DrawGridPicker()
         {
-            ImGui.SetNextWindowSize(new Vector2(600, 700), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(640, 620), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
 
             bool open = true;
-            if (!ImGui.Begin("Pick a Tile", ref open, ImGuiWindowFlags.NoCollapse))
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.10f, 0.11f, 0.14f, 0.98f));
+            if (!ImGui.Begin("Pick a Tile", ref open, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar))
             {
+                ImGui.PopStyleColor();
                 ImGui.End();
                 return;
             }
+            ImGui.PopStyleColor();
 
-            if (!open)
-            {
-                _showGridPicker = false;
-                ImGui.End();
-                return;
-            }
+            if (!open) { _showGridPicker = false; ImGui.End(); return; }
+            if (_selectedSprite == null || _selectedClip == null) { _showGridPicker = false; ImGui.End(); return; }
 
-            if (_selectedSprite == null || _selectedClip == null)
-            {
-                _showGridPicker = false;
-                ImGui.End();
-                return;
-            }
-
-            ImGui.Text($"Sprite Grid: {_selectedSprite.TilesPerRow} x {_selectedSprite.TilesPerColumn}");
-            ImGui.Text($"Tile Size: {_selectedSprite.TileWidth} x {_selectedSprite.TileHeight} px");
+            ImGui.TextColored(ColHeader, $"Sprite Grid - {_selectedSprite.TilesPerRow} x {_selectedSprite.TilesPerColumn}");
+            ImGui.TextColored(ColMuted, $"Tile size: {_selectedSprite.TileWidth} x {_selectedSprite.TileHeight} px - Click a tile to add it as a frame");
             ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Separator, ColBorder);
             ImGui.Separator();
+            ImGui.PopStyleColor();
             ImGui.Spacing();
 
-            ImGui.BeginChild("GridView", new Vector2(0, -40));
+            ImGui.BeginChild("GridArea", new Vector2(0, -50));
 
-            float cellSize = 60f;
-            float spacing = 4f;
+            const float CELL = 64f;
+            const float PAD = 5f;
 
             _hoveredTileX = -1;
             _hoveredTileY = -1;
-
-            IntPtr textureId = IntPtr.Zero;
-            bool hasTexture = false;
-            float texWidth = 1f;
-            float texHeight = 1f;
-            float tileWidth = _selectedSprite.TileWidth;
-            float tileHeight = _selectedSprite.TileHeight;
-
-            try
-            {
-                if (_selectedSprite.Material.AlbedoTexture != null)
-                {
-                    textureId = _selectedSprite.Material.AlbedoTexture.TextureId;
-                    if (textureId != IntPtr.Zero)
-                    {
-                        hasTexture = true;
-                        texWidth = _selectedSprite.TextureWidth;
-                        texHeight = _selectedSprite.TextureHeight;
-                    }
-                }
-            }
-            catch
-            {
-                hasTexture = false;
-            }
 
             for (int y = 0; y < _selectedSprite.TilesPerColumn; y++)
             {
                 for (int x = 0; x < _selectedSprite.TilesPerRow; x++)
                 {
-                    if (x > 0)
-                        ImGui.SameLine(0, spacing);
-
+                    if (x > 0) ImGui.SameLine(0, PAD);
                     ImGui.PushID(y * 1000 + x);
 
-                    ImGui.BeginGroup();
+                    var cellMin = ImGui.GetCursorScreenPos();
+                    var cellMax = new Vector2(cellMin.X + CELL, cellMin.Y + CELL);
+                    var dl = ImGui.GetWindowDrawList();
 
-                    if (hasTexture)
+                    // Fondo de la celda
+                    dl.AddRectFilled(cellMin, cellMax, C(ColBgPanel), 5f);
+
+                    if (_hasCachedTexture)
                     {
-                        // Calcular UVs con inversión vertical (intercambiar v0 y v1)
-                        float u0 = (x * tileWidth) / texWidth;
-                        float v0 = ((y + 1) * tileHeight) / texHeight;
-                        float u1 = ((x + 1) * tileWidth) / texWidth;
-                        float v1 = (y * tileHeight) / texHeight;
-
-                        ImGui.Image(textureId, new Vector2(cellSize, cellSize),
-                            new Vector2(u0, v0), new Vector2(u1, v1));
+                        var (u0, v0, u1, v1) = GetTileUV(x, y);
+                        dl.AddImage(_cachedTextureId, cellMin, cellMax, new Vector2(u0, v0), new Vector2(u1, v1));
                     }
                     else
                     {
-                        ImGui.Button($"{x},{y}", new Vector2(cellSize, cellSize));
+                        string t = $"{x},{y}";
+                        var ts = ImGui.CalcTextSize(t);
+                        dl.AddText(new Vector2(cellMin.X + (CELL - ts.X) * 0.5f, cellMin.Y + (CELL - ts.Y) * 0.5f),
+                                   C(ColMuted), t);
                     }
 
-                    ImGui.EndGroup();
+                    // Boton invisible
+                    ImGui.InvisibleButton($"##t{x}_{y}", new Vector2(CELL, CELL));
 
                     if (ImGui.IsItemHovered())
                     {
@@ -842,9 +885,18 @@ namespace KrayonEditor.UI
                         _hoveredTileY = y;
                         ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
 
+                        // Highlight hover
+                        dl.AddRectFilled(cellMin, cellMax, C(ColAccentDim), 5f);
+                        dl.AddRect(cellMin, cellMax, C(ColAccent), 5f, ImDrawFlags.None, 2f);
+
                         ImGui.BeginTooltip();
-                        ImGui.Text($"Tile [{x}, {y}]");
+                        ImGui.TextColored(ColAccent, $"Tile [{x}, {y}]");
+                        ImGui.TextColored(ColMuted, "Click to add as frame");
                         ImGui.EndTooltip();
+                    }
+                    else
+                    {
+                        dl.AddRect(cellMin, cellMax, C(ColBorder), 5f, ImDrawFlags.None, 1f);
                     }
 
                     if (ImGui.IsItemClicked())
@@ -855,14 +907,24 @@ namespace KrayonEditor.UI
 
                     ImGui.PopID();
                 }
+
+                ImGui.Spacing();
             }
 
             ImGui.EndChild();
 
+            // Barra de accion inferior
             ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Separator, ColBorder);
+            ImGui.Separator();
+            ImGui.PopStyleColor();
+            ImGui.Spacing();
+
             if (_hoveredTileX >= 0 && _hoveredTileY >= 0)
             {
-                if (ImGui.Button($"Add Tile [{_hoveredTileX}, {_hoveredTileY}]", new Vector2(-1, 30)))
+                ImGui.TextColored(ColAccent, $"Selected: [{_hoveredTileX}, {_hoveredTileY}]");
+                ImGui.SameLine();
+                if (SmallButton($"+ Add Tile [{_hoveredTileX}, {_hoveredTileY}]", ColAccent, -1))
                 {
                     AddFrameToClip(_hoveredTileX, _hoveredTileY);
                     _showGridPicker = false;
@@ -871,30 +933,31 @@ namespace KrayonEditor.UI
             else
             {
                 ImGui.BeginDisabled();
-                ImGui.Button("Hover over a tile to select", new Vector2(-1, 30));
+                ImGui.Button("Hover over a tile to select", new Vector2(-1, 26));
                 ImGui.EndDisabled();
             }
 
             ImGui.End();
         }
 
+        // --- Estado vacio ---
         private void DrawEmptyState()
         {
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 250);
+            var avail = ImGui.GetContentRegionAvail();
+            string line1 = "No sprite selected";
+            string line2 = "Select a sprite from the left panel to get started";
 
-            var text1 = "No sprite selected";
-            var size1 = ImGui.CalcTextSize(text1);
-            ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - size1.X) * 0.5f);
-            ImGui.TextDisabled(text1);
+            var s1 = ImGui.CalcTextSize(line1);
+            var s2 = ImGui.CalcTextSize(line2);
 
-            ImGui.Spacing();
+            ImGui.SetCursorPos(new Vector2((avail.X - s1.X) * 0.5f, avail.Y * 0.5f - 20));
+            ImGui.TextColored(new Vector4(0.6f, 0.65f, 0.75f, 1f), line1);
 
-            var text2 = "Select a sprite from the left panel to get started";
-            var size2 = ImGui.CalcTextSize(text2);
-            ImGui.SetCursorPosX((ImGui.GetContentRegionAvail().X - size2.X) * 0.5f);
-            ImGui.TextDisabled(text2);
+            ImGui.SetCursorPos(new Vector2((avail.X - s2.X) * 0.5f, avail.Y * 0.5f));
+            ImGui.TextColored(ColMuted, line2);
         }
 
+        // --- Helpers de seleccion ---
         private void SelectSprite(SpriteRenderer sprite)
         {
             _selectedSprite = sprite;
@@ -902,6 +965,7 @@ namespace KrayonEditor.UI
             _selectedFrameIndex = -1;
             _isPreviewPlaying = false;
             _previewFrameIndex = 0;
+            RefreshTextureCache();
         }
 
         private void SelectClip(SpriteClip clip)
@@ -915,23 +979,20 @@ namespace KrayonEditor.UI
         private void CreateNewAnimation()
         {
             if (string.IsNullOrWhiteSpace(_newClipName)) return;
-
-            var existingClip = _selectedSprite.GetAnimation(_newClipName);
-            if (existingClip == null)
+            if (_selectedSprite.GetAnimation(_newClipName) == null)
             {
-                var newClip = _selectedSprite.AddAnimation(_newClipName);
-                newClip.FrameRate = 12f;
-                newClip.Loop = true;
-                SelectClip(newClip);
+                var clip = _selectedSprite.AddAnimation(_newClipName);
+                clip.FrameRate = 12f;
+                clip.Loop = true;
+                SelectClip(clip);
                 _newClipName = "";
             }
         }
 
-        private void AddFrameToClip(int tileX, int tileY)
+        private void AddFrameToClip(int tx, int ty)
         {
             if (_selectedClip == null) return;
-
-            _selectedClip.AddFrame(tileX, tileY);
+            _selectedClip.AddFrame(tx, ty);
             _selectedFrameIndex = _selectedClip.Frames.Count - 1;
         }
 
@@ -939,9 +1000,9 @@ namespace KrayonEditor.UI
         {
             if (index > 0 && index < _selectedClip.Frames.Count)
             {
-                var temp = _selectedClip.Frames[index];
+                var tmp = _selectedClip.Frames[index];
                 _selectedClip.Frames[index] = _selectedClip.Frames[index - 1];
-                _selectedClip.Frames[index - 1] = temp;
+                _selectedClip.Frames[index - 1] = tmp;
                 _selectedFrameIndex = index - 1;
             }
         }
@@ -950,9 +1011,9 @@ namespace KrayonEditor.UI
         {
             if (index >= 0 && index < _selectedClip.Frames.Count - 1)
             {
-                var temp = _selectedClip.Frames[index];
+                var tmp = _selectedClip.Frames[index];
                 _selectedClip.Frames[index] = _selectedClip.Frames[index + 1];
-                _selectedClip.Frames[index + 1] = temp;
+                _selectedClip.Frames[index + 1] = tmp;
                 _selectedFrameIndex = index + 1;
             }
         }
@@ -963,26 +1024,19 @@ namespace KrayonEditor.UI
             {
                 _selectedClip.Frames.RemoveAt(index);
                 _selectedFrameIndex = -1;
+                if (_previewFrameIndex >= _selectedClip.Frames.Count)
+                    _previewFrameIndex = Math.Max(0, _selectedClip.Frames.Count - 1);
             }
         }
 
         private bool IsSpriteValid()
         {
-            if (_selectedSprite == null)
-                return false;
-
+            if (_selectedSprite == null) return false;
             var scene = SceneManager.ActiveScene;
-            if (scene == null)
-                return false;
-
-            var gameObjects = scene.GetAllGameObjects();
-            foreach (var go in gameObjects)
-            {
-                var sprite = go.GetComponent<SpriteRenderer>();
-                if (sprite == _selectedSprite)
+            if (scene == null) return false;
+            foreach (var go in scene.GetAllGameObjects())
+                if (go.GetComponent<SpriteRenderer>() == _selectedSprite)
                     return true;
-            }
-
             return false;
         }
 
@@ -993,7 +1047,8 @@ namespace KrayonEditor.UI
             _selectedFrameIndex = -1;
             _isPreviewPlaying = false;
             _previewFrameIndex = 0;
-            _previewTimer = 0.0f;
+            _previewTimer = 0f;
+            _hasCachedTexture = false;
         }
     }
 }
