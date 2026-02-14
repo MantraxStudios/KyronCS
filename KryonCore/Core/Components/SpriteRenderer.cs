@@ -1,4 +1,5 @@
-﻿using KrayonCore.GraphicsData;
+﻿using KrayonCore.Core;
+using KrayonCore.GraphicsData;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
@@ -49,6 +50,7 @@ namespace KrayonCore
         private string _materialPath = "";
         private Material _material;
         private Model _quadModel;
+        private Mesh _quadMesh;
         private bool _isInitialized = false;
 
         private int _lastTileIndexX = 0;
@@ -172,9 +174,11 @@ namespace KrayonCore
 
             Console.WriteLine($"[SpriteRenderer] Start completado - Material: {(_material != null ? "OK" : "NULL")}");
             Console.WriteLine($"[SpriteRenderer] Textura final: {TextureWidth}x{TextureHeight}, Tiles: {TilesPerRow}x{TilesPerColumn}");
+
+            DebugStatus();
         }
 
-        public override void Update(float timeDelta)
+        public override void OnWillRenderObject()
         {
             if (_material != null && (_textureWidth == 0 || _textureHeight == 0))
             {
@@ -188,7 +192,7 @@ namespace KrayonCore
                 }
             }
 
-            UpdateAnimation(timeDelta);
+            UpdateAnimation(TimerData.DeltaTime);
 
             bool changed = false;
 
@@ -374,86 +378,113 @@ namespace KrayonCore
             return Animations.Find(a => a.Name == name);
         }
 
+        public void DebugStatus()
+        {
+            Console.WriteLine("=== SPRITE RENDERER DEBUG ===");
+            Console.WriteLine($"GameObject: {GameObject?.Name ?? "NULL"}");
+            Console.WriteLine($"Enabled: {Enabled}");
+            Console.WriteLine($"Material: {(_material != null ? "OK" : "NULL")}");
+            Console.WriteLine($"QuadModel: {(_quadModel != null ? "OK" : "NULL")}");
+            Console.WriteLine($"QuadMesh: {(_quadMesh != null ? "OK" : "NULL")}");
+            Console.WriteLine($"Texture Size: {_textureWidth}x{_textureHeight}");
+            Console.WriteLine($"Tile Size: {TileWidth}x{TileHeight}");
+            Console.WriteLine($"Tiles Grid: {TilesPerRow}x{TilesPerColumn}");
+            Console.WriteLine($"Current Tile: [{TileIndexX},{TileIndexY}]");
+            Console.WriteLine($"PixelsPerUnit: {PixelsPerUnit}");
+
+            if (_quadModel != null)
+            {
+                Console.WriteLine($"Model.SubMeshCount: {_quadModel.SubMeshCount}");
+                Console.WriteLine($"Model._subMeshes.Count: {_quadModel._subMeshes?.Count ?? 0}");
+            }
+
+            if (_quadMesh != null)
+            {
+                Console.WriteLine($"Mesh.VAO: {_quadMesh.GetVAO()}");
+                Console.WriteLine($"Mesh.IndexCount: {_quadMesh.IndexCount}");
+                Console.WriteLine($"Mesh.VertexCount: {_quadMesh.VertexCount}");
+            }
+
+            Console.WriteLine("============================");
+        }
+
         private void CreateQuadMesh()
         {
             float[] vertices = new float[]
             {
-                -0.5f, -0.5f, 0.0f,
-                 0.0f,  0.0f, 1.0f,
-                 0.0f,  0.0f,
-                 1.0f,  0.0f, 0.0f,
-                 0.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+         0.0f,  0.0f, 1.0f,
+         0.0f,  0.0f,
+         1.0f,  0.0f, 0.0f,
+         0.0f,  1.0f, 0.0f,
 
-                 0.5f, -0.5f, 0.0f,
-                 0.0f,  0.0f, 1.0f,
-                 1.0f,  0.0f,
-                 1.0f,  0.0f, 0.0f,
-                 0.0f,  1.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.0f, 1.0f,
+         1.0f,  0.0f,
+         1.0f,  0.0f, 0.0f,
+         0.0f,  1.0f, 0.0f,
 
-                 0.5f,  0.5f, 0.0f,
-                 0.0f,  0.0f, 1.0f,
-                 1.0f,  1.0f,
-                 1.0f,  0.0f, 0.0f,
-                 0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, 0.0f,
+         0.0f,  0.0f, 1.0f,
+         1.0f,  1.0f,
+         1.0f,  0.0f, 0.0f,
+         0.0f,  1.0f, 0.0f,
 
-                -0.5f,  0.5f, 0.0f,
-                 0.0f,  0.0f, 1.0f,
-                 0.0f,  1.0f,
-                 1.0f,  0.0f, 0.0f,
-                 0.0f,  1.0f, 0.0f
+        -0.5f,  0.5f, 0.0f,
+         0.0f,  0.0f, 1.0f,
+         0.0f,  1.0f,
+         1.0f,  0.0f, 0.0f,
+         0.0f,  1.0f, 0.0f
             };
 
             uint[] indices = new uint[]
             {
-                0, 1, 2,
-                2, 3, 0
+        0, 1, 2,
+        2, 3, 0
             };
 
-            _quadModel = new Model();
-            var mesh = new Mesh(vertices, indices);
+            Console.WriteLine($"[SpriteRenderer] Creando mesh - Vértices: {vertices.Length}, Índices: {indices.Length}");
 
-            var meshesField = typeof(Model).GetField("_meshes",
+            _quadMesh = new Mesh(vertices, indices);
+            _quadModel = new Model();
+
+            var subMeshInfo = new SubMeshInfo(_quadMesh, 0, new MaterialTextureInfo());
+            _quadModel._subMeshes.Add(subMeshInfo);
+
+            var combinedMeshField = typeof(Model).GetField("_combinedMesh",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-            if (meshesField != null)
+            if (combinedMeshField != null)
             {
-                var meshList = (List<Mesh>)meshesField.GetValue(_quadModel);
-                meshList.Add(mesh);
+                combinedMeshField.SetValue(_quadModel, _quadMesh);
+                Console.WriteLine($"[SpriteRenderer] ✓ _combinedMesh asignado");
             }
 
-            Console.WriteLine($"[SpriteRenderer] Quad mesh creado");
+            Console.WriteLine($"[SpriteRenderer] ✓ Quad mesh y modelo creados");
+            Console.WriteLine($"[SpriteRenderer] Model.SubMeshCount: {_quadModel.SubMeshCount}");
+            Console.WriteLine($"[SpriteRenderer] Mesh.VAO: {_quadMesh.GetVAO()}");
         }
 
         private void UpdateQuadSize()
         {
-            if (_quadModel == null || PixelsPerUnit <= 0)
+            if (_quadMesh == null || PixelsPerUnit <= 0)
+            {
+                Console.WriteLine($"[SpriteRenderer] UpdateQuadSize cancelado - QuadMesh:{_quadMesh != null}, PPU:{PixelsPerUnit}");
                 return;
+            }
 
             float quadWidth = TileWidth / PixelsPerUnit;
             float quadHeight = TileHeight / PixelsPerUnit;
-
             float halfWidth = quadWidth * 0.5f;
             float halfHeight = quadHeight * 0.5f;
 
-            Console.WriteLine($"[SpriteRenderer] Quad ajustado: {TileWidth}px / {PixelsPerUnit}ppu = {quadWidth:F2} units ({quadWidth:F2}x{quadHeight:F2})");
+            Console.WriteLine($"[SpriteRenderer] Actualizando tamaño del quad: {quadWidth:F2}x{quadHeight:F2} units");
 
-            var meshesField = typeof(Model).GetField("_meshes",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (meshesField != null)
-            {
-                var meshList = (List<Mesh>)meshesField.GetValue(_quadModel);
-                if (meshList != null && meshList.Count > 0)
-                {
-                    var mesh = meshList[0];
-                    UpdateMeshSize(mesh, halfWidth, halfHeight);
-                }
-            }
-
+            UpdateMeshSize(halfWidth, halfHeight);
             _needsUVUpdate = true;
         }
 
-        private void UpdateMeshSize(Mesh mesh, float halfWidth, float halfHeight)
+        private void UpdateMeshSize(float halfWidth, float halfHeight)
         {
             float[] vertices = new float[]
             {
@@ -487,8 +518,7 @@ namespace KrayonCore
 
             if (vboField != null)
             {
-                int vbo = (int)vboField.GetValue(mesh);
-
+                int vbo = (int)vboField.GetValue(_quadMesh);
                 GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
                 GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero,
                     vertices.Length * sizeof(float), vertices);
@@ -546,13 +576,7 @@ namespace KrayonCore
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SpriteRenderer] ✗ Error al cargar material '{path}':");
-                Console.WriteLine($"[SpriteRenderer]   Mensaje: {ex.Message}");
-                Console.WriteLine($"[SpriteRenderer]   Tipo: {ex.GetType().Name}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[SpriteRenderer]   Inner: {ex.InnerException.Message}");
-                }
+                Console.WriteLine($"[SpriteRenderer] ✗ Error al cargar material '{path}': {ex.Message}");
                 _material = null;
                 _textureWidth = 0;
                 _textureHeight = 0;
@@ -667,9 +691,9 @@ namespace KrayonCore
 
         private void UpdateUVs()
         {
-            if (_quadModel == null || _textureWidth == 0 || _textureHeight == 0 || TileWidth == 0 || TileHeight == 0)
+            if (_quadMesh == null || _textureWidth == 0 || _textureHeight == 0 || TileWidth == 0 || TileHeight == 0)
             {
-                Console.WriteLine($"[SpriteRenderer] UpdateUVs cancelado - Quad:{_quadModel != null}, TexW:{_textureWidth}, TexH:{_textureHeight}, TileW:{TileWidth}, TileH:{TileHeight}");
+                Console.WriteLine($"[SpriteRenderer] UpdateUVs cancelado - Mesh:{_quadMesh != null}, TexW:{_textureWidth}, TexH:{_textureHeight}, TileW:{TileWidth}, TileH:{TileHeight}");
                 return;
             }
 
@@ -683,40 +707,28 @@ namespace KrayonCore
             float uMax = (float)pixelEndX / (float)_textureWidth;
             float vMax = (float)pixelEndY / (float)_textureHeight;
 
-            Console.WriteLine($"[SpriteRenderer] Tile[{TileIndexX},{TileIndexY}] → Pixels[{pixelStartX},{pixelStartY}]->[{pixelEndX},{pixelEndY}] → UV[{uMin:F3},{vMin:F3}]->[{uMax:F3},{vMax:F3}]");
+            Console.WriteLine($"[SpriteRenderer] UV[{uMin:F3},{vMin:F3}]->[{uMax:F3},{vMax:F3}]");
 
             if (FlipX)
             {
-                float temp = uMin;
-                uMin = uMax;
-                uMax = temp;
+                (uMin, uMax) = (uMax, uMin);
             }
 
             if (FlipY)
             {
-                float temp = vMin;
-                vMin = vMax;
-                vMax = temp;
+                (vMin, vMax) = (vMax, vMin);
             }
 
-            var meshesField = typeof(Model).GetField("_meshes",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            if (meshesField != null)
-            {
-                var meshList = (List<Mesh>)meshesField.GetValue(_quadModel);
-                if (meshList != null && meshList.Count > 0)
-                {
-                    var mesh = meshList[0];
-                    UpdateMeshUVs(mesh, uMin, vMin, uMax, vMax);
-                }
-            }
+            UpdateMeshUVs(uMin, vMin, uMax, vMax);
         }
 
-        private void UpdateMeshUVs(Mesh mesh, float uMin, float vMin, float uMax, float vMax)
+        private void UpdateMeshUVs(float uMin, float vMin, float uMax, float vMax)
         {
             if (TileWidth == 0 || TileHeight == 0 || PixelsPerUnit <= 0)
+            {
+                Console.WriteLine($"[SpriteRenderer] UpdateMeshUVs cancelado");
                 return;
+            }
 
             float quadWidth = TileWidth / PixelsPerUnit;
             float quadHeight = TileHeight / PixelsPerUnit;
@@ -755,8 +767,7 @@ namespace KrayonCore
 
             if (vboField != null)
             {
-                int vbo = (int)vboField.GetValue(mesh);
-
+                int vbo = (int)vboField.GetValue(_quadMesh);
                 GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
                 GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr.Zero,
                     vertices.Length * sizeof(float), vertices);
@@ -775,6 +786,8 @@ namespace KrayonCore
         public override void OnDestroy()
         {
             _material = null;
+            _quadMesh?.Dispose();
+            _quadMesh = null;
             _quadModel?.Dispose();
             _quadModel = null;
             _textureWidth = 0;

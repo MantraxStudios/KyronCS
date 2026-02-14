@@ -186,6 +186,8 @@ namespace KrayonCore.GraphicsData
         {
             _totalTime += deltaTime;
 
+            TimerData.DeltaTime = deltaTime;
+
             SceneManager.Update(deltaTime);
             _sceneRenderer.Update(deltaTime);
             UpdateEvent?.Invoke(deltaTime);
