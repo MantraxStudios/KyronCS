@@ -18,6 +18,16 @@ namespace KrayonCore
 
         public bool WireframeMode { get; set; } = false;
 
+        public SceneRenderer()
+        {
+            CameraManager.Instance.Create(
+                "main",
+                new Vector3(0, 0, 5),
+                WindowConfig.Width / (float)WindowConfig.Height,
+                priority: 0
+            );
+        }
+
         // ── Inicialización ───────────────────────────────────────────────────
         public void Initialize()
         {
@@ -371,7 +381,7 @@ namespace KrayonCore
         public void Shutdown()
         {
             ClearInstanceGroups();
-            CameraManager.Instance.Clear();
+            //CameraManager.Instance.Clear();
         }
 
         /// <summary>Devuelve la cámara principal para uso del editor.</summary>

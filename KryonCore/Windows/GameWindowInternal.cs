@@ -57,14 +57,14 @@ namespace KrayonCore.GraphicsData
             // ── FIX: conectar TextInput y FileDrop al engine ──────────────────
             TextInput += e =>
             {
-                _engine.InternalTextInput(e);   // ← engine primero
-                OnTextInputEvent?.Invoke(e);    // ← luego IRender callbacks
+                _engine.InternalTextInput(e);   
+                OnTextInputEvent?.Invoke(e);   
             };
 
             FileDrop += e =>
             {
-                _engine.InternalFileDrop(e);    // ← engine primero
-                OnDropFileEvent?.Invoke(e);     // ← luego IRender callbacks
+                _engine.InternalFileDrop(e);    
+                OnDropFileEvent?.Invoke(e);     
             };
         }
 
@@ -74,7 +74,7 @@ namespace KrayonCore.GraphicsData
             base.OnLoad();
             VSync = VSyncMode.Off;
 
-            GL.ClearColor(0.2f, 0.3f, 0.6f, 1f);
+            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y, WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);
             GL.DepthMask(true);

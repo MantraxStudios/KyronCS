@@ -153,8 +153,8 @@ namespace KrayonCore.GraphicsData
             // 2. Post-proceso para cada cámara con buffer propio
             ApplyPostProcessToAllCameras();
 
-            // 3. Post-proceso del buffer de escena del editor (cámara "main")
-            ApplyEditorPostProcess();
+            if (!AppInfo.IsCompiledGame)
+                ApplyEditorPostProcess();
 
             // 4. Composición final al backbuffer
             RenderToScreen();
@@ -236,7 +236,7 @@ namespace KrayonCore.GraphicsData
             if (_fullscreenQuad is null) return;
 
             dest.Bind();
-            GL.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y, WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _fullscreenQuad.Render(
@@ -264,16 +264,33 @@ namespace KrayonCore.GraphicsData
         {
             if (_window is null || _screenQuad is null) return;
 
-            var ppEnabled = _fullscreenQuad?.GetSettings().Enabled == true;
-            var finalTex = ppEnabled
-                ? Buffers.TryGet(PostProcessBufferName)?.ColorTexture ?? 0
-                : Buffers.TryGet(SceneBufferName)?.ColorTexture ?? 0;
+            int finalTex;
+
+            if (AppInfo.IsCompiledGame)
+            {
+                // ── Modo compilado: mostrar la primera cámara del juego (NO la del editor) ───
+                var gameCam = CameraManager.Instance.GetRenderOrder()
+                    .FirstOrDefault(rc => rc.Name != "main"); // Omitir la cámara del editor
+
+                if (gameCam is null) return;
+
+                bool ppEnabled = _fullscreenQuad?.GetSettings().Enabled == true;
+                finalTex = gameCam.GetFinalTextureId(ppEnabled);
+            }
+            else
+            {
+                // ── Modo editor: mostrar la cámara del editor ─────────────────────
+                bool ppEnabled = _fullscreenQuad?.GetSettings().Enabled == true;
+                finalTex = ppEnabled
+                    ? Buffers.TryGet(PostProcessBufferName)?.ColorTexture ?? 0
+                    : Buffers.TryGet(SceneBufferName)?.ColorTexture ?? 0;
+            }
 
             if (finalTex == 0) return;
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             GL.Viewport(0, 0, _window.ClientSize.X, _window.ClientSize.Y);
-            GL.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y, WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             _screenQuad.Render(finalTex);
         }
