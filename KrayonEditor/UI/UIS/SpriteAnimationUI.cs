@@ -109,13 +109,16 @@ namespace KrayonEditor.UI
         // --- Punto de entrada ---
         public override void OnDrawUI()
         {
+            if (!_isVisible)
+                return;
+
             if (_selectedSprite != null && !IsSpriteValid())
                 ClearSelection();
 
             ImGui.SetNextWindowSize(new Vector2(1280, 740), ImGuiCond.FirstUseEver);
             ImGui.PushStyleColor(ImGuiCol.WindowBg, ColBg);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-            ImGui.Begin("Animation Editor", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar);
+            ImGui.Begin("Animation Editor", ref _isVisible, ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar);
             ImGui.PopStyleVar();
             ImGui.PopStyleColor();
 

@@ -1,8 +1,9 @@
 ﻿using ImGuiNET;
 using KrayonCore.Core.Attributes;
-using KrayonEditor.Compiler;
+using KrayonEditor.Main;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 
@@ -32,6 +33,11 @@ namespace KrayonEditor.UI
         private readonly List<LogEntry> _log = new();
         private readonly object _logLock = new();
 
+        // ── Escena por defecto ───────────────────────────────────────────────
+        private string _selectedDefaultScene = "/DefaultScene.scene";
+        private List<string> _availableScenes = new();
+        private int _selectedSceneIndex = 0;
+
         private const float Padding = 16f;
         private const float ItemSpacing = 8f;
         private const float SectionSpacing = 12f;
@@ -41,6 +47,9 @@ namespace KrayonEditor.UI
             _buildPipeline.ProgressChanged += OnBuildProgressChanged;
             _buildPipeline.LogAdded += OnBuildLogAdded;
             _buildPipeline.BuildCompleted += OnBuildCompleted;
+
+            LoadEngineData();
+            RefreshAvailableScenes();
         }
 
         public override void OnDrawUI()
@@ -90,6 +99,10 @@ namespace KrayonEditor.UI
             ImGui.Separator();
             ImGui.Spacing();
             DrawBuildConfiguration();
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+            DrawDefaultSceneSection();
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
@@ -152,6 +165,52 @@ namespace KrayonEditor.UI
 
             if (DrawPlatformToggle("Android", BuildPlatform.Android, buttonWidth))
                 _platform = BuildPlatform.Android;
+
+            if (isBuilding) ImGui.EndDisabled();
+        }
+
+        private void DrawDefaultSceneSection()
+        {
+            ImGui.Text("Default Scene");
+            ImGui.Spacing();
+
+            bool isBuilding = _state == BuildState.Building;
+            if (isBuilding) ImGui.BeginDisabled();
+
+            if (_availableScenes.Count == 0)
+            {
+                ImGui.TextDisabled("No scenes found");
+            }
+            else
+            {
+                string currentScene = _availableScenes[_selectedSceneIndex];
+
+                ImGui.SetNextItemWidth(-1);
+                if (ImGui.BeginCombo("##DefaultScene", currentScene))
+                {
+                    for (int i = 0; i < _availableScenes.Count; i++)
+                    {
+                        bool isSelected = _selectedSceneIndex == i;
+                        if (ImGui.Selectable(_availableScenes[i], isSelected))
+                        {
+                            _selectedSceneIndex = i;
+                            _selectedDefaultScene = _availableScenes[i];
+                            SaveEngineData();
+                        }
+
+                        if (isSelected)
+                            ImGui.SetItemDefaultFocus();
+                    }
+                    ImGui.EndCombo();
+                }
+            }
+
+            ImGui.Spacing();
+
+            if (ImGui.Button("Refresh Scenes", new Vector2(-1, 0)))
+            {
+                RefreshAvailableScenes();
+            }
 
             if (isBuilding) ImGui.EndDisabled();
         }
@@ -358,8 +417,77 @@ namespace KrayonEditor.UI
             };
         }
 
+        private void RefreshAvailableScenes()
+        {
+            _availableScenes = AssetManager.GetAllScenes()
+                .Select(s => s.Path)
+                .OrderBy(p => p)
+                .ToList();
+
+            if (_availableScenes.Count == 0)
+            {
+                _availableScenes.Add("/DefaultScene.scene");
+            }
+
+            // Buscar el índice de la escena seleccionada actual
+            _selectedSceneIndex = _availableScenes.IndexOf(_selectedDefaultScene);
+            if (_selectedSceneIndex < 0)
+            {
+                _selectedSceneIndex = 0;
+                _selectedDefaultScene = _availableScenes[0];
+            }
+
+            Console.WriteLine($"[CompilerUI] Found {_availableScenes.Count} scenes");
+        }
+
+        private void LoadEngineData()
+        {
+            try
+            {
+                if (File.Exists(AssetManager.EngineDataPath))
+                {
+                    string json = File.ReadAllText(AssetManager.EngineDataPath);
+                    var engineData = System.Text.Json.JsonSerializer.Deserialize<EngineData>(json);
+                    if (engineData != null && !string.IsNullOrEmpty(engineData.DefaultScene))
+                    {
+                        _selectedDefaultScene = engineData.DefaultScene;
+                        Console.WriteLine($"[CompilerUI] Loaded default scene: {_selectedDefaultScene}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CompilerUI] Error loading EngineData.json: {ex.Message}");
+            }
+        }
+
+        private void SaveEngineData()
+        {
+            try
+            {
+                var engineData = new EngineData
+                {
+                    DefaultScene = _selectedDefaultScene
+                };
+
+                string json = System.Text.Json.JsonSerializer.Serialize(engineData, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                File.WriteAllText(AssetManager.EngineDataPath, json, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                Console.WriteLine($"[CompilerUI] Saved default scene: {_selectedDefaultScene}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CompilerUI] Error saving EngineData.json: {ex.Message}");
+            }
+        }
+
         private void StartBuild()
         {
+            SaveEngineData(); // Guardar antes de compilar
+
             _cts = new CancellationTokenSource();
             _state = BuildState.Building;
             _progress = 0f;

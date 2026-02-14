@@ -8,7 +8,7 @@ namespace KrayonCore
     public class CameraComponent : Component
     {
         // ── Serialización ────────────────────────────────────────────────────
-        [ToStorage] public string CameraName { get; set; } = "";
+        [ToStorage, NoSerializeToInspector] public string CameraName { get; set; } = "";
         [ToStorage] public int Priority { get; set; } = 0;
         [ToStorage] public bool RenderToBuffer { get; set; } = true;
         [ToStorage] public bool UseGBuffer { get; set; } = true;

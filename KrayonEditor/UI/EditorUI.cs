@@ -3,32 +3,52 @@ using KrayonCore;
 using KrayonCore.Core.Attributes;
 using KrayonCore.GraphicsData;
 using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
+using System.Text.Json;
 using Vector2 = System.Numerics.Vector2;
 
 namespace KrayonEditor.UI
 {
+    public class WindowsState
+    {
+        public bool ShowHierarchy { get; set; } = true;
+        public bool ShowInspector { get; set; } = true;
+        public bool ShowSceneView { get; set; } = true;
+        public bool ShowConsole { get; set; } = true;
+        public bool ShowStats { get; set; } = true;
+        public bool ShowAssets { get; set; } = true;
+        public bool ShowMaterials { get; set; } = false;
+        public bool ShowTileEditor { get; set; } = false;
+        public bool ShowSpriteAnimator { get; set; } = false;
+        public bool ShowCompiler { get; set; } = false;
+    }
+
     internal static class EditorUI
     {
         private static MainMenuBarUI _mainMenuBar = new MainMenuBarUI();
-        private static DockSpaceUI _dockSpace = new DockSpaceUI();
-        private static HierarchyUI _hierarchy = new HierarchyUI();
-        private static InspectorUI _inspector = new InspectorUI();
-        private static SceneViewUI _sceneView = new SceneViewUI();
-        private static ConsoleUI _console = new ConsoleUI();
-        private static StatsUI _stats = new StatsUI();
+        public static DockSpaceUI _dockSpace = new DockSpaceUI();
+        public static HierarchyUI _hierarchy = new HierarchyUI();
+        public static InspectorUI _inspector = new InspectorUI();
+        public static SceneViewUI _sceneView = new SceneViewUI();
+        public static ConsoleUI _console = new ConsoleUI();
+        public static StatsUI _stats = new StatsUI();
         public static AssetsUI _assets = new AssetsUI();
-        private static MaterialUI _materials = new MaterialUI();
-        private static TileEditor _TileEditor = new TileEditor();
-        private static SpriteAnimationUI _SpriteAnimator= new SpriteAnimationUI();
-        private static CompilerUI _CompilerUI = new CompilerUI();
-        private static RoslynCodeEditor editorCode;
+        public static MaterialUI _materials = new MaterialUI();
+        public static TileEditor _TileEditor = new TileEditor();
+        public static SpriteAnimationUI _SpriteAnimator = new SpriteAnimationUI();
+        public static CompilerUI _CompilerUI = new CompilerUI();
+        public static RoslynCodeEditor editorCode;
+
+        private static string WindowsStatePath => AssetManager.TotalBase + "Windows.json";
+        private static WindowsState _lastState = new WindowsState();
 
         public static void Initialize()
         {
             SetupImGuiStyle();
             editorCode = new RoslynCodeEditor();
             editorCode.LoadDll(AssetManager.TotalBase + "/Library/KrayonCore.dll");
+            LoadWindowsState();
         }
 
         public static void Draw(
@@ -54,14 +74,12 @@ namespace KrayonEditor.UI
             _stats.CurrentFps = currentFps;
             _stats.CurrentFrameTime = currentFrameTime;
 
-            // Sincronizar visibilidad con el menú
             _hierarchy.IsVisible = _mainMenuBar.ShowHierarchy;
             _inspector.IsVisible = _mainMenuBar.ShowInspector;
             _console.IsVisible = _mainMenuBar.ShowConsole;
             _stats.IsVisible = _mainMenuBar.ShowStats;
             _assets.IsVisible = _mainMenuBar.ShowAssets;
 
-            // Dibujar UI
             _mainMenuBar.OnDrawUI();
             _dockSpace.OnDrawUI();
             _hierarchy.OnDrawUI();
@@ -86,6 +104,8 @@ namespace KrayonEditor.UI
             newEditorCameraSpeed = _sceneView.EditorCameraSpeed;
             newLastSceneViewportSize = _sceneView.LastViewportSize;
 
+            CheckAndSaveWindowsState();
+
             if (!GraphicsEngine.Instance.GetMouseState().IsButtonDown(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) && EditorActions.IsHoveringScene && GraphicsEngine.Instance.GetKeyboardState().IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftControl) && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D))
             {
                 if (EditorActions.SelectedObject != null)
@@ -93,6 +113,94 @@ namespace KrayonEditor.UI
                     GameObject clone = SceneManager.ActiveScene.Instantiate(EditorActions.SelectedObject);
                     EditorActions.SelectedObject = clone;
                 }
+            }
+        }
+
+        private static void LoadWindowsState()
+        {
+            try
+            {
+                if (File.Exists(WindowsStatePath))
+                {
+                    string json = File.ReadAllText(WindowsStatePath);
+                    var state = JsonSerializer.Deserialize<WindowsState>(json);
+
+                    if (state != null)
+                    {
+                        _hierarchy.IsVisible = state.ShowHierarchy;
+                        _inspector.IsVisible = state.ShowInspector;
+                        _sceneView.IsVisible = state.ShowSceneView;
+                        _console.IsVisible = state.ShowConsole;
+                        _stats.IsVisible = state.ShowStats;
+                        _assets.IsVisible = state.ShowAssets;
+                        _materials.IsVisible = state.ShowMaterials;
+                        _TileEditor.IsVisible = state.ShowTileEditor;
+                        _SpriteAnimator.IsVisible = state.ShowSpriteAnimator;
+                        _CompilerUI.IsVisible = state.ShowCompiler;
+
+                        _lastState = state;
+                        Console.WriteLine("[EditorUI] Windows state loaded");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"[EditorUI] Error loading windows state: {ex.Message}");
+            }
+        }
+
+        private static void CheckAndSaveWindowsState()
+        {
+            var currentState = new WindowsState
+            {
+                ShowHierarchy = _hierarchy.IsVisible,
+                ShowInspector = _inspector.IsVisible,
+                ShowSceneView = _sceneView.IsVisible,
+                ShowConsole = _console.IsVisible,
+                ShowStats = _stats.IsVisible,
+                ShowAssets = _assets.IsVisible,
+                ShowMaterials = _materials.IsVisible,
+                ShowTileEditor = _TileEditor.IsVisible,
+                ShowSpriteAnimator = _SpriteAnimator.IsVisible,
+                ShowCompiler = _CompilerUI.IsVisible
+            };
+
+            if (HasStateChanged(currentState))
+            {
+                SaveWindowsState(currentState);
+                _lastState = currentState;
+            }
+        }
+
+        private static bool HasStateChanged(WindowsState current)
+        {
+            return current.ShowHierarchy != _lastState.ShowHierarchy ||
+                   current.ShowInspector != _lastState.ShowInspector ||
+                   current.ShowSceneView != _lastState.ShowSceneView ||
+                   current.ShowConsole != _lastState.ShowConsole ||
+                   current.ShowStats != _lastState.ShowStats ||
+                   current.ShowAssets != _lastState.ShowAssets ||
+                   current.ShowMaterials != _lastState.ShowMaterials ||
+                   current.ShowTileEditor != _lastState.ShowTileEditor ||
+                   current.ShowSpriteAnimator != _lastState.ShowSpriteAnimator ||
+                   current.ShowCompiler != _lastState.ShowCompiler;
+        }
+
+        private static void SaveWindowsState(WindowsState state)
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(state, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                File.WriteAllText(WindowsStatePath, json, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                Console.WriteLine("[EditorUI] Windows state saved");
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"[EditorUI] Error saving windows state: {ex.Message}");
             }
         }
 

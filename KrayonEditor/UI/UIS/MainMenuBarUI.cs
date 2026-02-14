@@ -20,7 +20,7 @@ namespace KrayonEditor.UI
         private bool _showOpenDialog = false;
         private bool _showNewSceneDialog = false;
         private bool _showOverwriteConfirmDialog = false;
-        private bool _showQuickSaveConfirmDialog = false;  // NUEVO: Para Ctrl+S
+        private bool _showQuickSaveConfirmDialog = false;  
         private string _sceneNameInput = "";
         private string _sceneNameToOverwrite = "";
         private string[] _availableScenes = new string[0];
@@ -102,22 +102,55 @@ namespace KrayonEditor.UI
 
                 if (ImGui.BeginMenu("Window"))
                 {
-                    bool hierarchy = ShowHierarchy;
-                    bool inspector = ShowInspector;
-                    bool console = ShowConsole;
-                    bool stats = ShowStats;
-                    bool assets = ShowAssets;
+                    if (ImGui.MenuItem("Hierarchy", null, EditorUI._hierarchy.IsVisible))
+                    {
+                        EditorUI._hierarchy.IsVisible = !EditorUI._hierarchy.IsVisible;
+                    }
 
-                    if (ImGui.MenuItem("Hierarchy", null, ref hierarchy))
-                        ShowHierarchy = hierarchy;
-                    if (ImGui.MenuItem("Inspector", null, ref inspector))
-                        ShowInspector = inspector;
-                    if (ImGui.MenuItem("Console", null, ref console))
-                        ShowConsole = console;
-                    if (ImGui.MenuItem("Stats", null, ref stats))
-                        ShowStats = stats;
-                    if (ImGui.MenuItem("Assets", null, ref assets))
-                        ShowAssets = assets;
+                    if (ImGui.MenuItem("Inspector", null, EditorUI._inspector.IsVisible))
+                    {
+                        EditorUI._inspector.IsVisible = !EditorUI._inspector.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Scene View", null, EditorUI._sceneView.IsVisible))
+                    {
+                        EditorUI._sceneView.IsVisible = !EditorUI._sceneView.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Console", null, EditorUI._console.IsVisible))
+                    {
+                        EditorUI._console.IsVisible = !EditorUI._console.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Stats", null, EditorUI._stats.IsVisible))
+                    {
+                        EditorUI._stats.IsVisible = !EditorUI._stats.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Assets", null, EditorUI._assets.IsVisible))
+                    {
+                        EditorUI._assets.IsVisible = !EditorUI._assets.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Materials", null, EditorUI._materials.IsVisible))
+                    {
+                        EditorUI._materials.IsVisible = !EditorUI._materials.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Tile Editor", null, EditorUI._TileEditor.IsVisible))
+                    {
+                        EditorUI._TileEditor.IsVisible = !EditorUI._TileEditor.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Sprite Animator", null, EditorUI._SpriteAnimator.IsVisible))
+                    {
+                        EditorUI._SpriteAnimator.IsVisible = !EditorUI._SpriteAnimator.IsVisible;
+                    }
+
+                    if (ImGui.MenuItem("Compiler", null, EditorUI._CompilerUI.IsVisible))
+                    {
+                        EditorUI._CompilerUI.IsVisible = !EditorUI._CompilerUI.IsVisible;
+                    }
 
                     ImGui.EndMenu();
                 }

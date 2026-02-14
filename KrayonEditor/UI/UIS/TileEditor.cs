@@ -11,7 +11,10 @@ namespace KrayonEditor.UI
     {
         public override void OnDrawUI()
         {
-            ImGui.Begin("Tile Editor");
+            if (!_isVisible)
+                return;
+
+            ImGui.Begin("Tile Editor", ref _isVisible);
 
             ImGui.End();
         }

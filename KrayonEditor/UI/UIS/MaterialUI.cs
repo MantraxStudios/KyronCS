@@ -46,7 +46,10 @@ namespace KrayonEditor.UI
 
         public override void OnDrawUI()
         {
-            ImGui.Begin("Material Editor", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+            if (!_isVisible)
+                return;
+
+            ImGui.Begin("Material Editor", ref _isVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
             var windowSize = ImGui.GetContentRegionAvail();
             float leftPanelWidth = 300;

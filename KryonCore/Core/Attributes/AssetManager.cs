@@ -16,12 +16,15 @@ namespace KrayonCore.Core.Attributes
         public static string CompilerPath => $"{TotalBase}CompileData/";
         public static string ClientDLLPath => $"{TotalBase}bin/Debug/net10.0/";
         public static string GamePak => AppInfo.IsCompiledGame ? "Game.pak" : $"{TotalBase}CompileData/Game.Pak";
+        public static string DefaultScene => "/DefaultScene.scene";
         public static string VSProyect => $"{TotalBase}";
         public static string CSProj => $"{TotalBase}KrayonClient.csproj";
         public static string MaterialsPath => $"{TotalBase}EngineMaterials.json";
         public static string VFXPath => $"{TotalBase}VFXData.json";
 
         private const string DataExt = ".data";
+        public static string EngineDataPath => $"{TotalBase}EngineData.json";
+
 
         private static Dictionary<Guid, AssetRecord> _assets = new();
         private static Dictionary<Guid, FolderRecord> _folders = new();
@@ -823,6 +826,9 @@ namespace KrayonCore.Core.Attributes
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
         }
+
+        public static IEnumerable<AssetRecord> GetAllScenes()
+            => _assets.Values.Where(a => a.Type == "Scene" || a.Path.EndsWith(".scene", StringComparison.OrdinalIgnoreCase));
 
         private static void DeleteEmptyDirectories(string directory)
         {
