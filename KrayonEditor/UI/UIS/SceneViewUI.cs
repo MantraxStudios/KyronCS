@@ -1,7 +1,7 @@
 ﻿using ImGuiNET;
-using KrayonCore;
 using KrayonCore.EventSystem;
 using KrayonCore.GraphicsData;
+using KrayonCore;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
@@ -31,6 +31,10 @@ namespace KrayonEditor.UI
             DrawToolbar();
             DrawViewport();
 
+            ImGui.End();
+
+            ImGui.Begin("Game", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+            DrawGameViewPort();
             ImGui.End();
         }
 
@@ -495,6 +499,116 @@ namespace KrayonEditor.UI
             }
         }
 
+        private void DrawGameViewPort()
+        {
+            Vector2 viewportSize = ImGui.GetContentRegionAvail();
+            if (viewportSize.X <= 0 || viewportSize.Y <= 0) return;
+
+            if (LastViewportSize.X != viewportSize.X || LastViewportSize.Y != viewportSize.Y)
+            {
+                LastViewportSize = viewportSize;
+                var gameCamera = GetGameCamera();
+                if (gameCamera is not null)
+                {
+                    gameCamera.ResizeBuffer((int)viewportSize.X, (int)viewportSize.Y);
+                    gameCamera.Camera.UpdateAspectRatio((int)viewportSize.X, (int)viewportSize.Y);
+                }
+            }
+
+            int textureId = GetGameCameraTextureId();
+
+            if (textureId == 0)
+            {
+                DrawNoCameraMessage(viewportSize);
+                return;
+            }
+
+            ImGui.Image(
+                textureId,
+                viewportSize,
+                new Vector2(0, 1),
+                new Vector2(1, 0)
+            );
+        }
+
+        private void DrawNoCameraMessage(Vector2 viewportSize)
+        {
+            // Fondo oscuro
+            var drawList = ImGui.GetWindowDrawList();
+            var cursorPos = ImGui.GetCursorScreenPos();
+
+            drawList.AddRectFilled(
+                cursorPos,
+                new Vector2(cursorPos.X + viewportSize.X, cursorPos.Y + viewportSize.Y),
+                ImGui.ColorConvertFloat4ToU32(new Vector4(0.08f, 0.08f, 0.08f, 1f))
+            );
+
+            // Texto centrado
+            const string line1 = "No Camera Available";
+            const string line2 = "Add a GameObject with a CameraComponent to render the scene.";
+
+            var textSize1 = ImGui.CalcTextSize(line1);
+            var textSize2 = ImGui.CalcTextSize(line2);
+            float totalHeight = textSize1.Y + 8f + textSize2.Y;
+
+            Vector2 center = new Vector2(
+                cursorPos.X + viewportSize.X * 0.5f,
+                cursorPos.Y + viewportSize.Y * 0.5f
+            );
+
+            drawList.AddText(
+                new Vector2(center.X - textSize1.X * 0.5f, center.Y - totalHeight * 0.5f),
+                ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.8f, 0.8f, 1f)),
+                line1
+            );
+
+            drawList.AddText(
+                new Vector2(center.X - textSize2.X * 0.5f, center.Y - totalHeight * 0.5f + textSize1.Y + 8f),
+                ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.5f, 0.5f, 1f)),
+                line2
+            );
+
+            // Reservar el espacio para que ImGui no colapse la ventana
+            ImGui.Dummy(viewportSize);
+        }
+
+        private RenderCamera? GetGameCamera()
+        {
+            var cameraObjects = SceneManager.ActiveScene?
+                .FindGameObjectsWithComponent<CameraComponent>();
+
+            if (cameraObjects is not null)
+            {
+                CameraComponent? bestComp = null;
+                int bestPriority = int.MaxValue;
+
+                foreach (var go in cameraObjects)
+                {
+                    var comp = go.GetComponent<CameraComponent>();
+                    if (comp?.RenderCamera is null) continue;
+                    if (comp.Priority < bestPriority)
+                    {
+                        bestPriority = comp.Priority;
+                        bestComp = comp;
+                    }
+                }
+
+                if (bestComp?.RenderCamera is not null)
+                    return bestComp.RenderCamera;
+            }
+
+            return CameraManager.Instance.Main;
+        }
+
+        private int GetGameCameraTextureId()
+        {
+            var cam = GetGameCamera();
+            if (cam is null) return 0;
+
+            bool ppEnabled = GraphicsEngine.Instance?.PostProcessing?.Enabled == true;
+            return cam.GetFinalTextureId(ppEnabled);
+        }
+
         private void DrawViewport()
         {
             Vector2 viewportSize = ImGui.GetContentRegionAvail();
@@ -504,7 +618,7 @@ namespace KrayonEditor.UI
                 if (LastViewportSize.X != viewportSize.X || LastViewportSize.Y != viewportSize.Y)
                 {
                     LastViewportSize = viewportSize;
-                    Engine?.ResizeSceneFrameBuffer((int)viewportSize.X, (int)viewportSize.Y);
+                    Engine?.ResizeFrameBuffer("scene", (int)viewportSize.X, (int)viewportSize.Y);
 
                     if (MainCamera != null)
                     {
@@ -517,11 +631,11 @@ namespace KrayonEditor.UI
                 {
                     Vector2 cursorPos = ImGui.GetCursorScreenPos();
                     ImGui.Image(
-                        frameBuffer.TextureId,
+                        frameBuffer.ColorTexture,
                         viewportSize,
                         new Vector2(0, 1),
                         new Vector2(1, 0)
-                    ); 
+                    );
                     EditorActions.IsHoveringScene = ImGui.IsItemHovered();
 
                     if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !TransformGizmo.IsHovering)

@@ -2,15 +2,15 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "a0fe0052-ff1b-4161-97fa-279381d533ab",
-      "Name": "Cube_0",
+      "Id": "6178e50e-427e-4441-83a5-255ca866933a",
+      "Name": "GameObject_0",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "84ff75c6-6275-40aa-9b26-60531362bfd8",
+          "ComponentId": "f2913f25-b343-4081-af42-7cadc9547daa",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -18,6 +18,81 @@
               "x": 0,
               "y": 0,
               "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "74e208aa-1cdb-4f6e-82f0-9ba873ae6158",
+          "Enabled": true,
+          "SerializedFields": {
+            "CameraName": "",
+            "Priority": 0,
+            "RenderToBuffer": true,
+            "UseGBuffer": false,
+            "UseEmission": true,
+            "BufferWidth": 1280,
+            "BufferHeight": 720,
+            "ProjectionMode": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ProjectionMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Perspective"
+            },
+            "Fov": 45,
+            "NearPlane": 0.1,
+            "FarPlane": 1000,
+            "OrthoSize": 10,
+            "AspectRatio": 1.7777778,
+            "ClearMode": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.CameraClearMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "SolidColor"
+            },
+            "ClearColor": {
+              "__type": "Vector4",
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0.1,
+              "w": 1
+            },
+            "ViewportX": 0,
+            "ViewportY": 0,
+            "ViewportWidth": 1,
+            "ViewportHeight": 1
+          }
+        }
+      ]
+    },
+    {
+      "Id": "aa23be60-9240-4705-93b0-03f0142c2f97",
+      "Name": "Cube_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "893ab94d-2ede-4a0d-88f6-c244804c3c5b",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0.39811522,
+              "z": -6.5329475
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -36,10 +111,10 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "cfed8d96-795e-427b-804d-e21046f1873e",
+          "ComponentId": "b46ed4f2-0917-4863-b047-e18e59b0c6e3",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "ModelPath": "1b467368-606c-462c-af3f-a23a3d08d12c",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
@@ -52,22 +127,22 @@
       ]
     },
     {
-      "Id": "44b8fcf3-c43e-45be-86c5-20b46bd0f392",
-      "Name": "GameObject_1",
+      "Id": "e30c60c6-37dc-45d6-bcc0-f8a7a157af02",
+      "Name": "GameObject_2",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7cd1c4cd-29bf-4eda-b300-11844d1a0536",
+          "ComponentId": "b6542f08-a39f-477b-9e71-1af6a9f6d24c",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
               "y": 0,
-              "z": 0
+              "z": -0.25256115
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -85,24 +160,43 @@
           }
         },
         {
-          "TypeName": "KrayonCore.Core.Components.AudioSource, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f4dc47a1-bda8-4bcf-bd15-154195f7bcf9",
+          "TypeName": "KrayonCore.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "ed3fa045-6b47-4a33-87e7-b38ab7091108",
           "Enabled": true,
           "SerializedFields": {
-            "AudioPath": "95d34294-d785-4306-91f2-a55d512956e2",
-            "Volume": 0.3,
-            "Pitch": 1,
-            "Loop": true,
-            "Spatial": false,
-            "MinDistance": 1,
-            "MaxDistance": 20,
-            "RolloffMode": {
+            "CameraName": "",
+            "Priority": 1,
+            "RenderToBuffer": true,
+            "UseGBuffer": true,
+            "UseEmission": true,
+            "BufferWidth": 1280,
+            "BufferHeight": 720,
+            "ProjectionMode": {
               "__type": "Enum",
-              "enumType": "KrayonCore.Core.Components.AudioRolloffMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Logarithmic"
+              "enumType": "KrayonCore.ProjectionMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Perspective"
             },
-            "StereoPanBlend": 1,
-            "PlayOnAwake": true
+            "Fov": 45,
+            "NearPlane": 0.1,
+            "FarPlane": 1000,
+            "OrthoSize": 10,
+            "AspectRatio": 1.7777778,
+            "ClearMode": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.CameraClearMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "SolidColor"
+            },
+            "ClearColor": {
+              "__type": "Vector4",
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0.1,
+              "w": 1
+            },
+            "ViewportX": 0,
+            "ViewportY": 0,
+            "ViewportWidth": 1,
+            "ViewportHeight": 1
           }
         }
       ]

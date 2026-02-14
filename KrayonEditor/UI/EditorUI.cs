@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Core.Attributes;
 using KrayonCore.GraphicsData;
 using System.Collections.Generic;
 using System.Numerics;
@@ -21,10 +22,13 @@ namespace KrayonEditor.UI
         private static TileEditor _TileEditor = new TileEditor();
         private static SpriteAnimationUI _SpriteAnimator= new SpriteAnimationUI();
         private static CompilerUI _CompilerUI = new CompilerUI();
+        private static RoslynCodeEditor editorCode;
 
         public static void Initialize()
         {
             SetupImGuiStyle();
+            editorCode = new RoslynCodeEditor();
+            editorCode.LoadDll(AssetManager.TotalBase + "/Library/KrayonCore.dll");
         }
 
         public static void Draw(
@@ -70,6 +74,7 @@ namespace KrayonEditor.UI
             _materials.OnDrawUI();
             _TileEditor.OnDrawUI();
             _CompilerUI.OnDrawUI();
+            editorCode.Draw();
 
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
             _mainMenuBar.ShowInspector = _inspector.IsVisible;

@@ -103,7 +103,7 @@ namespace KrayonCore.Core.Components
                 return;
             }
 
-            ThisAudio = GraphicsEngine.Instance._audio.Play(bytes, MakeSettings());
+            ThisAudio = GraphicsEngine.Instance.Audio.Play(bytes, MakeSettings());
         }
 
         public void Stop()
@@ -126,7 +126,7 @@ namespace KrayonCore.Core.Components
                 return;
             }
 
-            ThisAudio = GraphicsEngine.Instance._audio.Play(bytes, MakeSettings());
+            ThisAudio = GraphicsEngine.Instance.Audio.Play(bytes, MakeSettings());
         }
 
         private AudioPlaySettings MakeSettings() => new AudioPlaySettings
