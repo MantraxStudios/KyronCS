@@ -92,6 +92,16 @@ namespace KrayonEditor.UI
                     EditorActions.CreateEmptyGameObject();
                 }
 
+                if (ImGui.MenuItem("Model"))
+                {
+                    EditorActions.CreateModelGameObject();
+                }
+
+                if (ImGui.MenuItem("TileRenderer"))
+                {
+                    EditorActions.CreateTileRendererGameObject();
+                }
+
                 if (ImGui.BeginMenu("Light"))
                 {
                     if (ImGui.MenuItem("Directional Light"))
@@ -109,14 +119,9 @@ namespace KrayonEditor.UI
                     ImGui.EndMenu();
                 }
 
-                if (ImGui.MenuItem("Model"))
+                if (ImGui.MenuItem("New Camera"))
                 {
-                    EditorActions.CreateModelGameObject();
-                }
-
-                if (ImGui.MenuItem("TileRenderer"))
-                {
-                    EditorActions.CreateTileRendererGameObject();
+                    EditorActions.CreateCamera();
                 }
 
                 ImGui.EndPopup();

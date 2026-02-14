@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("KrayonEditor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b235a2a466177711b868de54e387add1c98ea20c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51a47f1ce8e8ed90b780bed7703e6f8a8799a41d")]
 [assembly: System.Reflection.AssemblyProductAttribute("KrayonEditor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("KrayonEditor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

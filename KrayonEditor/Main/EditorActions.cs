@@ -59,6 +59,18 @@ namespace KrayonEditor
             EngineEditor.LogMessage($"Created {go.Name} with Directional Light");
         }
 
+        public static void CreateCamera()
+        {
+            if (SceneManager.ActiveScene == null) return;
+            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
+            var go = SceneManager.ActiveScene.CreateGameObject($"Camera_{count}");
+            go.Transform.SetPosition(0, 5, 0);
+            go.Transform.SetRotation(45, 0, 0);
+            var cam = go.AddComponent<CameraComponent>();
+            EngineEditor.SetSelectedObject(go);
+            EngineEditor.LogMessage($"Created {go.Name} with Camera");
+        }
+
         public static void CreatePointLight()
         {
             if (SceneManager.ActiveScene == null) return;
