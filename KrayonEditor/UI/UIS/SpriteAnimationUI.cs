@@ -23,6 +23,11 @@ namespace KrayonEditor.UI
 
         public override void OnDrawUI()
         {
+            if (_selectedSprite != null && !IsSpriteValid())
+            {
+                ClearSelection();
+            }
+
             ImGui.SetNextWindowSize(new Vector2(1200, 700), ImGuiCond.FirstUseEver);
             ImGui.Begin("Animation Editor", ImGuiWindowFlags.MenuBar);
 
@@ -959,6 +964,36 @@ namespace KrayonEditor.UI
                 _selectedClip.Frames.RemoveAt(index);
                 _selectedFrameIndex = -1;
             }
+        }
+
+        private bool IsSpriteValid()
+        {
+            if (_selectedSprite == null)
+                return false;
+
+            var scene = SceneManager.ActiveScene;
+            if (scene == null)
+                return false;
+
+            var gameObjects = scene.GetAllGameObjects();
+            foreach (var go in gameObjects)
+            {
+                var sprite = go.GetComponent<SpriteRenderer>();
+                if (sprite == _selectedSprite)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void ClearSelection()
+        {
+            _selectedSprite = null;
+            _selectedClip = null;
+            _selectedFrameIndex = -1;
+            _isPreviewPlaying = false;
+            _previewFrameIndex = 0;
+            _previewTimer = 0.0f;
         }
     }
 }

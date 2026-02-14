@@ -2,15 +2,15 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "12752c2c-cf5f-4bae-aa65-a2600e573f97",
-      "Name": "Player",
-      "Tag": "Player",
+      "Id": "c51aae70-3054-42fa-b61e-ee497ff639ff",
+      "Name": "Cube_0",
+      "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "0655f41e-abfb-477c-aa4c-13d35def1062",
+          "ComponentId": "85431a41-0a92-4393-bc38-4a5bd04fd140",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,13 +36,13 @@
         },
         {
           "TypeName": "KrayonCore.SpriteRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "230b669b-e1d2-4fac-b1f4-e37ca6031aba",
+          "ComponentId": "c6d90ec2-317d-427a-ab0b-7966123b6ed3",
           "Enabled": true,
           "SerializedFields": {
             "MaterialPath": "Player",
             "TileWidth": 32,
             "TileHeight": 32,
-            "TileIndexX": 1,
+            "TileIndexX": 0,
             "TileIndexY": 0,
             "Color": {
               "__type": "Vector4",
@@ -53,7 +53,7 @@
             },
             "FlipX": false,
             "FlipY": false,
-            "PixelsPerUnit": 16,
+            "PixelsPerUnit": 32,
             "Animations": {
               "__type": "List",
               "elementType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
@@ -111,20 +111,64 @@
             "CurrentAnimationName": "Idle",
             "AnimationSpeed": 0.5
           }
+        }
+      ]
+    },
+    {
+      "Id": "c61a1d00-ca9a-43e4-aeea-565778d68c11",
+      "Name": "DirectionalLight_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "bd43a83e-4697-498a-8184-d278db59ca46",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 5,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0.38268346,
+              "y": 0,
+              "z": 0,
+              "w": 0.9238795
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "361d6eb8-1a2b-4fab-badb-2f4181f954a2",
-          "Enabled": false,
+          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "b0d623b4-c169-4597-bee4-bb9548f2915d",
+          "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "1b467368-606c-462c-af3f-a23a3d08d12c",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
+            "Type": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Directional"
+            },
+            "Color": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Intensity": 5,
+            "Constant": 1,
+            "Linear": 0.09,
+            "Quadratic": 0.032,
+            "InnerCutOffDegrees": 12.5,
+            "OuterCutOffDegrees": 17.5
           }
         }
       ]

@@ -372,11 +372,39 @@ namespace KrayonEditor.UI
                     Console.WriteLine($"Material with name '{_newMaterialName}' already exists. Please choose a different name.");
                     return;
                 }
-                Console.WriteLine("*******" + _newShaderPath + ".vert");
 
-                var newMaterial = GraphicsEngine.Instance!.Materials.Create(_newMaterialName, Guid.Parse("f3df852d-4e51-4e3c-ae64-81184e1b1182"), Guid.Parse("94804744-32d4-4fa3-8aa0-d7f8f19fc3fb"));
-                _selectedMaterial = newMaterial;
-                Console.WriteLine($"Material created: {_newMaterialName}");
+                var vertShaderAsset = AssetManager.FindByPath(_selectedShaderPath + ".vert");
+                var fragShaderAsset = AssetManager.FindByPath(_selectedShaderPath + ".frag");
+
+                if (vertShaderAsset == null)
+                {
+                    Console.WriteLine($"Vertex shader not found: {_selectedShaderPath}.vert");
+                    return;
+                }
+
+                if (fragShaderAsset == null)
+                {
+                    Console.WriteLine($"Fragment shader not found: {_selectedShaderPath}.frag");
+                    return;
+                }
+
+                Console.WriteLine($"Creating material with shaders: {vertShaderAsset.Path} ({vertShaderAsset.Guid}) and {fragShaderAsset.Path} ({fragShaderAsset.Guid})");
+
+                var newMaterial = GraphicsEngine.Instance!.Materials.Create(
+                    _newMaterialName,
+                    vertShaderAsset.Guid,
+                    fragShaderAsset.Guid
+                );
+
+                if (newMaterial != null)
+                {
+                    _selectedMaterial = newMaterial;
+                    Console.WriteLine($"Material created successfully: {_newMaterialName}");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to create material: {_newMaterialName}");
+                }
             }
             catch (Exception ex)
             {
