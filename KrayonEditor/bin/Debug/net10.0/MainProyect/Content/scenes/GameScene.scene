@@ -2,7 +2,7 @@
   "SceneName": "GameScene",
   "GameObjects": [
     {
-      "Id": "b8f7ac6a-9582-4e19-831c-89f69a1742be",
+      "Id": "66601de1-f3d1-4c4f-8557-0d5960759545",
       "Name": "Cube_1",
       "Tag": "Untagged",
       "Active": true,
@@ -10,13 +10,13 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b0dbfbf1-1df6-47a2-9b49-74abc8d1f292",
+          "ComponentId": "0212b8d2-ca3d-4eee-a3ba-cd0b552855b6",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
-              "y": 0,
+              "y": -7.417182E-06,
               "z": 0
             },
             "Rotation": {
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b128597a-a537-4adb-acd2-3398d120ee96",
+          "ComponentId": "cfca5e6e-ee6e-483d-9121-fd6ba93c47eb",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
@@ -52,7 +52,7 @@
       ]
     },
     {
-      "Id": "e722f302-d25b-497c-8b15-23a02420b862",
+      "Id": "0f635e65-64d4-423f-9c67-c1db56468497",
       "Name": "GameObject_1",
       "Tag": "Untagged",
       "Active": true,
@@ -60,7 +60,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "bcc38e3b-3da8-4c58-aaf4-e8594a56d0b8",
+          "ComponentId": "b2bd94e3-c6cd-4d70-a034-a1522b3f0387",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -71,10 +71,10 @@
             },
             "Rotation": {
               "__type": "Quaternion",
-              "x": -0.16927442,
+              "x": -0.14979804,
               "y": 0,
               "z": 0,
-              "w": 0.98556906
+              "w": 0.9887167
             },
             "Scale": {
               "__type": "Vector3",
@@ -86,7 +86,7 @@
         },
         {
           "TypeName": "KrayonCore.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "52d0cccc-eb79-45fb-acc0-7c85c1bb3f0b",
+          "ComponentId": "2e0167b3-9274-4ffa-85c1-6ba4c3597251",
           "Enabled": true,
           "SerializedFields": {
             "CameraName": "",
@@ -127,7 +127,7 @@
       ]
     },
     {
-      "Id": "063e7c48-f050-470e-814d-034503bd6bdf",
+      "Id": "a1eda027-112d-4da2-bccc-c586e80878cf",
       "Name": "PointLight_2",
       "Tag": "Untagged",
       "Active": true,
@@ -135,14 +135,14 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "338a5163-93ad-4f16-b6ae-983d80d98439",
+          "ComponentId": "c5e1c0da-f6c4-4d6c-84f8-c043921d818c",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
               "y": 2,
-              "z": 2.9101768
+              "z": 1.3296568
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -161,7 +161,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "fe245f97-3bbd-43a5-9760-15a0590625c3",
+          "ComponentId": "0aed82fe-57b5-4ea1-95da-8163b39b1a9a",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -175,7 +175,7 @@
               "y": 1,
               "z": 1
             },
-            "Intensity": 1,
+            "Intensity": 0.05,
             "Constant": 1,
             "Linear": 0.09,
             "Quadratic": 0.032,

@@ -454,8 +454,16 @@ namespace KrayonCore
         public void Shutdown()
         {
             ClearInstanceGroups();
-            ClearRenderAttachments();
-            //CameraManager.Instance.Clear();
+            //ClearRenderAttachments();
+
+            var cameras = CameraManager.Instance.GetRenderOrder().ToList();
+            foreach (var cam in cameras)
+            {
+                if (cam.Name != "main")
+                {
+                    CameraManager.Instance.Remove(cam.Name);
+                }
+            }
         }
 
         /// <summary>Devuelve la cámara principal para uso del editor.</summary>
