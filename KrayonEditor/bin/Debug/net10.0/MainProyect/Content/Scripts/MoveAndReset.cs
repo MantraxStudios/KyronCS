@@ -3,28 +3,17 @@ using OpenTK.Mathematics;
 
 public class MoveAndReset : KrayonBehaviour
 {
-    public float _MoveSpeed = 5.0f;
+    public float _MoveSpeed = 15.0f; 
 
     public override void Update(float deltaTime)
     {
-        Vector3 _Pos = GameObject.Transform.GetWorldPosition();
+        Quaternion currentRot = GameObject.Transform.GetWorldRotation();
 
-        _Pos.X -= _MoveSpeed * deltaTime;
+        float angleRad = MathHelper.DegreesToRadians(_MoveSpeed * deltaTime);
+        Quaternion deltaRot = Quaternion.FromAxisAngle(Vector3.UnitY, angleRad);
 
-        GameObject.Transform.SetPosition(_Pos);
-    }
+        Quaternion newRot = deltaRot * currentRot;
 
-    public override void OnTriggerStay(GameObject other)
-    {
-        if (other.Name == "Player")
-        {
-            Console.WriteLine("Player Not Found");
-
-            SceneManager.LoadScene("Content/scenes/DefaultScene.scene");
-        }
-        else
-        {
-            Console.WriteLine("Player Not Found");
-        }
+        GameObject.Transform.SetWorldRotation(newRot);
     }
 }

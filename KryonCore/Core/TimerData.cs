@@ -7,5 +7,7 @@ namespace KrayonCore.Core
     public static class TimerData
     {
         public static float DeltaTime;
+        public static float DeltaTimeFixed;
+        public static float Time;
     }
 }

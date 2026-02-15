@@ -8,7 +8,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 public class PlayerController : KrayonBehaviour
 {
-    public float MoveSpeed = 5.0f;
+    public float MoveSpeed = 1.0f;
     private Rigidbody _body;
 
     public override void Start()
@@ -33,7 +33,7 @@ public class PlayerController : KrayonBehaviour
             direction.X -= 1.0f;
             GameObject.GetComponent<SpriteRenderer>().FlipX = true;
         }
-
+        
         if (InputSystem.GetKeyDown(Keys.D))
         {
             direction.X += 1.0f;
@@ -53,10 +53,12 @@ public class PlayerController : KrayonBehaviour
         if (direction != Vector3.Zero)
         {
             direction = direction.Normalized();
-            _body.SetVelocity(direction * MoveSpeed); // ← sin deltaTime
+            _body.SetVelocity(direction * MoveSpeed);
+            GameObject.GetComponent<SpriteRenderer>().Play("Walk");
         }
         else
         {
+            GameObject.GetComponent<SpriteRenderer>().Play("Idle");
             _body.SetVelocity(Vector3.Zero);
         }
     }

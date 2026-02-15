@@ -5,6 +5,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using System;
+using System.Diagnostics;
 
 namespace KrayonCore.GraphicsData
 {
@@ -12,7 +13,8 @@ namespace KrayonCore.GraphicsData
     {
         private readonly GraphicsEngine _engine;
 
-        // ── IRender: callbacks ──────────────────────────────────────────────
+        private readonly Stopwatch _renderTimer = Stopwatch.StartNew();
+
         public Action OnLoadRender { get; set; }
         public Action OnRederFrame { get; set; }
         public Action OnUpdateRender { get; set; }
@@ -30,10 +32,12 @@ namespace KrayonCore.GraphicsData
         public Action<FileDropEventArgs> OnDropFileEvent { get; set; }
         public Action<ResizeEventArgs> OnResizeEvent { get; set; }
 
-        // ── Constructor ─────────────────────────────────────────────────────
         public GameWindowInternal(int width, int height, string title, GraphicsEngine engine)
             : base(
-                new GameWindowSettings { UpdateFrequency = 0.0 },
+                new GameWindowSettings
+                {
+                    UpdateFrequency = 120.0
+                },
                 new NativeWindowSettings
                 {
                     ClientSize = new Vector2i(width, height),
@@ -54,21 +58,19 @@ namespace KrayonCore.GraphicsData
             MouseWheel += e => OnMouseWheelEvent?.Invoke(e);
             FileDrop += e => OnDropFileEvent?.Invoke(e);
 
-            // ── FIX: conectar TextInput y FileDrop al engine ──────────────────
             TextInput += e =>
             {
-                _engine.InternalTextInput(e);   
-                OnTextInputEvent?.Invoke(e);   
+                _engine.InternalTextInput(e);
+                OnTextInputEvent?.Invoke(e);
             };
 
             FileDrop += e =>
             {
-                _engine.InternalFileDrop(e);    
-                OnDropFileEvent?.Invoke(e);     
+                _engine.InternalFileDrop(e);
+                OnDropFileEvent?.Invoke(e);
             };
         }
 
-        // ── Ciclo de vida OpenTK ─────────────────────────────────────────────
         protected override void OnLoad()
         {
             base.OnLoad();
@@ -96,15 +98,24 @@ namespace KrayonCore.GraphicsData
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
-            _engine.InternalUpdate((float)args.Time);
+
+            float delta = (float)_renderTimer.Elapsed.TotalSeconds;
+            _renderTimer.Restart();
+
+            TimerData.DeltaTime = delta;
+            TimerData.DeltaTimeFixed = (float)(1.0 / 60.0);
+            TimerData.Time += delta;
+
+            _engine.InternalUpdate(delta);
             OnUpdate();
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
+
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            _engine.InternalRender((float)args.Time);
+            _engine.InternalRender(TimerData.DeltaTime);
             OnRender();
             SwapBuffers();
         }
@@ -114,7 +125,7 @@ namespace KrayonCore.GraphicsData
             base.OnResize(e);
             GL.Viewport(0, 0, e.Width, e.Height);
             _engine.InternalResize(e.Width, e.Height);
-            TriggerResize(e); // <── delega al método público de IRender
+            TriggerResize(e);
         }
 
         protected override void OnUnload()
@@ -124,7 +135,6 @@ namespace KrayonCore.GraphicsData
             OnUnloadRender?.Invoke();
         }
 
-        // ── Implementación de IRender ────────────────────────────────────────
         public void OnStartRender() => OnLoadRender?.Invoke();
         public void OnRender() => OnRederFrame?.Invoke();
         public void OnUpdate() => OnUpdateRender?.Invoke();

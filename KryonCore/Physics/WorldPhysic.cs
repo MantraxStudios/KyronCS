@@ -455,6 +455,10 @@ namespace KrayonCore.Physics
         private readonly List<BodyHandle> _dynamicBodies = new();
         private readonly List<StaticHandle> _staticBodies = new();
 
+        private float _accumulator;
+        private const float FixedTimeStep = 1f / 60f;
+        private const float MaxAccumulator = FixedTimeStep * 8f;
+
         public TriggerRegistry TriggerRegistry { get; private set; }
         public CollisionEventSystem EventSystem { get; private set; }
         public PhysicsLayerRegistry LayerRegistry { get; private set; }
@@ -496,7 +500,17 @@ namespace KrayonCore.Physics
 
         public void Update(float deltaTime)
         {
-            _simulation?.Timestep(deltaTime, _threadDispatcher);
+            _accumulator += deltaTime;
+
+            if (_accumulator > MaxAccumulator)
+                _accumulator = MaxAccumulator;
+
+            while (_accumulator >= FixedTimeStep)
+            {
+                _simulation?.Timestep(FixedTimeStep, _threadDispatcher);
+                _accumulator -= FixedTimeStep;
+            }
+
             EventSystem?.FlushEvents();
         }
 

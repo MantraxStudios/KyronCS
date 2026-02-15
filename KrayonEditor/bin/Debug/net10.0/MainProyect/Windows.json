@@ -8,5 +8,5 @@
   "ShowMaterials": true,
   "ShowTileEditor": false,
   "ShowSpriteAnimator": true,
-  "ShowCompiler": false
+  "ShowCompiler": true
 }
