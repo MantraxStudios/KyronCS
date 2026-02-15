@@ -184,6 +184,43 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "Tile": {
+      "Name": "Tile",
+      "VertexShaderGUID": "e358e901-4003-457f-87bb-b99cdc96de13",
+      "FragmentShaderGUID": "7e637076-44f6-47b3-b4bb-cc28a565c48c",
+      "AlbedoTextureGUID": "0b846b25-0132-4098-b4db-17654339668e",
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.0,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }

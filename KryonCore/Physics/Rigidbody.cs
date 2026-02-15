@@ -183,9 +183,7 @@ namespace KrayonCore
         public void CleanupPhysics()
         {
             if (_isInitialized && GameObject?.Scene?.PhysicsWorld != null)
-            {
                 UnregisterFromEventSystem();
-            }
 
             _bodyHandle = null;
             _staticHandle = null;
@@ -472,7 +470,6 @@ namespace KrayonCore
             physicsWorld.Awaken(_bodyHandle.Value);
 
             Vector3 position = ToOpenTK(bodyRef.Pose.Position);
-            Quaternion rotation = ToOpenTK(bodyRef.Pose.Orientation);
 
             if (FreezePositionX) position.X = GameObject.Transform.GetWorldPosition().X;
             if (FreezePositionY) position.Y = GameObject.Transform.GetWorldPosition().Y;
@@ -498,8 +495,29 @@ namespace KrayonCore
 
             GameObject.Transform.SetWorldPosition(position);
 
-            if (!FreezeRotationX || !FreezeRotationY || !FreezeRotationZ)
-                GameObject.Transform.SetWorldRotation(rotation);
+            Quaternion physicsRotation = ToOpenTK(bodyRef.Pose.Orientation);
+
+            if (!FreezeRotationX && !FreezeRotationY && !FreezeRotationZ)
+            {
+                GameObject.Transform.SetWorldRotation(physicsRotation);
+            }
+            else if (FreezeRotationX && FreezeRotationY && FreezeRotationZ)
+            {
+                // nada
+            }
+            else
+            {
+                Vector3 physicsEuler = physicsRotation.ToEulerAngles();
+                Vector3 currentEuler = GameObject.Transform.GetWorldRotation().ToEulerAngles();
+
+                Vector3 finalEuler = new Vector3(
+                    FreezeRotationX ? currentEuler.X : physicsEuler.X,
+                    FreezeRotationY ? currentEuler.Y : physicsEuler.Y,
+                    FreezeRotationZ ? currentEuler.Z : physicsEuler.Z
+                );
+
+                GameObject.Transform.SetWorldRotation(Quaternion.FromEulerAngles(finalEuler));
+            }
         }
 
         public void SyncToPhysics()
@@ -626,17 +644,10 @@ namespace KrayonCore
             _isInitialized = false;
         }
 
-        private static System.Numerics.Vector3 ToNumerics(Vector3 v)
-            => new(v.X, v.Y, v.Z);
-
-        private static Vector3 ToOpenTK(System.Numerics.Vector3 v)
-            => new(v.X, v.Y, v.Z);
-
-        private static System.Numerics.Quaternion ToNumerics(Quaternion q)
-            => new(q.X, q.Y, q.Z, q.W);
-
-        private static Quaternion ToOpenTK(System.Numerics.Quaternion q)
-            => new(q.X, q.Y, q.Z, q.W);
+        private static System.Numerics.Vector3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
+        private static Vector3 ToOpenTK(System.Numerics.Vector3 v) => new(v.X, v.Y, v.Z);
+        private static System.Numerics.Quaternion ToNumerics(Quaternion q) => new(q.X, q.Y, q.Z, q.W);
+        private static Quaternion ToOpenTK(System.Numerics.Quaternion q) => new(q.X, q.Y, q.Z, q.W);
     }
 
     public enum BodyMotionType
