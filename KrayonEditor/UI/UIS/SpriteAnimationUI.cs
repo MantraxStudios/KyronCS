@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.GraphicsData;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -31,12 +32,20 @@ namespace KrayonEditor.UI
         private float _cachedTexWidth = 1f;
         private float _cachedTexHeight = 1f;
 
+        // NUEVO: Para editar el material de la animación
+        private string _editingMaterialPath = "";
+        private Material _cachedAnimationMaterial = null;
+        private int _cachedTextureTilesX = 0;
+        private int _cachedTextureTilesY = 0;
+
         // Colores del tema
         private static readonly Vector4 ColAccent = new Vector4(0.30f, 0.65f, 1.00f, 1.00f);
         private static readonly Vector4 ColAccentDim = new Vector4(0.30f, 0.65f, 1.00f, 0.25f);
         private static readonly Vector4 ColSuccess = new Vector4(0.25f, 0.85f, 0.45f, 1.00f);
         private static readonly Vector4 ColDanger = new Vector4(0.90f, 0.30f, 0.30f, 1.00f);
         private static readonly Vector4 ColDangerDim = new Vector4(0.90f, 0.30f, 0.30f, 0.20f);
+        private static readonly Vector4 ColWarning = new Vector4(1.00f, 0.75f, 0.20f, 1.00f);
+        private static readonly Vector4 ColWarningDim = new Vector4(1.00f, 0.75f, 0.20f, 0.25f);
         private static readonly Vector4 ColHeader = new Vector4(0.75f, 0.88f, 1.00f, 1.00f);
         private static readonly Vector4 ColMuted = new Vector4(0.50f, 0.55f, 0.65f, 1.00f);
         private static readonly Vector4 ColBg = new Vector4(0.10f, 0.11f, 0.14f, 1.00f);
@@ -75,24 +84,68 @@ namespace KrayonEditor.UI
             _cachedTextureId = IntPtr.Zero;
             _cachedTexWidth = 1f;
             _cachedTexHeight = 1f;
+            _cachedAnimationMaterial = null;
+            _cachedTextureTilesX = 0;
+            _cachedTextureTilesY = 0;
 
             if (_selectedSprite == null) return;
 
+            Material materialToUse = null;
+
+            // NUEVO: Cargar el material de la animación si está configurado
+            if (_selectedClip != null && !string.IsNullOrEmpty(_selectedClip.MaterialPath))
+            {
+                try
+                {
+                    _cachedAnimationMaterial = GraphicsEngine.Instance.Materials.Get(_selectedClip.MaterialPath);
+                    if (_cachedAnimationMaterial != null)
+                    {
+                        Console.WriteLine($"[SpriteAnimationUI] ✓ Material de animación cargado: {_selectedClip.MaterialPath}");
+                        materialToUse = _cachedAnimationMaterial;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[SpriteAnimationUI] ✗ No se pudo cargar material: {_selectedClip.MaterialPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[SpriteAnimationUI] ✗ Error cargando material: {ex.Message}");
+                }
+            }
+
+            // Si no hay material de animación, usar el material base del sprite
+            if (materialToUse == null)
+            {
+                materialToUse = _selectedSprite.Material;
+            }
+
+            if (materialToUse == null) return;
+
             try
             {
-                if (_selectedSprite.Material.AlbedoTexture != null)
+                if (materialToUse.AlbedoTexture != null)
                 {
-                    var id = _selectedSprite.Material.AlbedoTexture.TextureId;
+                    var id = materialToUse.AlbedoTexture.TextureId;
                     if (id != IntPtr.Zero)
                     {
                         _cachedTextureId = id;
                         _hasCachedTexture = true;
-                        _cachedTexWidth = _selectedSprite.TextureWidth;
-                        _cachedTexHeight = _selectedSprite.TextureHeight;
+                        _cachedTexWidth = materialToUse.AlbedoTexture.Width;
+                        _cachedTexHeight = materialToUse.AlbedoTexture.Height;
+
+                        // Calcular tiles basado en el material actual
+                        _cachedTextureTilesX = (int)_cachedTexWidth / _selectedSprite.TileWidth;
+                        _cachedTextureTilesY = (int)_cachedTexHeight / _selectedSprite.TileHeight;
+
+                        Console.WriteLine($"[SpriteAnimationUI] ✓ Textura cacheada: {_cachedTexWidth}x{_cachedTexHeight}px, Grid: {_cachedTextureTilesX}x{_cachedTextureTilesY}");
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SpriteAnimationUI] ✗ Error al cachear textura: {ex.Message}");
+            }
         }
 
         private (float u0, float v0, float u1, float v1) GetTileUV(int tx, int ty)
@@ -190,7 +243,7 @@ namespace KrayonEditor.UI
             if (ImGui.BeginMenuBar())
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, ColAccent);
-                ImGui.Text("Animation Editor");
+                ImGui.Text("🎬 Animation Editor");
                 ImGui.PopStyleColor();
                 ImGui.Separator();
 
@@ -204,6 +257,7 @@ namespace KrayonEditor.UI
                 if (ImGui.BeginMenu("Help"))
                 {
                     if (ImGui.MenuItem("Quick Start Guide")) { }
+                    if (ImGui.MenuItem("Multi-Material Setup")) { }
                     ImGui.EndMenu();
                 }
                 ImGui.EndMenuBar();
@@ -290,33 +344,44 @@ namespace KrayonEditor.UI
                 var dl = ImGui.GetWindowDrawList();
 
                 if (isSel)
-                    dl.AddRectFilled(pos, new Vector2(pos.X + w, pos.Y + 40), C(ColAccentDim), 5f);
+                    dl.AddRectFilled(pos, new Vector2(pos.X + w, pos.Y + 46), C(ColAccentDim), 5f);
 
                 ImGui.PushStyleColor(ImGuiCol.HeaderHovered, ColAccentDim);
                 ImGui.PushStyleColor(ImGuiCol.HeaderActive, ColAccentDim);
-                if (ImGui.Selectable($"##clip{i}", isSel, ImGuiSelectableFlags.None, new Vector2(w, 40)))
+                if (ImGui.Selectable($"##clip{i}", isSel, ImGuiSelectableFlags.None, new Vector2(w, 46)))
                     SelectClip(clip);
                 ImGui.PopStyleColor(2);
 
                 // Icono + nombre
-                ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 6));
+                ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 4));
                 string icon = clip.Loop ? "[Loop]" : "[Once]";
                 ImGui.TextColored(isSel ? ColAccent : ColMuted, icon);
                 ImGui.SameLine();
                 ImGui.TextColored(isSel ? new Vector4(1f, 1f, 1f, 1f) : new Vector4(0.8f, 0.8f, 0.9f, 1f), clip.Name);
+
+                // NUEVO: Indicador de material personalizado
+                if (!string.IsNullOrEmpty(clip.MaterialPath))
+                {
+                    ImGui.SameLine();
+                    ImGui.TextColored(ColWarning, "🎨");
+                }
 
                 // Metadata
                 ImGui.SetCursorScreenPos(new Vector2(pos.X + 10, pos.Y + 24));
                 ImGui.TextColored(ColMuted, $"{clip.Frames.Count} frames - {clip.FrameRate:F0} fps");
 
                 if (isSel)
-                    dl.AddRectFilled(pos, new Vector2(pos.X + 3, pos.Y + 40), C(ColAccent), 2f);
+                    dl.AddRectFilled(pos, new Vector2(pos.X + 3, pos.Y + 46), C(ColAccent), 2f);
 
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
                     ImGui.TextColored(ColAccent, clip.Name);
                     ImGui.TextColored(ColMuted, $"{clip.Frames.Count} frames @ {clip.FrameRate:F1} fps - {(clip.Loop ? "Loop" : "One-shot")}");
+                    if (!string.IsNullOrEmpty(clip.MaterialPath))
+                    {
+                        ImGui.TextColored(ColWarning, $"📁 Custom material: {clip.MaterialPath}");
+                    }
                     ImGui.EndTooltip();
                 }
             }
@@ -373,7 +438,7 @@ namespace KrayonEditor.UI
 
         private void DrawAnimationSettings()
         {
-            ImGui.TextColored(ColHeader, $"  {_selectedClip.Name}");
+            ImGui.TextColored(ColHeader, $"⚙  {_selectedClip.Name}");
             ImGui.Spacing();
 
             // Nombre
@@ -386,6 +451,42 @@ namespace KrayonEditor.UI
             ImGui.PopStyleColor();
 
             ImGui.Spacing();
+
+            // NUEVO: Material Path
+            ImGui.TextColored(ColMuted, "Material (optional)");
+            string matPath = _selectedClip.MaterialPath ?? "";
+            ImGui.SetNextItemWidth(-1);
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.18f, 0.20f, 0.26f, 1f));
+            if (ImGui.InputTextWithHint("##MatPath", "Leave empty to use sprite's base material", ref matPath, 512))
+            {
+                _selectedClip.MaterialPath = matPath;
+                RefreshTextureCache(); // NUEVO: Refrescar cache al cambiar material
+            }
+            ImGui.PopStyleColor();
+
+            if (!string.IsNullOrEmpty(_selectedClip.MaterialPath))
+            {
+                ImGui.SameLine();
+                if (SmallButton("Clear", ColWarning, 60))
+                {
+                    _selectedClip.MaterialPath = "";
+                    RefreshTextureCache(); // NUEVO: Refrescar cache al limpiar material
+                }
+            }
+
+            ImGui.Spacing();
+            if (!string.IsNullOrEmpty(_selectedClip.MaterialPath))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, ColWarning);
+                ImGui.TextWrapped($"🎨 This animation will use: {_selectedClip.MaterialPath}");
+                ImGui.PopStyleColor();
+                ImGui.Spacing();
+            }
+            else
+            {
+                ImGui.TextColored(ColMuted, "Using sprite's base material");
+                ImGui.Spacing();
+            }
 
             // FPS
             float fps = _selectedClip.FrameRate;
@@ -408,14 +509,14 @@ namespace KrayonEditor.UI
             ImGui.Spacing();
 
             // Acciones
-            if (SmallButton("Play This Animation", ColSuccess, -1))
+            if (SmallButton("▶  Play This Animation", ColSuccess, -1))
                 _selectedSprite.Play(_selectedClip.Name);
 
             ImGui.Spacing();
 
             bool canDelete = _selectedSprite.Animations.Count > 1;
             if (!canDelete) ImGui.BeginDisabled();
-            if (SmallButton("Delete Animation", ColDanger, -1))
+            if (SmallButton("🗑  Delete Animation", ColDanger, -1))
             {
                 _selectedSprite.RemoveAnimation(_selectedClip.Name);
                 SelectClip(null);
@@ -467,7 +568,7 @@ namespace KrayonEditor.UI
             }
 
             // Fila de botones + contador
-            string playLabel = _isPreviewPlaying ? "Pause" : "Play";
+            string playLabel = _isPreviewPlaying ? "⏸ Pause" : "▶ Play";
             if (SmallButton(playLabel, ColAccent, 90))
             {
                 _isPreviewPlaying = !_isPreviewPlaying;
@@ -479,7 +580,7 @@ namespace KrayonEditor.UI
             }
 
             ImGui.SameLine();
-            if (SmallButton("Stop", ColMuted, 80))
+            if (SmallButton("⏹ Stop", ColMuted, 80))
             {
                 _isPreviewPlaying = false;
                 _previewFrameIndex = 0;
@@ -612,6 +713,15 @@ namespace KrayonEditor.UI
         // --- Timeline de frames (horizontal con drag&drop) ---
         private void DrawTimeline()
         {
+            // NUEVO: Mostrar qué material se está usando
+            if (!string.IsNullOrEmpty(_selectedClip.MaterialPath))
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, ColWarning);
+                ImGui.TextUnformatted($"🎨 Using: {_selectedClip.MaterialPath}");
+                ImGui.PopStyleColor();
+                ImGui.Spacing();
+            }
+
             if (SmallButton("+ Add Frame from Grid", ColAccent, -1))
             {
                 RefreshTextureCache();
@@ -836,7 +946,21 @@ namespace KrayonEditor.UI
             if (!open) { _showGridPicker = false; ImGui.End(); return; }
             if (_selectedSprite == null || _selectedClip == null) { _showGridPicker = false; ImGui.End(); return; }
 
-            ImGui.TextColored(ColHeader, $"Sprite Grid - {_selectedSprite.TilesPerRow} x {_selectedSprite.TilesPerColumn}");
+            // Determinar qué grid mostrar
+            int tilesX = _cachedTextureTilesX > 0 ? _cachedTextureTilesX : _selectedSprite.TilesPerRow;
+            int tilesY = _cachedTextureTilesY > 0 ? _cachedTextureTilesY : _selectedSprite.TilesPerColumn;
+
+            // Header con información del material actual
+            if (_cachedAnimationMaterial != null)
+            {
+                ImGui.TextColored(ColWarning, $"🎨 Animation Material: {_selectedClip.MaterialPath}");
+                ImGui.TextColored(ColHeader, $"Sprite Grid - {tilesX} x {tilesY}");
+            }
+            else
+            {
+                ImGui.TextColored(ColHeader, $"Sprite Grid (Base Material) - {tilesX} x {tilesY}");
+            }
+
             ImGui.TextColored(ColMuted, $"Tile size: {_selectedSprite.TileWidth} x {_selectedSprite.TileHeight} px - Click a tile to add it as a frame");
             ImGui.Spacing();
             ImGui.PushStyleColor(ImGuiCol.Separator, ColBorder);
@@ -846,15 +970,38 @@ namespace KrayonEditor.UI
 
             ImGui.BeginChild("GridArea", new Vector2(0, -50));
 
+            // NUEVO: Verificar si no hay textura cargada
+            if (!_hasCachedTexture)
+            {
+                var avail = ImGui.GetContentRegionAvail();
+                string errorMsg = "⚠ No texture loaded";
+                string detailMsg = _cachedAnimationMaterial == null && !string.IsNullOrEmpty(_selectedClip.MaterialPath)
+                    ? $"Failed to load material: {_selectedClip.MaterialPath}"
+                    : "Material has no texture";
+
+                var sz1 = ImGui.CalcTextSize(errorMsg);
+                var sz2 = ImGui.CalcTextSize(detailMsg);
+
+                ImGui.SetCursorPos(new Vector2((avail.X - sz1.X) * 0.5f, avail.Y * 0.5f - 20));
+                ImGui.TextColored(ColDanger, errorMsg);
+
+                ImGui.SetCursorPos(new Vector2((avail.X - sz2.X) * 0.5f, avail.Y * 0.5f + 5));
+                ImGui.TextColored(ColMuted, detailMsg);
+
+                ImGui.EndChild();
+                ImGui.End();
+                return;
+            }
+
             const float CELL = 64f;
             const float PAD = 5f;
 
             _hoveredTileX = -1;
             _hoveredTileY = -1;
 
-            for (int y = 0; y < _selectedSprite.TilesPerColumn; y++)
+            for (int y = 0; y < tilesY; y++)
             {
-                for (int x = 0; x < _selectedSprite.TilesPerRow; x++)
+                for (int x = 0; x < tilesX; x++)
                 {
                     if (x > 0) ImGui.SameLine(0, PAD);
                     ImGui.PushID(y * 1000 + x);
@@ -977,6 +1124,7 @@ namespace KrayonEditor.UI
             _selectedFrameIndex = -1;
             _isPreviewPlaying = false;
             _previewFrameIndex = 0;
+            RefreshTextureCache(); // NUEVO: Refrescar cache al seleccionar clip
         }
 
         private void CreateNewAnimation()

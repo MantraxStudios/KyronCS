@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "1a5880d1-61af-48c6-aca8-07ce03c200eb",
+      "Id": "bcac353b-bf14-4856-9a58-cc644a39ec82",
       "Name": "GameObject_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,147 +10,13 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d98fc616-510a-419a-b2ac-fbeff0b22090",
+          "ComponentId": "59bba65f-1d74-47a9-8f9f-4fc6f41f8692",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
-              "y": 2.8100266,
-              "z": 7.3992043
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": -0.1873735,
               "y": 0,
-              "z": 0,
-              "w": 0.9822888
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b7d2db7e-110c-4971-a50c-58aaaa973bcd",
-          "Enabled": true,
-          "SerializedFields": {
-            "CameraName": "",
-            "Priority": 0,
-            "RenderToBuffer": true,
-            "UseGBuffer": true,
-            "UseEmission": true,
-            "BufferWidth": 1280,
-            "BufferHeight": 720,
-            "ProjectionMode": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.ProjectionMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Perspective"
-            },
-            "Fov": 45,
-            "NearPlane": 0.1,
-            "FarPlane": 1000,
-            "OrthoSize": 10,
-            "AspectRatio": 1.7777778,
-            "ClearMode": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.CameraClearMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "SolidColor"
-            },
-            "ClearColor": {
-              "__type": "Vector4",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1,
-              "w": 1
-            },
-            "ViewportX": 0,
-            "ViewportY": 0,
-            "ViewportWidth": 1,
-            "ViewportHeight": 1
-          }
-        }
-      ]
-    },
-    {
-      "Id": "cd4ffd72-1e43-44d0-a026-7366596801d7",
-      "Name": "GameObject_2",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "35bca180-4ab0-4266-90a8-472202301778",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": 1.699365,
-              "z": 2.3779097
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b5bd6766-2e82-4139-bc1a-ecbbfe0f2256",
-          "Enabled": true,
-          "SerializedFields": {
-            "Type": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Point"
-            },
-            "Color": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": 0,
-              "z": 1
-            },
-            "Intensity": 1,
-            "Constant": 1,
-            "Linear": 0.09,
-            "Quadratic": 0.032,
-            "InnerCutOffDegrees": 12.5,
-            "OuterCutOffDegrees": 17.5
-          }
-        }
-      ]
-    },
-    {
-      "Id": "448f812f-f568-404c-98b5-84a888f03da6",
-      "Name": "Cube_3",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f9bbae9d-e9ba-452c-a976-b1ffc755b210",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": -0.0070555173,
               "z": 0
             },
             "Rotation": {
@@ -169,18 +35,205 @@
           }
         },
         {
-          "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ec7ef60a-758d-4da0-8394-fc5b4bb194d2",
+          "TypeName": "KrayonCore.SpriteRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7c7121c3-1987-4295-9f4d-f86f295b959c",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+            "MaterialPath": "Idle",
+            "TileWidth": 32,
+            "TileHeight": 32,
+            "TileIndexX": 3,
+            "TileIndexY": 0,
+            "Color": {
+              "__type": "Vector4",
+              "x": 1,
+              "y": 1,
+              "z": 1,
+              "w": 1
+            },
+            "FlipX": false,
+            "FlipY": false,
+            "PixelsPerUnit": 32,
+            "Animations": {
+              "__type": "List",
+              "elementType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "values": [
-                "basic"
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Name": "Walk",
+                    "Frames": {
+                      "__type": "List",
+                      "elementType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "values": [
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 0,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 1,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 2,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 3,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 4,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 5,
+                            "TileIndexY": 0
+                          }
+                        }
+                      ]
+                    },
+                    "FrameRate": 5,
+                    "Loop": true,
+                    "MaterialPath": "Walk"
+                  }
+                },
+                {
+                  "__type": "CustomObject",
+                  "objectType": "KrayonCore.SpriteClip, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                  "fields": {
+                    "Name": "Idle",
+                    "Frames": {
+                      "__type": "List",
+                      "elementType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                      "values": [
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 0,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 1,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 2,
+                            "TileIndexY": 0
+                          }
+                        },
+                        {
+                          "__type": "CustomObject",
+                          "objectType": "KrayonCore.AnimationFrame, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                          "fields": {
+                            "TileIndexX": 3,
+                            "TileIndexY": 0
+                          }
+                        }
+                      ]
+                    },
+                    "FrameRate": 4,
+                    "Loop": true,
+                    "MaterialPath": "Idle"
+                  }
+                }
               ]
+            },
+            "IsPlaying": true,
+            "CurrentAnimationName": "Walk",
+            "AnimationSpeed": 1
+          }
+        }
+      ]
+    },
+    {
+      "Id": "41be89b9-262c-44da-8ce3-b34a72eca164",
+      "Name": "DirectionalLight_1",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "c1bf1edc-7d90-4bf2-b013-cc6d4cc8f778",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 5,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0.38268346,
+              "y": 0,
+              "z": 0,
+              "w": 0.9238795
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "1ec7df05-d5c6-42ce-a092-8fd03bc24d97",
+          "Enabled": true,
+          "SerializedFields": {
+            "Type": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Components.LightType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Directional"
+            },
+            "Color": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Intensity": 5,
+            "Constant": 1,
+            "Linear": 0.09,
+            "Quadratic": 0.032,
+            "InnerCutOffDegrees": 12.5,
+            "OuterCutOffDegrees": 17.5
           }
         }
       ]

@@ -30,6 +30,9 @@ namespace KrayonCore
         public float FrameRate = 12.0f;
         public bool Loop = true;
 
+        // NUEVO: Material específico para esta animación
+        public string MaterialPath = "";
+
         public SpriteClip()
         {
         }
@@ -49,6 +52,7 @@ namespace KrayonCore
     {
         private string _materialPath = "";
         private Material _material;
+        private Material _baseMaterial; // Material base del sprite
         private Model _quadModel;
         private Mesh _quadMesh;
         private bool _isInitialized = false;
@@ -103,10 +107,35 @@ namespace KrayonCore
 
         [ToStorage] public List<SpriteClip> Animations { get; set; } = new List<SpriteClip>();
         [ToStorage] public bool IsPlaying { get; set; } = false;
-        [ToStorage] public string CurrentAnimationName { get; set; } = "";
+        
+        private string _currentAnimationName = "";
+
+        [ToStorage]
+        public string CurrentAnimationName
+        {
+            get => _currentAnimationName;
+            set
+            {
+                if (_currentAnimationName != value)
+                {
+                    _currentAnimationName = value;
+                    OnCurrentAnimationNameChanged();
+                }
+            }
+        }
+
+        private void OnCurrentAnimationNameChanged()
+        {
+            if (_isInitialized && !string.IsNullOrEmpty(_currentAnimationName))
+            {
+                Console.WriteLine($"[SpriteRenderer] CurrentAnimationName cambió a: {_currentAnimationName}");
+                Play(_currentAnimationName);
+            }
+        }
         [ToStorage] public float AnimationSpeed { get; set; } = 1.0f;
 
         public Material Material => _material;
+        public Material BaseMaterial => _baseMaterial;
         public Model QuadModel => _quadModel;
         public int CurrentFrameIndex => _currentFrameIndex;
         public SpriteClip CurrentClip => _currentClip;
@@ -124,8 +153,9 @@ namespace KrayonCore
 
             if (!string.IsNullOrEmpty(MaterialPath))
             {
-                Console.WriteLine($"[SpriteRenderer] Cargando material desde: {MaterialPath}");
+                Console.WriteLine($"[SpriteRenderer] Cargando material base desde: {MaterialPath}");
                 LoadMaterialFromPath(MaterialPath);
+                _baseMaterial = _material;
             }
             else
             {
@@ -141,12 +171,14 @@ namespace KrayonCore
             {
                 Console.WriteLine($"[SpriteRenderer] Reintentando cargar material en Start: {MaterialPath}");
                 LoadMaterialFromPath(MaterialPath);
+                _baseMaterial = _material;
             }
 
             if (_material == null)
             {
                 Console.WriteLine($"[SpriteRenderer] Warning: No hay material asignado. Usando material básico.");
                 _material = GraphicsEngine.Instance.Materials.Get("basic");
+                _baseMaterial = _material;
                 ReadTextureDimensionsFromMaterial();
             }
 
@@ -314,22 +346,80 @@ namespace KrayonCore
                 return;
             }
 
-            if (_currentClip != clip || restart)
+            bool clipChanged = _currentClip != clip;
+
+            if (clipChanged || restart)
             {
                 _currentClip = clip;
                 _currentFrameIndex = 0;
                 _frameTimer = 0.0f;
                 CurrentAnimationName = animationName;
+
+                // NUEVO: Cambiar material si la animación tiene uno específico
+                if (!string.IsNullOrEmpty(clip.MaterialPath))
+                {
+                    Console.WriteLine($"[SpriteRenderer] Cargando material de animación: {clip.MaterialPath}");
+                    LoadAnimationMaterial(clip.MaterialPath);
+                }
+                else if (clipChanged)
+                {
+                    // Restaurar material base si la nueva animación no tiene material específico
+                    Console.WriteLine($"[SpriteRenderer] Restaurando material base");
+                    _material = _baseMaterial;
+                    ReadTextureDimensionsFromMaterial();
+                    _needsUVUpdate = true;
+                }
+
                 UpdateAnimationFrame();
             }
 
             IsPlaying = true;
         }
 
+        private void LoadAnimationMaterial(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Console.WriteLine($"[SpriteRenderer] LoadAnimationMaterial: ruta vacía");
+                return;
+            }
+
+            try
+            {
+                var newMaterial = GraphicsEngine.Instance.Materials.Get(path);
+
+                if (newMaterial != null)
+                {
+                    Console.WriteLine($"[SpriteRenderer] ✓ Material de animación cargado: {path}");
+                    _material = newMaterial;
+                    ReadTextureDimensionsFromMaterial();
+                    _needsUVUpdate = true;
+                    _needsMeshRebuild = true;
+                }
+                else
+                {
+                    Console.WriteLine($"[SpriteRenderer] ✗ No se pudo cargar material de animación: {path}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SpriteRenderer] ✗ Error al cargar material de animación '{path}': {ex.Message}");
+            }
+        }
+
         public void Stop()
         {
             IsPlaying = false;
             _frameTimer = 0.0f;
+
+            // Restaurar material base al detener
+            if (_material != _baseMaterial)
+            {
+                Console.WriteLine($"[SpriteRenderer] Stop: Restaurando material base");
+                _material = _baseMaterial;
+                ReadTextureDimensionsFromMaterial();
+                _needsUVUpdate = true;
+            }
         }
 
         public void Pause()
@@ -370,6 +460,14 @@ namespace KrayonCore
             {
                 _currentClip = null;
                 IsPlaying = false;
+
+                // Restaurar material base
+                if (_material != _baseMaterial)
+                {
+                    _material = _baseMaterial;
+                    ReadTextureDimensionsFromMaterial();
+                    _needsUVUpdate = true;
+                }
             }
         }
 
@@ -384,6 +482,7 @@ namespace KrayonCore
             Console.WriteLine($"GameObject: {GameObject?.Name ?? "NULL"}");
             Console.WriteLine($"Enabled: {Enabled}");
             Console.WriteLine($"Material: {(_material != null ? "OK" : "NULL")}");
+            Console.WriteLine($"Base Material: {(_baseMaterial != null ? "OK" : "NULL")}");
             Console.WriteLine($"QuadModel: {(_quadModel != null ? "OK" : "NULL")}");
             Console.WriteLine($"QuadMesh: {(_quadMesh != null ? "OK" : "NULL")}");
             Console.WriteLine($"Texture Size: {_textureWidth}x{_textureHeight}");
@@ -535,10 +634,12 @@ namespace KrayonCore
                 if (!string.IsNullOrEmpty(MaterialPath))
                 {
                     LoadMaterialFromPath(MaterialPath);
+                    _baseMaterial = _material;
                 }
                 else
                 {
                     _material = null;
+                    _baseMaterial = null;
                     _textureWidth = 0;
                     _textureHeight = 0;
                     Console.WriteLine($"[SpriteRenderer] MaterialPath vacío, material eliminado");
@@ -624,6 +725,7 @@ namespace KrayonCore
         public void SetMaterial(Material material)
         {
             _material = material;
+            _baseMaterial = material;
             _materialPath = material?.Name ?? "";
 
             Console.WriteLine($"[SpriteRenderer] Material asignado directamente");
@@ -786,6 +888,7 @@ namespace KrayonCore
         public override void OnDestroy()
         {
             _material = null;
+            _baseMaterial = null;
             _quadMesh?.Dispose();
             _quadMesh = null;
             _quadModel?.Dispose();
