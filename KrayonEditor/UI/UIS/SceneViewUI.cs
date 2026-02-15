@@ -641,7 +641,7 @@ namespace KrayonEditor.UI
                     );
                     EditorActions.IsHoveringScene = ImGui.IsItemHovered();
 
-                    if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !TransformGizmo.IsHovering)
+                    if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !ImGui.IsKeyDown(ImGuiKey.LeftAlt) && !TransformGizmo.IsHovering)
                     {
                         System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
 
@@ -661,6 +661,42 @@ namespace KrayonEditor.UI
                             EditorActions.SelectedObject = EventSystem.OnClickObject(openTKMousePos) == EditorActions.SelectedObject ? null : EventSystem.OnClickObject(openTKMousePos);
                         }
                     }
+
+                    if (GraphicsEngine.Instance.GetMouseState().IsButtonPressed(MouseButton.Left) && !TransformGizmo.IsHovering && ImGui.IsKeyDown(ImGuiKey.LeftAlt))
+                    {
+                        System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
+
+                        System.Numerics.Vector2 relativeMousePos = new System.Numerics.Vector2(
+                            globalMousePos.X - cursorPos.X,
+                            globalMousePos.Y - cursorPos.Y
+                        );
+
+                        if (relativeMousePos.X >= 0 && relativeMousePos.X <= viewportSize.X &&
+                            relativeMousePos.Y >= 0 && relativeMousePos.Y <= viewportSize.Y)
+                        {
+                            OpenTK.Mathematics.Vector2 openTKMousePos = new OpenTK.Mathematics.Vector2(
+                                relativeMousePos.X,
+                                relativeMousePos.Y
+                            );
+
+                            Camera camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+                            int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
+                            int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+
+                            EventSystem.ScreenToWorldRay(openTKMousePos, camera, screenWidth, screenHeight, out OpenTK.Mathematics.Vector3 rayOrigin, out OpenTK.Mathematics.Vector3 rayDir);
+                            float gridSize = 1.0f;
+
+                            float snappedX = MathF.Round(rayOrigin.X / gridSize) * gridSize;
+                            float snappedY = MathF.Round(rayOrigin.Y / gridSize) * gridSize;
+
+                            EditorActions.CreateCubeGameObject()
+                            .Transform.SetWorldPosition(
+                                new OpenTK.Mathematics.Vector3(snappedX, snappedY, 0.0f)
+                            );
+                        }
+                    }
+
+
 
                     bool isHovered = ImGui.IsItemHovered();
                     EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, MainCamera);

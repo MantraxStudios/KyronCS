@@ -20,9 +20,9 @@ namespace KrayonEditor
             EngineEditor.LogMessage($"Created {go.Name}");
         }
 
-        public static void CreateCubeGameObject()
+        public static GameObject CreateCubeGameObject()
         {
-            if (SceneManager.ActiveScene == null) return;
+            if (SceneManager.ActiveScene == null) return null;
             int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
             var go = SceneManager.ActiveScene.CreateGameObject($"Cube_{count}");
             go.Transform.SetPosition(0, 0, 0);
@@ -30,6 +30,7 @@ namespace KrayonEditor
             meshRenderer.Model = Model.Load("models/Cube.fbx");
             EngineEditor.SetSelectedObject(go);
             EngineEditor.LogMessage($"Created {go.Name} with MeshRenderer");
+            return go;
         }
 
         public static void SetupAllMaterials()
