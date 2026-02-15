@@ -142,11 +142,9 @@ namespace KrayonCore.Core.Components
             _onTriggerStayMethod = null;
             _onTriggerExitMethod = null;
 
-            // Cargar nueva instancia
             LoadScript();
             SubscribeToCollisionEvents();
 
-            // Llamar Start en la nueva instancia
             InvokeMethod(_startMethod);
 
             Console.WriteLine($"[CSharp] Script '{_script}' reiniciado correctamente");
