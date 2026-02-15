@@ -76,7 +76,7 @@ namespace KrayonCore
             set => _useGravity = value;
         }
 
-        [ToStorage] public float SleepThreshold { get; set; } = 0.01f;
+        [ToStorage] public float SleepThreshold { get; set; } = -1f;
 
         private bool _isKinematic = false;
         [ToStorage]
@@ -469,8 +469,7 @@ namespace KrayonCore
             var physicsWorld = GameObject.Scene.PhysicsWorld;
             var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
 
-            if (UseGravity)
-                physicsWorld.Awaken(_bodyHandle.Value);
+            physicsWorld.Awaken(_bodyHandle.Value);
 
             Vector3 position = ToOpenTK(bodyRef.Pose.Position);
             Quaternion rotation = ToOpenTK(bodyRef.Pose.Orientation);

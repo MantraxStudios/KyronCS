@@ -168,6 +168,7 @@ namespace KrayonCore.Physics
         {
             _deferredEvents.Clear();
 
+            // Rotar los pares: lo de este frame pasa a ser "last frame"
             _activePairsLastFrame.Clear();
             foreach (var p in _activePairsThisFrame) _activePairsLastFrame.Add(p);
             _activePairsThisFrame.Clear();
@@ -176,6 +177,7 @@ namespace KrayonCore.Physics
             foreach (var p in _activeTriggerPairsThisFrame) _activeTriggerPairsLastFrame.Add(p);
             _activeTriggerPairsThisFrame.Clear();
 
+            // Procesar todos los reportes del narrow phase
             while (_narrowPhaseReports.TryTake(out var report))
             {
                 var pairKey = new CollisionPairKey(report.A, report.B);
@@ -184,7 +186,6 @@ namespace KrayonCore.Physics
                 {
                     _activeTriggerPairsThisFrame.Add(pairKey);
                     bool wasActive = _activeTriggerPairsLastFrame.Contains(pairKey);
-
                     var eventType = wasActive ? CollisionEventType.TriggerStay : CollisionEventType.TriggerEnter;
                     EnqueueEvent(eventType, report);
                 }
@@ -192,26 +193,22 @@ namespace KrayonCore.Physics
                 {
                     _activePairsThisFrame.Add(pairKey);
                     bool wasActive = _activePairsLastFrame.Contains(pairKey);
-
                     var eventType = wasActive ? CollisionEventType.CollisionStay : CollisionEventType.CollisionEnter;
                     EnqueueEvent(eventType, report);
                 }
             }
 
+            // Detectar exits: pares que estaban activos el timestep anterior y ya no están
             foreach (var pairKey in _activePairsLastFrame)
             {
                 if (!_activePairsThisFrame.Contains(pairKey))
-                {
                     EnqueueExitEvent(CollisionEventType.CollisionExit, pairKey);
-                }
             }
 
             foreach (var pairKey in _activeTriggerPairsLastFrame)
             {
                 if (!_activeTriggerPairsThisFrame.Contains(pairKey))
-                {
                     EnqueueExitEvent(CollisionEventType.TriggerExit, pairKey);
-                }
             }
 
             DispatchEvents();
@@ -459,6 +456,10 @@ namespace KrayonCore.Physics
         private const float FixedTimeStep = 1f / 60f;
         private const float MaxAccumulator = FixedTimeStep * 8f;
 
+        // Sleep threshold -1 deshabilita el sleep para que los eventos no se corten
+        // Si querés re-habilitar el sleep en bodies específicos, usá un valor positivo al crear el body
+        private const float DefaultSleepThreshold = -1f;
+
         public TriggerRegistry TriggerRegistry { get; private set; }
         public CollisionEventSystem EventSystem { get; private set; }
         public PhysicsLayerRegistry LayerRegistry { get; private set; }
@@ -505,13 +506,15 @@ namespace KrayonCore.Physics
             if (_accumulator > MaxAccumulator)
                 _accumulator = MaxAccumulator;
 
+            // FIX: FlushEvents se llama UNA VEZ POR TIMESTEP, no una vez por frame.
+            // Esto evita que reportes de múltiples timesteps se mezclen y generen
+            // falsos enters/exits cuando hay más de un step por frame.
             while (_accumulator >= FixedTimeStep)
             {
                 _simulation?.Timestep(FixedTimeStep, _threadDispatcher);
+                EventSystem?.FlushEvents();
                 _accumulator -= FixedTimeStep;
             }
-
-            EventSystem?.FlushEvents();
         }
 
         public BodyHandle CreateBox(
@@ -520,7 +523,7 @@ namespace KrayonCore.Physics
             in Quaternion rotation,
             bool isDynamic,
             float mass = 1f,
-            float sleepThreshold = 0.01f,
+            float sleepThreshold = DefaultSleepThreshold,
             PhysicsLayer layer = PhysicsLayer.Default)
         {
             var shape = new Box(halfExtent.X * 2f, halfExtent.Y * 2f, halfExtent.Z * 2f);
@@ -550,7 +553,7 @@ namespace KrayonCore.Physics
             in Quaternion rotation,
             bool isDynamic,
             float mass = 1f,
-            float sleepThreshold = 0.01f,
+            float sleepThreshold = DefaultSleepThreshold,
             PhysicsLayer layer = PhysicsLayer.Default)
         {
             var shape = new Sphere(radius);
@@ -581,7 +584,7 @@ namespace KrayonCore.Physics
             in Quaternion rotation,
             bool isDynamic,
             float mass = 1f,
-            float sleepThreshold = 0.01f,
+            float sleepThreshold = DefaultSleepThreshold,
             PhysicsLayer layer = PhysicsLayer.Default)
         {
             var shape = new Capsule(radius, halfLength * 2f);

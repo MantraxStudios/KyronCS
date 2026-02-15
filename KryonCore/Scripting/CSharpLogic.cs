@@ -50,6 +50,8 @@ namespace KrayonCore.Core.Components
         {
             if (!AppInfo.IsCompiledGame) return;
 
+            SubscribeToCollisionEvents();
+
             InvokeMethod(_startMethod);
         }
 
@@ -101,7 +103,6 @@ namespace KrayonCore.Core.Components
                 _onTriggerStayMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnTriggerStay");
                 _onTriggerExitMethod = CSharpScriptManager.Instance.GetMethod(_script, "OnTriggerExit");
 
-                // Suscribirse a eventos del Rigidbody si hay métodos de colisión
                 SubscribeToCollisionEvents();
 
                 Console.WriteLine($"[CSharp] Script '{_script}' inicializado en {GameObject.Name}");
@@ -143,6 +144,7 @@ namespace KrayonCore.Core.Components
 
             // Cargar nueva instancia
             LoadScript();
+            SubscribeToCollisionEvents();
 
             // Llamar Start en la nueva instancia
             InvokeMethod(_startMethod);

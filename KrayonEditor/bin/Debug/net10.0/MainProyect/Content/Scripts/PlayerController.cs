@@ -9,7 +9,10 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 public class PlayerController : KrayonBehaviour
 {
     public float MoveSpeed = 1.0f;
+    public float JumpForce = 2.0f;
+
     private Rigidbody _body;
+    private bool _isGrounded;
 
     public override void Start()
     {
@@ -26,40 +29,50 @@ public class PlayerController : KrayonBehaviour
 
     public override void Update(float deltaTime)
     {
-        Vector3 direction = Vector3.Zero;
+        float horizontalVelocity = 0f;
 
         if (InputSystem.GetKeyDown(Keys.A))
         {
-            direction.X -= 1.0f;
+            horizontalVelocity -= MoveSpeed;
             GameObject.GetComponent<SpriteRenderer>().FlipX = true;
         }
-        
+
         if (InputSystem.GetKeyDown(Keys.D))
         {
-            direction.X += 1.0f;
+            horizontalVelocity += MoveSpeed;
             GameObject.GetComponent<SpriteRenderer>().FlipX = false;
         }
 
-        if (InputSystem.GetKeyDown(Keys.W))
+        Vector3 currentVelocity = _body.GetVelocity();
+        _body.SetVelocity(new Vector3(horizontalVelocity, currentVelocity.Y, 0f));
+
+        if (InputSystem.GetKeyPressed(Keys.Space) && _isGrounded)
         {
-            direction.Y += 1.0f;
+            _body.AddImpulse(new Vector3(0f, JumpForce, 0f));
+            _isGrounded = false;
         }
 
-        if (InputSystem.GetKeyDown(Keys.S))
-        {
-            direction.Y -= 1.0f;
-        }
-
-        if (direction != Vector3.Zero)
-        {
-            direction = direction.Normalized();
-            _body.SetVelocity(direction * MoveSpeed);
+        if (horizontalVelocity != 0f)
             GameObject.GetComponent<SpriteRenderer>().Play("Walk");
-        }
         else
-        {
             GameObject.GetComponent<SpriteRenderer>().Play("Idle");
-            _body.SetVelocity(Vector3.Zero);
-        }
+
+        Vector3 worldPos = GameObject.Transform.GetWorldPosition();
+        Vector3 camPos = GetMainCamera().Position;
+        camPos.X = worldPos.X;
+        camPos.Y = worldPos.Y;
+        GetMainCamera().Position = camPos;
+    }
+
+    public override void OnCollisionEnter(GameObject contact)
+    {
+            Console.WriteLine($"Colisionando con: {contact.Name}");
+            _isGrounded = true;
+    }
+
+    public override void OnCollisionExit(GameObject contact)
+    {
+            Console.WriteLine($"Descolisionando con: {contact.Name}");
+            _isGrounded = false;
     }
 }
