@@ -1,0 +1,10 @@
+{
+  "Name": "TileMapFirst",
+  "MaterialPath": "Tile",
+  "TileWidth": 16,
+  "TileHeight": 16,
+  "PixelsPerUnit": 8,
+  "SelectedTileX": 8,
+  "SelectedTileY": 4,
+  "ObjectNamePrefix": "NewSprite"
+}

@@ -356,25 +356,25 @@ namespace KrayonCore
 
             float uLeft = _textureWidth > 0 ? (float)(TileIndexX * TileWidth) / _textureWidth : 0f;
             float uRight = _textureWidth > 0 ? (float)(TileIndexX * TileWidth + TileWidth) / _textureWidth : 1f;
-            float vTop = _textureHeight > 0 ? (float)(TileIndexY * TileHeight) / _textureHeight : 0f;
-            float vBot = _textureHeight > 0 ? (float)(TileIndexY * TileHeight + TileHeight) / _textureHeight : 1f;
+            float vBottom = _textureHeight > 0 ? (float)(TileIndexY * TileHeight) / _textureHeight : 0f;
+            float vTop = _textureHeight > 0 ? (float)(TileIndexY * TileHeight + TileHeight) / _textureHeight : 1f;
 
             float u0 = FlipX ? uRight : uLeft;
             float u1 = FlipX ? uLeft : uRight;
             float u2 = FlipX ? uLeft : uRight;
             float u3 = FlipX ? uRight : uLeft;
 
-            float v0 = FlipY ? vTop : vBot;
-            float v1 = FlipY ? vTop : vBot;
-            float v2 = FlipY ? vBot : vTop;
-            float v3 = FlipY ? vBot : vTop;
+            float v0 = FlipY ? vTop : vBottom;
+            float v1 = FlipY ? vTop : vBottom;
+            float v2 = FlipY ? vBottom : vTop;
+            float v3 = FlipY ? vBottom : vTop;
 
             float[] vertices = new float[]
             {
-                -halfWidth, -halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u0, v0,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
-                 halfWidth, -halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u1, v1,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
-                 halfWidth,  halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u2, v2,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
-                -halfWidth,  halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u3, v3,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+        -halfWidth, -halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u0, v0,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+         halfWidth, -halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u1, v1,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+         halfWidth,  halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u2, v2,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+        -halfWidth,  halfHeight, 0.0f,  0.0f, 0.0f, 1.0f,  u3, v3,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,
             };
 
             uint[] indices = new uint[] { 0, 1, 2, 2, 3, 0 };
@@ -392,6 +392,15 @@ namespace KrayonCore
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
             combinedMeshField?.SetValue(_quadModel, _quadMesh);
+
+            // Configurar el wrap mode de la textura
+            if (_material != null && _material.AlbedoTexture != null)
+            {
+                GL.BindTexture(TextureTarget.Texture2D, (int)_material.AlbedoTexture.TextureId);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+                GL.BindTexture(TextureTarget.Texture2D, 0);
+            }
         }
 
         private void LoadAnimationMaterial(string path)
@@ -685,18 +694,18 @@ namespace KrayonCore
 
             float uLeft = (float)(TileIndexX * TileWidth) / _textureWidth;
             float uRight = (float)(TileIndexX * TileWidth + TileWidth) / _textureWidth;
-            float vTop = (float)(TileIndexY * TileHeight) / _textureHeight;
-            float vBot = (float)(TileIndexY * TileHeight + TileHeight) / _textureHeight;
+            float vBottom = (float)(TileIndexY * TileHeight) / _textureHeight;
+            float vTop = (float)(TileIndexY * TileHeight + TileHeight) / _textureHeight;
 
             float u0 = FlipX ? uRight : uLeft;
             float u1 = FlipX ? uLeft : uRight;
             float u2 = FlipX ? uLeft : uRight;
             float u3 = FlipX ? uRight : uLeft;
 
-            float v0 = FlipY ? vTop : vBot;
-            float v1 = FlipY ? vTop : vBot;
-            float v2 = FlipY ? vBot : vTop;
-            float v3 = FlipY ? vBot : vTop;
+            float v0 = FlipY ? vTop : vBottom;
+            float v1 = FlipY ? vTop : vBottom;
+            float v2 = FlipY ? vBottom : vTop;
+            float v3 = FlipY ? vBottom : vTop;
 
             UpdateMeshUVs(u0, v0, u1, v1, u2, v2, u3, v3);
         }

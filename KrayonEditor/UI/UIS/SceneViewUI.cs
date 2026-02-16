@@ -630,9 +630,12 @@ namespace KrayonEditor.UI
                 }
 
                 var frameBuffer = Engine?.GetSceneFrameBuffer();
+
+                Vector2 cursorPos = ImGui.GetCursorScreenPos();
+                EditorActions.ViewPortPosition = cursorPos;
+
                 if (frameBuffer != null)
                 {
-                    Vector2 cursorPos = ImGui.GetCursorScreenPos();
                     ImGui.Image(
                         frameBuffer.ColorTexture,
                         viewportSize,

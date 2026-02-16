@@ -6,7 +6,7 @@
   "ShowStats": true,
   "ShowAssets": true,
   "ShowMaterials": true,
-  "ShowTileEditor": false,
+  "ShowTileEditor": true,
   "ShowSpriteAnimator": true,
   "ShowCompiler": true
 }

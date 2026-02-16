@@ -2,6 +2,7 @@
 using KrayonCore.Components;
 using KrayonCore.Graphics;
 using KrayonEditor.UI;
+using System.Numerics;
 
 namespace KrayonEditor
 {
@@ -9,6 +10,7 @@ namespace KrayonEditor
     {
         public static GameObject? SelectedObject { get; set; }
         public static bool IsHoveringScene = false;
+        public static Vector2 ViewPortPosition;
 
         public static void CreateEmptyGameObject()
         {

@@ -3,6 +3,7 @@ using KrayonCore;
 using KrayonCore.Components;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core.Components;
+using KrayonCore.Core.Input;
 using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
@@ -389,7 +390,7 @@ namespace KrayonEditor.UI
         private static void HandleCameraZoom(
             OpenTK.Windowing.GraphicsLibraryFramework.MouseState mouse)
         {
-            if (mouse.ScrollDelta.Y != 0 && EditorActions.IsHoveringScene)
+            if (mouse.ScrollDelta.Y != 0 && EditorActions.IsHoveringScene && !InputSystem.GetKeyDown(Keys.LeftControl))
                 _editorCamera!.Zoom(mouse.ScrollDelta.Y);
         }
 

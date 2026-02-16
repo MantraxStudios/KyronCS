@@ -187,8 +187,8 @@
     },
     "Tile": {
       "Name": "Tile",
-      "VertexShaderGUID": "e358e901-4003-457f-87bb-b99cdc96de13",
-      "FragmentShaderGUID": "7e637076-44f6-47b3-b4bb-cc28a565c48c",
+      "VertexShaderGUID": "9557923a-76ad-432c-abc9-17ed77e82311",
+      "FragmentShaderGUID": "5ed03f4d-deb0-4de7-a5d6-182e3a60df7f",
       "AlbedoTextureGUID": "0b846b25-0132-4098-b4db-17654339668e",
       "NormalTextureGUID": null,
       "MetallicTextureGUID": null,

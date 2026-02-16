@@ -1,0 +1,10 @@
+{
+  "Name": "Startup",
+  "MaterialPath": "Tile",
+  "TileWidth": 16,
+  "TileHeight": 16,
+  "PixelsPerUnit": 8,
+  "SelectedTileX": 10,
+  "SelectedTileY": 19,
+  "ObjectNamePrefix": "NewSprite_30"
+}
