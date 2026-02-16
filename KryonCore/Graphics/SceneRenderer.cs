@@ -143,6 +143,7 @@ namespace KrayonCore
             var projection = cam.GetProjectionMatrix();
             var cameraPos = cam.Position;
 
+            RenderSkybox(view, projection, cameraPos);
             RenderMeshRenderers(view, projection, cameraPos);
             RenderSpriteRenderers(view, projection, cameraPos);
             RenderTileRenderers(view, projection, cameraPos);
@@ -184,6 +185,83 @@ namespace KrayonCore
             foreach (var kvp in _spriteInstanceGroups)
                 kvp.Key.model.ClearInstancing();
             _spriteInstanceGroups.Clear();
+        }
+
+        // ── Skybox renderers ─────────────────────────────────────────────────
+        private void RenderSkybox(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
+        {
+            var skyboxRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<SkyboxRenderer>();
+            if (skyboxRenderers is null || skyboxRenderers.Length == 0) return;
+
+            // Configurar OpenGL para renderizar el skybox
+            GL.DepthFunc(DepthFunction.Lequal); // Permitir que el skybox se dibuje en el far plane
+
+            // Guardar estado del culling
+            bool cullFaceEnabled = GL.IsEnabled(EnableCap.CullFace);
+            int prevCullMode = 0;
+            if (cullFaceEnabled)
+                prevCullMode = GL.GetInteger(GetPName.CullFaceMode);
+
+            // Configurar culling para la esfera invertida
+            if (!cullFaceEnabled)
+                GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Front);
+
+            foreach (var go in skyboxRenderers)
+            {
+                var renderer = go.GetComponent<SkyboxRenderer>();
+                var transform = go.GetComponent<Transform>();
+
+                if (renderer is null || !renderer.Enabled || transform is null) continue;
+
+                if (renderer.Material is null)
+                {
+                    var skyboxMat = GraphicsEngine.Instance.Materials.Get("Sky");
+                    if (skyboxMat is not null)
+                    {
+                        renderer.SetMaterial(skyboxMat);
+                    }
+                }
+
+                if (renderer.SphereModel is null || renderer.Material is null) continue;
+
+                // Obtener la matriz de mundo del skybox (para rotación y escala)
+                Matrix4 worldMatrix = transform.GetWorldMatrix();
+
+                // Aplicar la rotación automática del skybox si tiene RotationSpeed
+                Matrix4 rotationMatrix = renderer.GetRotationMatrix();
+                worldMatrix = rotationMatrix * worldMatrix;
+
+                // Configurar el material
+                renderer.Material.Use();
+                renderer.Material.SetMatrix4("model", worldMatrix);
+                renderer.Material.SetMatrix4("view", view);
+                renderer.Material.SetMatrix4("projection", projection);
+                renderer.Material.SetVector3("u_CameraPos", cameraPos);
+                renderer.Material.SetInt("u_UseInstancing", 0);
+
+                // Aplicar el color/tint del skybox si el material no tiene textura
+                if (renderer.Material.AlbedoTexture is null)
+                {
+                    renderer.Material.SetVector3("u_AlbedoColor", new Vector3(
+                        renderer.Color.X,
+                        renderer.Color.Y,
+                        renderer.Color.Z
+                    ));
+                }
+
+                renderer.Material.SetFloat("u_Alpha", renderer.Color.W);
+
+                // Renderizar el skybox
+                renderer.Draw();
+            }
+
+            // Restaurar configuración de OpenGL
+            GL.DepthFunc(DepthFunction.Less);
+            if (cullFaceEnabled)
+                GL.CullFace((CullFaceMode)prevCullMode);
+            else
+                GL.Disable(EnableCap.CullFace);
         }
 
         // ── Mesh renderers ───────────────────────────────────────────────────

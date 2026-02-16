@@ -4,6 +4,7 @@ using KrayonCore.Components;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core.Components;
 using KrayonCore.Core.Input;
+using KrayonCore.Graphics.Camera;
 using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
@@ -298,7 +299,6 @@ namespace KrayonEditor.UI
 
             HandleGizmoInput(keyboard, mouse);
             HandleCameraReset(keyboard);
-            HandleSceneSwitch(keyboard);
             HandleCameraMovement(keyboard, mouse, dt);
             HandleCameraRotation(mouse);
             HandleCameraZoom(mouse);
@@ -335,14 +335,6 @@ namespace KrayonEditor.UI
                 ResetCamera();
                 LogMessage("Camera reset to initial position");
             }
-        }
-
-        private static void HandleSceneSwitch(
-            OpenTK.Windowing.GraphicsLibraryFramework.KeyboardState keyboard)
-        {
-            if (keyboard.IsKeyPressed(Keys.D1)) { SceneManager.LoadScene("Scene1"); LogMessage("Loaded Scene1"); }
-            if (keyboard.IsKeyPressed(Keys.D2)) { SceneManager.LoadScene("Scene2"); LogMessage("Loaded Scene2"); }
-            if (keyboard.IsKeyPressed(Keys.D3)) { SceneManager.LoadScene("Scene3"); LogMessage("Loaded Scene3"); }
         }
 
         private static void HandleCameraMovement(

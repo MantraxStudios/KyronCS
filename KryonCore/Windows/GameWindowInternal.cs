@@ -45,7 +45,8 @@ namespace KrayonCore.GraphicsData
                     APIVersion = new Version(4, 5),
                     Profile = ContextProfile.Core,
                     Flags = ContextFlags.ForwardCompatible,
-                    NumberOfSamples = 0
+                    NumberOfSamples = 0,
+                    WindowState = WindowState.Maximized
                 })
         {
             _engine = engine;

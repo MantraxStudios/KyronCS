@@ -104,7 +104,10 @@ namespace KrayonCore
         public void Use()
         {
             if (!_isCompiled)
-                throw new InvalidOperationException($"Shader '{Name}' is not compiled");
+            {
+                Console.WriteLine($"[Shader] Warning: Attempted to use uncompiled shader '{Name}'");
+                return;
+            }
 
             GL.UseProgram(_programID);
         }
@@ -112,7 +115,10 @@ namespace KrayonCore
         public int GetUniformLocation(string name)
         {
             if (!_isCompiled)
-                throw new InvalidOperationException($"Shader '{Name}' is not compiled");
+            {
+                Console.WriteLine($"[Shader] Warning: Attempted to get uniform location from uncompiled shader '{Name}'");
+                return -1;
+            }
 
             return GL.GetUniformLocation(_programID, name);
         }
