@@ -72,14 +72,27 @@ namespace KrayonCore
         public int SubMeshCount => _subMeshes.Count;
         public int MaterialCount => _materials.Count;
 
+        private static readonly HashSet<string> _formatsNeedingFlipUVs = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".obj", ".fbx", ".3ds", ".dae", ".blend", ".ply", ".stl", ".x", ".lwo", ".lws"
+        };
+
+        private static PostProcessSteps GetPostProcessFlags(string extension)
+        {
+            var flags = PostProcessSteps.Triangulate | PostProcessSteps.CalculateTangentSpace;
+
+            if (_formatsNeedingFlipUVs.Contains(extension))
+                flags |= PostProcessSteps.FlipUVs;
+
+            return flags;
+        }
+
         public Box3 AABB
         {
             get
             {
                 if (!_aabbCalculated)
-                {
                     CalculateAABB();
-                }
                 return _aabb;
             }
         }
@@ -87,27 +100,21 @@ namespace KrayonCore
         public int GetMaterialIndex(int subMeshIndex)
         {
             if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
-            {
                 return _subMeshes[subMeshIndex].MaterialIndex;
-            }
             return 0;
         }
 
         public MaterialTextureInfo GetSubMeshTextureInfo(int subMeshIndex)
         {
             if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
-            {
                 return _subMeshes[subMeshIndex].TextureInfo;
-            }
             return new MaterialTextureInfo();
         }
 
         public MaterialTextureInfo GetMaterialTextureInfo(int materialIndex)
         {
             if (materialIndex >= 0 && materialIndex < _materials.Count)
-            {
                 return _materials[materialIndex];
-            }
             return new MaterialTextureInfo();
         }
 
@@ -119,27 +126,21 @@ namespace KrayonCore
         public int GetSubmeshBaseVertex(int subMeshIndex)
         {
             if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
-            {
                 return _subMeshes[subMeshIndex].BaseVertex;
-            }
             return 0;
         }
 
         public int GetSubmeshBaseIndex(int subMeshIndex)
         {
             if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
-            {
                 return _subMeshes[subMeshIndex].BaseIndex;
-            }
             return 0;
         }
 
         public int GetSubmeshIndexCount(int subMeshIndex)
         {
             if (subMeshIndex >= 0 && subMeshIndex < _subMeshes.Count)
-            {
                 return _subMeshes[subMeshIndex].IndexCount;
-            }
             return 0;
         }
 
@@ -148,22 +149,19 @@ namespace KrayonCore
             var model = new Model();
             path = AssetManager.BasePath + path;
 
+            string extension = System.IO.Path.GetExtension(path);
+
             AssimpContext importer = new AssimpContext();
-            Scene scene = importer.ImportFile(path,
-                PostProcessSteps.Triangulate |
-                PostProcessSteps.FlipUVs |
-                PostProcessSteps.CalculateTangentSpace);
+            Scene scene = importer.ImportFile(path, GetPostProcessFlags(extension));
 
             if (scene == null || scene.SceneFlags.HasFlag(SceneFlags.Incomplete) || scene.RootNode == null)
-            {
                 throw new Exception($"Error loading model: {path}");
-            }
 
             model.ProcessMaterials(scene, path);
             model.ProcessNode(scene.RootNode, scene);
             model.CombineSubMeshes();
             model.CalculateAABB();
-            
+
             return model;
         }
 
@@ -175,13 +173,7 @@ namespace KrayonCore
 
             using MemoryStream ms = new MemoryStream(data);
 
-            Scene scene = importer.ImportFileFromStream(
-                ms,
-                PostProcessSteps.Triangulate |
-                PostProcessSteps.FlipUVs |
-                PostProcessSteps.CalculateTangentSpace,
-                extension 
-            );
+            Scene scene = importer.ImportFileFromStream(ms, GetPostProcessFlags(extension), extension);
 
             if (scene == null || scene.SceneFlags.HasFlag(SceneFlags.Incomplete) || scene.RootNode == null)
                 throw new Exception("Error loading model from memory");
@@ -190,7 +182,6 @@ namespace KrayonCore
             model.ProcessNode(scene.RootNode, scene);
             model.CombineSubMeshes();
             model.CalculateAABB();
-
 
             return model;
         }
@@ -205,42 +196,26 @@ namespace KrayonCore
                 var textureInfo = new MaterialTextureInfo();
 
                 if (material.HasTextureDiffuse)
-                {
                     textureInfo.DiffuseTexture = GetTexturePath(material.TextureDiffuse, modelDirectory);
-                }
 
                 if (material.HasTextureNormal)
-                {
                     textureInfo.NormalTexture = GetTexturePath(material.TextureNormal, modelDirectory);
-                }
                 else if (material.HasTextureHeight)
-                {
                     textureInfo.NormalTexture = GetTexturePath(material.TextureHeight, modelDirectory);
-                }
 
                 if (material.HasTextureSpecular)
-                {
                     textureInfo.SpecularTexture = GetTexturePath(material.TextureSpecular, modelDirectory);
-                }
 
                 if (material.HasTextureReflection)
-                {
                     textureInfo.MetallicTexture = GetTexturePath(material.TextureReflection, modelDirectory);
-                }
 
                 if (material.HasTextureAmbient)
-                {
                     textureInfo.AmbientOcclusionTexture = GetTexturePath(material.TextureAmbient, modelDirectory);
-                }
                 else if (material.HasTextureLightMap)
-                {
                     textureInfo.AmbientOcclusionTexture = GetTexturePath(material.TextureLightMap, modelDirectory);
-                }
 
                 if (material.HasTextureEmissive)
-                {
                     textureInfo.EmissiveTexture = GetTexturePath(material.TextureEmissive, modelDirectory);
-                }
 
                 _materials.Add(textureInfo);
             }
@@ -256,9 +231,7 @@ namespace KrayonCore
             texturePath = texturePath.Replace("\\", "/");
 
             if (System.IO.Path.IsPathRooted(texturePath))
-            {
                 texturePath = System.IO.Path.GetFileName(texturePath);
-            }
 
             string fullPath = System.IO.Path.Combine(modelDirectory, texturePath);
             fullPath = fullPath.Replace("\\", "/");
@@ -278,24 +251,20 @@ namespace KrayonCore
             for (int i = 0; i < node.MeshCount; i++)
             {
                 Assimp.Mesh mesh = scene.Meshes[node.MeshIndices[i]];
-                
+
                 var processedMesh = ProcessMesh(mesh, scene);
                 int materialIndex = mesh.MaterialIndex;
-                
+
                 MaterialTextureInfo textureInfo = null;
                 if (materialIndex >= 0 && materialIndex < _materials.Count)
-                {
                     textureInfo = _materials[materialIndex];
-                }
-                
+
                 var subMeshInfo = new SubMeshInfo(processedMesh, materialIndex, textureInfo);
                 _subMeshes.Add(subMeshInfo);
             }
 
             for (int i = 0; i < node.ChildCount; i++)
-            {
                 ProcessNode(node.Children[i], scene);
-            }
         }
 
         private Mesh ProcessMesh(Assimp.Mesh mesh, Scene scene)
@@ -364,9 +333,7 @@ namespace KrayonCore
             {
                 Face face = mesh.Faces[i];
                 for (int j = 0; j < face.IndexCount; j++)
-                {
                     indices.Add((uint)face.Indices[j]);
-                }
             }
 
             return new Mesh(vertices.ToArray(), indices.ToArray());
@@ -379,7 +346,7 @@ namespace KrayonCore
 
             List<float> combinedVertices = new List<float>();
             List<uint> combinedIndices = new List<uint>();
-            
+
             int currentBaseVertex = 0;
             int currentBaseIndex = 0;
 
@@ -387,17 +354,17 @@ namespace KrayonCore
             {
                 var subMesh = _subMeshes[i];
                 var mesh = subMesh.Mesh;
-                
+
                 var vertices = mesh.GetVertices();
                 var indices = mesh.GetIndices();
-                
+
                 subMesh.BaseVertex = currentBaseVertex;
                 subMesh.BaseIndex = currentBaseIndex;
                 subMesh.IndexCount = indices.Length;
-                
+
                 combinedVertices.AddRange(vertices);
                 combinedIndices.AddRange(indices);
-                
+
                 currentBaseVertex += mesh.VertexCount;
                 currentBaseIndex += indices.Length;
             }
@@ -431,9 +398,7 @@ namespace KrayonCore
         public Box3 GetTransformedAABB(Matrix4 transform)
         {
             if (!_aabbCalculated)
-            {
                 CalculateAABB();
-            }
 
             Vector3[] corners = new Vector3[8]
             {
@@ -483,9 +448,7 @@ namespace KrayonCore
         public void DrawSubMesh(int index)
         {
             if (index >= 0 && index < _subMeshes.Count)
-            {
                 _subMeshes[index].Mesh.Draw();
-            }
         }
 
         public void Dispose()
@@ -493,9 +456,7 @@ namespace KrayonCore
             if (!_disposed)
             {
                 foreach (var subMeshInfo in _subMeshes)
-                {
                     subMeshInfo.Mesh?.Dispose();
-                }
                 _subMeshes.Clear();
                 _materials.Clear();
                 _combinedMesh?.Dispose();
