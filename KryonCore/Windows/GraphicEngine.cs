@@ -177,6 +177,7 @@ namespace KrayonCore.GraphicsData
             _screenQuad?.Dispose();
             Buffers.Dispose();
             _sceneRenderer.Shutdown();
+            Audio.Dispose();
             OnClose?.Invoke();
         }
 

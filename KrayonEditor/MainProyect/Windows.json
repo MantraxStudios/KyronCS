@@ -1,0 +1,12 @@
+{
+  "ShowHierarchy": true,
+  "ShowInspector": true,
+  "ShowSceneView": true,
+  "ShowConsole": true,
+  "ShowStats": true,
+  "ShowAssets": true,
+  "ShowMaterials": true,
+  "ShowTileEditor": true,
+  "ShowSpriteAnimator": true,
+  "ShowCompiler": true
+}

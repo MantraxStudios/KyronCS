@@ -1,6 +1,7 @@
-﻿using KrayonCore.Audio;
+using KrayonCore.Audio;
 using KrayonCore.Core.Attributes;
 using KrayonCore.GraphicsData;
+using OpenTK.Audio.OpenAL;
 using OpenTK.Mathematics;
 
 namespace KrayonCore.Core.Components
@@ -66,28 +67,27 @@ namespace KrayonCore.Core.Components
                 return;
             }
 
-            var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+            // Update OpenAL source 3D position
             Vector3 objPos = GameObject.Transform.GetWorldPosition();
-            Vector3 camPos = camera.Position;
-            Vector3 toObj = objPos - camPos;
-            float dist = toObj.Length;
+            ThisAudio.SetPosition(objPos.X, objPos.Y, objPos.Z);
 
-            ThisAudio.Volume = Volume * Attenuate(dist);
+            // Update OpenAL distance attenuation parameters
+            int sourceId = ThisAudio.SourceId;
+            AL.Source(sourceId, ALSourcef.Gain, Volume);
+            AL.Source(sourceId, ALSourcef.ReferenceDistance, MathF.Max(MinDistance, 0.001f));
+            AL.Source(sourceId, ALSourcef.MaxDistance, MathF.Max(MaxDistance, MinDistance + 0.001f));
 
-            if (dist < 0.001f)
-            {
-                ThisAudio.Pan = 0f;
-                return;
-            }
+            if (RolloffMode == AudioRolloffMode.Linear)
+                AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
+            else
+                AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
 
-            Vector3 dir = toObj / dist;
-            float pan = Vector3.Dot(dir, camera.Right);
-
-            float forwardDot = Vector3.Dot(dir, camera.Front);
-            if (forwardDot < 0f)
-                pan = MathHelper.Lerp(pan, 0f, -forwardDot * 0.5f);
-
-            ThisAudio.Pan = Math.Clamp(pan * StereoPanBlend, -1f, 1f);
+            // Update listener from camera
+            var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+            GraphicsEngine.Instance.Audio.UpdateListener(
+                camera.Position.X, camera.Position.Y, camera.Position.Z,
+                camera.Front.X, camera.Front.Y, camera.Front.Z,
+                camera.Up.X, camera.Up.Y, camera.Up.Z);
         }
 
         public void Play()
@@ -103,6 +103,7 @@ namespace KrayonCore.Core.Components
             }
 
             ThisAudio = GraphicsEngine.Instance.Audio.Play(bytes, MakeSettings());
+            ConfigureSpatial();
         }
 
         public void Stop()
@@ -126,6 +127,20 @@ namespace KrayonCore.Core.Components
             }
 
             ThisAudio = GraphicsEngine.Instance.Audio.Play(bytes, MakeSettings());
+            ConfigureSpatial();
+        }
+
+        private void ConfigureSpatial()
+        {
+            if (ThisAudio == null || !Spatial) return;
+
+            int sourceId = ThisAudio.SourceId;
+            AL.Source(sourceId, ALSourcef.ReferenceDistance, MathF.Max(MinDistance, 0.001f));
+            AL.Source(sourceId, ALSourcef.MaxDistance, MathF.Max(MaxDistance, MinDistance + 0.001f));
+            AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
+
+            Vector3 objPos = GameObject.Transform.GetWorldPosition();
+            ThisAudio.SetPosition(objPos.X, objPos.Y, objPos.Z);
         }
 
         private AudioPlaySettings MakeSettings() => new AudioPlaySettings
@@ -136,22 +151,6 @@ namespace KrayonCore.Core.Components
             Spatial = Spatial,
             InitialPan = 0f,
         };
-
-        private float Attenuate(float distance)
-        {
-            float min = MathF.Max(MinDistance, 0.001f);
-            float max = MathF.Max(MaxDistance, min + 0.001f);
-
-            if (distance <= min) return 1f;
-            if (distance >= max) return 0f;
-
-            return RolloffMode switch
-            {
-                AudioRolloffMode.Linear => 1f - (distance - min) / (max - min),
-                AudioRolloffMode.Logarithmic => Math.Clamp(min / distance, 0f, 1f),
-                _ => 1f - (distance - min) / (max - min),
-            };
-        }
     }
 
     public enum AudioRolloffMode

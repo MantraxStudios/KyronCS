@@ -1,32 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\KrayonEditor.csproj": {}
+    "/home/rhythm/Desktop/Works/KyronCS/KrayonEditor/KrayonEditor.csproj": {}
   },
   "projects": {
-    "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj": {
+    "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj",
+        "projectUniqueName": "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj",
         "projectName": "KrayonCompiler",
-        "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj",
-        "packagesPath": "C:\\Users\\tupap\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\obj\\",
+        "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj",
+        "packagesPath": "/home/rhythm/.nuget/packages/",
+        "outputPath": "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\tupap\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/rhythm/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/lib/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -66,7 +60,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -344,40 +338,34 @@
         }
       }
     },
-    "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\KrayonEditor.csproj": {
+    "/home/rhythm/Desktop/Works/KyronCS/KrayonEditor/KrayonEditor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\KrayonEditor.csproj",
+        "projectUniqueName": "/home/rhythm/Desktop/Works/KyronCS/KrayonEditor/KrayonEditor.csproj",
         "projectName": "KrayonEditor",
-        "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\KrayonEditor.csproj",
-        "packagesPath": "C:\\Users\\tupap\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonEditor\\obj\\",
+        "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KrayonEditor/KrayonEditor.csproj",
+        "packagesPath": "/home/rhythm/.nuget/packages/",
+        "outputPath": "/home/rhythm/Desktop/Works/KyronCS/KrayonEditor/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\tupap\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/rhythm/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/lib/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj": {
-                "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj"
+              "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj": {
+                "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj"
               },
-              "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj": {
-                "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj"
+              "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj": {
+                "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj"
               }
             }
           }
@@ -435,7 +423,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -713,37 +701,31 @@
         }
       }
     },
-    "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj": {
+    "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj",
+        "projectUniqueName": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj",
         "projectName": "KrayonCore",
-        "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\KrayonCore.csproj",
-        "packagesPath": "C:\\Users\\tupap\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KryonCore\\obj\\",
+        "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/KrayonCore.csproj",
+        "packagesPath": "/home/rhythm/.nuget/packages/",
+        "outputPath": "/home/rhythm/Desktop/Works/KyronCS/KryonCore/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\tupap\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/rhythm/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/lib/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj": {
-                "projectPath": "C:\\Users\\tupap\\OneDrive\\Escritorio\\KyronCS\\KrayonCompiler\\KrayonCompiler.csproj"
+              "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj": {
+                "projectPath": "/home/rhythm/Desktop/Works/KyronCS/KrayonCompiler/KrayonCompiler.csproj"
               }
             }
           }
@@ -780,9 +762,9 @@
               "target": "Package",
               "version": "[0.5.3, )"
             },
-            "NAudio": {
+            "NLayer": {
               "target": "Package",
-              "version": "[2.2.1, )"
+              "version": "[1.16.0, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
@@ -817,7 +799,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
