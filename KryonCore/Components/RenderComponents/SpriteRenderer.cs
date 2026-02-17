@@ -5,7 +5,7 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 
-namespace KrayonCore
+namespace KrayonCore.Components.RenderComponents
 {
     [Serializable]
     public class AnimationFrame

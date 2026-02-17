@@ -1,4 +1,5 @@
-﻿using KrayonCore.Graphics;
+﻿using KrayonCore.Components.Components;
+using KrayonCore.Components.RenderComponents;
 using KrayonCore.Graphics.FrameBuffers;
 using KrayonCore.GraphicsData;
 using LightingSystem;

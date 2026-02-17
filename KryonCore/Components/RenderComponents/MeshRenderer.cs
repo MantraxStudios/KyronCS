@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace KrayonCore
+namespace KrayonCore.Components.RenderComponents
 {
     public class MeshRenderer : Component, IRenderable
     {

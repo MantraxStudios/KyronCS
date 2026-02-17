@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Components.Components;
 using System;
 using System.Runtime.InteropServices;
 

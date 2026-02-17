@@ -1,4 +1,5 @@
-﻿using KrayonCore.GraphicsData;
+﻿using KrayonCore.Components.RenderComponents;
+using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -160,18 +161,16 @@ namespace KrayonCore.EventSystem
             {
                 GameObject obj = objects[i];
 
-                Matrix4 world    = obj.Transform.GetWorldMatrix();
+                Matrix4 world = obj.Transform.GetWorldMatrix();
                 Matrix4 invWorld = Matrix4.Invert(world);
 
-                // Transform ray into the object's local / model space
                 Vector4 localOrigin4 = new Vector4(rayOrigin, 1.0f) * invWorld;
-                Vector4 localEnd4    = new Vector4(rayOrigin + rayDir, 1.0f) * invWorld;
+                Vector4 localEnd4 = new Vector4(rayOrigin + rayDir, 1.0f) * invWorld;
 
                 Vector3 localOrigin = localOrigin4.Xyz / localOrigin4.W;
-                Vector3 localEnd    = localEnd4.Xyz    / localEnd4.W;
-                Vector3 localDir    = Vector3.Normalize(localEnd - localOrigin);
+                Vector3 localEnd = localEnd4.Xyz / localEnd4.W;
+                Vector3 localDir = Vector3.Normalize(localEnd - localOrigin);
 
-                // Try mesh-accurate picking first
                 MeshRenderer meshRenderer = obj.GetComponent<MeshRenderer>();
                 Model model = meshRenderer?.Model;
 
@@ -179,28 +178,30 @@ namespace KrayonCore.EventSystem
 
                 if (model != null && model.SubMeshCount > 0)
                 {
-                    // Early-out: test against the model's AABB in local space
+                    // ── Picking preciso con triangulos ───────────────────────────
                     Box3 aabb = model.AABB;
                     float tAABB = RayIntersectsAABB(localOrigin, localDir, aabb.Min, aabb.Max);
                     if (tAABB >= float.MaxValue)
                         continue;
 
-                    // Per-triangle test
                     tLocal = RayIntersectsMesh(localOrigin, localDir, model);
                 }
                 else
                 {
-                    // No mesh data – skip this object
-                    continue;
+                    // ── Sin mesh: AABB cuadrado basado en la escala del transform ─
+                    // En local space la escala ya está aplicada en la world matrix,
+                    // así que el AABB es simplemente un cubo unitario centrado en origen
+                    Vector3 halfSize = Vector3.One * 0.5f;
+                    tLocal = RayIntersectsAABB(localOrigin, localDir, -halfSize, halfSize);
                 }
 
                 if (tLocal >= float.MaxValue)
                     continue;
 
-                // Hit point → world space → distance for depth sorting
-                Vector3 localHit  = localOrigin + localDir * tLocal;
+                // Hit point → world space → distancia para depth sorting
+                Vector3 localHit = localOrigin + localDir * tLocal;
                 Vector4 worldHit4 = new Vector4(localHit, 1.0f) * world;
-                Vector3 worldHit  = worldHit4.Xyz / worldHit4.W;
+                Vector3 worldHit = worldHit4.Xyz / worldHit4.W;
 
                 float worldDist = (worldHit - rayOrigin).Length;
 

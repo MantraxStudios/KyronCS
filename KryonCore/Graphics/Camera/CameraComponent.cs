@@ -1,4 +1,5 @@
-﻿using KrayonCore.Core;
+﻿using KrayonCore.Components.Components;
+using KrayonCore.Core;
 using KrayonCore.Graphics.FrameBuffers;
 using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;

@@ -1,8 +1,9 @@
-﻿using KrayonCore.GraphicsData;
+﻿using KrayonCore.Components.Components;
+using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;
 using System;
 
-namespace KrayonCore.Components
+namespace KrayonCore.Components.RenderComponents
 {
     public enum LightType
     {

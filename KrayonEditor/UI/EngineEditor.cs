@@ -1,9 +1,11 @@
 ﻿using ImGuiNET;
 using KrayonCore;
-using KrayonCore.Components;
+using KrayonCore.Components.Components;
+using KrayonCore.Components.RenderComponents;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core.Components;
 using KrayonCore.Core.Input;
+using KrayonCore.EventSystem;
 using KrayonCore.Graphics.Camera;
 using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;
@@ -47,6 +49,7 @@ namespace KrayonEditor.UI
         // ── Consola ──────────────────────────────────────────────────────────
         private static readonly List<string> _consoleMessages = new();
         private const int _maxConsoleMessages = 100;
+        private static GameObject? _hoveredObject = null;
 
         // ── Punto de entrada ─────────────────────────────────────────────────
         public static void Run()
@@ -225,6 +228,16 @@ namespace KrayonEditor.UI
                     }
                 }
             });
+
+            sceneRenderer.AttachRender("gizmo_hover", (view, projection, cameraPos) =>
+            {
+                if (_hoveredObject == null) return;
+                if (_hoveredObject == EditorActions.SelectedObject) return;
+
+                Matrix4 model = _hoveredObject.Transform.GetWorldMatrix();
+                Vector4 color = new Vector4(1.0f, 1.0f, 1.0f, 0.4f);
+                GizmoCube.Draw(model, view, projection, color, lineWidth: 1.5f);
+            });
         }
 
         static float CalculateLightRadius(float intensity, float constant, float linear, float quadratic)
@@ -265,6 +278,7 @@ namespace KrayonEditor.UI
 
             HandleInput(dt);
             UpdateFPS(dt);
+            UpdateHoveredObject();
 
             _imguiController?.Update(_window, dt);
 
@@ -275,6 +289,49 @@ namespace KrayonEditor.UI
             );
 
             _uiRender?.RenderUI();
+        }
+
+        private static void UpdateHoveredObject()
+        {
+            // Solo detectar si el mouse está sobre la escena y no hay click derecho activo
+            if (!EditorActions.IsHoveringScene)
+            {
+                _hoveredObject = null;
+                return;
+            }
+
+            var mouse = _engine!.GetMouseState();
+
+            // No hacer hover si estamos rotando la cámara
+            if (mouse.IsButtonDown(MouseButton.Right))
+            {
+                _hoveredObject = null;
+                return;
+            }
+
+            try
+            {
+                var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+                int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
+                int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+
+                // Posición del mouse relativa al viewport de la escena
+                System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
+                System.Numerics.Vector2 sceneWindowPos = EditorActions.ViewPortPosition;
+                OpenTK.Mathematics.Vector2 relativeMousePos = new(
+                    globalMousePos.X - sceneWindowPos.X,
+                    globalMousePos.Y - sceneWindowPos.Y
+                );
+
+                EventSystem.ScreenToWorldRay(relativeMousePos, camera, screenWidth, screenHeight,
+                    out OpenTK.Mathematics.Vector3 rayOrigin, out OpenTK.Mathematics.Vector3 rayDir);
+
+                _hoveredObject = EventSystem.GetObjectByRay(rayOrigin, rayDir);
+            }
+            catch
+            {
+                _hoveredObject = null;
+            }
         }
 
         private static void HandleRender(float dt)

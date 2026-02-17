@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using KrayonCore.GraphicsData;
+using KrayonCore.Components.Components;
 
-namespace KrayonCore.Graphics
+namespace KrayonCore.Components.RenderComponents
 {
     public class TileTransform
     {

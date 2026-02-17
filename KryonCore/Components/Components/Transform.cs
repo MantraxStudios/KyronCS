@@ -2,7 +2,7 @@
 using OpenTK.Mathematics;
 using System;
 
-namespace KrayonCore
+namespace KrayonCore.Components.Components
 {
     public class Transform : Component
     {

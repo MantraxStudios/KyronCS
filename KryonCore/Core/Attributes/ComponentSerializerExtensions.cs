@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using KrayonCore.Components.RenderComponents;
 using OpenTK.Mathematics;
 
 namespace KrayonCore
@@ -50,7 +51,7 @@ namespace KrayonCore
         /// Antes de guardar una escena, prepara los TileRenderers para serialización
         /// guardando los nombres de los materiales
         /// </summary>
-        public static void PrepareForSerialization(this Graphics.TileRenderer tileRenderer)
+        public static void PrepareForSerialization(this TileRenderer tileRenderer)
         {
             if (tileRenderer == null)
                 return;
@@ -99,7 +100,7 @@ namespace KrayonCore
                     meshRendererCount++;
                 }
 
-                var tileRenderer = gameObject.GetComponent<Graphics.TileRenderer>();
+                var tileRenderer = gameObject.GetComponent<TileRenderer>();
                 if (tileRenderer != null)
                 {
                     tileRenderer.PrepareForSerialization();
