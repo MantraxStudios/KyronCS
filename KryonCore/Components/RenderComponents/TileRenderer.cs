@@ -42,8 +42,10 @@ namespace KrayonCore.Graphics
         }
     }
 
-    public class TileRenderer : Component
+    public class TileRenderer : Component, IRenderable
     {
+        [NoSerializeToInspector] public RenderableType RenderType => RenderableType.Tile;
+
         [ToStorage] public string[] ModelPaths { get; set; } = new string[] { "models/Cube.fbx" };
         [ToStorage] public string[] MaterialPaths { get; set; } = new string[0];
 
@@ -99,6 +101,8 @@ namespace KrayonCore.Graphics
 
         public override void Awake()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+
             Console.WriteLine($"[TileRenderer] Awake llamado en {GameObject?.Name ?? "Unknown"}");
 
             if (ModelPaths != null && ModelPaths.Length > 0)
@@ -608,6 +612,8 @@ namespace KrayonCore.Graphics
 
         public override void OnDestroy()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+
             CancelGeneration();
 
             lock (_tilesLock)

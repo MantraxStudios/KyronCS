@@ -7,8 +7,10 @@ using System.Collections.Generic;
 
 namespace KrayonCore
 {
-    public class SkyboxRenderer : Component
+    public class SkyboxRenderer : Component, IRenderable
     {
+        [NoSerializeToInspector] public RenderableType RenderType => RenderableType.Skybox;
+
         private string _materialPath = "";
         private Material _material;
         private Model _sphereModel;
@@ -60,6 +62,8 @@ namespace KrayonCore
 
         public override void Awake()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+
             _isReadyToRender = false;
 
             CreateSphereMesh();
@@ -426,6 +430,8 @@ namespace KrayonCore
 
         public override void OnDestroy()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+
             _material = null;
             _sphereMesh?.Dispose();
             _sphereMesh = null;

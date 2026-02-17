@@ -7,6 +7,11 @@ using OpenTK.Mathematics;
 
 namespace KrayonCore
 {
+    /// <summary>
+    /// SceneRenderer optimizado que usa un sistema de registro en lugar de búsquedas por componente.
+    /// Los renderers se auto-registran al habilitarse y se desregistran al deshabilitarse.
+    /// Esto evita las costosas llamadas a FindGameObjectsWithComponent cada frame.
+    /// </summary>
     public class SceneRenderer
     {
         // ── Estado ───────────────────────────────────────────────────────────
@@ -15,6 +20,19 @@ namespace KrayonCore
         private readonly Dictionary<(Model model, Material material), List<Matrix4>>
             _meshInstanceGroups = new(),
             _spriteInstanceGroups = new();
+
+        // ── OPTIMIZACIÓN: Listas de renderers registrados ────────────────────
+        // En lugar de buscar con FindGameObjectsWithComponent cada frame,
+        // mantenemos listas cacheadas que se actualizan solo cuando los componentes
+        // se crean, destruyen, habilitan o deshabilitan.
+
+        private readonly List<SkyboxRenderer> _skyboxRenderers = new();
+        private readonly List<MeshRenderer> _meshRenderers = new();
+        private readonly List<SpriteRenderer> _spriteRenderers = new();
+        private readonly List<TileRenderer> _tileRenderers = new();
+
+        // Flag para limpieza lazy de referencias nulas
+        private bool _needsCleanup = false;
 
         // ── Render Attachments ───────────────────────────────────────────────
         private readonly Dictionary<string, Action<Matrix4, Matrix4, Vector3>> _renderAttachments = new();
@@ -44,13 +62,102 @@ namespace KrayonCore
             );
         }
 
-        // ── API de Render Attachments ────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
+        // ── SISTEMA DE REGISTRO DE RENDERERS ─────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
 
         /// <summary>
-        /// Agrega un callback de renderizado que se ejecuta después de renderizar la escena.
+        /// Registra un renderer en el sistema de renderizado.
+        /// DEBE llamarse cuando un renderer se crea o se habilita.
         /// </summary>
-        /// <param name="name">Nombre único del attachment</param>
-        /// <param name="renderCallback">Callback que recibe (view, projection, cameraPos)</param>
+        public void RegisterRenderer<T>(T renderer) where T : class
+        {
+            switch (renderer)
+            {
+                case SkyboxRenderer skybox:
+                    if (!_skyboxRenderers.Contains(skybox))
+                        _skyboxRenderers.Add(skybox);
+                    break;
+
+                case MeshRenderer mesh:
+                    if (!_meshRenderers.Contains(mesh))
+                        _meshRenderers.Add(mesh);
+                    break;
+
+                case SpriteRenderer sprite:
+                    if (!_spriteRenderers.Contains(sprite))
+                        _spriteRenderers.Add(sprite);
+                    break;
+
+                case TileRenderer tile:
+                    if (!_tileRenderers.Contains(tile))
+                        _tileRenderers.Add(tile);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Desregistra un renderer del sistema de renderizado.
+        /// DEBE llamarse cuando un renderer se deshabilita o se destruye.
+        /// </summary>
+        public void UnregisterRenderer<T>(T renderer) where T : class
+        {
+            bool removed = false;
+
+            switch (renderer)
+            {
+                case SkyboxRenderer skybox:
+                    removed = _skyboxRenderers.Remove(skybox);
+                    break;
+
+                case MeshRenderer mesh:
+                    removed = _meshRenderers.Remove(mesh);
+                    break;
+
+                case SpriteRenderer sprite:
+                    removed = _spriteRenderers.Remove(sprite);
+                    break;
+
+                case TileRenderer tile:
+                    removed = _tileRenderers.Remove(tile);
+                    break;
+            }
+
+            if (removed)
+                _needsCleanup = true;
+        }
+
+        /// <summary>
+        /// Limpia todos los renderers registrados.
+        /// Útil al cambiar de escena o reiniciar el motor.
+        /// </summary>
+        public void ClearAllRenderers()
+        {
+            _skyboxRenderers.Clear();
+            _meshRenderers.Clear();
+            _spriteRenderers.Clear();
+            _tileRenderers.Clear();
+            _needsCleanup = false;
+        }
+
+        /// <summary>
+        /// Limpia referencias nulas de las listas (lazy cleanup).
+        /// Se ejecuta automáticamente cuando _needsCleanup = true.
+        /// </summary>
+        private void CleanupNullRenderers()
+        {
+            if (!_needsCleanup) return;
+
+            _skyboxRenderers.RemoveAll(r => r is null || r.GameObject is null);
+            _meshRenderers.RemoveAll(r => r is null || r.GameObject is null);
+            _spriteRenderers.RemoveAll(r => r is null || r.GameObject is null);
+            _tileRenderers.RemoveAll(r => r is null || r.GameObject is null);
+
+            _needsCleanup = false;
+        }
+
+        // ── API de Render Attachments ────────────────────────────────────────
+
         public void AttachRender(string name, Action<Matrix4, Matrix4, Vector3> renderCallback)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -59,33 +166,21 @@ namespace KrayonCore
             _renderAttachments[name] = renderCallback;
         }
 
-        /// <summary>
-        /// Remueve un render attachment por nombre.
-        /// </summary>
         public bool DetachRender(string name)
         {
             return _renderAttachments.Remove(name);
         }
 
-        /// <summary>
-        /// Limpia todos los render attachments.
-        /// </summary>
         public void ClearRenderAttachments()
         {
             _renderAttachments.Clear();
         }
 
-        /// <summary>
-        /// Obtiene un render attachment por nombre.
-        /// </summary>
         public Action<Matrix4, Matrix4, Vector3>? GetRenderAttachment(string name)
         {
             return _renderAttachments.TryGetValue(name, out var callback) ? callback : null;
         }
 
-        /// <summary>
-        /// Verifica si existe un render attachment con el nombre dado.
-        /// </summary>
         public bool HasRenderAttachment(string name)
         {
             return _renderAttachments.ContainsKey(name);
@@ -94,6 +189,9 @@ namespace KrayonCore
         // ── Render ───────────────────────────────────────────────────────────
         public void Render()
         {
+            // Limpieza lazy de referencias nulas
+            CleanupNullRenderers();
+
             GL.PolygonMode(MaterialFace.FrontAndBack,
                 WireframeMode ? PolygonMode.Line : PolygonMode.Fill);
 
@@ -110,7 +208,6 @@ namespace KrayonCore
 
             if (target is null)
             {
-                // Sin buffer propio → usa el buffer de escena principal
                 target = FrameBufferManager.Instance.TryGet("scene");
                 if (target is null) return;
             }
@@ -143,6 +240,7 @@ namespace KrayonCore
             var projection = cam.GetProjectionMatrix();
             var cameraPos = cam.Position;
 
+            // OPTIMIZADO: Usar listas cacheadas en lugar de FindGameObjectsWithComponent
             RenderSkybox(view, projection, cameraPos);
             RenderMeshRenderers(view, projection, cameraPos);
             RenderSpriteRenderers(view, projection, cameraPos);
@@ -155,9 +253,6 @@ namespace KrayonCore
             target.Unbind();
         }
 
-        /// <summary>
-        /// Ejecuta todos los render attachments registrados con las matrices de la cámara actual.
-        /// </summary>
         private void RenderAttachments(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_renderAttachments.Count == 0) return;
@@ -187,52 +282,52 @@ namespace KrayonCore
             _spriteInstanceGroups.Clear();
         }
 
+        // ══════════════════════════════════════════════════════════════════════
+        // ── MÉTODOS DE RENDERIZADO (Optimizados con listas cacheadas) ────────
+        // ══════════════════════════════════════════════════════════════════════
+
         // ── Skybox renderers ─────────────────────────────────────────────────
         private void RenderSkybox(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
-            var skyboxRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<SkyboxRenderer>();
-            if (skyboxRenderers is null || skyboxRenderers.Length == 0) return;
+            // OPTIMIZADO: Usa la lista cacheada en lugar de FindGameObjectsWithComponent
+            if (_skyboxRenderers.Count == 0) return;
 
-            // Configurar OpenGL para renderizar el skybox
-            GL.DepthFunc(DepthFunction.Lequal); // Permitir que el skybox se dibuje en el far plane
+            GL.DepthFunc(DepthFunction.Lequal);
 
-            // Guardar estado del culling
             bool cullFaceEnabled = GL.IsEnabled(EnableCap.CullFace);
             int prevCullMode = 0;
             if (cullFaceEnabled)
                 prevCullMode = GL.GetInteger(GetPName.CullFaceMode);
 
-            // Configurar culling para la esfera invertida
             if (!cullFaceEnabled)
                 GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Front);
 
-            foreach (var go in skyboxRenderers)
+            foreach (var renderer in _skyboxRenderers)
             {
-                var renderer = go.GetComponent<SkyboxRenderer>();
-                var transform = go.GetComponent<Transform>();
+                // Verificación de validez (protección contra referencias nulas)
+                if (renderer is null || !renderer.Enabled || renderer.GameObject is null)
+                {
+                    _needsCleanup = true;
+                    continue;
+                }
 
-                if (renderer is null || !renderer.Enabled || transform is null) continue;
+                var transform = renderer.GameObject.GetComponent<Transform>();
+                if (transform is null) continue;
 
                 if (renderer.Material is null)
                 {
                     var skyboxMat = GraphicsEngine.Instance.Materials.Get("Sky");
                     if (skyboxMat is not null)
-                    {
                         renderer.SetMaterial(skyboxMat);
-                    }
                 }
 
                 if (renderer.SphereModel is null || renderer.Material is null) continue;
 
-                // Obtener la matriz de mundo del skybox (para rotación y escala)
                 Matrix4 worldMatrix = transform.GetWorldMatrix();
-
-                // Aplicar la rotación automática del skybox si tiene RotationSpeed
                 Matrix4 rotationMatrix = renderer.GetRotationMatrix();
                 worldMatrix = rotationMatrix * worldMatrix;
 
-                // Configurar el material
                 renderer.Material.Use();
                 renderer.Material.SetMatrix4("model", worldMatrix);
                 renderer.Material.SetMatrix4("view", view);
@@ -240,7 +335,6 @@ namespace KrayonCore
                 renderer.Material.SetVector3("u_CameraPos", cameraPos);
                 renderer.Material.SetInt("u_UseInstancing", 0);
 
-                // Aplicar el color/tint del skybox si el material no tiene textura
                 if (renderer.Material.AlbedoTexture is null)
                 {
                     renderer.Material.SetVector3("u_AlbedoColor", new Vector3(
@@ -251,12 +345,9 @@ namespace KrayonCore
                 }
 
                 renderer.Material.SetFloat("u_Alpha", renderer.Color.W);
-
-                // Renderizar el skybox
                 renderer.Draw();
             }
 
-            // Restaurar configuración de OpenGL
             GL.DepthFunc(DepthFunction.Less);
             if (cullFaceEnabled)
                 GL.CullFace((CullFaceMode)prevCullMode);
@@ -267,18 +358,23 @@ namespace KrayonCore
         // ── Mesh renderers ───────────────────────────────────────────────────
         private void RenderMeshRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
-            var meshRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<MeshRenderer>();
-            if (meshRenderers is null) return;
+            // OPTIMIZADO: Usa la lista cacheada
+            if (_meshRenderers.Count == 0) return;
 
-            var multiMaterialObjects = new List<GameObject>();
+            var multiMaterialObjects = new List<(MeshRenderer renderer, Transform transform)>();
 
-            foreach (var go in meshRenderers)
+            foreach (var renderer in _meshRenderers)
             {
-                var renderer = go.GetComponent<MeshRenderer>();
-                var transform = go.GetComponent<Transform>();
-
-                if (renderer is null || !renderer.Enabled || renderer.Model is null || transform is null)
+                if (renderer is null || !renderer.Enabled || renderer.Model is null ||
+                    renderer.GameObject is null)
+                {
+                    if (renderer is null || renderer.GameObject is null)
+                        _needsCleanup = true;
                     continue;
+                }
+
+                var transform = renderer.GameObject.GetComponent<Transform>();
+                if (transform is null) continue;
 
                 ValidateAndFixMaterials(renderer);
 
@@ -298,10 +394,11 @@ namespace KrayonCore
                 }
                 else if (validCount > 1)
                 {
-                    multiMaterialObjects.Add(go);
+                    multiMaterialObjects.Add((renderer, transform));
                 }
             }
 
+            // Renderizar objetos con un solo material (instanciado)
             foreach (var kvp in _meshInstanceGroups)
             {
                 var (model, material) = kvp.Key;
@@ -314,12 +411,10 @@ namespace KrayonCore
                 model.ClearInstancing();
             }
 
-            foreach (var go in multiMaterialObjects)
+            // Renderizar objetos con múltiples materiales (no instanciado)
+            foreach (var (renderer, transform) in multiMaterialObjects)
             {
-                var renderer = go.GetComponent<MeshRenderer>();
-                var transform = go.GetComponent<Transform>();
-                if (renderer?.Model is null || transform is null) continue;
-
+                if (renderer?.Model is null) continue;
                 renderer.Model.ClearInstancing();
                 RenderMeshWithMultipleMaterials(
                     renderer, transform.GetWorldMatrix(), view, projection, cameraPos);
@@ -367,15 +462,20 @@ namespace KrayonCore
         // ── Sprite renderers ─────────────────────────────────────────────────
         private void RenderSpriteRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
-            var spriteRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<SpriteRenderer>();
-            if (spriteRenderers is null) return;
+            // OPTIMIZADO: Usa la lista cacheada
+            if (_spriteRenderers.Count == 0) return;
 
-            foreach (var go in spriteRenderers)
+            foreach (var renderer in _spriteRenderers)
             {
-                var renderer = go.GetComponent<SpriteRenderer>();
-                var transform = go.GetComponent<Transform>();
+                if (renderer is null || !renderer.Enabled || renderer.GameObject is null)
+                {
+                    if (renderer is null || renderer.GameObject is null)
+                        _needsCleanup = true;
+                    continue;
+                }
 
-                if (renderer is null || !renderer.Enabled || transform is null) continue;
+                var transform = renderer.GameObject.GetComponent<Transform>();
+                if (transform is null) continue;
 
                 if (renderer.Material is null)
                 {
@@ -411,13 +511,17 @@ namespace KrayonCore
         // ── Tile renderers ───────────────────────────────────────────────────
         private void RenderTileRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
-            var tileRenderers = SceneManager.ActiveScene?.FindGameObjectsWithComponent<TileRenderer>();
-            if (tileRenderers is null) return;
+            // OPTIMIZADO: Usa la lista cacheada
+            if (_tileRenderers.Count == 0) return;
 
-            foreach (var go in tileRenderers)
+            foreach (var renderer in _tileRenderers)
             {
-                var renderer = go.GetComponent<TileRenderer>();
-                if (renderer is null || !renderer.Enabled) continue;
+                if (renderer is null || !renderer.Enabled)
+                {
+                    if (renderer is null || renderer.GameObject is null)
+                        _needsCleanup = true;
+                    continue;
+                }
 
                 if (renderer.MaterialCount == 0)
                 {
@@ -532,23 +636,26 @@ namespace KrayonCore
         public void Shutdown()
         {
             ClearInstanceGroups();
-            //ClearRenderAttachments();
-
-            //var cameras = CameraManager.Instance.GetRenderOrder().ToList();
-            //foreach (var cam in cameras)
-            //{
-            //    if (cam.Name != "main")
-            //    {
-            //        CameraManager.Instance.Remove(cam.Name);
-            //    }
-            //}
+            ClearAllRenderers();
         }
 
-        /// <summary>Devuelve la cámara principal para uso del editor.</summary>
         public Camera GetCamera()
             => CameraManager.Instance.Main?.Camera
             ?? throw new InvalidOperationException("No hay cámara principal registrada.");
 
         public LightManager GetLightManager() => _lightManager;
+
+        // ── Estadísticas de rendimiento ──────────────────────────────────────
+        public int GetRegisteredRenderersCount()
+        {
+            return _skyboxRenderers.Count + _meshRenderers.Count +
+                   _spriteRenderers.Count + _tileRenderers.Count;
+        }
+
+        public (int skybox, int mesh, int sprite, int tile) GetRendererCounts()
+        {
+            return (_skyboxRenderers.Count, _meshRenderers.Count,
+                    _spriteRenderers.Count, _tileRenderers.Count);
+        }
     }
 }

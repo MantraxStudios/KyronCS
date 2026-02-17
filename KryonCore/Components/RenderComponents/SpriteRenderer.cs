@@ -44,8 +44,10 @@ namespace KrayonCore
         }
     }
 
-    public class SpriteRenderer : Component
+    public class SpriteRenderer : Component, IRenderable
     {
+        [NoSerializeToInspector] public RenderableType RenderType => RenderableType.Sprite;
+
         private string _materialPath = "";
         private Material _material;
         private Material _baseMaterial;
@@ -141,6 +143,8 @@ namespace KrayonCore
 
         public override void Awake()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+
             _isReadyToRender = false;
 
             CreateQuadMesh();
@@ -751,6 +755,8 @@ namespace KrayonCore
 
         public override void OnDestroy()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+
             _material = null;
             _baseMaterial = null;
             _quadMesh?.Dispose();

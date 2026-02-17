@@ -14,6 +14,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 namespace KrayonCore.GraphicsData
 {
     public sealed class GraphicsEngine
+
     {
         // ── Singleton ────────────────────────────────────────────────────────
         public static GraphicsEngine? Instance { get; private set; }

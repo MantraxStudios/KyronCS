@@ -9,8 +9,10 @@ using System.IO;
 
 namespace KrayonCore
 {
-    public class MeshRenderer : Component
+    public class MeshRenderer : Component, IRenderable
     {
+        [NoSerializeToInspector] public RenderableType RenderType => RenderableType.Mesh;
+
         private string _modelPath = "1b467368-606c-462c-af3f-a23a3d08d12c";
 
         [ToStorage]
@@ -81,6 +83,7 @@ namespace KrayonCore
 
         public override void Awake()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
             Console.WriteLine($"MATERIAL EN ESTE OBJETO {MaterialPaths.Length}");
 
             foreach (var item in MaterialPaths)
@@ -260,6 +263,7 @@ namespace KrayonCore
 
         public override void OnDestroy()
         {
+            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
             _model = null;
             MaterialPaths = new string[0];
         }

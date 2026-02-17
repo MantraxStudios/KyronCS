@@ -9,6 +9,13 @@ namespace KrayonCore.Core.Components
     public class AudioSource : Component
     {
         [NoSerializeToInspector] private string _audioPath = "";
+        [NoSerializeToInspector] private float _volume = 1f;
+        [NoSerializeToInspector] private float _pitch = 1f;
+        [NoSerializeToInspector] private bool _loop = false;
+        [NoSerializeToInspector] private bool _spatial = false;
+        [NoSerializeToInspector] private float _minDistance = 1f;
+        [NoSerializeToInspector] private float _maxDistance = 20f;
+        [NoSerializeToInspector] private AudioRolloffMode _rolloffMode = AudioRolloffMode.Logarithmic;
 
         [ToStorage]
         public string AudioPath
@@ -22,9 +29,41 @@ namespace KrayonCore.Core.Components
             }
         }
 
-        [ToStorage] public float Volume { get; set; } = 1f;
-        [ToStorage] public float Pitch { get; set; } = 1f;
-        [ToStorage] public bool Loop { get; set; } = false;
+        [ToStorage]
+        public float Volume
+        {
+            get => _volume;
+            set
+            {
+                _volume = value;
+                if (ThisAudio != null && !ThisAudio.IsStopped)
+                    ThisAudio.Volume = value;
+            }
+        }
+
+        [ToStorage]
+        public float Pitch
+        {
+            get => _pitch;
+            set
+            {
+                _pitch = value;
+                if (ThisAudio != null && !ThisAudio.IsStopped)
+                    ThisAudio.Pitch = value;
+            }
+        }
+
+        [ToStorage]
+        public bool Loop
+        {
+            get => _loop;
+            set
+            {
+                _loop = value;
+                if (ThisAudio != null && !ThisAudio.IsStopped)
+                    AL.Source(ThisAudio.SourceId, ALSourceb.Looping, value);
+            }
+        }
 
         [ToStorage]
         public bool Spatial
@@ -34,18 +73,48 @@ namespace KrayonCore.Core.Components
             {
                 if (_spatial == value) return;
                 _spatial = value;
-                if (_started) LoadAudio();
+                if (_started && ThisAudio != null && !ThisAudio.IsStopped)
+                {
+                    ReconfigureSpatial();
+                }
             }
         }
-        private bool _spatial = false;
 
-        [ToStorage] public float MinDistance { get; set; } = 1f;
-        [ToStorage] public float MaxDistance { get; set; } = 20f;
-        [ToStorage] public AudioRolloffMode RolloffMode { get; set; } = AudioRolloffMode.Logarithmic;
+        [ToStorage]
+        public float MinDistance
+        {
+            get => _minDistance;
+            set
+            {
+                _minDistance = value;
+                UpdateSpatialParameters();
+            }
+        }
+
+        [ToStorage]
+        public float MaxDistance
+        {
+            get => _maxDistance;
+            set
+            {
+                _maxDistance = value;
+                UpdateSpatialParameters();
+            }
+        }
+
+        [ToStorage]
+        public AudioRolloffMode RolloffMode
+        {
+            get => _rolloffMode;
+            set
+            {
+                _rolloffMode = value;
+                UpdateSpatialParameters();
+            }
+        }
+
         [ToStorage] public float StereoPanBlend { get; set; } = 1f;
-
         [ToStorage] public bool PlayOnAwake { get; set; } = true;
-
 
         public AudioHandle? ThisAudio = null;
         private bool _started = false;
@@ -61,33 +130,80 @@ namespace KrayonCore.Core.Components
         {
             if (ThisAudio == null || ThisAudio.IsStopped) return;
 
-            if (!Spatial)
-            {
-                ThisAudio.Volume = Volume;
-                return;
-            }
-
-            // Update OpenAL source 3D position
-            Vector3 objPos = GameObject.Transform.GetWorldPosition();
-            ThisAudio.SetPosition(objPos.X, objPos.Y, objPos.Z);
-
-            // Update OpenAL distance attenuation parameters
-            int sourceId = ThisAudio.SourceId;
-            AL.Source(sourceId, ALSourcef.Gain, Volume);
-            AL.Source(sourceId, ALSourcef.ReferenceDistance, MathF.Max(MinDistance, 0.001f));
-            AL.Source(sourceId, ALSourcef.MaxDistance, MathF.Max(MaxDistance, MinDistance + 0.001f));
-
-            if (RolloffMode == AudioRolloffMode.Linear)
-                AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
-            else
-                AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
-
             // Update listener from camera
             var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
             GraphicsEngine.Instance.Audio.UpdateListener(
                 camera.Position.X, camera.Position.Y, camera.Position.Z,
                 camera.Front.X, camera.Front.Y, camera.Front.Z,
                 camera.Up.X, camera.Up.Y, camera.Up.Z);
+
+            if (!Spatial)
+            {
+                // Ensure source is relative to listener
+                int sourceId = ThisAudio.SourceId;
+                AL.Source(sourceId, ALSourceb.SourceRelative, true);
+                AL.Source(sourceId, ALSource3f.Position, 0f, 0f, 0f);
+                return;
+            }
+
+            // Update 3D position for spatial audio
+            Vector3 objPos = GameObject.Transform.GetWorldPosition();
+            ThisAudio.SetPosition(objPos.X, objPos.Y, objPos.Z);
+
+            // Update spatial parameters
+            UpdateSpatialParameters();
+        }
+
+        private void UpdateSpatialParameters()
+        {
+            if (ThisAudio == null || ThisAudio.IsStopped || !Spatial) return;
+
+            int sourceId = ThisAudio.SourceId;
+
+            // Ensure source is NOT relative to listener (world space)
+            AL.Source(sourceId, ALSourceb.SourceRelative, false);
+
+            // Set distance attenuation
+            AL.Source(sourceId, ALSourcef.ReferenceDistance, MathF.Max(MinDistance, 0.001f));
+            AL.Source(sourceId, ALSourcef.MaxDistance, MathF.Max(MaxDistance, MinDistance + 0.001f));
+
+            // Configure rolloff based on mode
+            if (RolloffMode == AudioRolloffMode.Linear)
+            {
+                // Linear rolloff: sound decreases linearly with distance
+                AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
+                // For linear model, you might need to use AL_LINEAR_DISTANCE model
+                // but OpenAL-Soft uses inverse distance by default
+            }
+            else
+            {
+                // Logarithmic/Inverse rolloff: more realistic (default in OpenAL)
+                // RolloffFactor controls how quickly sound attenuates
+                // Higher values = faster attenuation
+                AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);
+            }
+        }
+
+        private void ReconfigureSpatial()
+        {
+            if (ThisAudio == null || ThisAudio.IsStopped) return;
+
+            int sourceId = ThisAudio.SourceId;
+
+            if (Spatial)
+            {
+                // Enable 3D spatial audio
+                AL.Source(sourceId, ALSourceb.SourceRelative, false);
+                Vector3 objPos = GameObject.Transform.GetWorldPosition();
+                ThisAudio.SetPosition(objPos.X, objPos.Y, objPos.Z);
+                UpdateSpatialParameters();
+            }
+            else
+            {
+                // Disable spatial, make it 2D
+                AL.Source(sourceId, ALSourceb.SourceRelative, true);
+                AL.Source(sourceId, ALSource3f.Position, 0f, 0f, 0f);
+            }
         }
 
         public void Play()
@@ -135,6 +251,7 @@ namespace KrayonCore.Core.Components
             if (ThisAudio == null || !Spatial) return;
 
             int sourceId = ThisAudio.SourceId;
+            AL.Source(sourceId, ALSourceb.SourceRelative, false);
             AL.Source(sourceId, ALSourcef.ReferenceDistance, MathF.Max(MinDistance, 0.001f));
             AL.Source(sourceId, ALSourcef.MaxDistance, MathF.Max(MaxDistance, MinDistance + 0.001f));
             AL.Source(sourceId, ALSourcef.RolloffFactor, 1f);

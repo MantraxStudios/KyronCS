@@ -36,7 +36,7 @@ namespace KrayonCore.GraphicsData
             : base(
                 new GameWindowSettings
                 {
-                    UpdateFrequency = 120.0
+                    UpdateFrequency = 2000.0
                 },
                 new NativeWindowSettings
                 {

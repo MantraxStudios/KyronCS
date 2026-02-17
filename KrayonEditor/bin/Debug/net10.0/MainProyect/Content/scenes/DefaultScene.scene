@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "7e7c01f9-928b-425d-bbaf-857c113e6eea",
+      "Id": "84d6f308-04ad-4514-9b96-d1839130f6c2",
       "Name": "Cube_1",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7f75dc4d-8b80-4eb3-afb3-9d5c0c0561ec",
+          "ComponentId": "dc3aae6e-7356-43fd-9273-5f42a67e8524",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,10 +36,10 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5c4b19ed-1b98-4ada-adc9-3895d4d1cbc5",
+          "ComponentId": "4031181d-992b-4e58-ad19-b1b4bd6df972",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "1b467368-606c-462c-af3f-a23a3d08d12c",
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
@@ -52,7 +52,7 @@
       ]
     },
     {
-      "Id": "2662da91-03ed-48f7-8d1d-e47f3d5c0031",
+      "Id": "49cacb12-8705-4f2f-9f66-8ce3605c68d0",
       "Name": "GameObject_1",
       "Tag": "Untagged",
       "Active": true,
@@ -60,7 +60,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f609a5ba-96d9-4e9b-ad8d-ba577630d9ac",
+          "ComponentId": "19feff2f-aab5-469f-836f-006ccd09def6",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -86,7 +86,7 @@
         },
         {
           "TypeName": "KrayonCore.SkyboxRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "97604a51-6948-4bce-b860-35822aa46ea6",
+          "ComponentId": "9bbe37d5-e30e-4800-a94e-85f5d41d643d",
           "Enabled": true,
           "SerializedFields": {
             "MaterialPath": "Sky",
@@ -117,7 +117,7 @@
       ]
     },
     {
-      "Id": "22904f2b-f640-4757-a4d5-57cb40cb8d12",
+      "Id": "429407e7-ef7a-4444-ae38-6f00328c7fbd",
       "Name": "Camera_2",
       "Tag": "Untagged",
       "Active": true,
@@ -125,14 +125,14 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ff973fb5-48e6-452f-949d-91b02e93b1f4",
+          "ComponentId": "1475796b-b0e9-44f7-ad5c-c0aaee289705",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
               "y": 5,
-              "z": 0
+              "z": 32.012955
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -151,7 +151,7 @@
         },
         {
           "TypeName": "KrayonCore.Graphics.Camera.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f1c3cd89-733e-453f-b426-6b269862fa3e",
+          "ComponentId": "2d70d8b8-08cd-4b06-ac71-58e4ee6f6e47",
           "Enabled": true,
           "SerializedFields": {
             "CameraName": "",
@@ -168,7 +168,7 @@
             },
             "Fov": 45,
             "NearPlane": 0.1,
-            "FarPlane": 25,
+            "FarPlane": 100,
             "OrthoSize": 10,
             "AspectRatio": 1.7777778,
             "ClearMode": {
@@ -192,22 +192,22 @@
       ]
     },
     {
-      "Id": "6daf70a0-054f-4729-9f45-8fbf60b39555",
+      "Id": "150272c6-cd2a-4cb5-b2ea-c9b134c7fe58",
       "Name": "Model_3",
       "Tag": "Untagged",
       "Active": true,
-      "ParentId": null,
+      "ParentId": "429407e7-ef7a-4444-ae38-6f00328c7fbd",
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3503576d-77c5-4511-8275-7721aef5cb47",
+          "ComponentId": "7355b0ef-3cee-4998-9500-22268c08c2be",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
-              "y": -4.8797035,
-              "z": -16.10623
+              "y": -9.8797035,
+              "z": -48.119186
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -226,7 +226,7 @@
         },
         {
           "TypeName": "KrayonCore.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6478b809-efd0-4773-a24a-a575693238fb",
+          "ComponentId": "a1a2f5d5-28d3-4893-b259-f28be97bd56a",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
@@ -242,7 +242,7 @@
       ]
     },
     {
-      "Id": "e54ab4c7-d146-44f9-9792-9aa16f18d412",
+      "Id": "2d485b39-df1a-4019-8b0d-bf875b37ab8e",
       "Name": "DirectionalLight_4",
       "Tag": "Untagged",
       "Active": true,
@@ -250,7 +250,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "601a2d9f-a841-41c6-bc58-90b9572bc4d1",
+          "ComponentId": "9240c880-7c75-4bd1-9838-af65f8b7cf33",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -276,7 +276,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "e09bec74-d1ee-425a-942e-f3c3a55044f4",
+          "ComponentId": "e12a673c-3335-495b-82af-674051166e1b",
           "Enabled": true,
           "SerializedFields": {
             "Type": {

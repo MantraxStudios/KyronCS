@@ -105,19 +105,15 @@ namespace KrayonCore.Audio
         {
             var (pcmData, sampleRate, channels, bitsPerSample) = DecodeAudio(stream);
 
-            // Apply pitch via sample rate (same trick as before)
-            int effectiveRate = sampleRate;
-            if (MathF.Abs(settings.Pitch - 1f) > 0.001f)
-                effectiveRate = Math.Clamp((int)(sampleRate * settings.Pitch), 8000, 192000);
-
             ALFormat format = GetALFormat(channels, bitsPerSample);
 
             int buffer = AL.GenBuffer();
-            AL.BufferData(buffer, format, pcmData, effectiveRate);
+            AL.BufferData(buffer, format, pcmData, sampleRate);
 
             int source = AL.GenSource();
             AL.Source(source, ALSourcei.Buffer, buffer);
             AL.Source(source, ALSourcef.Gain, Math.Clamp(settings.Volume, 0f, 1f));
+            AL.Source(source, ALSourcef.Pitch, Math.Clamp(settings.Pitch, 0.5f, 2f)); // Support pitch
             AL.Source(source, ALSourceb.Looping, settings.Loop);
 
             if (settings.Spatial)
@@ -491,6 +487,21 @@ namespace KrayonCore.Audio
             {
                 if (!_stopped)
                     AL.Source(SourceId, ALSourcef.Gain, Math.Clamp(value, 0f, 1f));
+            }
+        }
+
+        public float Pitch
+        {
+            get
+            {
+                if (_stopped) return 1f;
+                AL.GetSource(SourceId, ALSourcef.Pitch, out float p);
+                return p;
+            }
+            set
+            {
+                if (!_stopped)
+                    AL.Source(SourceId, ALSourcef.Pitch, Math.Clamp(value, 0.5f, 2f));
             }
         }
 
