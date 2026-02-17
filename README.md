@@ -20,7 +20,7 @@ dotnet --version
 - ImGui.NET
 - AssimpNet
 - Jint
-- NAudio
+- NLayer
 - Newtonsoft.Json
 - OpenTK
 - StbImageSharp
@@ -38,9 +38,35 @@ sudo apt update
 sudo apt install libminizip1 libz-dev
 ```
 
+### SUPPORT
+- Audio Source (2D, Working on spatial)
+- MeshRenderer
+- SpriteRenderer
+- TileRenderer
+- AnimatedMeshRenderer
+- Light (Spot, Dir, Point)
+- Skybox
+- Multiple cameras
+- CSharpLogic (Scripting)
+- RayCastContact (Raycast Component)
+- Rigidbody (Collisions, Body)
+- Transform
+- Collision & Trigger Events
+- Instanced Rendering
+- Material System
+- Compile Game System
+- Package System
+- Editor System
+- Assets DataBase System
+- Post Processing System (In Work Not Complete)
+
 <img width="1920" height="1009" alt="image" src="https://github.com/user-attachments/assets/816fd1f8-757a-47c8-8d53-bdb76f9f8782" />
 
 <img width="1920" height="1009" alt="KrayonEditor_uOyl6URVfl" src="https://github.com/user-attachments/assets/3ee628f7-a0e7-47ba-9c00-dd577df25cb6" />
 
 <img width="1917" height="1031" alt="image" src="https://github.com/user-attachments/assets/5f44469f-fb2b-41d9-b554-c632fcc54e27" />
+
+
+https://github.com/user-attachments/assets/86e9daf3-cfd0-49fa-b622-6d931bd28864
+
 
