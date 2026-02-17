@@ -66,7 +66,7 @@ namespace KrayonCore
                 foreach (var child in this.Transform.Children)
                 {
                     GameObject childClone = child.GameObject.Clone(true);
-                    childClone.Transform.SetParent(clone.Transform);
+                    childClone.Transform.SetParent(clone.Transform, false);
                 }
             }
 
@@ -202,13 +202,11 @@ namespace KrayonCore
             return original;
         }
 
-        // Método estático de utilidad
         public static GameObject Instantiate(GameObject original, bool cloneChildren = true)
         {
             return original.Clone(cloneChildren);
         }
 
-        // Resto de métodos existentes...
         public T AddComponent<T>() where T : Component, new()
         {
             Type type = typeof(T);

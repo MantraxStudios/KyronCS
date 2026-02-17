@@ -76,22 +76,54 @@ namespace KrayonCore
             {
                 case SkyboxRenderer skybox:
                     if (!_skyboxRenderers.Contains(skybox))
+                    {
                         _skyboxRenderers.Add(skybox);
+                        Console.WriteLine($"[SceneRenderer] Registered SkyboxRenderer from '{skybox.GameObject?.Name ?? "Unknown"}' (Total: {_skyboxRenderers.Count})");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[SceneRenderer] SkyboxRenderer from '{skybox.GameObject?.Name ?? "Unknown"}' already registered");
+                    }
                     break;
 
                 case MeshRenderer mesh:
                     if (!_meshRenderers.Contains(mesh))
+                    {
                         _meshRenderers.Add(mesh);
+                        Console.WriteLine($"[SceneRenderer] Registered MeshRenderer from '{mesh.GameObject?.Name ?? "Unknown"}' (Total: {_meshRenderers.Count})");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[SceneRenderer] MeshRenderer from '{mesh.GameObject?.Name ?? "Unknown"}' already registered");
+                    }
                     break;
 
                 case SpriteRenderer sprite:
                     if (!_spriteRenderers.Contains(sprite))
+                    {
                         _spriteRenderers.Add(sprite);
+                        Console.WriteLine($"[SceneRenderer] Registered SpriteRenderer from '{sprite.GameObject?.Name ?? "Unknown"}' (Total: {_spriteRenderers.Count})");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[SceneRenderer] SpriteRenderer from '{sprite.GameObject?.Name ?? "Unknown"}' already registered");
+                    }
                     break;
 
                 case TileRenderer tile:
                     if (!_tileRenderers.Contains(tile))
+                    {
                         _tileRenderers.Add(tile);
+                        Console.WriteLine($"[SceneRenderer] Registered TileRenderer from '{tile.GameObject?.Name ?? "Unknown"}' (Total: {_tileRenderers.Count})");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[SceneRenderer] TileRenderer from '{tile.GameObject?.Name ?? "Unknown"}' already registered");
+                    }
+                    break;
+
+                default:
+                    Console.WriteLine($"[SceneRenderer] WARNING: Unknown renderer type '{renderer.GetType().Name}' - not registered");
                     break;
             }
         }
@@ -108,18 +140,34 @@ namespace KrayonCore
             {
                 case SkyboxRenderer skybox:
                     removed = _skyboxRenderers.Remove(skybox);
+                    if (removed)
+                        Console.WriteLine($"[SceneRenderer] Unregistered SkyboxRenderer from '{skybox.GameObject?.Name ?? "Unknown"}' (Remaining: {_skyboxRenderers.Count})");
+                    else
+                        Console.WriteLine($"[SceneRenderer] SkyboxRenderer from '{skybox.GameObject?.Name ?? "Unknown"}' was not registered");
                     break;
 
                 case MeshRenderer mesh:
                     removed = _meshRenderers.Remove(mesh);
+                    if (removed)
+                        Console.WriteLine($"[SceneRenderer] Unregistered MeshRenderer from '{mesh.GameObject?.Name ?? "Unknown"}' (Remaining: {_meshRenderers.Count})");
+                    else
+                        Console.WriteLine($"[SceneRenderer] MeshRenderer from '{mesh.GameObject?.Name ?? "Unknown"}' was not registered");
                     break;
 
                 case SpriteRenderer sprite:
                     removed = _spriteRenderers.Remove(sprite);
+                    if (removed)
+                        Console.WriteLine($"[SceneRenderer] Unregistered SpriteRenderer from '{sprite.GameObject?.Name ?? "Unknown"}' (Remaining: {_spriteRenderers.Count})");
+                    else
+                        Console.WriteLine($"[SceneRenderer] SpriteRenderer from '{sprite.GameObject?.Name ?? "Unknown"}' was not registered");
                     break;
 
                 case TileRenderer tile:
                     removed = _tileRenderers.Remove(tile);
+                    if (removed)
+                        Console.WriteLine($"[SceneRenderer] Unregistered TileRenderer from '{tile.GameObject?.Name ?? "Unknown"}' (Remaining: {_tileRenderers.Count})");
+                    else
+                        Console.WriteLine($"[SceneRenderer] TileRenderer from '{tile.GameObject?.Name ?? "Unknown"}' was not registered");
                     break;
             }
 
@@ -133,6 +181,15 @@ namespace KrayonCore
         /// </summary>
         public void ClearAllRenderers()
         {
+            int total = _skyboxRenderers.Count + _meshRenderers.Count +
+                        _spriteRenderers.Count + _tileRenderers.Count;
+
+            Console.WriteLine($"[SceneRenderer] Clearing all renderers (Total: {total})");
+            Console.WriteLine($"  - Skybox: {_skyboxRenderers.Count}");
+            Console.WriteLine($"  - Mesh: {_meshRenderers.Count}");
+            Console.WriteLine($"  - Sprite: {_spriteRenderers.Count}");
+            Console.WriteLine($"  - Tile: {_tileRenderers.Count}");
+
             _skyboxRenderers.Clear();
             _meshRenderers.Clear();
             _spriteRenderers.Clear();

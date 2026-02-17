@@ -83,8 +83,8 @@ namespace KrayonCore
 
         public override void Awake()
         {
+            Console.WriteLine($"*********MATERIAL EN ESTE OBJETO {MaterialPaths.Length}");
             GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
-            Console.WriteLine($"MATERIAL EN ESTE OBJETO {MaterialPaths.Length}");
 
             foreach (var item in MaterialPaths)
             {
@@ -113,6 +113,7 @@ namespace KrayonCore
             _isInitialized = true;
         }
 
+        [CallEvent("Start Event")]
         public override void Start()
         {
             if (_model == null && !string.IsNullOrEmpty(ModelPath))
@@ -121,7 +122,6 @@ namespace KrayonCore
 
                 if (_model != null && MaterialPaths.Length != _model.SubMeshCount)
                 {
-                    // CAMBIO: No usar Array.Resize con propiedad
                     var newPaths = new string[_model.SubMeshCount];
                     Array.Copy(MaterialPaths, newPaths, Math.Min(MaterialPaths.Length, newPaths.Length));
                     MaterialPaths = newPaths;

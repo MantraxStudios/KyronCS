@@ -1,4 +1,5 @@
-﻿using KrayonCore.Core;
+﻿using Acornima.Ast;
+using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
 using KrayonCore.GraphicsData;
 using System.Collections.Generic;
@@ -37,7 +38,6 @@ namespace KrayonCore
         public static void LoadScene(string nameOrPath)
         {
             GameScene sceneToLoad = null;
-
             bool isFile = nameOrPath.EndsWith(".scene", StringComparison.OrdinalIgnoreCase);
 
             if (isFile)
@@ -45,17 +45,17 @@ namespace KrayonCore
                 if (_activeScene != null)
                     _activeScene.OnUnload();
 
+                GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+
                 if (AppInfo.IsCompiledGame)
                 {
                     string key = $"Scene.{Path.GetFileNameWithoutExtension(nameOrPath)}";
                     byte[] bytes = AssetManager.GetBytes(key);
-
                     if (bytes == null)
                     {
                         Console.WriteLine($"Error: No se pudo cargar la escena '{nameOrPath}' desde Pak");
                         return;
                     }
-
                     sceneToLoad = SceneSaveSystem.LoadScene(bytes);
                 }
                 else
@@ -65,12 +65,10 @@ namespace KrayonCore
                         Console.WriteLine($"Error: No se encontró el archivo '{nameOrPath}'");
                         return;
                     }
-
                     sceneToLoad = SceneSaveSystem.LoadScene(nameOrPath);
                 }
 
-                if (sceneToLoad == null)
-                    return;
+                if (sceneToLoad == null) return;
 
                 if (_scenes.ContainsKey(sceneToLoad.Name))
                 {
@@ -81,7 +79,6 @@ namespace KrayonCore
                         oldScene.Clear();
                     }
                 }
-
                 _scenes[sceneToLoad.Name] = sceneToLoad;
             }
             else
@@ -91,20 +88,18 @@ namespace KrayonCore
                     Console.WriteLine($"Error: No se encontró la escena '{nameOrPath}'");
                     return;
                 }
-
                 sceneToLoad = _scenes[nameOrPath];
 
                 if (_activeScene != null)
                     _activeScene.OnUnload();
-            }
 
-            GraphicsEngine.Instance.GetSceneRenderer().Shutdown();
+                GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+            }
 
             _activeScene = sceneToLoad;
             _activeScene.OnLoad();
             _activeScene.Start();
         }
-
 
         public static GameScene GetScene(string name)
         {
