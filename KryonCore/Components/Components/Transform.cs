@@ -420,6 +420,26 @@ namespace KrayonCore.Components.Components
             }
         }
 
+        /// <summary>
+        /// Descompone este Transform en sus componentes de escala, rotación y posición world.
+        /// </summary>
+        public void Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        {
+            translation = GetWorldPosition();
+            rotation = GetWorldRotation();
+            scale = GetWorldScale();
+        }
+
+        /// <summary>
+        /// Descompone la versión local (sin subir por la jerarquía).
+        /// </summary>
+        public void DecomposeLocal(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        {
+            translation = Position;
+            rotation = Rotation;
+            scale = Scale;
+        }
+
         public Matrix4 GetLocalMatrix()
         {
             Matrix4 scaleMatrix = Matrix4.CreateScale(Scale);
