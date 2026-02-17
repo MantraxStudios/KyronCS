@@ -236,6 +236,12 @@ namespace KrayonEditor.UI
                 TransformGizmo.SnapEnabled = snapEnabled;
             }
 
+            ImGui.SameLine();
+
+            bool showAll = EngineEditor.ShowAllGizmos;
+            if (ImGui.Checkbox("Show All Gizmos", ref showAll))
+                EngineEditor.ShowAllGizmos = showAll;
+
             ImGui.PopStyleColor();
 
             if (ImGui.IsItemHovered())

@@ -45,11 +45,18 @@ namespace KrayonEditor.UI
         private static bool _isPlaying = false;
         private static float _editorCameraSpeed = 2.5f;
         private static Vector2 _lastSceneViewportSize = new(1280, 720);
+        private static GameObject? _hoveredObject = null;
+
+        // ── GIZMOS GLOBALES ──────────────────────────────────────────────────
+        /// <summary>
+        /// true  → muestra gizmos de TODOS los objetos de la escena
+        /// false → solo muestra el gizmo del objeto seleccionado
+        /// </summary>
+        public static bool ShowAllGizmos { get; set; } = false;
 
         // ── Consola ──────────────────────────────────────────────────────────
         private static readonly List<string> _consoleMessages = new();
         private const int _maxConsoleMessages = 100;
-        private static GameObject? _hoveredObject = null;
 
         // ── Punto de entrada ─────────────────────────────────────────────────
         public static void Run()
@@ -81,7 +88,6 @@ namespace KrayonEditor.UI
             LogMessage("  E            - Rotate Gizmo");
             LogMessage("  R            - Scale Gizmo");
             LogMessage("  Ctrl+R       - Reset Camera");
-            LogMessage("  1, 2, 3      - Switch scenes");
             LogMessage("================================");
 
             _renderer = _engine!.GetSceneRenderer();
@@ -96,182 +102,247 @@ namespace KrayonEditor.UI
 
             var sceneRenderer = GraphicsEngine.Instance.GetSceneRenderer();
 
+            // ── Gizmo Rigidbody ───────────────────────────────────────────────
             sceneRenderer.AttachRender("gizmo_rigidbody", (view, projection, cameraPos) =>
             {
-                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<Rigidbody>())
+                if (ShowAllGizmos)
                 {
+                    // Dibuja colisión de TODOS los objetos
+                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    if (allObjects == null) return;
+
+                    foreach (var go in allObjects)
+                    {
+                        if (!go.HasComponent<Rigidbody>()) continue;
+                        var rb = go.GetComponent<Rigidbody>();
+                        bool isSelected = go == EditorActions.SelectedObject;
+
+                        Vector4 color = isSelected
+                            ? new Vector4(0.0f, 1.0f, 1.0f, 1.0f)   // cyan brillante si está seleccionado
+                            : new Vector4(0.0f, 0.8f, 0.8f, 0.5f);  // cyan tenue para el resto
+
+                        Matrix4 model = Matrix4.CreateScale(rb.ShapeSize * 2.0f) *
+                                        go.Transform.GetWorldMatrix();
+
+                        GizmoCube.Draw(model, view, projection, color,
+                            lineWidth: isSelected ? 2.5f : 1.2f);
+                    }
+                }
+                else if (EditorActions.SelectedObject?.HasComponent<Rigidbody>() == true)
+                {
+                    // Solo el seleccionado
                     var rb = EditorActions.SelectedObject.GetComponent<Rigidbody>();
-                    Vector3 shapeSize = rb.ShapeSize;
-
-                    // Multiplicar el ShapeSize por 2 para que coincida con el tamaño del cubo gizmo
-                    Vector4 color = new Vector4(0.0f, 1.0f, 1.0f, 1.0f); // Cyan
-                    Matrix4 model = Matrix4.CreateScale(shapeSize * 2.0f) *
+                    Matrix4 model = Matrix4.CreateScale(rb.ShapeSize * 2.0f) *
                                     EditorActions.SelectedObject.Transform.GetWorldMatrix();
-
-                    GizmoCube.Draw(model, view, projection, color, lineWidth: 2.5f);
+                    GizmoCube.Draw(model, view, projection,
+                        new Vector4(0.0f, 1.0f, 1.0f, 1.0f), lineWidth: 2.5f);
                 }
             });
 
+            // ── Gizmo Audio ───────────────────────────────────────────────────
             sceneRenderer.AttachRender("gizmo_audio", (view, projection, cameraPos) =>
             {
-                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<AudioSource>())
+                if (ShowAllGizmos)
+                {
+                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    if (allObjects == null) return;
+
+                    foreach (var go in allObjects)
+                    {
+                        if (!go.HasComponent<AudioSource>()) continue;
+                        var audioSource = go.GetComponent<AudioSource>();
+                        var position = go.Transform.Position;
+                        bool isSelected = go == EditorActions.SelectedObject;
+                        float alpha = isSelected ? 1.0f : 0.45f;
+                        float lw = isSelected ? 2.0f : 1.0f;
+
+                        Matrix4 modelMin = Matrix4.CreateScale(audioSource.MinDistance * 2.0f) *
+                                           Matrix4.CreateTranslation(position);
+                        GizmoSphere.Draw(modelMin, view, projection,
+                            new Vector4(0.0f, 1.0f, 0.0f, alpha), lw);
+
+                        Matrix4 modelMax = Matrix4.CreateScale(audioSource.MaxDistance * 2.0f) *
+                                           Matrix4.CreateTranslation(position);
+                        GizmoSphere.Draw(modelMax, view, projection,
+                            new Vector4(1.0f, 0.0f, 0.0f, alpha), lw);
+                    }
+                }
+                else if (EditorActions.SelectedObject?.HasComponent<AudioSource>() == true)
                 {
                     var audioSource = EditorActions.SelectedObject.GetComponent<AudioSource>();
                     var position = EditorActions.SelectedObject.Transform.Position;
 
-                    float minDistance = audioSource.MinDistance;
-                    float maxDistance = audioSource.MaxDistance;
+                    Matrix4 modelMin = Matrix4.CreateScale(audioSource.MinDistance * 2.0f) *
+                                       Matrix4.CreateTranslation(position);
+                    GizmoSphere.Draw(modelMin, view, projection,
+                        new Vector4(0.0f, 1.0f, 0.0f, 1.0f), 2.0f);
 
-                    Matrix4 modelMin = Matrix4.CreateScale(minDistance * 2.0f) * Matrix4.CreateTranslation(position);
-                    Vector4 colorMin = new Vector4(0.0f, 1.0f, 0.0f, 1.0f); 
-                    GizmoSphere.Draw(modelMin, view, projection, colorMin, lineWidth: 2.0f);
-
-                    Matrix4 modelMax = Matrix4.CreateScale(maxDistance * 2.0f) * Matrix4.CreateTranslation(position);
-                    Vector4 colorMax = new Vector4(1.0f, 0.0f, 0.0f, 1.0f); 
-                    GizmoSphere.Draw(modelMax, view, projection, colorMax, lineWidth: 1.5f);
+                    Matrix4 modelMax = Matrix4.CreateScale(audioSource.MaxDistance * 2.0f) *
+                                       Matrix4.CreateTranslation(position);
+                    GizmoSphere.Draw(modelMax, view, projection,
+                        new Vector4(1.0f, 0.0f, 0.0f, 1.0f), 1.5f);
                 }
             });
 
+            // ── Gizmo Lights ──────────────────────────────────────────────────
             sceneRenderer.AttachRender("gizmo_lights", (view, projection, cameraPos) =>
             {
-                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<Light>())
+                if (ShowAllGizmos)
                 {
-                    var light = EditorActions.SelectedObject.GetComponent<Light>();
-                    var position = light.GetPosition();
-                    var direction = light.GetDirection();
+                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    if (allObjects == null) return;
 
-                    switch (light.Type)
+                    foreach (var go in allObjects)
                     {
-                        case LightType.Point:
-                            float radius = CalculateLightRadius(light.Intensity, light.Constant, light.Linear, light.Quadratic);
-
-                            Vector4 colorPoint = new Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-
-                            Matrix4 modelXY = Matrix4.CreateScale(radius * 2.0f) * Matrix4.CreateTranslation(position);
-                            GizmoCircle.Draw(modelXY, view, projection, colorPoint, 2.0f);
-
-                            Matrix4 modelXZ = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(90)) *
-                                              Matrix4.CreateScale(radius * 2.0f) *
-                                              Matrix4.CreateTranslation(position);
-                            GizmoCircle.Draw(modelXZ, view, projection, colorPoint, 2.0f);
-
-                            Matrix4 modelYZ = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(90)) *
-                                              Matrix4.CreateScale(radius * 2.0f) *
-                                              Matrix4.CreateTranslation(position);
-                            GizmoCircle.Draw(modelYZ, view, projection, colorPoint, 2.0f);
-                            break;
-
-                        case LightType.Spot:
-                            float coneLength = CalculateLightRadius(light.Intensity, light.Constant, light.Linear, light.Quadratic);
-                            float coneRadius = MathF.Tan(MathHelper.DegreesToRadians(light.OuterCutOffDegrees)) * coneLength;
-
-                            Matrix4 rotation = CreateLookAtRotation(Vector3.UnitZ, direction);
-                            Matrix4 modelSpot = Matrix4.CreateScale(coneRadius * 2.0f, coneRadius * 2.0f, coneLength) *
-                                                rotation *
-                                                Matrix4.CreateTranslation(position);
-
-                            Vector4 colorSpot = new Vector4(1.0f, 0.5f, 0.0f, 1.0f); 
-                            GizmoCone.Draw(modelSpot, view, projection, colorSpot, 2.0f);
-
-                            Matrix4 arrowModel = Matrix4.CreateScale(0.5f) * rotation * Matrix4.CreateTranslation(position);
-                            GizmoArrow.Draw(arrowModel, view, projection, new Vector4(1, 1, 1, 1), 2.5f);
-                            break;
-
-                        case LightType.Directional:
-                            Matrix4 rotDir = CreateLookAtRotation(Vector3.UnitZ, direction);
-                            Matrix4 modelDir = Matrix4.CreateScale(2.0f) * rotDir * Matrix4.CreateTranslation(position);
-
-                            Vector4 colorDir = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-                            GizmoArrow.Draw(modelDir, view, projection, colorDir, 3.0f);
-                            break;
+                        if (!go.HasComponent<Light>()) continue;
+                        bool isSelected = go == EditorActions.SelectedObject;
+                        DrawLightGizmo(go.GetComponent<Light>(), view, projection, isSelected);
                     }
+                }
+                else if (EditorActions.SelectedObject?.HasComponent<Light>() == true)
+                {
+                    DrawLightGizmo(EditorActions.SelectedObject.GetComponent<Light>(),
+                        view, projection, isSelected: true);
                 }
             });
 
+            // ── Gizmo Camera ──────────────────────────────────────────────────
             sceneRenderer.AttachRender("gizmo_camera", (view, projection, cameraPos) =>
             {
-                if (EditorActions.SelectedObject != null && EditorActions.SelectedObject.HasComponent<CameraComponent>())
+                if (ShowAllGizmos)
                 {
-                    var cameraComp = EditorActions.SelectedObject.GetComponent<CameraComponent>();
-                    var transform = EditorActions.SelectedObject.GetComponent<Transform>();
+                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    if (allObjects == null) return;
 
-                    if (cameraComp.RenderCamera == null || transform == null) return;
-
-                    var cam = cameraComp.RenderCamera.Camera;
-                    Vector3 position = transform.GetWorldPosition();
-                    Vector3 forward = transform.Forward;
-                    Vector3 up = transform.Up;
-
-                    Vector4 color = new Vector4(0.0f, 1.0f, 0.5f, 1.0f);
-
-                    if (cameraComp.ProjectionMode == ProjectionMode.Perspective)
+                    foreach (var go in allObjects)
                     {
-                        GizmoFrustum.DrawPerspective(
-                            position, forward, up,
-                            cameraComp.Fov,
-                            cameraComp.AspectRatio,
-                            cameraComp.NearPlane,
-                            cameraComp.FarPlane,
-                            view, projection, color, 2.5f
-                        );
+                        if (!go.HasComponent<CameraComponent>()) continue;
+                        bool isSelected = go == EditorActions.SelectedObject;
+                        DrawCameraGizmo(go, view, projection, isSelected);
                     }
-                    else // Orthographic
-                    {
-                        GizmoFrustum.DrawOrthographic(
-                            position, forward, up,
-                            cameraComp.OrthoSize,
-                            cameraComp.AspectRatio,
-                            cameraComp.NearPlane,
-                            cameraComp.FarPlane,
-                            view, projection, color, 2.5f
-                        );
-                    }
+                }
+                else if (EditorActions.SelectedObject?.HasComponent<CameraComponent>() == true)
+                {
+                    DrawCameraGizmo(EditorActions.SelectedObject, view, projection, isSelected: true);
                 }
             });
 
+            // ── Gizmo Hover ───────────────────────────────────────────────────
             sceneRenderer.AttachRender("gizmo_hover", (view, projection, cameraPos) =>
             {
                 if (_hoveredObject == null) return;
                 if (_hoveredObject == EditorActions.SelectedObject) return;
 
                 Matrix4 model = _hoveredObject.Transform.GetWorldMatrix();
-                Vector4 color = new Vector4(1.0f, 1.0f, 1.0f, 0.4f);
-                GizmoCube.Draw(model, view, projection, color, lineWidth: 1.5f);
+                GizmoCube.Draw(model, view, projection,
+                    new Vector4(1.0f, 1.0f, 1.0f, 0.4f), lineWidth: 1.5f);
             });
         }
 
-        static float CalculateLightRadius(float intensity, float constant, float linear, float quadratic)
+        // ── Helpers de gizmos ─────────────────────────────────────────────────
+
+        private static void DrawLightGizmo(Light light, Matrix4 view, Matrix4 projection, bool isSelected)
         {
-            float threshold = 5.0f / 256.0f;
-            float maxIntensity = intensity;
+            var position  = light.GetPosition();
+            var direction = light.GetDirection();
+            float alpha   = isSelected ? 1.0f : 0.50f;
+            float lw      = isSelected ? 2.5f : 1.2f;
 
-            float a = quadratic;
-            float b = linear;
-            float c = constant - (maxIntensity / threshold);
+            switch (light.Type)
+            {
+                case LightType.Point:
+                {
+                    float radius = CalculateLightRadius(light.Intensity,
+                        light.Constant, light.Linear, light.Quadratic);
+                    Vector4 color = new(1.0f, 1.0f, 0.0f, alpha);
 
-            float discriminant = b * b - 4 * a * c;
-            if (discriminant < 0) return 10.0f; 
+                    // Tres círculos ortogonales
+                    GizmoCircle.Draw(
+                        Matrix4.CreateScale(radius * 2.0f) * Matrix4.CreateTranslation(position),
+                        view, projection, color, lw);
 
-            float radius = (-b + MathF.Sqrt(discriminant)) / (2 * a);
-            return MathF.Max(radius, 1.0f);
+                    GizmoCircle.Draw(
+                        Matrix4.CreateRotationX(MathHelper.DegreesToRadians(90)) *
+                        Matrix4.CreateScale(radius * 2.0f) * Matrix4.CreateTranslation(position),
+                        view, projection, color, lw);
+
+                    GizmoCircle.Draw(
+                        Matrix4.CreateRotationY(MathHelper.DegreesToRadians(90)) *
+                        Matrix4.CreateScale(radius * 2.0f) * Matrix4.CreateTranslation(position),
+                        view, projection, color, lw);
+                    break;
+                }
+
+                case LightType.Spot:
+                {
+                    float coneLength = CalculateLightRadius(light.Intensity,
+                        light.Constant, light.Linear, light.Quadratic);
+                    float coneRadius = MathF.Tan(
+                        MathHelper.DegreesToRadians(light.OuterCutOffDegrees)) * coneLength;
+                    Vector4 color = new(1.0f, 0.5f, 0.0f, alpha);
+
+                    Matrix4 rotation = CreateLookAtRotation(Vector3.UnitZ, direction);
+                    Matrix4 modelSpot = Matrix4.CreateScale(coneRadius * 2.0f, coneRadius * 2.0f, coneLength) *
+                                        rotation * Matrix4.CreateTranslation(position);
+                    GizmoCone.Draw(modelSpot, view, projection, color, lw);
+
+                    // Flecha de dirección
+                    Matrix4 arrowModel = Matrix4.CreateScale(0.5f) * rotation *
+                                         Matrix4.CreateTranslation(position);
+                    GizmoArrow.Draw(arrowModel, view, projection,
+                        new Vector4(1, 1, 1, alpha), lw);
+                    break;
+                }
+
+                case LightType.Directional:
+                {
+                    Matrix4 rotDir = CreateLookAtRotation(Vector3.UnitZ, direction);
+                    Matrix4 modelDir = Matrix4.CreateScale(2.0f) * rotDir *
+                                       Matrix4.CreateTranslation(position);
+                    Vector4 color = new(1.0f, 1.0f, 1.0f, alpha);
+
+                    // Esfera pequeña de posición + flecha de dirección
+                    GizmoSphere.Draw(
+                        Matrix4.CreateScale(0.15f) * Matrix4.CreateTranslation(position),
+                        view, projection, color, lw);
+                    GizmoArrow.Draw(modelDir, view, projection, color, lw);
+                    break;
+                }
+            }
         }
 
-        static Matrix4 CreateLookAtRotation(Vector3 from, Vector3 to)
+        private static void DrawCameraGizmo(GameObject go, Matrix4 view, Matrix4 projection, bool isSelected)
         {
-            Vector3 forward = Vector3.Normalize(to);
-            Vector3 right = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, forward));
-            if (right.LengthSquared < 0.001f) 
-                right = Vector3.Normalize(Vector3.Cross(Vector3.UnitX, forward));
-            Vector3 up = Vector3.Cross(forward, right);
+            var cameraComp = go.GetComponent<CameraComponent>();
+            var transform  = go.GetComponent<Transform>();
+            if (cameraComp?.RenderCamera == null || transform == null) return;
 
-            return new Matrix4(
-                new Vector4(right, 0),
-                new Vector4(up, 0),
-                new Vector4(forward, 0),
-                new Vector4(0, 0, 0, 1)
-            );
+            Vector3 position = transform.GetWorldPosition();
+            Vector3 forward  = transform.Forward;
+            Vector3 up       = transform.Up;
+            float alpha      = isSelected ? 1.0f : 0.45f;
+            float lw         = isSelected ? 2.5f : 1.2f;
+            Vector4 color    = new(0.0f, 1.0f, 0.5f, alpha);
+
+            if (cameraComp.ProjectionMode == ProjectionMode.Perspective)
+            {
+                GizmoFrustum.DrawPerspective(
+                    position, forward, up,
+                    cameraComp.Fov, cameraComp.AspectRatio,
+                    cameraComp.NearPlane, cameraComp.FarPlane,
+                    view, projection, color, lw);
+            }
+            else
+            {
+                GizmoFrustum.DrawOrthographic(
+                    position, forward, up,
+                    cameraComp.OrthoSize, cameraComp.AspectRatio,
+                    cameraComp.NearPlane, cameraComp.FarPlane,
+                    view, projection, color, lw);
+            }
         }
 
+        // ── Update ────────────────────────────────────────────────────────────
         private static void HandleUpdate(float dt)
         {
             if (_editorCamera is null || _window is null) return;
@@ -282,6 +353,7 @@ namespace KrayonEditor.UI
 
             _imguiController?.Update(_window, dt);
             EditorNotifications.Draw(dt);
+
             EditorUI.Draw(
                 _engine!, _editorCamera, _isPlaying, _editorCameraSpeed,
                 _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages,
@@ -293,7 +365,6 @@ namespace KrayonEditor.UI
 
         private static void UpdateHoveredObject()
         {
-            // Solo detectar si el mouse está sobre la escena y no hay click derecho activo
             if (!EditorActions.IsHoveringScene)
             {
                 _hoveredObject = null;
@@ -301,8 +372,6 @@ namespace KrayonEditor.UI
             }
 
             var mouse = _engine!.GetMouseState();
-
-            // No hacer hover si estamos rotando la cámara
             if (mouse.IsButtonDown(MouseButton.Right))
             {
                 _hoveredObject = null;
@@ -312,19 +381,20 @@ namespace KrayonEditor.UI
             try
             {
                 var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
-                int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
+                int screenWidth  = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
                 int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
 
-                // Posición del mouse relativa al viewport de la escena
                 System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
                 System.Numerics.Vector2 sceneWindowPos = EditorActions.ViewPortPosition;
+
                 OpenTK.Mathematics.Vector2 relativeMousePos = new(
                     globalMousePos.X - sceneWindowPos.X,
                     globalMousePos.Y - sceneWindowPos.Y
                 );
 
                 EventSystem.ScreenToWorldRay(relativeMousePos, camera, screenWidth, screenHeight,
-                    out OpenTK.Mathematics.Vector3 rayOrigin, out OpenTK.Mathematics.Vector3 rayDir);
+                    out OpenTK.Mathematics.Vector3 rayOrigin,
+                    out OpenTK.Mathematics.Vector3 rayDir);
 
                 _hoveredObject = EventSystem.GetObjectByRay(rayOrigin, rayDir);
             }
@@ -352,7 +422,7 @@ namespace KrayonEditor.UI
             if (_engine is null || _editorCamera is null) return;
 
             var keyboard = _engine.GetKeyboardState();
-            var mouse = _engine.GetMouseState();
+            var mouse    = _engine.GetMouseState();
 
             HandleGizmoInput(keyboard, mouse);
             HandleCameraReset(keyboard);
@@ -402,13 +472,13 @@ namespace KrayonEditor.UI
             if (!mouse.IsButtonDown(MouseButton.Right) || !EditorActions.IsHoveringScene) return;
 
             float speed = _editorCameraSpeed * (keyboard.IsKeyDown(Keys.LeftControl) ? 2.0f : 1.0f);
-            float step = dt * speed / 2.5f;
+            float step  = dt * speed / 2.5f;
 
-            if (keyboard.IsKeyDown(Keys.W)) _editorCamera!.Move(CameraMovement.Forward, step);
-            if (keyboard.IsKeyDown(Keys.S)) _editorCamera!.Move(CameraMovement.Backward, step);
-            if (keyboard.IsKeyDown(Keys.A)) _editorCamera!.Move(CameraMovement.Left, step);
-            if (keyboard.IsKeyDown(Keys.D)) _editorCamera!.Move(CameraMovement.Right, step);
-            if (keyboard.IsKeyDown(Keys.Space)) _editorCamera!.Move(CameraMovement.Up, step);
+            if (keyboard.IsKeyDown(Keys.W))         _editorCamera!.Move(CameraMovement.Forward, step);
+            if (keyboard.IsKeyDown(Keys.S))         _editorCamera!.Move(CameraMovement.Backward, step);
+            if (keyboard.IsKeyDown(Keys.A))         _editorCamera!.Move(CameraMovement.Left, step);
+            if (keyboard.IsKeyDown(Keys.D))         _editorCamera!.Move(CameraMovement.Right, step);
+            if (keyboard.IsKeyDown(Keys.Space))     _editorCamera!.Move(CameraMovement.Up, step);
             if (keyboard.IsKeyDown(Keys.LeftShift)) _editorCamera!.Move(CameraMovement.Down, step);
         }
 
@@ -439,7 +509,9 @@ namespace KrayonEditor.UI
         private static void HandleCameraZoom(
             OpenTK.Windowing.GraphicsLibraryFramework.MouseState mouse)
         {
-            if (mouse.ScrollDelta.Y != 0 && EditorActions.IsHoveringScene && !InputSystem.GetKeyDown(Keys.LeftControl))
+            if (mouse.ScrollDelta.Y != 0 &&
+                EditorActions.IsHoveringScene &&
+                !InputSystem.GetKeyDown(Keys.LeftControl))
                 _editorCamera!.Zoom(mouse.ScrollDelta.Y);
         }
 
@@ -448,34 +520,61 @@ namespace KrayonEditor.UI
         {
             _fpsCounter++;
             _fpsTimer += dt;
-
             if (_fpsTimer < 1.0) return;
 
-            _currentFps = _fpsCounter / _fpsTimer;
+            _currentFps       = _fpsCounter / _fpsTimer;
             _currentFrameTime = 1000.0 / _currentFps;
             _fpsCounter = 0;
-            _fpsTimer = 0.0;
+            _fpsTimer   = 0.0;
         }
 
         // ── Cámara ───────────────────────────────────────────────────────────
         private static void SetupCamera()
         {
             if (_renderer is null) return;
-
             _editorCamera = _renderer.GetCamera();
-            _editorCamera.Position = _initialCameraPosition;
+            _editorCamera.Position    = _initialCameraPosition;
             _editorCamera.AspectRatio = 1280f / 800f;
         }
 
         private static void ResetCamera()
         {
             if (_editorCamera is null) return;
-
             _editorCamera.Position = _initialCameraPosition;
-
             var type = _editorCamera.GetType();
             type.GetProperty("Yaw")?.SetValue(_editorCamera, _initialCameraYaw);
             type.GetProperty("Pitch")?.SetValue(_editorCamera, _initialCameraPitch);
+        }
+
+        // ── Helpers ──────────────────────────────────────────────────────────
+        static float CalculateLightRadius(float intensity, float constant, float linear, float quadratic)
+        {
+            float threshold  = 5.0f / 256.0f;
+            float a = quadratic;
+            float b = linear;
+            float c = constant - (intensity / threshold);
+
+            float discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) return 10.0f;
+
+            float radius = (-b + MathF.Sqrt(discriminant)) / (2 * a);
+            return MathF.Max(radius, 1.0f);
+        }
+
+        static Matrix4 CreateLookAtRotation(Vector3 from, Vector3 to)
+        {
+            Vector3 forward = Vector3.Normalize(to);
+            Vector3 right   = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, forward));
+            if (right.LengthSquared < 0.001f)
+                right = Vector3.Normalize(Vector3.Cross(Vector3.UnitX, forward));
+            Vector3 up = Vector3.Cross(forward, right);
+
+            return new Matrix4(
+                new Vector4(right,   0),
+                new Vector4(up,      0),
+                new Vector4(forward, 0),
+                new Vector4(0, 0, 0, 1)
+            );
         }
 
         // ── Archivos ─────────────────────────────────────────────────────────
@@ -486,7 +585,6 @@ namespace KrayonEditor.UI
         public static void LogMessage(string message)
         {
             _consoleMessages.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-
             if (_consoleMessages.Count > _maxConsoleMessages)
                 _consoleMessages.RemoveAt(0);
         }

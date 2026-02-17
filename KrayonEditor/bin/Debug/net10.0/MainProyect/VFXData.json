@@ -1,25 +1,25 @@
 {
   "Enabled": false,
   "ColorCorrectionEnabled": true,
-  "Brightness": -0,
-  "Contrast": 1.3,
-  "Saturation": 1.07,
+  "Brightness": 0.14,
+  "Contrast": 1.56,
+  "Saturation": 1,
   "ColorFilter": {
     "X": 1,
     "Y": 1,
     "Z": 1
   },
   "BloomEnabled": true,
-  "BloomThreshold": 0.55,
-  "BloomSoftThreshold": 0.18,
-  "BloomIntensity": 2.19,
-  "BloomRadius": 2.2,
+  "BloomThreshold": 0.9,
+  "BloomSoftThreshold": 0.5,
+  "BloomIntensity": 0.8,
+  "BloomRadius": 4,
   "GrainEnabled": true,
-  "GrainIntensity": 0.175,
+  "GrainIntensity": 0.119,
   "GrainSize": 5,
   "SSAOEnabled": false,
   "SSAOKernelSize": 64,
-  "SSAORadius": 0.1,
-  "SSAOBias": 0.001,
-  "SSAOPower": 4
+  "SSAORadius": 0.5,
+  "SSAOBias": 0.025,
+  "SSAOPower": 2
 }

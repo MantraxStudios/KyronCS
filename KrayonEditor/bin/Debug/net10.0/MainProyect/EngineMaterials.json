@@ -258,6 +258,80 @@
         "Z": 0.03
       },
       "AmbientStrength": 1.0
+    },
+    "Dragon": {
+      "Name": "Dragon",
+      "VertexShaderGUID": "9557923a-76ad-432c-abc9-17ed77e82311",
+      "FragmentShaderGUID": "5ed03f4d-deb0-4de7-a5d6-182e3a60df7f",
+      "AlbedoTextureGUID": "2168dad5-f579-465d-accb-2c0b1b35e057",
+      "NormalTextureGUID": "29dbf12c-b6e5-4ba7-9e5c-66082ab177b3",
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.5,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": true,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "DragonFloor": {
+      "Name": "DragonFloor",
+      "VertexShaderGUID": "9557923a-76ad-432c-abc9-17ed77e82311",
+      "FragmentShaderGUID": "5ed03f4d-deb0-4de7-a5d6-182e3a60df7f",
+      "AlbedoTextureGUID": "fbe99af0-7397-4711-9a98-33c1a7d335a0",
+      "NormalTextureGUID": "4c400f03-54e4-4a53-9b56-62fabb57a570",
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": "4dc11d90-4bdf-49b6-a00e-137caad6ef1d",
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.5,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": true,
+      "UseNormalMap": true,
+      "UseMetallicMap": false,
+      "UseRoughnessMap": true,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
     }
   }
 }
