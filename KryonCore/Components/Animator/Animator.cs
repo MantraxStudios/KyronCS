@@ -546,12 +546,10 @@ namespace KrayonCore.Animation
 
             EnsureBoneUBO();
 
-            Matrix4 worldMatrix = GameObject?.Transform?.GetWorldMatrix() ?? Matrix4.Identity;
-
             var matrices = new Matrix4[MAX_BONES];
             int boneCount = Math.Min(_animatedModel?.BoneCount ?? 0, MAX_BONES);
             for (int i = 0; i < boneCount; i++)
-                matrices[i] = _finalBoneMatrices[i] * worldMatrix;
+                matrices[i] = _finalBoneMatrices[i];
             for (int i = boneCount; i < MAX_BONES; i++)
                 matrices[i] = Matrix4.Identity;
 

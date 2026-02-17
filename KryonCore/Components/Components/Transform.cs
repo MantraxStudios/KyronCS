@@ -28,9 +28,12 @@ namespace KrayonCore.Components.Components
             set => Position = new Vector3(Position.X, Position.Y, value);
         }
 
-        public Vector3 Forward => Vector3.Transform(-Vector3.UnitZ, Rotation);
-        public Vector3 Right => Vector3.Transform(Vector3.UnitX, Rotation);
-        public Vector3 Up => Vector3.Transform(Vector3.UnitY, Rotation);
+        // -----------------------------------------------------------------------
+        // Direcciones locales: se transforman con la rotación world del objeto
+        // -----------------------------------------------------------------------
+        public Vector3 Forward => Vector3.Normalize(Vector3.Transform(-Vector3.UnitZ, GetWorldRotation()));
+        public Vector3 Right => Vector3.Normalize(Vector3.Transform(Vector3.UnitX, GetWorldRotation()));
+        public Vector3 Up => Vector3.Normalize(Vector3.Transform(Vector3.UnitY, GetWorldRotation()));
         public Vector3 Back => -Forward;
         public Vector3 Left => -Right;
         public Vector3 Down => -Up;
@@ -60,34 +63,19 @@ namespace KrayonCore.Components.Components
         public float RotationX
         {
             get => EulerAngles.X;
-            set
-            {
-                Vector3 euler = EulerAngles;
-                euler.X = value;
-                EulerAngles = euler;
-            }
+            set { Vector3 e = EulerAngles; e.X = value; EulerAngles = e; }
         }
 
         public float RotationY
         {
             get => EulerAngles.Y;
-            set
-            {
-                Vector3 euler = EulerAngles;
-                euler.Y = value;
-                EulerAngles = euler;
-            }
+            set { Vector3 e = EulerAngles; e.Y = value; EulerAngles = e; }
         }
 
         public float RotationZ
         {
             get => EulerAngles.Z;
-            set
-            {
-                Vector3 euler = EulerAngles;
-                euler.Z = value;
-                EulerAngles = euler;
-            }
+            set { Vector3 e = EulerAngles; e.Z = value; EulerAngles = e; }
         }
 
         public float ScaleX
@@ -144,10 +132,12 @@ namespace KrayonCore.Components.Components
             Scale = Vector3.One;
         }
 
+        // -----------------------------------------------------------------------
+        // Jerarquía
+        // -----------------------------------------------------------------------
         public void SetParent(Transform parent, bool worldPositionStays = true)
         {
-            if (Parent == parent)
-                return;
+            if (Parent == parent) return;
 
             if (parent != null && IsDescendantOf(parent))
             {
@@ -157,36 +147,20 @@ namespace KrayonCore.Components.Components
 
             if (worldPositionStays)
             {
-                Dictionary<Transform, TransformData> worldTransforms = new Dictionary<Transform, TransformData>();
+                var worldTransforms = new Dictionary<Transform, TransformData>();
                 SaveWorldTransforms(this, worldTransforms);
 
-                if (Parent != null)
-                {
-                    Parent._children.Remove(this);
-                }
-
+                Parent?._children.Remove(this);
                 Parent = parent;
-
-                if (parent != null)
-                {
-                    parent._children.Add(this);
-                }
+                parent?._children.Add(this);
 
                 RestoreWorldTransforms(worldTransforms);
             }
             else
             {
-                if (Parent != null)
-                {
-                    Parent._children.Remove(this);
-                }
-
+                Parent?._children.Remove(this);
                 Parent = parent;
-
-                if (parent != null)
-                {
-                    parent._children.Add(this);
-                }
+                parent?._children.Add(this);
             }
         }
 
@@ -198,23 +172,17 @@ namespace KrayonCore.Components.Components
                 Rotation = root.GetWorldRotation(),
                 Scale = root.GetWorldScale()
             };
-
             foreach (var child in root._children)
-            {
                 SaveWorldTransforms(child, data);
-            }
         }
 
         private void RestoreWorldTransforms(Dictionary<Transform, TransformData> data)
         {
             foreach (var kvp in data)
             {
-                Transform t = kvp.Key;
-                TransformData worldData = kvp.Value;
-
-                t.SetWorldPosition(worldData.Position);
-                t.SetWorldRotation(worldData.Rotation);
-                t.SetWorldScale(worldData.Scale);
+                kvp.Key.SetWorldPosition(kvp.Value.Position);
+                kvp.Key.SetWorldRotation(kvp.Value.Rotation);
+                kvp.Key.SetWorldScale(kvp.Value.Scale);
             }
         }
 
@@ -223,133 +191,162 @@ namespace KrayonCore.Components.Components
             Transform current = potentialAncestor;
             while (current != null)
             {
-                if (current == this)
-                    return true;
+                if (current == this) return true;
                 current = current.Parent;
             }
             return false;
         }
 
+        // -----------------------------------------------------------------------
+        // MATRICES
+        //
+        // OpenTK es ROW-MAJOR y usa vectores-fila: resultado = vec4 * matrix
+        // El orden TRS correcto para row-major es: Scale * Rotation * Translation
+        // (equivale a aplicar primero escala, luego rotación, luego traslación)
+        //
+        // GetWorldMatrix() = local * parent  (child-to-parent, luego parent-to-world)
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// Matriz local (object-space → parent-space).
+        /// Orden correcto para OpenTK row-major: S * R * T
+        /// </summary>
+        public Matrix4 GetLocalMatrix()
+        {
+            Matrix4 S = Matrix4.CreateScale(Scale);
+            Matrix4 R = Matrix4.CreateFromQuaternion(Rotation);
+            Matrix4 T = Matrix4.CreateTranslation(Position);
+            // Con vectores-fila: punto * S * R * T  → escala, rota, traslada. CORRECTO.
+            return S * R * T;
+        }
+
+        /// <summary>
+        /// Matriz world (object-space → world-space).
+        /// Se construye concatenando la local con la del padre recursivamente.
+        /// </summary>
+        public Matrix4 GetWorldMatrix()
+        {
+            Matrix4 local = GetLocalMatrix();
+            if (Parent != null)
+                return local * Parent.GetWorldMatrix();
+            return local;
+        }
+
+        // -----------------------------------------------------------------------
+        // Posición world
+        // -----------------------------------------------------------------------
         public Vector3 GetWorldPosition()
         {
-            if (Parent != null)
-            {
-                Matrix4 parentWorld = Parent.GetWorldMatrix();
-                Vector4 localPos4 = new Vector4(Position, 1.0f);
-                Vector4 worldPos4 = localPos4 * parentWorld;
-                return new Vector3(worldPos4.X, worldPos4.Y, worldPos4.Z);
-            }
-            return Position;
+            if (Parent == null) return Position;
+
+            // Transformamos la posición local con la matriz world del padre.
+            // OpenTK: vec4 * matrix  (row-vector × row-major matrix)
+            Vector4 worldPos = new Vector4(Position, 1f) * Parent.GetWorldMatrix();
+            return worldPos.Xyz;
         }
 
         public void SetWorldPosition(Vector3 worldPosition)
         {
-            if (Parent != null)
-            {
-                Matrix4 parentWorldInverse = Matrix4.Invert(Parent.GetWorldMatrix());
-                Vector4 worldPos4 = new Vector4(worldPosition, 1.0f);
-                Vector4 localPos4 = worldPos4 * parentWorldInverse;
-                Position = new Vector3(localPos4.X, localPos4.Y, localPos4.Z);
-            }
-            else
+            if (Parent == null)
             {
                 Position = worldPosition;
+                return;
             }
+            // Invertimos la world matrix del padre para obtener la posición local.
+            Matrix4 parentInv = Matrix4.Invert(Parent.GetWorldMatrix());
+            Vector4 localPos = new Vector4(worldPosition, 1f) * parentInv;
+            Position = localPos.Xyz;
         }
 
+        // -----------------------------------------------------------------------
+        // Rotación world
+        //
+        // La rotación world se compone padre-primero: parentWorld * localRotation
+        // (en espacio de quaterniones: rot_world = rot_parent * rot_local)
+        // -----------------------------------------------------------------------
         public Quaternion GetWorldRotation()
         {
-            if (Parent != null)
-            {
-                return Parent.GetWorldRotation() * Rotation;
-            }
-            return Rotation;
+            if (Parent == null) return Rotation;
+            // Orden correcto: primero aplica la rotación del padre, luego la local.
+            return Parent.GetWorldRotation() * Rotation;
         }
 
         public void SetWorldRotation(Quaternion worldRotation)
         {
-            if (Parent != null)
-            {
-                Quaternion parentWorldRotation = Parent.GetWorldRotation();
-                Rotation = Quaternion.Invert(parentWorldRotation) * worldRotation;
-            }
-            else
+            if (Parent == null)
             {
                 Rotation = worldRotation;
+                return;
             }
+            // local = inverse(parentWorld) * worldRotation
+            Quaternion parentWorldInv = Quaternion.Invert(Parent.GetWorldRotation());
+            Rotation = Quaternion.Normalize(parentWorldInv * worldRotation);
         }
 
+        // -----------------------------------------------------------------------
+        // Escala world (escala no-uniforme puede distorsionar si hay rotaciones,
+        // pero para escala uniforme y casos simples este cálculo es correcto)
+        // -----------------------------------------------------------------------
         public Vector3 GetWorldScale()
         {
-            if (Parent != null)
-            {
-                Vector3 parentScale = Parent.GetWorldScale();
-                return new Vector3(
-                    Scale.X * parentScale.X,
-                    Scale.Y * parentScale.Y,
-                    Scale.Z * parentScale.Z
-                );
-            }
-            return Scale;
+            if (Parent == null) return Scale;
+            Vector3 ps = Parent.GetWorldScale();
+            return new Vector3(Scale.X * ps.X, Scale.Y * ps.Y, Scale.Z * ps.Z);
         }
 
         public void SetWorldScale(Vector3 worldScale)
         {
-            if (Parent != null)
-            {
-                Vector3 parentScale = Parent.GetWorldScale();
-                Scale = new Vector3(
-                    parentScale.X != 0 ? worldScale.X / parentScale.X : 1,
-                    parentScale.Y != 0 ? worldScale.Y / parentScale.Y : 1,
-                    parentScale.Z != 0 ? worldScale.Z / parentScale.Z : 1
-                );
-            }
-            else
+            if (Parent == null)
             {
                 Scale = worldScale;
+                return;
             }
+            Vector3 ps = Parent.GetWorldScale();
+            Scale = new Vector3(
+                ps.X != 0f ? worldScale.X / ps.X : 1f,
+                ps.Y != 0f ? worldScale.Y / ps.Y : 1f,
+                ps.Z != 0f ? worldScale.Z / ps.Z : 1f
+            );
         }
 
-        public void SetPosition(float x, float y, float z)
+        // -----------------------------------------------------------------------
+        // Descomposición
+        // -----------------------------------------------------------------------
+        public void Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
         {
-            Position = new Vector3(x, y, z);
-
-            if (GameObject.HasComponent<Rigidbody>())
-                GameObject.GetComponent<Rigidbody>().MovePosition(new Vector3(x, y, z));
+            translation = GetWorldPosition();
+            rotation = GetWorldRotation();
+            scale = GetWorldScale();
         }
+
+        public void DecomposeLocal(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        {
+            translation = Position;
+            rotation = Rotation;
+            scale = Scale;
+        }
+
+        // -----------------------------------------------------------------------
+        // Helpers de posición
+        // -----------------------------------------------------------------------
+        public void SetPosition(float x, float y, float z) => SetPosition(new Vector3(x, y, z));
 
         public void SetPosition(Vector3 position)
         {
             Position = position;
-
             if (GameObject.HasComponent<Rigidbody>())
-                GameObject.GetComponent<Rigidbody>().MovePosition(Position);
-        }
-         
-        public void Translate(float x, float y, float z)
-        {
-            Position += new Vector3(x, y, z);
+                GameObject.GetComponent<Rigidbody>().MovePosition(GetWorldPosition());
         }
 
-        public void Translate(Vector3 translation)
-        {
-            Position += translation;
-        }
+        public void Translate(float x, float y, float z) => Position += new Vector3(x, y, z);
+        public void Translate(Vector3 translation) => Position += translation;
 
-        public void SetRotation(float x, float y, float z)
-        {
-            EulerAngles = new Vector3(x, y, z);
-        }
-
-        public void SetRotation(Vector3 eulerAngles)
-        {
-            EulerAngles = eulerAngles;
-        }
-
-        public void SetRotation(Quaternion rotation)
-        {
-            Rotation = rotation;
-        }
+        // -----------------------------------------------------------------------
+        // Helpers de rotación
+        // -----------------------------------------------------------------------
+        public void SetRotation(float x, float y, float z) => EulerAngles = new Vector3(x, y, z);
+        public void SetRotation(Vector3 eulerAngles) => EulerAngles = eulerAngles;
+        public void SetRotation(Quaternion rotation) => Rotation = rotation;
 
         public void Rotate(float x, float y, float z)
         {
@@ -358,107 +355,67 @@ namespace KrayonCore.Components.Components
                 y * (MathF.PI / 180f),
                 z * (MathF.PI / 180f)
             );
-
-            Quaternion deltaRotation = Quaternion.FromEulerAngles(radians);
-            Rotation = Quaternion.Normalize(Rotation * deltaRotation);
+            Quaternion delta = Quaternion.FromEulerAngles(radians);
+            // Pre-multiplicar: rota en espacio local del objeto
+            Rotation = Quaternion.Normalize(Rotation * delta);
         }
 
-        public void Rotate(Vector3 eulerAngles)
-        {
-            Rotate(eulerAngles.X, eulerAngles.Y, eulerAngles.Z);
-        }
+        public void Rotate(Vector3 eulerAngles) => Rotate(eulerAngles.X, eulerAngles.Y, eulerAngles.Z);
+        public void Rotate(Quaternion rotation) => Rotation = Quaternion.Normalize(Rotation * rotation);
 
-        public void Rotate(Quaternion rotation)
-        {
-            Rotation = Quaternion.Normalize(Rotation * rotation);
-        }
+        // -----------------------------------------------------------------------
+        // Helpers de escala
+        // -----------------------------------------------------------------------
+        public void SetScale(float x, float y, float z) => Scale = new Vector3(x, y, z);
+        public void SetScale(Vector3 scale) => Scale = scale;
+        public void SetScale(float uniform) => Scale = new Vector3(uniform, uniform, uniform);
 
-        public void SetScale(float x, float y, float z)
-        {
-            Scale = new Vector3(x, y, z);
-        }
-
-        public void SetScale(Vector3 scale)
-        {
-            Scale = scale;
-        }
-
-        public void SetScale(float uniformScale)
-        {
-            Scale = new Vector3(uniformScale, uniformScale, uniformScale);
-        }
-
+        // -----------------------------------------------------------------------
+        // LookAt / LookDirection
+        //
+        // Matrix4.LookAt genera una VIEW matrix (mundo→cámara, con negativo).
+        // Para una MODEL matrix necesitamos construirla a mano como base
+        // ortonormal: Forward = dirección, Right = cross(up,fwd), Up = cross(fwd,right).
+        // -----------------------------------------------------------------------
         public void LookAt(Vector3 target)
         {
-            Vector3 direction = Vector3.Normalize(target - GetWorldPosition());
-            LookDirection(direction);
-        }
-
-        public void LookDirection(Vector3 direction)
-        {
-            if (direction.LengthSquared < 0.0001f)
-                return;
-
-            direction = Vector3.Normalize(direction);
-            Vector3 up = Vector3.UnitY;
-
-            if (MathF.Abs(Vector3.Dot(direction, up)) > 0.999f)
-            {
-                up = Vector3.UnitX;
-            }
-
-            Matrix4 lookMatrix = Matrix4.LookAt(Vector3.Zero, -direction, up);
-            Quaternion worldRotation = Quaternion.FromMatrix(new Matrix3(lookMatrix));
-            SetWorldRotation(worldRotation);
+            Vector3 worldPos = GetWorldPosition();
+            Vector3 dir = target - worldPos;
+            if (dir.LengthSquared < 1e-6f) return;
+            LookDirection(Vector3.Normalize(dir));
         }
 
         public void LookAt(Transform target)
         {
-            if (target != null)
-            {
-                LookAt(target.GetWorldPosition());
-            }
+            if (target != null) LookAt(target.GetWorldPosition());
         }
 
-        /// <summary>
-        /// Descompone este Transform en sus componentes de escala, rotación y posición world.
-        /// </summary>
-        public void Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
+        public void LookDirection(Vector3 direction)
         {
-            translation = GetWorldPosition();
-            rotation = GetWorldRotation();
-            scale = GetWorldScale();
-        }
+            if (direction.LengthSquared < 1e-6f) return;
 
-        /// <summary>
-        /// Descompone la versión local (sin subir por la jerarquía).
-        /// </summary>
-        public void DecomposeLocal(out Vector3 scale, out Quaternion rotation, out Vector3 translation)
-        {
-            translation = Position;
-            rotation = Rotation;
-            scale = Scale;
-        }
+            direction = Vector3.Normalize(direction);
 
-        public Matrix4 GetLocalMatrix()
-        {
-            Matrix4 scaleMatrix = Matrix4.CreateScale(Scale);
-            Matrix4 rotationMatrix = Matrix4.CreateFromQuaternion(Rotation);
-            Matrix4 translationMatrix = Matrix4.CreateTranslation(Position);
-            
-            return scaleMatrix * rotationMatrix * translationMatrix;
-        }
+            // Elegir un vector "up" que no sea paralelo a direction
+            Vector3 up = Vector3.UnitY;
+            if (MathF.Abs(Vector3.Dot(direction, up)) > 0.999f)
+                up = Vector3.UnitZ;
 
-        public Matrix4 GetWorldMatrix()
-        {
-            Matrix4 localMatrix = GetLocalMatrix();
-            
-            if (Parent != null)
-            {
-                return localMatrix * Parent.GetWorldMatrix();
-            }
+            // Construir base ortonormal (convenio mano-derecha, -Z = forward)
+            // forward = -Z en espacio de objeto → direction en world
+            Vector3 fwd = direction;                              // -Z local → direction
+            Vector3 right = Vector3.Normalize(Vector3.Cross(up, fwd));   // +X local
+            Vector3 newUp = Vector3.Cross(fwd, right);             // +Y local (ya normalizado)
 
-            return localMatrix;
+            // Construir la matriz de rotación 3x3 (row-major: filas = ejes X,Y,Z)
+            Matrix3 rotMat = new Matrix3(
+                right.X, right.Y, right.Z,   // Row0 = Right (+X)
+                newUp.X, newUp.Y, newUp.Z,   // Row1 = Up    (+Y)
+                -fwd.X, -fwd.Y, -fwd.Z    // Row2 = Back  (+Z, porque forward = -Z)
+            );
+
+            Quaternion worldRot = Quaternion.FromMatrix(rotMat);
+            SetWorldRotation(Quaternion.Normalize(worldRot));
         }
     }
 }
