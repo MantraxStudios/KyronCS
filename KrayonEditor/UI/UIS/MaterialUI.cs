@@ -211,16 +211,34 @@ namespace KrayonEditor.UI
                 RefreshFileList();
             }
 
+            // Show resolved .vert / .frag so the user can confirm before clicking Change
+            if (!string.IsNullOrWhiteSpace(_newShaderPath))
+            {
+                var vertCheck = AssetManager.FindByPath(_newShaderPath + ".vert");
+                var fragCheck = AssetManager.FindByPath(_newShaderPath + ".frag");
+
+                ImGui.Spacing();
+                if (vertCheck != null)
+                    ImGui.TextDisabled($"  Vert : {vertCheck.Path}");
+                else
+                    ImGui.TextColored(new Vector4(1f, 0.4f, 0.4f, 1f), $"  Vert : {_newShaderPath}.vert  (not found)");
+
+                if (fragCheck != null)
+                    ImGui.TextDisabled($"  Frag : {fragCheck.Path}");
+                else
+                    ImGui.TextColored(new Vector4(1f, 0.4f, 0.4f, 1f), $"  Frag : {_newShaderPath}.frag  (not found)");
+            }
+
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
 
-            bool canChange = !string.IsNullOrWhiteSpace(_newShaderPath);
+            bool canChange = !string.IsNullOrWhiteSpace(_newShaderPath)
+                          && AssetManager.FindByPath(_newShaderPath + ".vert") != null
+                          && AssetManager.FindByPath(_newShaderPath + ".frag") != null;
 
             if (!canChange)
-            {
                 ImGui.BeginDisabled();
-            }
 
             if (ImGui.Button("Change", new Vector2(190, 0)))
             {
@@ -229,9 +247,7 @@ namespace KrayonEditor.UI
             }
 
             if (!canChange)
-            {
                 ImGui.EndDisabled();
-            }
 
             ImGui.SameLine();
 
@@ -254,16 +270,31 @@ namespace KrayonEditor.UI
                 return;
             }
 
+            // Resolve .vert and .frag assets by path, exactly like CreateNewMaterial does.
+            var vertAsset = AssetManager.FindByPath(_newShaderPath + ".vert");
+            var fragAsset = AssetManager.FindByPath(_newShaderPath + ".frag");
+
+            if (vertAsset == null)
+            {
+                Console.WriteLine($"[ChangeShader] Vertex shader not found: {_newShaderPath}.vert");
+                return;
+            }
+            if (fragAsset == null)
+            {
+                Console.WriteLine($"[ChangeShader] Fragment shader not found: {_newShaderPath}.frag");
+                return;
+            }
+
             try
             {
                 string materialName = _selectedMaterial.Name;
 
+                // Preserve all current material properties
                 var albedoColor = _selectedMaterial.AlbedoColor;
                 var metallic = _selectedMaterial.Metallic;
                 var roughness = _selectedMaterial.Roughness;
                 var ao = _selectedMaterial.AO;
                 var emissiveColor = _selectedMaterial.EmissiveColor;
-
                 var albedoGuid = _selectedMaterial.AlbedoTextureGUID;
                 var normalGuid = _selectedMaterial.NormalTextureGUID;
                 var metallicGuid = _selectedMaterial.MetallicTextureGUID;
@@ -273,9 +304,13 @@ namespace KrayonEditor.UI
 
                 GraphicsEngine.Instance!.Materials.Remove(materialName);
 
-                var newMaterial = GraphicsEngine.Instance!.Materials.Create(materialName, 
-                                                                            AssetManager.FindFolderByPath(_newShaderPath + ".vert").Guid, 
-                                                                            AssetManager.FindFolderByPath(_newShaderPath + ".frag").Guid);
+                Console.WriteLine($"[ChangeShader] Vert: {vertAsset.Path} ({vertAsset.Guid})");
+                Console.WriteLine($"[ChangeShader] Frag: {fragAsset.Path} ({fragAsset.Guid})");
+
+                var newMaterial = GraphicsEngine.Instance!.Materials.Create(
+                    materialName,
+                    vertAsset.Guid,
+                    fragAsset.Guid);
 
                 if (newMaterial != null)
                 {
@@ -295,16 +330,16 @@ namespace KrayonEditor.UI
                     newMaterial.SetPBRProperties();
 
                     _selectedMaterial = newMaterial;
-                    Console.WriteLine($"Shader changed successfully for material '{materialName}'");
+                    Console.WriteLine($"[ChangeShader] Shader changed successfully for '{materialName}'");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to change shader for material '{materialName}'");
+                    Console.WriteLine($"[ChangeShader] Failed to recreate material '{materialName}'");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error changing shader: {ex.Message}");
+                Console.WriteLine($"[ChangeShader] Error: {ex.Message}");
             }
         }
 
