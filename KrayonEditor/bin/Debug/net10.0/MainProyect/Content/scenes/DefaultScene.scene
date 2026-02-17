@@ -627,7 +627,7 @@
               "y": 1,
               "z": 1
             },
-            "Intensity": 1,
+            "Intensity": 3.27,
             "Constant": 1,
             "Linear": 0.09,
             "Quadratic": 0.032,
