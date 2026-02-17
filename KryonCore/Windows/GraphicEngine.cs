@@ -323,17 +323,17 @@ namespace KrayonCore.GraphicsData
         private void CreateDefaultMaterials()
         {
             CreateMaterial("basic",
-                Guid.Parse("9557923a-76ad-432c-abc9-17ed77e82311"),
-                Guid.Parse("5ed03f4d-deb0-4de7-a5d6-182e3a60df7f"),
+                AssetManager.FindByPath("shaders/basic.vert").Guid,
+                AssetManager.FindByPath("shaders/basic.frag").Guid,
                 m => m.SetVector3Cached("u_Color", Vector3.One));
 
             CreateMaterial("fullscreen",
-                Guid.Parse("1e6bf414-5684-458e-8d8b-4e9761dfa320"),
-                Guid.Parse("ddcb17f8-2875-4229-a74f-63353d482808"));
+                AssetManager.FindByPath("shaders/fullscreen.vert").Guid,
+                AssetManager.FindByPath("shaders/fullscreen.frag").Guid);
 
             CreateMaterial("screen",
-                Guid.Parse("ffbdd214-94e0-467c-b2ec-f220b5788c2b"),
-                Guid.Parse("91c14d42-adb9-45c8-a527-ff6335115397"));
+                AssetManager.FindByPath("shaders/screen.vert").Guid,
+                AssetManager.FindByPath("shaders/screen.frag").Guid);
         }
 
         private void CreateMaterial(string name, Guid vert, Guid frag,

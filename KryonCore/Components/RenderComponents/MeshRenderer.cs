@@ -13,7 +13,7 @@ namespace KrayonCore.Components.RenderComponents
     {
         [NoSerializeToInspector] public RenderableType RenderType => RenderableType.Mesh;
 
-        private string _modelPath = "1b467368-606c-462c-af3f-a23a3d08d12c";
+        private string _modelPath = AssetManager.FindByPath("models/Cube.fbx").Guid.ToString();
 
         [ToStorage]
         public string ModelPath
