@@ -208,6 +208,8 @@ namespace KrayonCore.Core.Components
 
         public void Play()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             Stop();
             if (string.IsNullOrEmpty(_audioPath)) return;
 
@@ -232,6 +234,8 @@ namespace KrayonCore.Core.Components
 
         private void LoadAudio()
         {
+            if (!AppInfo.IsCompiledGame) return;
+
             Stop();
             if (string.IsNullOrEmpty(_audioPath)) return;
 

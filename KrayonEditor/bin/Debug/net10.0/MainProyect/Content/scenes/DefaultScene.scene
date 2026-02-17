@@ -2,81 +2,15 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "a8051aba-4259-40b2-a4df-e9fbd7f481af",
-      "Name": "Dragon",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7e6d8d48-727d-4923-a76d-b74f4fcae208",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3d047a0e-0bce-4480-8de0-fcd4865a3d51",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "ce7d7f43-2b21-4406-9a8d-49cf3b675d8f",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "85ab65ce-3e46-49f9-bc43-4a6738648298",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "fdc233aa-2ee2-4b60-a6a3-20b56582cc6b",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "6e503f4f-9bab-4b51-b07a-8d769b1c5c6c",
+      "Id": "c87b3bd6-ffa6-49d7-a518-d806600acb7c",
       "Name": "Sky",
       "Tag": "Untagged",
       "Active": true,
-      "ParentId": null,
+      "ParentId": "e8c1292d-6312-4143-bbbc-bcd4aa9debcf",
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "0025e492-2738-4642-827b-95c920c647b4",
+          "ComponentId": "fd14d525-0c33-4dd4-a513-16bdab67258e",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -102,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.SkyboxRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "69c07774-3502-4e92-8f31-be9f1da43fae",
+          "ComponentId": "f8750f95-982c-4d75-9653-6dfe32caa6a2",
           "Enabled": true,
           "SerializedFields": {
             "MaterialPath": "Sky",
@@ -133,461 +67,15 @@
       ]
     },
     {
-      "Id": "e34ca037-df8b-4d84-8120-fcdc9f9a0e99",
-      "Name": "Floor",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b6ebdb2d-4d9a-4861-861b-ea1fc327c096",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": -0.99064714,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 25,
-              "y": 1,
-              "z": 25
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "51b0ad64-143e-4ef9-adf8-b65c44116cfc",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "DragonFloor"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Id": "69f3c88a-38f6-4680-85d2-6a66b8011436",
-      "Name": "Dragon (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d2f13d85-6921-403d-8c29-f5bf2a795786",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -1.7421284,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5c94d186-dfac-45ff-8c72-c9b012702b7a",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a556d7cc-0b07-4d20-849d-22a2609ae9a8",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "a86bc5fb-8161-462b-a40e-6d93ded3637d",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3f82e810-9a8c-45ec-9ec4-35c1142c7d1d",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "0548bf65-d670-44ed-b9ef-bc51caa82f82",
-      "Name": "Dragon (Clone) (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "a3a6819e-1bad-49c2-b2ba-8546feb523c2",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 7.946556,
-              "y": 0,
-              "z": -1.1836097
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": -0.27347004,
-              "z": 0,
-              "w": 0.9618805
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "df4769c5-c6fa-4ba2-b6ed-c74464d6fa18",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5aa1a04e-8dd8-4b98-9f87-3dca1c9746eb",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "d3f80b4d-850e-4cd2-be6f-827a47d4642d",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "39334a71-b971-4ccf-9ad3-1b484b17ae50",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "1509a85b-2481-4525-b49b-9a8b8257235a",
-      "Name": "Dragon (Clone) (Clone) (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "87b9496e-9a6a-4463-96dc-796c1afcfe88",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -6.372926,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0.33430666,
-              "z": 0,
-              "w": 0.9424644
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "0cae6cb5-1595-42b8-a279-94733fa40529",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b264ce22-ba2f-410e-812f-9e02c88c063c",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "76fc05ef-be9a-4ccd-a349-47b746d35cbf",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2aac71b4-b1db-43fc-84a8-6da7f3f9bda4",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "b5c1750d-f12f-49f7-bea0-f1f3f8d3fb52",
-      "Name": "Dragon (Clone) (Clone) (Clone) (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "edb419a2-edb1-4486-8af2-68d8c280d9bb",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -3.6937127,
-              "y": 0,
-              "z": -3.0556245
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "dddc61d5-6f28-4674-acdf-fe81ebd07815",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "508f9120-0ecb-4116-8cc9-369e5093ad3a",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "ba225dc4-fa4a-4ebb-8b0c-3e59faf85710",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "b7ad1857-466f-442a-8e00-3c9121f5e6e8",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "3dd5f349-5a83-41eb-8b3b-72bf25ca1b2b",
-      "Name": "Dragon (Clone) (Clone) (Clone) (Clone) (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3982c158-fe14-4b26-a42e-907c1c2ab735",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": -0.8744352,
-              "y": 0,
-              "z": -4.6183043
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8bb14ae6-eb47-40c1-b559-68a50d9a69b0",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "7205ae3f-6ec9-420c-81d5-14ad68272b98",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "8f2fc6e1-aab2-47ba-88bc-9b1ed07872e0",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "95f2696a-8e19-46b8-9eaf-053a68cda09d",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "32500596-b0fd-47e5-b062-bad6f291cda8",
-      "Name": "Dragon (Clone) (Clone) (Clone) (Clone) (Clone) (Clone)",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "90d809f8-09ed-4204-935a-138dd940708d",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 6.108068,
-              "y": 0,
-              "z": -6.3701477
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": -0.12638631,
-              "z": 0,
-              "w": 0.99198115
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "598f0d7b-d383-48cf-843f-e6c5e964e08d",
-          "Enabled": true,
-          "SerializedFields": {
-            "PlaybackSpeed": 1,
-            "Loop": true
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "6e9c8210-ea05-40d2-b03b-bfb63879706b",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "85ab65ce-3e46-49f9-bc43-4a6738648298",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                null,
-                null
-              ]
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.AnimationTest, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "06127ce2-58cf-4ca0-b842-7b94233cef35",
-          "Enabled": true,
-          "SerializedFields": {}
-        }
-      ]
-    },
-    {
-      "Id": "983cea6c-7c05-48ff-a897-f919bada56d1",
+      "Id": "4675ebbe-6232-40c4-99db-465cd21a56c2",
       "Name": "DirectionalLight_9",
       "Tag": "Untagged",
       "Active": true,
-      "ParentId": null,
+      "ParentId": "e8c1292d-6312-4143-bbbc-bcd4aa9debcf",
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "647ed9dd-8bdd-40f3-8edb-370d653d07c1",
+          "ComponentId": "a9da73ff-25be-4071-b5b2-9f2bb298c781",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -613,7 +101,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "77a26dd4-f2d7-4706-b2e3-e0c372d63cba",
+          "ComponentId": "4a89dcfa-25f1-4ad9-96f1-50c285593bbb",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -633,6 +121,350 @@
             "Quadratic": 0.032,
             "InnerCutOffDegrees": 12.5,
             "OuterCutOffDegrees": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "Id": "18b069e8-a6a8-4932-9568-69b437dbc821",
+      "Name": "Camera_10",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": "e8c1292d-6312-4143-bbbc-bcd4aa9debcf",
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "f2cdae6c-6b9f-4b45-bc92-5a1e44c99323",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Graphics.Camera.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "a77aa70a-ee65-473e-8ef1-365f8a6ec2d8",
+          "Enabled": true,
+          "SerializedFields": {
+            "CameraName": "",
+            "Priority": 0,
+            "RenderToBuffer": true,
+            "UseGBuffer": true,
+            "UseEmission": true,
+            "BufferWidth": 1280,
+            "BufferHeight": 720,
+            "ProjectionMode": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ProjectionMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Orthographic"
+            },
+            "Fov": 45,
+            "NearPlane": 0.1,
+            "FarPlane": 1000,
+            "OrthoSize": 10,
+            "AspectRatio": 1.7777778,
+            "ClearMode": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.CameraClearMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "SolidColor"
+            },
+            "ClearColor": {
+              "__type": "Vector4",
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0.1,
+              "w": 1
+            },
+            "ViewportX": 0,
+            "ViewportY": 0,
+            "ViewportWidth": 1,
+            "ViewportHeight": 1
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Core.Components.AudioSource, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "b3081f77-b049-4bcd-9ea4-aed812a8648d",
+          "Enabled": true,
+          "SerializedFields": {
+            "AudioPath": "3c72060f-585e-41b5-8cf7-c23c35f25a6b",
+            "Volume": 0.1,
+            "Pitch": 1,
+            "Loop": true,
+            "Spatial": false,
+            "MinDistance": 1,
+            "MaxDistance": 20,
+            "RolloffMode": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Core.Components.AudioRolloffMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Logarithmic"
+            },
+            "StereoPanBlend": 1,
+            "PlayOnAwake": true
+          }
+        }
+      ]
+    },
+    {
+      "Id": "e8c1292d-6312-4143-bbbc-bcd4aa9debcf",
+      "Name": "Ambience",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "d2614f7a-6d00-4737-8af1-677391ec7b6f",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "8d5c2328-a29c-4467-a574-ad321f0b538a",
+      "Name": "Floor",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "88f1594c-56cb-4434-a10b-9e11b57b8744",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": -9,
+              "z": -13.5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 18.300001,
+              "y": 5.8,
+              "z": 6.9
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "3d4427e1-b738-4456-bc74-4de0e8046126",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "bdd05dfc-5ed2-4228-b061-5d0e39419b5c",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.BodyMotionType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Static"
+            },
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Mass": 1,
+            "UseGravity": false,
+            "SleepThreshold": -1,
+            "IsKinematic": false,
+            "Layer": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Physics.PhysicsLayer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Default"
+            },
+            "IsTrigger": false,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": false,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": false,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
+          }
+        }
+      ]
+    },
+    {
+      "Id": "fa4a04ee-1f1c-434b-8e4b-8c6b308cdfa9",
+      "Name": "Player",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "6a62617b-5c75-47f1-a6ea-a6a01aa6f692",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": -6,
+              "y": -2.6992972,
+              "z": -13.5
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0.38268346,
+              "z": 0,
+              "w": 0.9238795
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 0.2,
+              "y": 0.2,
+              "z": 0.2
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "f8b3a987-8afe-4dce-9e5f-38a2d9aafc22",
+          "Enabled": true,
+          "SerializedFields": {
+            "AnimationPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "04d9d321-7d8e-4a5d-934a-21331466488d",
+                "758be04a-a797-477f-941e-f2772931b7d9"
+              ]
+            },
+            "PlaybackSpeed": 1,
+            "Loop": true,
+            "CurrentPlaying": 2
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7132f568-cf3d-49a8-bc25-94c6704c18df",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "04d9d321-7d8e-4a5d-934a-21331466488d",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic",
+                "basic"
+              ]
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Core.Components.CSharpLogic, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "961e5259-1f05-495d-b198-03362deb2f61",
+          "Enabled": true,
+          "SerializedFields": {
+            "Script": "PlayerController"
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7bbc7311-6a57-443c-9f48-5fc1bf74583e",
+          "Enabled": true,
+          "SerializedFields": {
+            "MotionType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.BodyMotionType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Dynamic"
+            },
+            "ShapeType": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Box"
+            },
+            "ShapeSize": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "Mass": 1,
+            "UseGravity": true,
+            "SleepThreshold": -1,
+            "IsKinematic": false,
+            "Layer": {
+              "__type": "Enum",
+              "enumType": "KrayonCore.Physics.PhysicsLayer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "value": "Default"
+            },
+            "IsTrigger": false,
+            "FreezePositionX": false,
+            "FreezePositionY": false,
+            "FreezePositionZ": true,
+            "FreezeRotationX": false,
+            "FreezeRotationY": false,
+            "FreezeRotationZ": true,
+            "LinearDamping": 0.05,
+            "AngularDamping": 0.05,
+            "Friction": 0.5,
+            "Restitution": 0
           }
         }
       ]

@@ -987,6 +987,22 @@ namespace KrayonEditor.UI
                 {
                     array.SetValue(stringValue, index);
                 }
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    unsafe
+                    {
+                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                        if (payload.NativePtr != null)
+                        {
+                            byte[] data = new byte[payload.DataSize];
+                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
+                            string path = System.Text.Encoding.UTF8.GetString(data);
+                            array.SetValue(path, index);
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
             }
             else if (elementType == typeof(int))
             {

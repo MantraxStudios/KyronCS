@@ -16,14 +16,6 @@ public class PlayerController : KrayonBehaviour
 
     public override void Start()
     {
-        GetMainCamera().ProjectionMode = ProjectionMode.Orthographic;
-        GetMainCamera().OrthoSize = 15.0f;
-
-        Vector3 pos = GetMainCamera().Position;
-        pos.X = GameObject.Transform.GetWorldPosition().X;
-        pos.Y = GameObject.Transform.GetWorldPosition().Y;
-        GetMainCamera().Position = pos;
-
         _body = GameObject.GetComponent<Rigidbody>();
     }
 
@@ -34,13 +26,11 @@ public class PlayerController : KrayonBehaviour
         if (InputSystem.GetKeyDown(Keys.A))
         {
             horizontalVelocity -= MoveSpeed;
-            GameObject.GetComponent<SpriteRenderer>().FlipX = true;
         }
 
         if (InputSystem.GetKeyDown(Keys.D))
         {
             horizontalVelocity += MoveSpeed;
-            GameObject.GetComponent<SpriteRenderer>().FlipX = false;
         }
 
         Vector3 currentVelocity = _body.GetVelocity();
@@ -53,15 +43,13 @@ public class PlayerController : KrayonBehaviour
         }
 
         if (horizontalVelocity != 0f)
-            GameObject.GetComponent<SpriteRenderer>().Play("Walk");
+        {
+            
+        }
         else
-            GameObject.GetComponent<SpriteRenderer>().Play("Idle");
-
-        Vector3 worldPos = GameObject.Transform.GetWorldPosition();
-        Vector3 camPos = GetMainCamera().Position;
-        camPos.X = worldPos.X;
-        camPos.Y = worldPos.Y;
-        GetMainCamera().Position = camPos;
+        {
+            
+        }
     }
 
     public override void OnCollisionEnter(GameObject contact)

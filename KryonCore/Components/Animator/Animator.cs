@@ -26,6 +26,19 @@ namespace KrayonCore.Animation
         private float _blendElapsed = 0f;
         private bool _isBlending = false;
 
+        // ── Array de animaciones cargadas ───────────────────────────────
+        private readonly List<AnimationClip> _clips = new();
+        private int _currentIndex = -1;
+
+        /// <summary>
+        /// Array de rutas (GUIDs) a archivos FBX que contienen animaciones.
+        /// Cada FBX puede tener una o varias animaciones; todas se agregan
+        /// al array interno en orden.
+        /// Asignar desde el inspector o desde código antes de Awake/Start.
+        /// </summary>
+        [ToStorage]
+        public string[] AnimationPaths { get; set; } = new string[0];
+
         [NoSerializeToInspector]
         public Matrix4[] FinalBoneMatrices => _finalBoneMatrices;
 
@@ -37,6 +50,13 @@ namespace KrayonCore.Animation
 
         [NoSerializeToInspector]
         public AnimationClip CurrentClip => _currentClip;
+
+        [NoSerializeToInspector]
+        public int CurrentIndex => _currentIndex;
+        private int _pendingIndex = 0;
+
+        [NoSerializeToInspector]
+        public int ClipCount => _clips.Count;
 
         [ToStorage]
         public float PlaybackSpeed
@@ -52,6 +72,20 @@ namespace KrayonCore.Animation
             set => _loop = value;
         }
 
+        [ToStorage]
+        public int CurrentPlaying
+        {
+            get => _currentIndex >= 0 ? _currentIndex : _pendingIndex;
+            set
+            {
+                _pendingIndex = value;
+                if (value >= 0 && value < _clips.Count)
+                {
+                    PlayCrossFade(value, 0.3f);
+                }
+            }
+        }
+
         public Animator()
         {
             _finalBoneMatrices = new Matrix4[MAX_BONES];
@@ -62,75 +96,253 @@ namespace KrayonCore.Animation
         public override void Awake() { }
         public override void Start() { }
 
+        // ════════════════════════════════════════════════════════════════
+        //  MODELO BASE (esqueleto + bind pose)
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Asigna el modelo base (esqueleto, huesos, bind pose).
+        /// Las animaciones del propio modelo se agregan al array interno.
+        /// Luego se cargan las animaciones de AnimationPaths.
+        /// </summary>
         public void SetModel(AnimatedModel model)
         {
             _animatedModel = model;
+            _clips.Clear();
+            _currentIndex = -1;
 
-            if (model != null && model.Animations.Count > 0)
+            // 1) Agregar las animaciones que trae el propio modelo
+            if (model != null)
             {
-                SetAnimation(0);
+                foreach (var clip in model.Animations)
+                {
+                    clip.RootNode = model.RootNode;
+                    _clips.Add(clip);
+                }
+            }
+
+            // 2) Cargar animaciones externas desde AnimationPaths
+            LoadAnimationPaths();
+
+            // 3) Reproducir la animación pendiente o la primera
+            if (_clips.Count > 0)
+            {
+                int startIndex = (_pendingIndex >= 0 && _pendingIndex < _clips.Count)
+                    ? _pendingIndex
+                    : 0;
+                SetAnimation(startIndex);  // la primera vez sí va directo (no hay "desde" qué blendear)
                 Play();
             }
         }
 
-        public void SetAnimation(int index)
+        // ════════════════════════════════════════════════════════════════
+        //  CARGA DE ANIMACIONES EXTERNAS
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Carga los FBX referenciados en AnimationPaths y extrae sus clips.
+        /// Se llama automáticamente desde SetModel(), pero puedes llamarlo
+        /// de nuevo si cambias AnimationPaths en runtime.
+        /// </summary>
+        public void LoadAnimationPaths()
         {
-            if (_animatedModel == null || index < 0 || index >= _animatedModel.Animations.Count)
+            if (AnimationPaths == null || AnimationPaths.Length == 0)
                 return;
 
-            _currentClip = _animatedModel.Animations[index];
-            _currentClip.RootNode = _animatedModel.RootNode;
-            _currentTime = 0f;
+            for (int i = 0; i < AnimationPaths.Length; i++)
+            {
+                string path = AnimationPaths[i];
+                if (string.IsNullOrEmpty(path)) continue;
+
+                try
+                {
+                    var assetInfo = AssetManager.GetBytes(Guid.Parse(path));
+                    var animModel = AnimatedModel.LoadFromBytes(assetInfo, "fbx");
+
+                    if (animModel == null || animModel.Animations.Count == 0)
+                    {
+                        Console.WriteLine($"[Animator] AnimationPaths[{i}]: sin animaciones");
+                        continue;
+                    }
+
+                    foreach (var clip in animModel.Animations)
+                    {
+                        // Vincular al esqueleto del modelo base
+                        if (_animatedModel != null)
+                            clip.RootNode = _animatedModel.RootNode;
+
+                        _clips.Add(clip);
+                        Console.WriteLine($"[Animator] Clip cargado [{_clips.Count - 1}]: \"{clip.Name}\" " +
+                            $"({clip.Duration / Math.Max(clip.TicksPerSecond, 1f):F2}s)");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Animator] Error cargando AnimationPaths[{i}]: {ex.Message}");
+                }
+            }
         }
 
+        // ════════════════════════════════════════════════════════════════
+        //  AGREGAR / QUITAR CLIPS MANUALMENTE
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Agrega un clip al final del array. Devuelve su índice.
+        /// </summary>
+        public int AddClip(AnimationClip clip)
+        {
+            if (clip == null) return -1;
+
+            if (_animatedModel != null)
+                clip.RootNode = _animatedModel.RootNode;
+
+            _clips.Add(clip);
+            return _clips.Count - 1;
+        }
+
+        /// <summary>
+        /// Agrega todos los clips de un AnimatedModel externo.
+        /// Devuelve el índice del primero agregado, o -1 si no había clips.
+        /// </summary>
+        public int AddClipsFromModel(AnimatedModel externalModel)
+        {
+            if (externalModel == null || externalModel.Animations.Count == 0)
+                return -1;
+
+            int firstIndex = _clips.Count;
+
+            foreach (var clip in externalModel.Animations)
+            {
+                if (_animatedModel != null)
+                    clip.RootNode = _animatedModel.RootNode;
+
+                _clips.Add(clip);
+            }
+
+            return firstIndex;
+        }
+
+        /// <summary>
+        /// Elimina el clip en el índice dado.
+        /// </summary>
+        public void RemoveClip(int index)
+        {
+            if (index < 0 || index >= _clips.Count) return;
+
+            _clips.RemoveAt(index);
+
+            // Ajustar índice actual
+            if (_currentIndex == index)
+            {
+                _currentClip = null;
+                _currentIndex = -1;
+                _isPlaying = false;
+            }
+            else if (_currentIndex > index)
+            {
+                _currentIndex--;
+            }
+        }
+
+        /// <summary>
+        /// Elimina todos los clips.
+        /// </summary>
+        public void ClearClips()
+        {
+            _clips.Clear();
+            _currentClip = null;
+            _currentIndex = -1;
+            _isPlaying = false;
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        //  SELECCIÓN DE ANIMACIÓN
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Cambia a la animación en el índice dado. Reinicia el tiempo a 0.
+        /// </summary>
+        public void SetAnimation(int index)
+        {
+            if (index < 0 || index >= _clips.Count)
+            {
+                Console.WriteLine($"[Animator] Índice fuera de rango: {index} (total: {_clips.Count})");
+                return;
+            }
+
+            _currentClip = _clips[index];
+            _currentIndex = index;
+            _currentTime = 0f;
+            _isBlending = false;
+
+            if (_animatedModel != null)
+                _currentClip.RootNode = _animatedModel.RootNode;
+        }
+
+        /// <summary>
+        /// Busca un clip por nombre y cambia a él.
+        /// </summary>
         public void SetAnimation(string name)
         {
-            if (_animatedModel == null) return;
-
-            for (int i = 0; i < _animatedModel.Animations.Count; i++)
+            for (int i = 0; i < _clips.Count; i++)
             {
-                if (_animatedModel.Animations[i].Name == name)
+                if (_clips[i].Name == name)
                 {
                     SetAnimation(i);
                     return;
                 }
             }
 
-            Console.WriteLine($"[Animator] Animación no encontrada: {name}");
+            Console.WriteLine($"[Animator] Animación no encontrada: \"{name}\"");
         }
 
-        public void CrossFade(string animationName, float blendDuration = 0.3f)
+        // ════════════════════════════════════════════════════════════════
+        //  CROSSFADE / BLEND
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Transición suave desde la animación actual hacia la del índice dado.
+        /// </summary>
+        public void CrossFade(int index, float blendDuration = 0.3f)
         {
-            if (_animatedModel == null) return;
-
-            AnimationClip targetClip = null;
-            foreach (var clip in _animatedModel.Animations)
-            {
-                if (clip.Name == animationName)
-                {
-                    targetClip = clip;
-                    break;
-                }
-            }
-
-            if (targetClip == null || targetClip == _currentClip) return;
+            if (index < 0 || index >= _clips.Count) return;
+            if (_clips[index] == _currentClip) return;
 
             _blendFromClip = _currentClip;
             _blendFromTime = _currentTime;
-            _currentClip = targetClip;
-            _currentClip.RootNode = _animatedModel.RootNode;
+            _currentClip = _clips[index];
+            _currentIndex = index;
+
+            if (_animatedModel != null)
+                _currentClip.RootNode = _animatedModel.RootNode;
+
             _currentTime = 0f;
             _blendDuration = blendDuration;
             _blendElapsed = 0f;
             _isBlending = true;
         }
 
-        public void CrossFade(int animationIndex, float blendDuration = 0.3f)
+        /// <summary>
+        /// Transición suave buscando por nombre.
+        /// </summary>
+        public void CrossFade(string animationName, float blendDuration = 0.3f)
         {
-            if (_animatedModel == null || animationIndex < 0 || animationIndex >= _animatedModel.Animations.Count)
-                return;
-            CrossFade(_animatedModel.Animations[animationIndex].Name, blendDuration);
+            for (int i = 0; i < _clips.Count; i++)
+            {
+                if (_clips[i].Name == animationName)
+                {
+                    CrossFade(i, blendDuration);
+                    return;
+                }
+            }
+
+            Console.WriteLine($"[Animator] CrossFade: no encontrada: \"{animationName}\"");
         }
+
+        // ════════════════════════════════════════════════════════════════
+        //  PLAY / PAUSE / STOP
+        // ════════════════════════════════════════════════════════════════
 
         public void Play() => _isPlaying = true;
         public void Pause() => _isPlaying = false;
@@ -140,6 +352,58 @@ namespace KrayonCore.Animation
             _isPlaying = false;
             _currentTime = 0f;
         }
+
+        /// <summary>
+        /// Cambia al índice indicado y reproduce.
+        /// </summary>
+        public void Play(int index)
+        {
+            SetAnimation(index);
+            Play();
+        }
+
+        /// <summary>
+        /// Cambia al nombre indicado y reproduce.
+        /// </summary>
+        public void Play(string name)
+        {
+            SetAnimation(name);
+            Play();
+        }
+
+        /// <summary>
+        /// Cambia con crossfade al índice y reproduce.
+        /// Si no hay nada reproduciéndose, va directo sin blend.
+        /// </summary>
+        public void PlayCrossFade(int index, float blendDuration = 0.3f)
+        {
+            if (!_isPlaying || _currentClip == null)
+            {
+                SetAnimation(index);
+                Play();
+            }
+            else
+            {
+                CrossFade(index, blendDuration);
+            }
+        }
+
+        public void PlayCrossFade(string name, float blendDuration = 0.3f)
+        {
+            if (!_isPlaying || _currentClip == null)
+            {
+                SetAnimation(name);
+                Play();
+            }
+            else
+            {
+                CrossFade(name, blendDuration);
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        //  UPDATE
+        // ════════════════════════════════════════════════════════════════
 
         public override void OnWillRenderObject()
         {
@@ -176,11 +440,12 @@ namespace KrayonCore.Animation
             CalculateBoneTransforms();
         }
 
+        // ════════════════════════════════════════════════════════════════
+        //  CÁLCULO DE TRANSFORMS (sin cambios respecto al original)
+        // ════════════════════════════════════════════════════════════════
+
         private void CalculateBoneTransforms()
         {
-            // La inversa del transform raíz de Assimp elimina la escala/rotación
-            // que FBX/Collada suelen inyectar en el nodo raíz de la escena
-            // (p.ej. x100 en FBX por la conversión cm→m).
             Matrix4 globalInverse = _animatedModel.GlobalInverseTransform;
 
             if (_isBlending && _blendFromClip != null)
@@ -216,9 +481,6 @@ namespace KrayonCore.Animation
             var boneAnim = clip.FindBoneAnimation(node.Name);
             if (boneAnim != null)
             {
-                // Descomponer la matriz de bind pose como fallback
-                // para los canales que no tengan keyframes propios.
-                // Muy común en huesos IK/pies que solo tienen rotación.
                 DecomposeMatrix(node.Transform,
                     out Vector3 bindTrans, out OpenTK.Mathematics.Quaternion bindRot, out Vector3 bindScale);
 
@@ -248,10 +510,6 @@ namespace KrayonCore.Animation
                 int boneId = boneInfo.Id;
                 if (boneId >= 0 && boneId < MAX_BONES)
                 {
-                    // Fórmula correcta de skinning (row-major OpenTK):
-                    // OffsetMatrix   → bind-pose inverse (mesh space → bone space)
-                    // globalTransform → pose actual del hueso en scene space
-                    // globalInverse  → cancela el transform del nodo raíz de Assimp
                     outMatrices[boneId] = boneInfo.OffsetMatrix * globalTransform * globalInverse;
                 }
             }
@@ -260,24 +518,22 @@ namespace KrayonCore.Animation
                 CalculateNodeTransform(clip, time, child, globalTransform, outMatrices, globalInverse);
         }
 
-        // UBO para las matrices de huesos — se crea una vez por Animator
+        // ════════════════════════════════════════════════════════════════
+        //  UBO PARA MATRICES DE HUESOS (sin cambios)
+        // ════════════════════════════════════════════════════════════════
+
         private int _boneUBO = -1;
-        private const int BONE_UBO_BINDING = 1; // binding point, debe coincidir con el shader
+        private const int BONE_UBO_BINDING = 1;
 
         private void EnsureBoneUBO()
         {
             if (_boneUBO != -1) return;
             _boneUBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.UniformBuffer, _boneUBO);
-            // Reservar espacio: MAX_BONES × 64 bytes (una mat4)
             GL.BufferData(BufferTarget.UniformBuffer, MAX_BONES * 64, IntPtr.Zero, BufferUsageHint.DynamicDraw);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
         }
 
-        /// <summary>
-        /// Enviar las matrices de huesos al shader vía UBO.
-        /// Llamar antes de dibujar el mesh animado.
-        /// </summary>
         public void UploadBoneMatrices(int shaderProgram)
         {
             int instLoc = GL.GetUniformLocation(shaderProgram, "u_UseInstancing");
@@ -290,10 +546,8 @@ namespace KrayonCore.Animation
 
             EnsureBoneUBO();
 
-            // World matrix del transform del GameObject
             Matrix4 worldMatrix = GameObject?.Transform?.GetWorldMatrix() ?? Matrix4.Identity;
 
-            // Construir array flat de matrices combinadas (bone × world)
             var matrices = new Matrix4[MAX_BONES];
             int boneCount = Math.Min(_animatedModel?.BoneCount ?? 0, MAX_BONES);
             for (int i = 0; i < boneCount; i++)
@@ -301,12 +555,10 @@ namespace KrayonCore.Animation
             for (int i = boneCount; i < MAX_BONES; i++)
                 matrices[i] = Matrix4.Identity;
 
-            // Subir al UBO de una sola vez (mucho más eficiente que N llamadas uniform)
             GL.BindBuffer(BufferTarget.UniformBuffer, _boneUBO);
             GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, MAX_BONES * 64, matrices);
             GL.BindBuffer(BufferTarget.UniformBuffer, 0);
 
-            // Vincular el UBO al binding point del shader
             int blockIndex = GL.GetUniformBlockIndex(shaderProgram, "BoneMatricesBlock");
             if (blockIndex != -1)
             {
@@ -322,20 +574,51 @@ namespace KrayonCore.Animation
                 GL.Uniform1(useAnimLoc, 0);
         }
 
+        // ════════════════════════════════════════════════════════════════
+        //  CONSULTAS
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Devuelve los nombres de todas las animaciones en el array.
+        /// </summary>
         public string[] GetAnimationNames()
         {
-            if (_animatedModel == null) return Array.Empty<string>();
-
-            var names = new string[_animatedModel.Animations.Count];
-            for (int i = 0; i < names.Length; i++)
-                names[i] = _animatedModel.Animations[i].Name;
+            var names = new string[_clips.Count];
+            for (int i = 0; i < _clips.Count; i++)
+                names[i] = _clips[i].Name;
             return names;
         }
 
-        public int GetAnimationCount()
+        /// <summary>
+        /// Devuelve la cantidad de animaciones en el array.
+        /// </summary>
+        public int GetAnimationCount() => _clips.Count;
+
+        /// <summary>
+        /// Devuelve el clip en el índice dado, o null.
+        /// </summary>
+        public AnimationClip GetClip(int index)
         {
-            return _animatedModel?.Animations.Count ?? 0;
+            if (index < 0 || index >= _clips.Count) return null;
+            return _clips[index];
         }
+
+        /// <summary>
+        /// Busca el índice de un clip por nombre. Devuelve -1 si no existe.
+        /// </summary>
+        public int FindClipIndex(string name)
+        {
+            for (int i = 0; i < _clips.Count; i++)
+            {
+                if (_clips[i].Name == name)
+                    return i;
+            }
+            return -1;
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        //  UTILIDADES (sin cambios)
+        // ════════════════════════════════════════════════════════════════
 
         private static Matrix4 LerpMatrix(Matrix4 a, Matrix4 b, float t)
         {
@@ -347,28 +630,21 @@ namespace KrayonCore.Animation
             );
         }
 
-        /// <summary>
-        /// Descompone una Matrix4 (row-major OpenTK) en traslación, rotación y escala.
-        /// </summary>
         private static void DecomposeMatrix(Matrix4 m,
             out Vector3 translation, out OpenTK.Mathematics.Quaternion rotation, out Vector3 scale)
         {
-            // Traslación: última fila (row-major OpenTK)
             translation = new Vector3(m.Row3.X, m.Row3.Y, m.Row3.Z);
 
-            // Escala: longitud de cada columna (las 3 primeras filas)
             Vector3 col0 = new Vector3(m.Row0.X, m.Row1.X, m.Row2.X);
             Vector3 col1 = new Vector3(m.Row0.Y, m.Row1.Y, m.Row2.Y);
             Vector3 col2 = new Vector3(m.Row0.Z, m.Row1.Z, m.Row2.Z);
 
             scale = new Vector3(col0.Length, col1.Length, col2.Length);
 
-            // Evitar división por cero
             float sx = scale.X > 1e-6f ? 1f / scale.X : 0f;
             float sy = scale.Y > 1e-6f ? 1f / scale.Y : 0f;
             float sz = scale.Z > 1e-6f ? 1f / scale.Z : 0f;
 
-            // Matriz de rotación pura (normalizada)
             Matrix3 rotMat = new Matrix3(
                 m.Row0.X * sx, m.Row0.Y * sy, m.Row0.Z * sz,
                 m.Row1.X * sx, m.Row1.Y * sy, m.Row1.Z * sz,
@@ -389,6 +665,7 @@ namespace KrayonCore.Animation
             _animatedModel = null;
             _currentClip = null;
             _blendFromClip = null;
+            _clips.Clear();
         }
     }
 }

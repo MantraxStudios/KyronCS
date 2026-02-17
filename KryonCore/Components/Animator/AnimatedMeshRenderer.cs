@@ -49,11 +49,13 @@ namespace KrayonCore.Animation
             _animator = GameObject.GetComponent<Animator>();
             if (_animator == null)
             {
-                GameObject.AddComponent<Animator>();
+                GameObject.AddComponent<Animator>().Start();
             }
 
-            if (_model != null)
+            if (_model != null && _animator != null)
+            {
                 _animator.SetModel(_model);
+            }
 
             _isInitialized = true;
         }
