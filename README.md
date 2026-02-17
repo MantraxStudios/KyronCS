@@ -41,3 +41,6 @@ sudo apt install libminizip1 libz-dev
 <img width="1920" height="1009" alt="image" src="https://github.com/user-attachments/assets/816fd1f8-757a-47c8-8d53-bdb76f9f8782" />
 
 <img width="1920" height="1009" alt="KrayonEditor_uOyl6URVfl" src="https://github.com/user-attachments/assets/3ee628f7-a0e7-47ba-9c00-dd577df25cb6" />
+
+<img width="1917" height="1031" alt="image" src="https://github.com/user-attachments/assets/5f44469f-fb2b-41d9-b554-c632fcc54e27" />
+
