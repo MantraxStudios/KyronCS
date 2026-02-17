@@ -3,7 +3,7 @@
   "GameObjects": [
     {
       "Id": "bbe28dcf-52b7-477a-99ef-b1a12cd49b37",
-      "Name": "Cube_0",
+      "Name": "Dragon",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
@@ -70,7 +70,7 @@
     },
     {
       "Id": "6b31d6dc-bee5-4203-9a0d-698be5345af8",
-      "Name": "PointLight_1",
+      "Name": "Light",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
@@ -114,7 +114,7 @@
             "Color": {
               "__type": "Vector3",
               "x": 1,
-              "y": 0,
+              "y": 0.5,
               "z": 1
             },
             "Intensity": 10.39,
@@ -129,7 +129,7 @@
     },
     {
       "Id": "80cedbbf-6f85-4d47-a26c-c8a274889d2f",
-      "Name": "GameObject_2",
+      "Name": "Sky",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
@@ -194,7 +194,7 @@
     },
     {
       "Id": "acd2cb9d-825c-4e85-860a-55582cd0cc3e",
-      "Name": "Model_3",
+      "Name": "Floor",
       "Tag": "Untagged",
       "Active": true,
       "ParentId": null,
