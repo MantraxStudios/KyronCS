@@ -37,10 +37,12 @@ namespace KrayonEditor
                 }
 
                 Console.WriteLine("[Engine] Hot-reload completado!");
+                EditorNotifications.Success("CSharpLogic successfully reloaded...");
             };
 
             _scriptWatcher.OnBuildFailed += (error) =>
             {
+                EditorNotifications.Error($"CSharpLogic encountered an error during compilation.... \n{error}");
                 Console.WriteLine($"[Engine] Error en scripts:\n{error}");
             };
 

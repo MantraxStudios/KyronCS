@@ -281,7 +281,7 @@ namespace KrayonEditor.UI
             UpdateHoveredObject();
 
             _imguiController?.Update(_window, dt);
-
+            EditorNotifications.Draw(dt);
             EditorUI.Draw(
                 _engine!, _editorCamera, _isPlaying, _editorCameraSpeed,
                 _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages,

@@ -1,4 +1,5 @@
 ﻿using KrayonCore.Core.Attributes;
+using KrayonEditor.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -89,6 +90,7 @@ namespace KrayonCore.Scripting
                 return;
 
             Console.WriteLine($"[ScriptWatcher] Cambio detectado: {e.Name}");
+            EditorNotifications.Info("CSharpLogic detected changes, starting recompilation...");
             ScheduleBuild();
         }
 
