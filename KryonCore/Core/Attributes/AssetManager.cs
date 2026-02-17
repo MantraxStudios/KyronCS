@@ -808,17 +808,18 @@ namespace KrayonCore.Core.Attributes
         }
 
         private static string DetectType(string file) =>
-            Path.GetExtension(file).ToLower() switch
-            {
-                ".png" or ".jpg" or ".jpeg" => "Texture",
-                ".fbx" or ".obj" => "Model",
-                ".wav" or ".mp3" => "Audio",
-                ".frag" or ".vert" => "Shader",
-                ".js" => "GameScript",
-                ".mat" => "Material",
-                ".cs" => "Script",
-                _ => "Unknown"
-            };
+        Path.GetExtension(file).ToLower() switch
+        {
+            ".png" or ".jpg" or ".jpeg" => "Texture",
+            ".fbx" or ".obj" => "Model",
+            ".wav" or ".mp3" => "Audio",
+            ".frag" or ".vert" => "Shader",
+            ".js" => "GameScript",
+            ".mat" => "Material",
+            ".cs" => "Script",
+            ".animator" => "AnimatorController",  
+            _ => "Unknown"
+        };
 
         private static void EnsureDirectory(string fullFilePath)
         {

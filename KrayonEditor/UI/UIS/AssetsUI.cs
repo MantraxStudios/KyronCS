@@ -43,6 +43,10 @@ namespace KrayonEditor.UI
         private string _folderToRename = "";
         private string _renameFolderNewName = "";
 
+        private bool _showNewAnimatorPopup = false;
+        private string _newAnimatorName = "NewAnimator";
+        private string _newAnimatorFolder = "";
+
         private class FolderNode
         {
             public string Path;
@@ -230,6 +234,7 @@ namespace KrayonEditor.UI
             ImGui.EndChild();
 
             DrawNewScriptPopup();
+            DrawNewAnimatorPopup();
             DrawNewFolderPopup();
             DrawDeleteAssetPopup();
             DrawDeleteFolderPopup();
@@ -323,6 +328,13 @@ namespace KrayonEditor.UI
                     _newFolderParent = node.Path;
                     _newFolderName = "NewFolder";
                     _showNewFolderPopup = true;
+                }
+
+                if (ImGui.MenuItem("New Animator Controller"))
+                {
+                    _newAnimatorFolder = node.Path;
+                    _newAnimatorName = "NewAnimator";
+                    _showNewAnimatorPopup = true;
                 }
 
                 if (!string.IsNullOrEmpty(node.Path))
@@ -431,6 +443,113 @@ namespace KrayonEditor.UI
             ImGui.PopID();
         }
 
+        private void DrawNewAnimatorPopup()
+        {
+            if (_showNewAnimatorPopup)
+            {
+                ImGui.OpenPopup("New Animator Controller##Popup");
+                _showNewAnimatorPopup = false;
+            }
+
+            var viewport = ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+            ImGui.SetNextWindowSize(new Vector2(350, 0), ImGuiCond.Appearing);
+
+            bool popupOpen = true;
+            if (ImGui.BeginPopupModal("New Animator Controller##Popup", ref popupOpen,
+                ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.Text("Animator Controller name:");
+                ImGui.SetNextItemWidth(-1);
+
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+
+                bool enterPressed = ImGui.InputText("##AnimatorName", ref _newAnimatorName, 128,
+                    ImGuiInputTextFlags.EnterReturnsTrue);
+
+                bool validName = !string.IsNullOrWhiteSpace(_newAnimatorName) &&
+                                 _newAnimatorName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+
+                string fileName = _newAnimatorName + ".animator";
+                string previewPath = string.IsNullOrEmpty(_newAnimatorFolder)
+                    ? fileName
+                    : $"{_newAnimatorFolder}/{fileName}";
+                string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
+                bool alreadyExists = File.Exists(fullPath);
+
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+                ImGui.Text($"Path: {previewPath}");
+                ImGui.PopStyleColor();
+
+                if (alreadyExists)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f));
+                    ImGui.Text("A file with this name already exists.");
+                    ImGui.PopStyleColor();
+                }
+
+                if (!validName)
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f));
+                    ImGui.Text("Invalid file name.");
+                    ImGui.PopStyleColor();
+                }
+
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                bool canCreate = validName && !alreadyExists;
+
+                if (!canCreate) ImGui.BeginDisabled();
+                if (ImGui.Button("Create", new Vector2(120, 0)) || (enterPressed && canCreate))
+                {
+                    CreateNewAnimator(previewPath, fullPath);
+                    ImGui.CloseCurrentPopup();
+                }
+                if (!canCreate) ImGui.EndDisabled();
+
+                ImGui.SameLine();
+
+                if (ImGui.Button("Cancel", new Vector2(120, 0)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        private void CreateNewAnimator(string relativePath, string fullPath)
+        {
+            try
+            {
+                string directory = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                // JSON vacío pero válido según AnimatorControllerData
+                string content = System.Text.Json.JsonSerializer.Serialize(
+                    new KrayonCore.Animation.AnimatorControllerData
+                    {
+                        Name = _newAnimatorName,
+                        DefaultState = "",
+                        Parameters = new(),
+                        States = new()
+                    },
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+                File.WriteAllText(fullPath, content);
+
+                AssetManager.Import(relativePath);
+                MarkDirty();
+
+                System.Console.WriteLine($"Animator Controller created: {relativePath}");
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine($"Error creating animator: {ex.Message}");
+            }
+        }
         private void DrawAssetNode(AssetRecord asset)
         {
             ImGui.PushID(asset.Guid.ToString());
@@ -450,6 +569,7 @@ namespace KrayonEditor.UI
             if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
                 string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
+
                 if (ext == ".cs")
                 {
                     string fullFilePath = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path));
@@ -457,6 +577,10 @@ namespace KrayonEditor.UI
                         OpenVSCodeProject(fullFilePath);
                     else
                         OpenVSCodeProject();
+                }
+                else if (ext == ".animator")   // ← NUEVO
+                {
+                    EditorUI._animatorEditor.OpenAsset(asset.Guid);
                 }
             }
 
@@ -469,7 +593,12 @@ namespace KrayonEditor.UI
                     OpenVSCodeProject();
                 }
 
-                if (ext == ".cs")
+                if (ext == ".animator" && ImGui.MenuItem("Open Animator Editor"))  
+                {
+                    EditorUI._animatorEditor.OpenAsset(asset.Guid);
+                }
+
+                if (ext == ".cs" || ext == ".animator")
                     ImGui.Separator();
 
                 if (ImGui.MenuItem("Rename"))
@@ -507,6 +636,7 @@ namespace KrayonEditor.UI
 
             ImGui.PopID();
         }
+
 
         private static readonly string DefaultScriptTemplate =
 @"using KrayonCore;

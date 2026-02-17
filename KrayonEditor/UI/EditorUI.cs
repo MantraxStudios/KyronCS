@@ -39,6 +39,8 @@ namespace KrayonEditor.UI
         public static SpriteAnimationUI _SpriteAnimator = new SpriteAnimationUI();
         public static CompilerUI _CompilerUI = new CompilerUI();
         public static RoslynCodeEditor editorCode;
+        public static AnimatorEditorUI _animatorEditor = new AnimatorEditorUI();
+
 
         private static string WindowsStatePath => AssetManager.TotalBase + "Windows.json";
         private static WindowsState _lastState = new WindowsState();
@@ -93,6 +95,7 @@ namespace KrayonEditor.UI
             _TileEditor.OnDrawUI();
             _CompilerUI.OnDrawUI();
             editorCode.Draw();
+            _animatorEditor.OnDrawUI();
 
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
             _mainMenuBar.ShowInspector = _inspector.IsVisible;

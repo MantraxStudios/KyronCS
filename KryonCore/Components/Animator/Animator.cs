@@ -4,15 +4,36 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KrayonCore.Animation
 {
+    internal class AnimatorState
+    {
+        public string Name;
+        public AnimationClip Clip;
+        public bool Loop;
+        public float Speed;
+        public List<StateTransitionData> Transitions;
+    }
+
+    internal class AnimatorParameter
+    {
+        public string Name;
+        public ParameterType Type;
+        public float FloatValue;
+        public int IntValue;
+        public bool BoolValue;
+        public bool TriggerValue;
+    }
+
     public class Animator : Component
     {
         public const int MAX_BONES = 256;
 
         private Matrix4[] _finalBoneMatrices;
         private AnimatedModel _animatedModel;
+
         private AnimationClip _currentClip;
         private float _currentTime = 0f;
         private float _playbackSpeed = 1f;
@@ -26,64 +47,38 @@ namespace KrayonCore.Animation
         private float _blendElapsed = 0f;
         private bool _isBlending = false;
 
-        // ── Array de animaciones cargadas ───────────────────────────────
-        private readonly List<AnimationClip> _clips = new();
-        private int _currentIndex = -1;
+        private readonly Dictionary<string, AnimatorState> _states = new();
+        private readonly Dictionary<string, AnimatorParameter> _parameters = new();
+        private AnimatorState _currentState;
 
-        /// <summary>
-        /// Array de rutas (GUIDs) a archivos FBX que contienen animaciones.
-        /// Cada FBX puede tener una o varias animaciones; todas se agregan
-        /// al array interno en orden.
-        /// Asignar desde el inspector o desde código antes de Awake/Start.
-        /// </summary>
+        private int _boneUBO = -1;
+        private const int BONE_UBO_BINDING = 1;
+
+        private string _controllerGuid = "";
         [ToStorage]
-        public string[] AnimationPaths { get; set; } = new string[0];
+        public string ControllerGuid
+        {
+            get => _controllerGuid;
+            set
+            {
+                if (_controllerGuid == value) return;
+                _controllerGuid = value;
+                if (_animatedModel != null && !string.IsNullOrEmpty(_controllerGuid))
+                    LoadController(_controllerGuid);
+            }
+        }
 
-        [NoSerializeToInspector]
-        public Matrix4[] FinalBoneMatrices => _finalBoneMatrices;
-
-        [NoSerializeToInspector]
-        public bool IsPlaying => _isPlaying;
-
-        [NoSerializeToInspector]
-        public float CurrentTime => _currentTime;
-
-        [NoSerializeToInspector]
-        public AnimationClip CurrentClip => _currentClip;
-
-        [NoSerializeToInspector]
-        public int CurrentIndex => _currentIndex;
-        private int _pendingIndex = 0;
-
-        [NoSerializeToInspector]
-        public int ClipCount => _clips.Count;
+        [NoSerializeToInspector] public Matrix4[] FinalBoneMatrices => _finalBoneMatrices;
+        [NoSerializeToInspector] public bool IsPlaying => _isPlaying;
+        [NoSerializeToInspector] public float CurrentTime => _currentTime;
+        [NoSerializeToInspector] public AnimationClip CurrentClip => _currentClip;
+        [NoSerializeToInspector] public string CurrentStateName => _currentState?.Name ?? "";
 
         [ToStorage]
         public float PlaybackSpeed
         {
             get => _playbackSpeed;
             set => _playbackSpeed = value;
-        }
-
-        [ToStorage]
-        public bool Loop
-        {
-            get => _loop;
-            set => _loop = value;
-        }
-
-        [ToStorage]
-        public int CurrentPlaying
-        {
-            get => _currentIndex >= 0 ? _currentIndex : _pendingIndex;
-            set
-            {
-                _pendingIndex = value;
-                if (value >= 0 && value < _clips.Count)
-                {
-                    PlayCrossFade(value, 0.3f);
-                }
-            }
         }
 
         public Animator()
@@ -96,327 +91,257 @@ namespace KrayonCore.Animation
         public override void Awake() { }
         public override void Start() { }
 
-        // ════════════════════════════════════════════════════════════════
-        //  MODELO BASE (esqueleto + bind pose)
-        // ════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Asigna el modelo base (esqueleto, huesos, bind pose).
-        /// Las animaciones del propio modelo se agregan al array interno.
-        /// Luego se cargan las animaciones de AnimationPaths.
-        /// </summary>
         public void SetModel(AnimatedModel model)
         {
             _animatedModel = model;
-            _clips.Clear();
-            _currentIndex = -1;
-
-            // 1) Agregar las animaciones que trae el propio modelo
-            if (model != null)
-            {
-                foreach (var clip in model.Animations)
-                {
-                    clip.RootNode = model.RootNode;
-                    _clips.Add(clip);
-                }
-            }
-
-            // 2) Cargar animaciones externas desde AnimationPaths
-            LoadAnimationPaths();
-
-            // 3) Reproducir la animación pendiente o la primera
-            if (_clips.Count > 0)
-            {
-                int startIndex = (_pendingIndex >= 0 && _pendingIndex < _clips.Count)
-                    ? _pendingIndex
-                    : 0;
-                SetAnimation(startIndex);  // la primera vez sí va directo (no hay "desde" qué blendear)
-                Play();
-            }
-        }
-
-        // ════════════════════════════════════════════════════════════════
-        //  CARGA DE ANIMACIONES EXTERNAS
-        // ════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Carga los FBX referenciados en AnimationPaths y extrae sus clips.
-        /// Se llama automáticamente desde SetModel(), pero puedes llamarlo
-        /// de nuevo si cambias AnimationPaths en runtime.
-        /// </summary>
-        public void LoadAnimationPaths()
-        {
-            if (AnimationPaths == null || AnimationPaths.Length == 0)
-                return;
-
-            for (int i = 0; i < AnimationPaths.Length; i++)
-            {
-                string path = AnimationPaths[i];
-                if (string.IsNullOrEmpty(path)) continue;
-
-                try
-                {
-                    var assetInfo = AssetManager.GetBytes(Guid.Parse(path));
-                    var animModel = AnimatedModel.LoadFromBytes(assetInfo, "fbx");
-
-                    if (animModel == null || animModel.Animations.Count == 0)
-                    {
-                        Console.WriteLine($"[Animator] AnimationPaths[{i}]: sin animaciones");
-                        continue;
-                    }
-
-                    foreach (var clip in animModel.Animations)
-                    {
-                        // Vincular al esqueleto del modelo base
-                        if (_animatedModel != null)
-                            clip.RootNode = _animatedModel.RootNode;
-
-                        _clips.Add(clip);
-                        Console.WriteLine($"[Animator] Clip cargado [{_clips.Count - 1}]: \"{clip.Name}\" " +
-                            $"({clip.Duration / Math.Max(clip.TicksPerSecond, 1f):F2}s)");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Animator] Error cargando AnimationPaths[{i}]: {ex.Message}");
-                }
-            }
-        }
-
-        // ════════════════════════════════════════════════════════════════
-        //  AGREGAR / QUITAR CLIPS MANUALMENTE
-        // ════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Agrega un clip al final del array. Devuelve su índice.
-        /// </summary>
-        public int AddClip(AnimationClip clip)
-        {
-            if (clip == null) return -1;
-
-            if (_animatedModel != null)
-                clip.RootNode = _animatedModel.RootNode;
-
-            _clips.Add(clip);
-            return _clips.Count - 1;
-        }
-
-        /// <summary>
-        /// Agrega todos los clips de un AnimatedModel externo.
-        /// Devuelve el índice del primero agregado, o -1 si no había clips.
-        /// </summary>
-        public int AddClipsFromModel(AnimatedModel externalModel)
-        {
-            if (externalModel == null || externalModel.Animations.Count == 0)
-                return -1;
-
-            int firstIndex = _clips.Count;
-
-            foreach (var clip in externalModel.Animations)
-            {
-                if (_animatedModel != null)
-                    clip.RootNode = _animatedModel.RootNode;
-
-                _clips.Add(clip);
-            }
-
-            return firstIndex;
-        }
-
-        /// <summary>
-        /// Elimina el clip en el índice dado.
-        /// </summary>
-        public void RemoveClip(int index)
-        {
-            if (index < 0 || index >= _clips.Count) return;
-
-            _clips.RemoveAt(index);
-
-            // Ajustar índice actual
-            if (_currentIndex == index)
-            {
-                _currentClip = null;
-                _currentIndex = -1;
-                _isPlaying = false;
-            }
-            else if (_currentIndex > index)
-            {
-                _currentIndex--;
-            }
-        }
-
-        /// <summary>
-        /// Elimina todos los clips.
-        /// </summary>
-        public void ClearClips()
-        {
-            _clips.Clear();
+            _states.Clear();
+            _parameters.Clear();
+            _currentState = null;
             _currentClip = null;
-            _currentIndex = -1;
             _isPlaying = false;
+
+            if (!string.IsNullOrEmpty(ControllerGuid))
+                LoadController(ControllerGuid);
+            else
+                Console.WriteLine("[Animator] ControllerGuid vacío — asigna un .animcontroller en el inspector.");
         }
 
-        // ════════════════════════════════════════════════════════════════
-        //  SELECCIÓN DE ANIMACIÓN
-        // ════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Cambia a la animación en el índice dado. Reinicia el tiempo a 0.
-        /// </summary>
-        public void SetAnimation(int index)
+        [CallEvent("Reload Controller")]
+        public void ReloadController()
         {
-            if (index < 0 || index >= _clips.Count)
-            {
-                Console.WriteLine($"[Animator] Índice fuera de rango: {index} (total: {_clips.Count})");
-                return;
-            }
-
-            _currentClip = _clips[index];
-            _currentIndex = index;
-            _currentTime = 0f;
-            _isBlending = false;
-
-            if (_animatedModel != null)
-                _currentClip.RootNode = _animatedModel.RootNode;
+            if (_animatedModel != null && !string.IsNullOrEmpty(_controllerGuid))
+                LoadController(_controllerGuid);
         }
 
-        /// <summary>
-        /// Busca un clip por nombre y cambia a él.
-        /// </summary>
-        public void SetAnimation(string name)
+        private void LoadController(string guid)
         {
-            for (int i = 0; i < _clips.Count; i++)
+            try
             {
-                if (_clips[i].Name == name)
+                byte[] rawData = AssetManager.GetBytes(Guid.Parse(guid));
+                string json = System.Text.Encoding.UTF8.GetString(rawData);
+                var data = JsonSerializer.Deserialize<AnimatorControllerData>(json);
+
+                if (data == null)
                 {
-                    SetAnimation(i);
+                    Console.WriteLine("[Animator] Controller vacío o JSON inválido.");
                     return;
                 }
+
+                BuildParameters(data);
+                BuildStates(data);
+                EnterDefaultState(data);
+
+                Console.WriteLine($"[Animator] Controller \"{data.Name}\" cargado: {_states.Count} estados, {_parameters.Count} parámetros.");
             }
-
-            Console.WriteLine($"[Animator] Animación no encontrada: \"{name}\"");
-        }
-
-        // ════════════════════════════════════════════════════════════════
-        //  CROSSFADE / BLEND
-        // ════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Transición suave desde la animación actual hacia la del índice dado.
-        /// </summary>
-        public void CrossFade(int index, float blendDuration = 0.3f)
-        {
-            if (index < 0 || index >= _clips.Count) return;
-            if (_clips[index] == _currentClip) return;
-
-            _blendFromClip = _currentClip;
-            _blendFromTime = _currentTime;
-            _currentClip = _clips[index];
-            _currentIndex = index;
-
-            if (_animatedModel != null)
-                _currentClip.RootNode = _animatedModel.RootNode;
-
-            _currentTime = 0f;
-            _blendDuration = blendDuration;
-            _blendElapsed = 0f;
-            _isBlending = true;
-        }
-
-        /// <summary>
-        /// Transición suave buscando por nombre.
-        /// </summary>
-        public void CrossFade(string animationName, float blendDuration = 0.3f)
-        {
-            for (int i = 0; i < _clips.Count; i++)
+            catch (Exception ex)
             {
-                if (_clips[i].Name == animationName)
-                {
-                    CrossFade(i, blendDuration);
-                    return;
-                }
+                Console.WriteLine($"[Animator] Error cargando controller ({guid}): {ex.Message}");
             }
-
-            Console.WriteLine($"[Animator] CrossFade: no encontrada: \"{animationName}\"");
         }
 
-        // ════════════════════════════════════════════════════════════════
-        //  PLAY / PAUSE / STOP
-        // ════════════════════════════════════════════════════════════════
+        private void BuildParameters(AnimatorControllerData data)
+        {
+            foreach (var p in data.Parameters)
+            {
+                _parameters[p.Name] = new AnimatorParameter
+                {
+                    Name = p.Name,
+                    Type = p.Type,
+                    FloatValue = p.DefaultValue,
+                    IntValue = (int)p.DefaultValue,
+                    BoolValue = p.DefaultValue != 0f,
+                    TriggerValue = false
+                };
+            }
+        }
+
+        private void BuildStates(AnimatorControllerData data)
+        {
+            foreach (var sd in data.States)
+            {
+                var state = new AnimatorState
+                {
+                    Name = sd.Name,
+                    Loop = sd.Loop,
+                    Speed = sd.Speed,
+                    Transitions = sd.Transitions,
+                    Clip = ResolveClip(sd.ClipGuid, sd.ClipName)
+                };
+                _states[sd.Name] = state;
+
+                Console.WriteLine(state.Clip != null
+                    ? $"[Animator] Estado \"{state.Name}\" → \"{state.Clip.Name}\""
+                    : $"[Animator] Estado \"{state.Name}\" → clip NO RESUELTO ({sd.ClipGuid})");
+            }
+        }
+
+        private AnimationClip ResolveClip(string clipGuid, string clipName)
+        {
+            if (string.IsNullOrEmpty(clipGuid)) return null;
+            try
+            {
+                byte[] rawData = AssetManager.GetBytes(Guid.Parse(clipGuid));
+                var animModel = AnimatedModel.LoadFromBytes(rawData, "fbx");
+
+                if (animModel == null || animModel.Animations.Count == 0)
+                {
+                    Console.WriteLine($"[Animator] ResolveClip: FBX sin animaciones ({clipGuid})");
+                    return null;
+                }
+
+                AnimationClip found = null;
+                if (!string.IsNullOrEmpty(clipName))
+                {
+                    foreach (var c in animModel.Animations)
+                        if (c.Name == clipName) { found = c; break; }
+
+                    if (found == null)
+                        Console.WriteLine($"[Animator] Clip \"{clipName}\" no encontrado, usando el primero.");
+                }
+                found ??= animModel.Animations[0];
+
+                if (_animatedModel != null)
+                    found.RootNode = _animatedModel.RootNode;
+
+                return found;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Animator] ResolveClip error ({clipGuid}): {ex.Message}");
+                return null;
+            }
+        }
+
+        private void EnterDefaultState(AnimatorControllerData data)
+        {
+            string target = data.DefaultState;
+
+            if (string.IsNullOrEmpty(target))
+                foreach (var key in _states.Keys) { target = key; break; }
+
+            if (!string.IsNullOrEmpty(target) && _states.TryGetValue(target, out var state))
+            {
+                EnterState(state);
+                Console.WriteLine($"[Animator] Estado inicial: \"{state.Name}\" | Clip: {state.Clip?.Name ?? "NULL"}");
+            }
+            else
+            {
+                Console.WriteLine($"[Animator] ERROR: Estado default \"{target}\" no encontrado.");
+                Console.WriteLine($"[Animator] Estados disponibles: {string.Join(", ", _states.Keys)}");
+            }
+        }
+
+        private void EnterState(AnimatorState state, float blendDuration = 0f)
+        {
+            if (state == null || state.Clip == null) return;
+
+            if (blendDuration > 0f && _currentClip != null)
+            {
+                _blendFromClip = _currentClip;
+                _blendFromTime = _currentTime;
+                _blendDuration = blendDuration;
+                _blendElapsed = 0f;
+                _blendFactor = 0f;
+                _isBlending = true;
+            }
+            else
+            {
+                _isBlending = false;
+            }
+
+            _currentState = state;
+            _currentClip = state.Clip;
+            _loop = state.Loop;
+            _playbackSpeed = state.Speed;
+            _currentTime = 0f;
+            _isPlaying = true;
+        }
+
+        public void SetFloat(string name, float value)
+        {
+            if (_parameters.TryGetValue(name, out var p)) p.FloatValue = value;
+            else Console.WriteLine($"[Animator] SetFloat: \"{name}\" no existe.");
+        }
+
+        public void SetInt(string name, int value)
+        {
+            if (_parameters.TryGetValue(name, out var p)) p.IntValue = value;
+            else Console.WriteLine($"[Animator] SetInt: \"{name}\" no existe.");
+        }
+
+        public void SetBool(string name, bool value)
+        {
+            if (_parameters.TryGetValue(name, out var p)) p.BoolValue = value;
+            else Console.WriteLine($"[Animator] SetBool: \"{name}\" no existe.");
+        }
+
+        public void SetTrigger(string name)
+        {
+            if (_parameters.TryGetValue(name, out var p)) p.TriggerValue = true;
+            else Console.WriteLine($"[Animator] SetTrigger: \"{name}\" no existe.");
+        }
+
+        public void ResetTrigger(string name)
+        {
+            if (_parameters.TryGetValue(name, out var p)) p.TriggerValue = false;
+        }
+
+        public float GetFloat(string name) =>
+            _parameters.TryGetValue(name, out var p) ? p.FloatValue : 0f;
+
+        public int GetInt(string name) =>
+            _parameters.TryGetValue(name, out var p) ? p.IntValue : 0;
+
+        public bool GetBool(string name) =>
+            _parameters.TryGetValue(name, out var p) && p.BoolValue;
 
         public void Play() => _isPlaying = true;
         public void Pause() => _isPlaying = false;
+        public void Stop() { _isPlaying = false; _currentTime = 0f; }
 
-        public void Stop()
+        public void Play(string stateName)
         {
-            _isPlaying = false;
-            _currentTime = 0f;
-        }
-
-        /// <summary>
-        /// Cambia al índice indicado y reproduce.
-        /// </summary>
-        public void Play(int index)
-        {
-            SetAnimation(index);
-            Play();
-        }
-
-        /// <summary>
-        /// Cambia al nombre indicado y reproduce.
-        /// </summary>
-        public void Play(string name)
-        {
-            SetAnimation(name);
-            Play();
-        }
-
-        /// <summary>
-        /// Cambia con crossfade al índice y reproduce.
-        /// Si no hay nada reproduciéndose, va directo sin blend.
-        /// </summary>
-        public void PlayCrossFade(int index, float blendDuration = 0.3f)
-        {
-            if (!_isPlaying || _currentClip == null)
+            if (!_states.TryGetValue(stateName, out var state))
             {
-                SetAnimation(index);
-                Play();
+                Console.WriteLine($"[Animator] Play: estado \"{stateName}\" no existe.");
+                return;
             }
-            else
-            {
-                CrossFade(index, blendDuration);
-            }
+            EnterState(state);
         }
 
-        public void PlayCrossFade(string name, float blendDuration = 0.3f)
+        public void CrossFade(string stateName, float blendDuration = 0.2f)
         {
-            if (!_isPlaying || _currentClip == null)
+            if (!_states.TryGetValue(stateName, out var state))
             {
-                SetAnimation(name);
-                Play();
+                Console.WriteLine($"[Animator] CrossFade: estado \"{stateName}\" no existe.");
+                return;
             }
-            else
-            {
-                CrossFade(name, blendDuration);
-            }
+            if (state == _currentState) return;
+            EnterState(state, blendDuration);
         }
 
-        // ════════════════════════════════════════════════════════════════
-        //  UPDATE
-        // ════════════════════════════════════════════════════════════════
+        public bool IsInState(string stateName) => _currentState?.Name == stateName;
+
+        public string[] GetStateNames()
+        {
+            var names = new string[_states.Count];
+            int i = 0;
+            foreach (var key in _states.Keys) names[i++] = key;
+            return names;
+        }
 
         public override void OnWillRenderObject()
         {
             if (!_isPlaying || _currentClip == null || _animatedModel == null)
                 return;
 
-            float tickRate = _currentClip.TicksPerSecond;
-            _currentTime += TimerData.DeltaTime * tickRate * _playbackSpeed;
+            float dt = TimerData.DeltaTime;
 
+            _currentTime += dt * _currentClip.TicksPerSecond * _playbackSpeed;
             if (_currentTime >= _currentClip.Duration)
             {
                 if (_loop)
-                    _currentTime = _currentTime % _currentClip.Duration;
+                    _currentTime %= _currentClip.Duration;
                 else
                 {
                     _currentTime = _currentClip.Duration;
@@ -426,23 +351,97 @@ namespace KrayonCore.Animation
 
             if (_isBlending)
             {
-                _blendElapsed += TimerData.DeltaTime;
+                _blendElapsed += dt;
                 _blendFactor = Math.Clamp(_blendElapsed / _blendDuration, 0f, 1f);
 
-                _blendFromTime += TimerData.DeltaTime * _blendFromClip.TicksPerSecond * _playbackSpeed;
-                if (_blendFromTime >= _blendFromClip.Duration)
-                    _blendFromTime = _blendFromTime % _blendFromClip.Duration;
+                if (_blendFromClip != null)
+                {
+                    _blendFromTime += dt * _blendFromClip.TicksPerSecond * _playbackSpeed;
+                    if (_blendFromTime >= _blendFromClip.Duration)
+                        _blendFromTime %= _blendFromClip.Duration;
+                }
 
                 if (_blendFactor >= 1f)
                     _isBlending = false;
             }
 
+            EvaluateTransitions();
             CalculateBoneTransforms();
         }
 
-        // ════════════════════════════════════════════════════════════════
-        //  CÁLCULO DE TRANSFORMS (sin cambios respecto al original)
-        // ════════════════════════════════════════════════════════════════
+        private void EvaluateTransitions()
+        {
+            if (_currentState == null) return;
+
+            float normalizedTime = (_currentClip != null && _currentClip.Duration > 0f)
+                ? _currentTime / _currentClip.Duration
+                : 0f;
+
+            foreach (var t in _currentState.Transitions)
+            {
+                if (t.HasExitTime && normalizedTime < t.ExitTime)
+                    continue;
+
+                if (!t.CanInterrupt && normalizedTime < 1f)
+                    continue;
+
+                if (!_states.TryGetValue(t.ToState, out _))
+                    continue;
+
+                bool allMet = true;
+                List<AnimatorParameter> triggersToConsume = null;
+
+                foreach (var cond in t.Conditions)
+                {
+                    if (!_parameters.TryGetValue(cond.Parameter, out var param))
+                    {
+                        allMet = false;
+                        break;
+                    }
+
+                    if (!EvaluateCondition(param, cond))
+                    {
+                        allMet = false;
+                        break;
+                    }
+
+                    if (param.Type == ParameterType.Trigger)
+                    {
+                        triggersToConsume ??= new List<AnimatorParameter>();
+                        triggersToConsume.Add(param);
+                    }
+                }
+
+                if (!allMet) continue;
+
+                triggersToConsume?.ForEach(tr => tr.TriggerValue = false);
+
+                if (t.Duration > 0f)
+                    CrossFade(t.ToState, t.Duration);
+                else
+                    Play(t.ToState);
+
+                break;
+            }
+        }
+
+        private static bool EvaluateCondition(AnimatorParameter param, TransitionConditionData cond)
+        {
+            return cond.Mode switch
+            {
+                ConditionMode.True => param.Type == ParameterType.Trigger ? param.TriggerValue : param.BoolValue,
+                ConditionMode.False => !param.BoolValue,
+                ConditionMode.Greater => param.Type == ParameterType.Int
+                                            ? param.IntValue > (int)cond.Threshold
+                                            : param.FloatValue > cond.Threshold,
+                ConditionMode.Less => param.Type == ParameterType.Int
+                                            ? param.IntValue < (int)cond.Threshold
+                                            : param.FloatValue < cond.Threshold,
+                ConditionMode.Equals => param.IntValue == (int)cond.Threshold,
+                ConditionMode.Trigger => param.TriggerValue,
+                _ => false
+            };
+        }
 
         private void CalculateBoneTransforms()
         {
@@ -452,12 +451,8 @@ namespace KrayonCore.Animation
             {
                 var matricesA = new Matrix4[MAX_BONES];
                 var matricesB = new Matrix4[MAX_BONES];
-
                 for (int i = 0; i < MAX_BONES; i++)
-                {
-                    matricesA[i] = Matrix4.Identity;
-                    matricesB[i] = Matrix4.Identity;
-                }
+                    matricesA[i] = matricesB[i] = Matrix4.Identity;
 
                 CalculateNodeTransform(_blendFromClip, _blendFromTime, _animatedModel.RootNode, Matrix4.Identity, matricesA, globalInverse);
                 CalculateNodeTransform(_currentClip, _currentTime, _animatedModel.RootNode, Matrix4.Identity, matricesB, globalInverse);
@@ -474,33 +469,28 @@ namespace KrayonCore.Animation
             }
         }
 
-        private void CalculateNodeTransform(AnimationClip clip, float time, NodeData node, Matrix4 parentTransform, Matrix4[] outMatrices, Matrix4 globalInverse)
+        private void CalculateNodeTransform(AnimationClip clip, float time, NodeData node,
+            Matrix4 parentTransform, Matrix4[] outMatrices, Matrix4 globalInverse)
         {
+            if (node == null) return;
+
             Matrix4 nodeTransform = node.Transform;
 
             var boneAnim = clip.FindBoneAnimation(node.Name);
             if (boneAnim != null)
             {
                 DecomposeMatrix(node.Transform,
-                    out Vector3 bindTrans, out OpenTK.Mathematics.Quaternion bindRot, out Vector3 bindScale);
+                    out Vector3 bindTrans,
+                    out OpenTK.Mathematics.Quaternion bindRot,
+                    out Vector3 bindScale);
 
-                Vector3 translation = boneAnim.Positions.Count > 0
-                    ? boneAnim.InterpolatePosition(time)
-                    : bindTrans;
+                Vector3 t = boneAnim.Positions.Count > 0 ? boneAnim.InterpolatePosition(time) : bindTrans;
+                var r = boneAnim.Rotations.Count > 0 ? boneAnim.InterpolateRotation(time) : bindRot;
+                Vector3 s = boneAnim.Scales.Count > 0 ? boneAnim.InterpolateScale(time) : bindScale;
 
-                OpenTK.Mathematics.Quaternion rotation = boneAnim.Rotations.Count > 0
-                    ? boneAnim.InterpolateRotation(time)
-                    : bindRot;
-
-                Vector3 scale = boneAnim.Scales.Count > 0
-                    ? boneAnim.InterpolateScale(time)
-                    : bindScale;
-
-                Matrix4 T = Matrix4.CreateTranslation(translation);
-                Matrix4 R = Matrix4.CreateFromQuaternion(rotation);
-                Matrix4 S = Matrix4.CreateScale(scale);
-
-                nodeTransform = S * R * T;
+                nodeTransform = Matrix4.CreateScale(s)
+                              * Matrix4.CreateFromQuaternion(r)
+                              * Matrix4.CreateTranslation(t);
             }
 
             Matrix4 globalTransform = nodeTransform * parentTransform;
@@ -509,21 +499,13 @@ namespace KrayonCore.Animation
             {
                 int boneId = boneInfo.Id;
                 if (boneId >= 0 && boneId < MAX_BONES)
-                {
                     outMatrices[boneId] = boneInfo.OffsetMatrix * globalTransform * globalInverse;
-                }
             }
 
+            if (node.Children == null) return;
             foreach (var child in node.Children)
                 CalculateNodeTransform(clip, time, child, globalTransform, outMatrices, globalInverse);
         }
-
-        // ════════════════════════════════════════════════════════════════
-        //  UBO PARA MATRICES DE HUESOS (sin cambios)
-        // ════════════════════════════════════════════════════════════════
-
-        private int _boneUBO = -1;
-        private const int BONE_UBO_BINDING = 1;
 
         private void EnsureBoneUBO()
         {
@@ -537,12 +519,10 @@ namespace KrayonCore.Animation
         public void UploadBoneMatrices(int shaderProgram)
         {
             int instLoc = GL.GetUniformLocation(shaderProgram, "u_UseInstancing");
-            if (instLoc != -1)
-                GL.Uniform1(instLoc, 0);
+            if (instLoc != -1) GL.Uniform1(instLoc, 0);
 
             int useAnimLoc = GL.GetUniformLocation(shaderProgram, "u_UseAnimation");
-            if (useAnimLoc != -1)
-                GL.Uniform1(useAnimLoc, 1);
+            if (useAnimLoc != -1) GL.Uniform1(useAnimLoc, 1);
 
             EnsureBoneUBO();
 
@@ -567,75 +547,24 @@ namespace KrayonCore.Animation
 
         public static void DisableAnimation(int shaderProgram)
         {
-            int useAnimLoc = GL.GetUniformLocation(shaderProgram, "u_UseAnimation");
-            if (useAnimLoc != -1)
-                GL.Uniform1(useAnimLoc, 0);
+            int loc = GL.GetUniformLocation(shaderProgram, "u_UseAnimation");
+            if (loc != -1) GL.Uniform1(loc, 0);
         }
 
-        // ════════════════════════════════════════════════════════════════
-        //  CONSULTAS
-        // ════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Devuelve los nombres de todas las animaciones en el array.
-        /// </summary>
-        public string[] GetAnimationNames()
-        {
-            var names = new string[_clips.Count];
-            for (int i = 0; i < _clips.Count; i++)
-                names[i] = _clips[i].Name;
-            return names;
-        }
-
-        /// <summary>
-        /// Devuelve la cantidad de animaciones en el array.
-        /// </summary>
-        public int GetAnimationCount() => _clips.Count;
-
-        /// <summary>
-        /// Devuelve el clip en el índice dado, o null.
-        /// </summary>
-        public AnimationClip GetClip(int index)
-        {
-            if (index < 0 || index >= _clips.Count) return null;
-            return _clips[index];
-        }
-
-        /// <summary>
-        /// Busca el índice de un clip por nombre. Devuelve -1 si no existe.
-        /// </summary>
-        public int FindClipIndex(string name)
-        {
-            for (int i = 0; i < _clips.Count; i++)
-            {
-                if (_clips[i].Name == name)
-                    return i;
-            }
-            return -1;
-        }
-
-        // ════════════════════════════════════════════════════════════════
-        //  UTILIDADES (sin cambios)
-        // ════════════════════════════════════════════════════════════════
-
-        private static Matrix4 LerpMatrix(Matrix4 a, Matrix4 b, float t)
-        {
-            return new Matrix4(
-                Vector4.Lerp(a.Row0, b.Row0, t),
+        private static Matrix4 LerpMatrix(Matrix4 a, Matrix4 b, float t) =>
+            new(Vector4.Lerp(a.Row0, b.Row0, t),
                 Vector4.Lerp(a.Row1, b.Row1, t),
                 Vector4.Lerp(a.Row2, b.Row2, t),
-                Vector4.Lerp(a.Row3, b.Row3, t)
-            );
-        }
+                Vector4.Lerp(a.Row3, b.Row3, t));
 
         private static void DecomposeMatrix(Matrix4 m,
             out Vector3 translation, out OpenTK.Mathematics.Quaternion rotation, out Vector3 scale)
         {
             translation = new Vector3(m.Row3.X, m.Row3.Y, m.Row3.Z);
 
-            Vector3 col0 = new Vector3(m.Row0.X, m.Row1.X, m.Row2.X);
-            Vector3 col1 = new Vector3(m.Row0.Y, m.Row1.Y, m.Row2.Y);
-            Vector3 col2 = new Vector3(m.Row0.Z, m.Row1.Z, m.Row2.Z);
+            Vector3 col0 = new(m.Row0.X, m.Row1.X, m.Row2.X);
+            Vector3 col1 = new(m.Row0.Y, m.Row1.Y, m.Row2.Y);
+            Vector3 col2 = new(m.Row0.Z, m.Row1.Z, m.Row2.Z);
 
             scale = new Vector3(col0.Length, col1.Length, col2.Length);
 
@@ -643,11 +572,10 @@ namespace KrayonCore.Animation
             float sy = scale.Y > 1e-6f ? 1f / scale.Y : 0f;
             float sz = scale.Z > 1e-6f ? 1f / scale.Z : 0f;
 
-            Matrix3 rotMat = new Matrix3(
+            Matrix3 rotMat = new(
                 m.Row0.X * sx, m.Row0.Y * sy, m.Row0.Z * sz,
                 m.Row1.X * sx, m.Row1.Y * sy, m.Row1.Z * sz,
-                m.Row2.X * sx, m.Row2.Y * sy, m.Row2.Z * sz
-            );
+                m.Row2.X * sx, m.Row2.Y * sy, m.Row2.Z * sz);
 
             rotation = OpenTK.Mathematics.Quaternion.FromMatrix(rotMat);
             rotation.Normalize();
@@ -663,7 +591,9 @@ namespace KrayonCore.Animation
             _animatedModel = null;
             _currentClip = null;
             _blendFromClip = null;
-            _clips.Clear();
+            _currentState = null;
+            _states.Clear();
+            _parameters.Clear();
         }
     }
 }

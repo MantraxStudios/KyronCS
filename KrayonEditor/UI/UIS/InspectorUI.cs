@@ -6,1526 +6,1106 @@ using System.Numerics;
 using System.Reflection;
 using KrayonEditor;
 using KrayonCore.GraphicsData;
+using KrayonCore.Core.Attributes;
+using System.IO;
 
 namespace KrayonEditor.UI
 {
-
     public class InspectorUI : UIBehaviour
     {
+        // ── Paleta de colores estilo Unity Dark ──────────────────────────────
+        private static readonly Vector4 ColHeader = new(0.17f, 0.17f, 0.17f, 1f);
+        private static readonly Vector4 ColHeaderHover = new(0.22f, 0.22f, 0.22f, 1f);
+        private static readonly Vector4 ColHeaderActive = new(0.14f, 0.14f, 0.14f, 1f);
+        private static readonly Vector4 ColField = new(0.13f, 0.13f, 0.13f, 1f);
+        private static readonly Vector4 ColFieldHover = new(0.19f, 0.19f, 0.19f, 1f);
+        private static readonly Vector4 ColAccent = new(0.22f, 0.47f, 0.82f, 1f);
+        private static readonly Vector4 ColAccentHover = new(0.27f, 0.55f, 0.93f, 1f);
+        private static readonly Vector4 ColDanger = new(0.65f, 0.18f, 0.18f, 1f);
+        private static readonly Vector4 ColDangerHover = new(0.78f, 0.22f, 0.22f, 1f);
+        private static readonly Vector4 ColTextMain = new(0.88f, 0.88f, 0.88f, 1f);
+        private static readonly Vector4 ColTextDim = new(0.55f, 0.55f, 0.55f, 1f);
+        private static readonly Vector4 ColTextDisabled = new(0.40f, 0.40f, 0.40f, 1f);
+
+        // Ancho fijo de la columna de labels (igual en todos los campos)
+        private const float LabelColumnWidth = 148f;
+
+        // ════════════════════════════════════════════════════════════════════
+        //  APPLY THEME
+        // ════════════════════════════════════════════════════════════════════
+
+        private static void PushUnityTheme()
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.20f, 0.20f, 0.20f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.17f, 0.17f, 0.17f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, ColField);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, ColFieldHover);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.24f, 0.24f, 0.24f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.Header, ColHeader);
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, ColHeaderHover);
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, ColHeaderActive);
+            ImGui.PushStyleColor(ImGuiCol.Button, ColField);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ColFieldHover);
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.24f, 0.24f, 0.24f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, ColAccent);
+            ImGui.PushStyleColor(ImGuiCol.SliderGrab, ColAccent);
+            ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, ColAccentHover);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextMain);
+            ImGui.PushStyleColor(ImGuiCol.Separator, new Vector4(0.28f, 0.28f, 0.28f, 1f));
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 3f);
+            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(6f, 3f));
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6f, 4f));
+            ImGui.PushStyleVar(ImGuiStyleVar.IndentSpacing, 14f);
+        }
+
+        private static void PopUnityTheme()
+        {
+            ImGui.PopStyleVar(4);
+            ImGui.PopStyleColor(16);
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  LABEL + FIELD ROW  (columna fija a la izquierda como Unity)
+        // ════════════════════════════════════════════════════════════════════
+
+        private static void BeginFieldRow(string label)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+            ImGui.Text(label);
+            ImGui.PopStyleColor();
+            ImGui.SameLine(LabelColumnWidth);
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        }
+
+        private static void BeginFieldRowFixed(string label, float fieldWidth)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+            ImGui.Text(label);
+            ImGui.PopStyleColor();
+            ImGui.SameLine(LabelColumnWidth);
+            ImGui.SetNextItemWidth(fieldWidth);
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  ASSET STRING FIELD  (estilo Unity: rect arrastrable + boton X)
+        // ════════════════════════════════════════════════════════════════════
+
+        private static string ResolveGuidLabel(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            if (Guid.TryParse(value, out var guid))
+            {
+                var record = AssetManager.Get(guid);
+                if (record != null) return Path.GetFileName(record.Path);
+            }
+            return value;
+        }
+
+        private static string DrawAssetStringField(string label, string rawValue)
+        {
+            bool isGuid = Guid.TryParse(rawValue, out _);
+            string resolved = ResolveGuidLabel(rawValue);
+            bool hasAsset = isGuid && resolved != rawValue;
+
+            float clearW = 20f;
+            float spacing = ImGui.GetStyle().ItemSpacing.X;
+            float fieldW = ImGui.GetContentRegionAvail().X - LabelColumnWidth - clearW - spacing;
+            if (fieldW < 40f) fieldW = 40f;
+
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+            ImGui.Text(label);
+            ImGui.PopStyleColor();
+            ImGui.SameLine(LabelColumnWidth);
+
+            if (hasAsset)
+            {
+                var dl = ImGui.GetWindowDrawList();
+                var pos = ImGui.GetCursorScreenPos();
+                float h = ImGui.GetFrameHeight();
+                float radius = 3f;
+
+                uint bgCol = ImGui.ColorConvertFloat4ToU32(ColField);
+                uint brCol = ImGui.ColorConvertFloat4ToU32(new Vector4(0.35f, 0.35f, 0.35f, 1f));
+                uint dotCol = ImGui.ColorConvertFloat4ToU32(ColAccent);
+                uint txtCol = ImGui.ColorConvertFloat4ToU32(ColTextMain);
+
+                dl.AddRectFilled(pos, new Vector2(pos.X + fieldW, pos.Y + h), bgCol, radius);
+                dl.AddRect(pos, new Vector2(pos.X + fieldW, pos.Y + h), brCol, radius);
+
+                // Punto de color acento como icono
+                float dotR = h * 0.20f;
+                dl.AddCircleFilled(new Vector2(pos.X + h * 0.5f, pos.Y + h * 0.5f), dotR, dotCol);
+
+                // Nombre truncado
+                string txt = resolved;
+                float maxTW = fieldW - h * 0.9f - 4f;
+                while (txt.Length > 4 && ImGui.CalcTextSize(txt).X > maxTW)
+                    txt = txt[..^4] + "...";
+                dl.AddText(new Vector2(pos.X + h * 0.9f, pos.Y + (h - ImGui.GetTextLineHeight()) * 0.5f), txtCol, txt);
+
+                ImGui.InvisibleButton($"##asset_{label}", new Vector2(fieldW, h));
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                    ImGui.SetTooltip($"{resolved}\n{rawValue}");
+                }
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    unsafe
+                    {
+                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                        if (payload.NativePtr != null)
+                        {
+                            byte[] d = new byte[payload.DataSize];
+                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, d, 0, payload.DataSize);
+                            rawValue = System.Text.Encoding.UTF8.GetString(d);
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+
+                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Button, ColField);
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ColDanger);
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, ColDangerHover);
+                ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+                if (ImGui.Button($"x##{label}_clr", new Vector2(clearW, h)))
+                    rawValue = "";
+                ImGui.PopStyleColor(4);
+            }
+            else
+            {
+                ImGui.SetNextItemWidth(fieldW + clearW + spacing);
+                ImGui.InputText($"##{label}_in", ref rawValue, 512);
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    unsafe
+                    {
+                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                        if (payload.NativePtr != null)
+                        {
+                            byte[] d = new byte[payload.DataSize];
+                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, d, 0, payload.DataSize);
+                            rawValue = System.Text.Encoding.UTF8.GetString(d);
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+            }
+
+            return rawValue;
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  COMPONENT HEADER  (barra oscura con nombre, como Unity)
+        // ════════════════════════════════════════════════════════════════════
+
+        private static bool DrawComponentHeader(string name, bool isEnabled)
+        {
+            uint bgCol = ImGui.ColorConvertFloat4ToU32(
+                isEnabled ? new Vector4(0.23f, 0.23f, 0.23f, 1f)
+                          : new Vector4(0.18f, 0.18f, 0.18f, 1f));
+
+            ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.23f, 0.23f, 0.23f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.27f, 0.27f, 0.27f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.20f, 0.20f, 0.20f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.Text,
+                isEnabled ? ColTextMain : ColTextDisabled);
+
+            bool open = ImGui.CollapsingHeader(name, ImGuiTreeNodeFlags.DefaultOpen);
+
+            ImGui.PopStyleColor(4);
+            return open;
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  ON DRAW UI
+        // ════════════════════════════════════════════════════════════════════
+
         public override void OnDrawUI()
         {
             if (!_isVisible) return;
 
+            PushUnityTheme();
             ImGui.Begin("Inspector", ref _isVisible);
 
             if (EditorActions.SelectedObject != null)
             {
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.9f, 0.9f, 0.9f, 1.0f));
-
-                float totalWidth = ImGui.GetContentRegionAvail().X;
-                float labelNameWidth = ImGui.CalcTextSize("Name").X + ImGui.GetStyle().ItemInnerSpacing.X;
-                float labelTagWidth = ImGui.CalcTextSize("Tag").X + ImGui.GetStyle().ItemInnerSpacing.X;
-                float spacing = ImGui.GetStyle().ItemSpacing.X;
-                float inputWidth = (totalWidth - labelNameWidth - labelTagWidth - spacing) / 2f;
-
-                string name = EditorActions.SelectedObject.Name;
-                ImGui.SetNextItemWidth(inputWidth);
-                if (ImGui.InputText("Name", ref name, 256))
-                {
-                    EditorActions.SelectedObject.Name = name;
-                }
-
-                ImGui.SameLine();
-
-                string tag = EditorActions.SelectedObject.Tag;
-                ImGui.SetNextItemWidth(inputWidth);
-                if (ImGui.InputText("Tag", ref tag, 256))
-                {
-                    EditorActions.SelectedObject.Tag = tag;
-                }
-
-                ImGui.PopStyleColor();
-                ImGui.Separator();
-
+                DrawObjectHeader();
+                ImGui.Spacing();
                 DrawTransformComponent();
                 DrawComponents();
-
-                ImGui.Separator();
-
+                ImGui.Spacing();
                 DrawAddComponentButton();
             }
             else
             {
-                ImGui.TextDisabled("No object selected");
+                ImGui.PushStyleColor(ImGuiCol.Text, ColTextDisabled);
+                ImGui.TextUnformatted("No object selected");
+                ImGui.PopStyleColor();
             }
 
             ImGui.End();
+            PopUnityTheme();
 
-            if (EditorActions.SelectedObject != null && GraphicsEngine.Instance.GetKeyboardState().IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete))
+            if (EditorActions.SelectedObject != null &&
+                GraphicsEngine.Instance.GetKeyboardState()
+                    .IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete))
             {
                 SceneManager.ActiveScene.DestroyGameObject(EditorActions.SelectedObject);
                 EditorActions.SelectedObject = null;
             }
         }
 
+        // ════════════════════════════════════════════════════════════════════
+        //  OBJECT HEADER  (Name + Tag en una fila)
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawObjectHeader()
+        {
+            float avail = ImGui.GetContentRegionAvail().X;
+            float tagW = 90f;
+            float spacing = ImGui.GetStyle().ItemSpacing.X;
+            float nameW = avail - tagW - spacing;
+
+            ImGui.SetNextItemWidth(nameW);
+            string name = EditorActions.SelectedObject!.Name;
+            if (ImGui.InputText("##obj_name", ref name, 256))
+                EditorActions.SelectedObject.Name = name;
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Name");
+
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(tagW);
+            string tag = EditorActions.SelectedObject.Tag;
+            if (ImGui.InputText("##obj_tag", ref tag, 128))
+                EditorActions.SelectedObject.Tag = tag;
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Tag");
+
+            ImGui.Spacing();
+            ImGui.Separator();
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  TRANSFORM
+        // ════════════════════════════════════════════════════════════════════
+
         private void DrawTransformComponent()
         {
             ImGui.PushID("Transform");
 
-            if (ImGui.CollapsingHeader("Transform", ImGuiTreeNodeFlags.DefaultOpen))
+            ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.23f, 0.23f, 0.23f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.27f, 0.27f, 0.27f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.20f, 0.20f, 0.20f, 1f));
+            bool open = ImGui.CollapsingHeader("Transform", ImGuiTreeNodeFlags.DefaultOpen);
+            ImGui.PopStyleColor(3);
+
+            if (open)
             {
-                var transform = EditorActions.SelectedObject!.Transform;
+                ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+                var t = EditorActions.SelectedObject!.Transform;
 
-                Vector3 position = new Vector3(transform.X, transform.Y, transform.Z);
-                if (ImGui.InputFloat3("Position", ref position))
-                {
-                    transform.SetPosition(position.X, position.Y, position.Z);
-                }
+                Vector3 pos = new(t.X, t.Y, t.Z);
+                BeginFieldRow("Position");
+                if (ImGui.DragFloat3("##pos", ref pos, 0.1f))
+                    t.SetPosition(pos.X, pos.Y, pos.Z);
 
-                Vector3 rotation = new Vector3(transform.RotationX, transform.RotationY, transform.RotationZ);
-                if (ImGui.InputFloat3("Rotation", ref rotation))
-                {
-                    transform.SetRotation(rotation.X, rotation.Y, rotation.Z);
-                }
+                Vector3 rot = new(t.RotationX, t.RotationY, t.RotationZ);
+                BeginFieldRow("Rotation");
+                if (ImGui.DragFloat3("##rot", ref rot, 0.5f))
+                    t.SetRotation(rot.X, rot.Y, rot.Z);
 
-                Vector3 scale = new Vector3(transform.ScaleX, transform.ScaleY, transform.ScaleZ);
-                if (ImGui.InputFloat3("Scale", ref scale))
-                {
-                    transform.SetScale(scale.X, scale.Y, scale.Z);
-                }
+                Vector3 scl = new(t.ScaleX, t.ScaleY, t.ScaleZ);
+                BeginFieldRow("Scale");
+                if (ImGui.DragFloat3("##scl", ref scl, 0.01f))
+                    t.SetScale(scl.X, scl.Y, scl.Z);
+
+                ImGui.PopStyleColor();
+                ImGui.Spacing();
             }
 
             ImGui.PopID();
         }
 
+        // ════════════════════════════════════════════════════════════════════
+        //  COMPONENTS LOOP
+        // ════════════════════════════════════════════════════════════════════
+
         private void DrawComponents()
         {
-            var components = EditorActions.SelectedObject!.GetAllComponents().ToList(); // copia
-            int componentIndex = 0;
-
+            var components = EditorActions.SelectedObject!.GetAllComponents().ToList();
+            int idx = 0;
             foreach (var component in components)
             {
-                if (component.GetType().Name == "Transform")
-                {
-                    componentIndex++;
-                    continue;
-                }
-
-                ImGui.PushID($"Component_{componentIndex}");
+                if (component.GetType().Name == "Transform") { idx++; continue; }
+                ImGui.PushID($"Comp_{idx}");
                 DrawComponentWithReflection(component);
                 ImGui.PopID();
-                componentIndex++;
+                idx++;
             }
         }
 
         private void DrawComponentWithReflection(object component)
         {
-            Type componentType = component.GetType();
-            string componentName = componentType.Name;
+            Type ct = component.GetType();
+            string name = ct.Name;
+            var enabledProp = ct.GetProperty("Enabled", BindingFlags.Public | BindingFlags.Instance);
+            bool hasEnabled = enabledProp != null && enabledProp.PropertyType == typeof(bool);
+            bool isEnabled = hasEnabled ? (bool)enabledProp!.GetValue(component)! : true;
 
-            PropertyInfo? enabledProperty = componentType.GetProperty("Enabled", BindingFlags.Public | BindingFlags.Instance);
-            bool hasEnabled = enabledProperty != null && enabledProperty.PropertyType == typeof(bool);
+            bool open = DrawComponentHeader(name, isEnabled);
 
-            bool isEnabled = true;
-            if (hasEnabled)
+            // Context menu (clic derecho en el header)
+            if (ImGui.BeginPopupContextItem($"ctx_{name}"))
             {
-                isEnabled = (bool)enabledProperty!.GetValue(component)!;
-            }
-
-            if (hasEnabled && !isEnabled)
-            {
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
-            }
-
-            if (ImGui.CollapsingHeader(componentName, ImGuiTreeNodeFlags.DefaultOpen))
-            {
-                if (hasEnabled && !isEnabled)
+                if (hasEnabled)
+                {
+                    if (ImGui.MenuItem(isEnabled ? "Disable" : "Enable"))
+                        enabledProp!.SetValue(component, !isEnabled);
+                    ImGui.Separator();
+                }
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.9f, 0.35f, 0.35f, 1f));
+                if (ImGui.MenuItem("Remove Component"))
                 {
                     ImGui.PopStyleColor();
-                }
-
-                if (ImGui.BeginPopupContextItem($"ComponentContext_{componentName}"))
-                {
-                    if (hasEnabled)
-                    {
-                        string toggleText = isEnabled ? "Disable" : "Enable";
-                        if (ImGui.MenuItem(toggleText))
-                        {
-                            enabledProperty!.SetValue(component, !isEnabled);
-                        }
-                        ImGui.Separator();
-                    }
-
-                    if (ImGui.MenuItem("Remove Component"))
-                    {
-                        EditorActions.SelectedObject!.RemoveComponent((Component)component);
-                        EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
-                        ImGui.EndPopup();
-                        return;
-                    }
-
                     ImGui.EndPopup();
+                    EditorActions.SelectedObject!.RemoveComponent((Component)component);
+                    EngineEditor.LogMessage($"Removed {name}");
+                    return;
                 }
+                ImGui.PopStyleColor();
+                ImGui.EndPopup();
+            }
+
+            if (!open) return;
+
+            ImGui.PushStyleColor(ImGuiCol.Text, isEnabled ? ColTextMain : ColTextDisabled);
+            ImGui.Indent(4f);
+
+            if (component is KrayonCore.Rigidbody rb)
+            {
+                DrawRigidbodyInspector(rb);
             }
             else
             {
-                if (hasEnabled && !isEnabled)
+                foreach (var prop in ct.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    ImGui.PopStyleColor();
+                    if (!prop.CanRead || !prop.CanWrite) continue;
+                    if (prop.Name == "Enabled" && prop.PropertyType == typeof(bool)) continue;
+                    if (prop.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null) continue;
+                    DrawProperty(component, prop);
                 }
-
-                if (ImGui.BeginPopupContextItem($"ComponentContext_{componentName}"))
+                foreach (var field in ct.GetFields(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    if (hasEnabled)
-                    {
-                        string toggleText = isEnabled ? "Disable" : "Enable";
-                        if (ImGui.MenuItem(toggleText))
-                        {
-                            enabledProperty!.SetValue(component, !isEnabled);
-                        }
-                        ImGui.Separator();
-                    }
-
-                    if (ImGui.MenuItem("Remove Component"))
-                    {
-                        EditorActions.SelectedObject!.RemoveComponent((Component)component);
-                        EngineEditor.LogMessage($"Removed {componentName} from {EditorActions.SelectedObject.Name}");
-                        ImGui.EndPopup();
-                        return;
-                    }
-
-                    ImGui.EndPopup();
+                    if (field.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null) continue;
+                    DrawField(component, field);
                 }
-                return;
+                DrawCallEventMethods(component, ct);
             }
 
-            if (true)
-            {
-                if (component is KrayonCore.Rigidbody rigidbody)
-                {
-                    DrawRigidbodyInspector(rigidbody);
-                }
-                else
-                {
-                    PropertyInfo[] properties = componentType.GetProperties(
-                        BindingFlags.Public | BindingFlags.Instance
-                    );
-
-                    int propertyIndex = 0;
-                    foreach (var property in properties)
-                    {
-                        if (!property.CanRead || !property.CanWrite)
-                            continue;
-
-                        if (property.Name == "Enabled" && property.PropertyType == typeof(bool))
-                            continue;
-
-                        if (property.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null)
-                            continue;
-
-                        ImGui.PushID($"Property_{propertyIndex}");
-                        DrawProperty(component, property);
-                        ImGui.PopID();
-                        propertyIndex++;
-                    }
-
-                    FieldInfo[] fields = componentType.GetFields(
-                        BindingFlags.Public | BindingFlags.Instance
-                    );
-
-                    int fieldIndex = 0;
-                    foreach (var field in fields)
-                    {
-                        if (field.GetCustomAttribute<NoSerializeToInspectorAttribute>() != null)
-                            continue;
-
-                        ImGui.PushID($"Field_{fieldIndex}");
-                        DrawField(component, field);
-                        ImGui.PopID();
-                        fieldIndex++;
-                    }
-
-                    DrawCallEventMethods(component, componentType);
-                }
-            }
+            ImGui.Unindent(4f);
+            ImGui.PopStyleColor();
+            ImGui.Spacing();
         }
 
-        private void DrawCallEventMethods(object component, Type componentType)
+        // ════════════════════════════════════════════════════════════════════
+        //  CALL EVENT BUTTONS
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawCallEventMethods(object component, Type ct)
         {
-            MethodInfo[] methods = componentType.GetMethods(
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly
-            );
-
-            bool hasCallEventMethods = false;
-            foreach (var method in methods)
-            {
-                var callEventAttr = method.GetCustomAttribute<CallEventAttribute>();
-                if (callEventAttr != null)
-                {
-                    hasCallEventMethods = true;
-                    break;
-                }
-            }
-
-            if (hasCallEventMethods)
-            {
-                ImGui.Spacing();
-                ImGui.Separator();
-                ImGui.Text("Events");
-                ImGui.Spacing();
-
-                int methodIndex = 0;
-                foreach (var method in methods)
-                {
-                    var callEventAttr = method.GetCustomAttribute<CallEventAttribute>();
-                    if (callEventAttr == null)
-                        continue;
-
-                    string displayName = method.Name;
-
-                    if (!string.IsNullOrEmpty(callEventAttr.DisplayName))
-                    {
-                        displayName = callEventAttr.DisplayName;
-                    }
-
-                    ImGui.PushID($"Method_{methodIndex}");
-
-                    if (ImGui.Button(displayName, new Vector2(-1, 25)))
-                    {
-                        try
-                        {
-                            if (method.GetParameters().Length == 0)
-                            {
-                                method.Invoke(component, null);
-                                EngineEditor.LogMessage($"Executed: {displayName}");
-                            }
-                            else
-                            {
-                                EngineEditor.LogMessage($"Error: Method {method.Name} requires parameters");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            EngineEditor.LogMessage($"Error executing {displayName}: {ex.Message}");
-                        }
-                    }
-
-                    ImGui.PopID();
-                    methodIndex++;
-                }
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────
-        //  Rigidbody Inspector (BepuPhysics2)
-        // ─────────────────────────────────────────────────────────
-
-        private void DrawRigidbodyInspector(KrayonCore.Rigidbody rigidbody)
-        {
-            DrawRigidbodyMainProperties(rigidbody);
+            var methods = ct.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            bool any = false;
+            foreach (var m in methods)
+                if (m.GetCustomAttribute<CallEventAttribute>() != null) { any = true; break; }
+            if (!any) return;
 
             ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+            ImGui.TextUnformatted("Events");
+            ImGui.PopStyleColor();
             ImGui.Separator();
-            ImGui.Spacing();
 
-            if (ImGui.TreeNode("Constraints"))
+            int mi = 0;
+            foreach (var m in methods)
             {
-                DrawRigidbodyConstraints(rigidbody);
-                ImGui.TreePop();
-            }
+                var attr = m.GetCustomAttribute<CallEventAttribute>();
+                if (attr == null) continue;
+                string label = string.IsNullOrEmpty(attr.DisplayName) ? m.Name : attr.DisplayName;
 
-            ImGui.Spacing();
-
-            if (ImGui.TreeNode("Physics Material"))
-            {
-                DrawRigidbodyPhysicsProperties(rigidbody);
-                ImGui.TreePop();
+                ImGui.PushID($"ev_{mi}");
+                ImGui.PushStyleColor(ImGuiCol.Button, ColAccent);
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ColAccentHover);
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.18f, 0.40f, 0.72f, 1f));
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 1f, 1f));
+                if (ImGui.Button(label, new Vector2(-1, 22f)))
+                {
+                    try
+                    {
+                        if (m.GetParameters().Length == 0) m.Invoke(component, null);
+                        else EngineEditor.LogMessage($"Error: {m.Name} requires parameters");
+                    }
+                    catch (Exception ex) { EngineEditor.LogMessage($"Error: {ex.Message}"); }
+                }
+                ImGui.PopStyleColor(4);
+                ImGui.PopID();
+                mi++;
             }
         }
 
-        private void DrawRigidbodyMainProperties(KrayonCore.Rigidbody rigidbody)
+        // ════════════════════════════════════════════════════════════════════
+        //  RIGIDBODY
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawRigidbodyInspector(KrayonCore.Rigidbody rb)
         {
-            // ── Motion Type (BodyMotionType enum) ──
-            {
-                string[] motionTypeNames = Enum.GetNames(typeof(BodyMotionType));
-                int currentMotionType = (int)rigidbody.MotionType;
-                if (ImGui.Combo("Motion Type", ref currentMotionType, motionTypeNames, motionTypeNames.Length))
-                {
-                    rigidbody.MotionType = (BodyMotionType)currentMotionType;
-                }
-            }
+            // Motion type
+            string[] motionNames = Enum.GetNames(typeof(BodyMotionType));
+            int motionIdx = (int)rb.MotionType;
+            BeginFieldRow("Motion Type");
+            if (ImGui.Combo("##motiontype", ref motionIdx, motionNames, motionNames.Length))
+                rb.MotionType = (BodyMotionType)motionIdx;
 
-            // ── Is Kinematic ──
-            bool isKinematic = rigidbody.IsKinematic;
-            if (ImGui.Checkbox("Is Kinematic", ref isKinematic))
-            {
-                rigidbody.IsKinematic = isKinematic;
-            }
-
-            // ── Is Trigger ──
-            bool isTrigger = rigidbody.IsTrigger;
-            if (ImGui.Checkbox("Is Trigger", ref isTrigger))
-            {
-                rigidbody.IsTrigger = isTrigger;
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("When enabled, this collider detects overlaps\nbut does not generate physics response.\nUse OnTriggerEnter/Stay/Exit events.");
-            }
-
-            // ── Use Gravity ──
-            bool useGravity = rigidbody.UseGravity;
-            if (ImGui.Checkbox("Use Gravity", ref useGravity))
-            {
-                rigidbody.UseGravity = useGravity;
-            }
-
+            // Flags row
             ImGui.Spacing();
-
-            // ── Mass ──
-            float mass = rigidbody.Mass;
-            if (ImGui.DragFloat("Mass", ref mass, 0.1f, 0.01f, 1000f))
-            {
-                rigidbody.Mass = Math.Max(0.01f, mass);
-            }
-
-            // ── Sleep Threshold ──
-            float sleepThreshold = rigidbody.SleepThreshold;
-            if (ImGui.DragFloat("Sleep Threshold", ref sleepThreshold, 0.001f, 0f, 1f, "%.4f"))
-            {
-                rigidbody.SleepThreshold = Math.Max(0f, sleepThreshold);
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Velocity threshold below which the body\nwill be put to sleep to save performance.");
-            }
-
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-
-            // ── Shape Type (ShapeType enum) ──
-            {
-                string[] shapeTypeNames = Enum.GetNames(typeof(ShapeType));
-                int currentShapeType = (int)rigidbody.ShapeType;
-                if (ImGui.Combo("Shape Type", ref currentShapeType, shapeTypeNames, shapeTypeNames.Length))
-                {
-                    rigidbody.ShapeType = (ShapeType)currentShapeType;
-                }
-            }
-
-            // ── Shape Size ──
-            var shapeSize = rigidbody.ShapeSize;
-            Vector3 shapeSizeVec = new Vector3(shapeSize.X, shapeSize.Y, shapeSize.Z);
-            if (ImGui.DragFloat3("Shape Size", ref shapeSizeVec, 0.1f, 0.01f, 100f))
-            {
-                rigidbody.ShapeSize = new OpenTK.Mathematics.Vector3(
-                    Math.Max(0.01f, shapeSizeVec.X),
-                    Math.Max(0.01f, shapeSizeVec.Y),
-                    Math.Max(0.01f, shapeSizeVec.Z)
-                );
-            }
-
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.Spacing();
-
-            // ── Physics Layer (flags bitmask) ──
-            DrawPhysicsLayerSelector("Layer", rigidbody);
-        }
-
-        /// <summary>
-        /// Draws a dropdown with checkboxes for each PhysicsLayer flag.
-        /// </summary>
-        private void DrawPhysicsLayerSelector(string label, KrayonCore.Rigidbody rigidbody)
-        {
-            PhysicsLayer currentLayer = rigidbody.Layer;
-            string previewText = GetLayerPreviewText(currentLayer);
-
-            ImGui.Text(label);
+            bool kin = rb.IsKinematic;
+            if (ImGui.Checkbox("Kinematic", ref kin)) rb.IsKinematic = kin;
             ImGui.SameLine();
+            bool trig = rb.IsTrigger;
+            if (ImGui.Checkbox("Trigger", ref trig)) rb.IsTrigger = trig;
+            ImGui.SameLine();
+            bool grav = rb.UseGravity;
+            if (ImGui.Checkbox("Gravity", ref grav)) rb.UseGravity = grav;
+            ImGui.Spacing();
 
-            // Use a button that opens a popup with checkboxes for each layer
-            float availWidth = ImGui.GetContentRegionAvail().X;
-            if (ImGui.Button($"{previewText}###{label}_btn", new Vector2(availWidth, 0)))
+            float mass = rb.Mass;
+            BeginFieldRow("Mass");
+            if (ImGui.DragFloat("##mass", ref mass, 0.1f, 0.01f, 1000f))
+                rb.Mass = Math.Max(0.01f, mass);
+
+            float sleep = rb.SleepThreshold;
+            BeginFieldRow("Sleep Threshold");
+            if (ImGui.DragFloat("##sleep", ref sleep, 0.001f, 0f, 1f, "%.4f"))
+                rb.SleepThreshold = Math.Max(0f, sleep);
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            string[] shapeNames = Enum.GetNames(typeof(ShapeType));
+            int shapeIdx = (int)rb.ShapeType;
+            BeginFieldRow("Shape");
+            if (ImGui.Combo("##shapetype", ref shapeIdx, shapeNames, shapeNames.Length))
+                rb.ShapeType = (ShapeType)shapeIdx;
+
+            var ss = rb.ShapeSize;
+            Vector3 ssv = new(ss.X, ss.Y, ss.Z);
+            BeginFieldRow("Shape Size");
+            if (ImGui.DragFloat3("##shapesize", ref ssv, 0.05f, 0.01f, 100f))
+                rb.ShapeSize = new OpenTK.Mathematics.Vector3(
+                    Math.Max(0.01f, ssv.X), Math.Max(0.01f, ssv.Y), Math.Max(0.01f, ssv.Z));
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            DrawPhysicsLayerSelector("Layer", rb);
+
+            ImGui.Spacing();
+            if (ImGui.TreeNodeEx("Constraints", ImGuiTreeNodeFlags.SpanAvailWidth))
             {
-                ImGui.OpenPopup($"{label}_LayerPopup");
+                DrawRigidbodyConstraints(rb);
+                ImGui.TreePop();
             }
-
-            if (ImGui.BeginPopup($"{label}_LayerPopup"))
+            if (ImGui.TreeNodeEx("Physics Material", ImGuiTreeNodeFlags.SpanAvailWidth))
             {
-                // Quick select buttons
-                if (ImGui.Button("All", new Vector2(60, 0)))
-                {
-                    rigidbody.Layer = PhysicsLayer.All;
-                }
+                DrawRigidbodyPhysicsProperties(rb);
+                ImGui.TreePop();
+            }
+        }
+
+        private void DrawPhysicsLayerSelector(string label, KrayonCore.Rigidbody rb)
+        {
+            PhysicsLayer cur = rb.Layer;
+            string preview = GetLayerPreviewText(cur);
+
+            BeginFieldRowFixed(label, ImGui.GetContentRegionAvail().X);
+            if (ImGui.Button($"{preview}##lyr_btn", new Vector2(ImGui.CalcItemWidth(), 0)))
+                ImGui.OpenPopup("LayerPopup");
+
+            if (ImGui.BeginPopup("LayerPopup"))
+            {
+                if (ImGui.Button("All", new Vector2(55, 0))) rb.Layer = PhysicsLayer.All;
                 ImGui.SameLine();
-                if (ImGui.Button("None", new Vector2(60, 0)))
-                {
-                    rigidbody.Layer = PhysicsLayer.None;
-                }
+                if (ImGui.Button("None", new Vector2(55, 0))) rb.Layer = PhysicsLayer.None;
                 ImGui.Separator();
-
-                // Individual layer checkboxes
-                string[] layerNames = Enum.GetNames(typeof(PhysicsLayer));
-                PhysicsLayer[] layerValues = (PhysicsLayer[])Enum.GetValues(typeof(PhysicsLayer));
-
-                for (int i = 0; i < layerNames.Length; i++)
+                var names = Enum.GetNames(typeof(PhysicsLayer));
+                var values = (PhysicsLayer[])Enum.GetValues(typeof(PhysicsLayer));
+                for (int i = 0; i < names.Length; i++)
                 {
-                    // Skip None and All pseudo-values
-                    if (layerValues[i] == PhysicsLayer.None || layerValues[i] == PhysicsLayer.All)
-                        continue;
-
-                    bool isSet = (currentLayer & layerValues[i]) != 0;
-                    if (ImGui.Checkbox(layerNames[i], ref isSet))
+                    if (values[i] == PhysicsLayer.None || values[i] == PhysicsLayer.All) continue;
+                    bool set = (cur & values[i]) != 0;
+                    if (ImGui.Checkbox(names[i], ref set))
                     {
-                        if (isSet)
-                            rigidbody.Layer = currentLayer | layerValues[i];
-                        else
-                            rigidbody.Layer = currentLayer & ~layerValues[i];
-
-                        currentLayer = rigidbody.Layer;
+                        rb.Layer = set ? cur | values[i] : cur & ~values[i];
+                        cur = rb.Layer;
                     }
                 }
-
                 ImGui.EndPopup();
             }
         }
 
-        /// <summary>
-        /// Returns a human-readable preview string for the selected layers.
-        /// </summary>
         private string GetLayerPreviewText(PhysicsLayer layer)
         {
             if (layer == PhysicsLayer.None) return "None";
             if (layer == PhysicsLayer.All) return "All";
-
-            // Count set bits and collect names
-            var names = new System.Collections.Generic.List<string>();
-            string[] layerNames = Enum.GetNames(typeof(PhysicsLayer));
-            PhysicsLayer[] layerValues = (PhysicsLayer[])Enum.GetValues(typeof(PhysicsLayer));
-
-            for (int i = 0; i < layerNames.Length; i++)
+            var list = new System.Collections.Generic.List<string>();
+            var names = Enum.GetNames(typeof(PhysicsLayer));
+            var values = (PhysicsLayer[])Enum.GetValues(typeof(PhysicsLayer));
+            for (int i = 0; i < names.Length; i++)
             {
-                if (layerValues[i] == PhysicsLayer.None || layerValues[i] == PhysicsLayer.All)
-                    continue;
-
-                if ((layer & layerValues[i]) != 0)
-                    names.Add(layerNames[i]);
+                if (values[i] == PhysicsLayer.None || values[i] == PhysicsLayer.All) continue;
+                if ((layer & values[i]) != 0) list.Add(names[i]);
             }
-
-            if (names.Count == 0) return "None";
-            if (names.Count <= 2) return string.Join(", ", names);
-            return $"{names[0]}, {names[1]} +{names.Count - 2}";
+            if (list.Count == 0) return "None";
+            if (list.Count <= 2) return string.Join(", ", list);
+            return $"{list[0]}, {list[1]} +{list.Count - 2}";
         }
 
-        private void DrawRigidbodyConstraints(KrayonCore.Rigidbody rigidbody)
+        private void DrawRigidbodyConstraints(KrayonCore.Rigidbody rb)
         {
-            ImGui.Text("Freeze Position");
-            bool freezePosX = rigidbody.FreezePositionX;
-            bool freezePosY = rigidbody.FreezePositionY;
-            bool freezePosZ = rigidbody.FreezePositionZ;
+            ImGui.TextUnformatted("Freeze Position");
+            bool fpx = rb.FreezePositionX; bool fpy = rb.FreezePositionY; bool fpz = rb.FreezePositionZ;
+            ImGui.SameLine(LabelColumnWidth);
+            if (ImGui.Checkbox("X##fpx", ref fpx)) rb.FreezePositionX = fpx;
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Y##fpy", ref fpy)) rb.FreezePositionY = fpy;
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Z##fpz", ref fpz)) rb.FreezePositionZ = fpz;
 
-            if (ImGui.Checkbox("X##PosX", ref freezePosX))
-                rigidbody.FreezePositionX = freezePosX;
+            ImGui.TextUnformatted("Freeze Rotation");
+            bool frx = rb.FreezeRotationX; bool fry = rb.FreezeRotationY; bool frz = rb.FreezeRotationZ;
+            ImGui.SameLine(LabelColumnWidth);
+            if (ImGui.Checkbox("X##frx", ref frx)) rb.FreezeRotationX = frx;
             ImGui.SameLine();
-            if (ImGui.Checkbox("Y##PosY", ref freezePosY))
-                rigidbody.FreezePositionY = freezePosY;
+            if (ImGui.Checkbox("Y##fry", ref fry)) rb.FreezeRotationY = fry;
             ImGui.SameLine();
-            if (ImGui.Checkbox("Z##PosZ", ref freezePosZ))
-                rigidbody.FreezePositionZ = freezePosZ;
-
-            ImGui.Spacing();
-            ImGui.Text("Freeze Rotation");
-            bool freezeRotX = rigidbody.FreezeRotationX;
-            bool freezeRotY = rigidbody.FreezeRotationY;
-            bool freezeRotZ = rigidbody.FreezeRotationZ;
-
-            if (ImGui.Checkbox("X##RotX", ref freezeRotX))
-                rigidbody.FreezeRotationX = freezeRotX;
-            ImGui.SameLine();
-            if (ImGui.Checkbox("Y##RotY", ref freezeRotY))
-                rigidbody.FreezeRotationY = freezeRotY;
-            ImGui.SameLine();
-            if (ImGui.Checkbox("Z##RotZ", ref freezeRotZ))
-                rigidbody.FreezeRotationZ = freezeRotZ;
+            if (ImGui.Checkbox("Z##frz", ref frz)) rb.FreezeRotationZ = frz;
         }
 
-        private void DrawRigidbodyPhysicsProperties(KrayonCore.Rigidbody rigidbody)
+        private void DrawRigidbodyPhysicsProperties(KrayonCore.Rigidbody rb)
         {
-            float linearDamping = rigidbody.LinearDamping;
-            if (ImGui.DragFloat("Linear Damping", ref linearDamping, 0.01f, 0f, 1f))
-            {
-                rigidbody.LinearDamping = Math.Max(0f, linearDamping);
-            }
+            float ld = rb.LinearDamping;
+            BeginFieldRow("Linear Damping");
+            if (ImGui.DragFloat("##ld", ref ld, 0.01f, 0f, 1f)) rb.LinearDamping = Math.Max(0f, ld);
 
-            float angularDamping = rigidbody.AngularDamping;
-            if (ImGui.DragFloat("Angular Damping", ref angularDamping, 0.01f, 0f, 1f))
-            {
-                rigidbody.AngularDamping = Math.Max(0f, angularDamping);
-            }
+            float ad = rb.AngularDamping;
+            BeginFieldRow("Angular Damping");
+            if (ImGui.DragFloat("##ad", ref ad, 0.01f, 0f, 1f)) rb.AngularDamping = Math.Max(0f, ad);
 
-            ImGui.Spacing();
+            float fr = rb.Friction;
+            BeginFieldRow("Friction");
+            if (ImGui.SliderFloat("##fr", ref fr, 0f, 1f)) rb.Friction = fr;
 
-            float friction = rigidbody.Friction;
-            if (ImGui.SliderFloat("Friction", ref friction, 0f, 1f))
-            {
-                rigidbody.Friction = friction;
-            }
-
-            float restitution = rigidbody.Restitution;
-            if (ImGui.SliderFloat("Restitution", ref restitution, 0f, 1f))
-            {
-                rigidbody.Restitution = restitution;
-            }
+            float re = rb.Restitution;
+            BeginFieldRow("Restitution");
+            if (ImGui.SliderFloat("##re", ref re, 0f, 1f)) rb.Restitution = re;
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Generic Property/Field Drawing (unchanged)
-        // ─────────────────────────────────────────────────────────
+        // ════════════════════════════════════════════════════════════════════
+        //  DRAW PROPERTY  (por reflection)
+        // ════════════════════════════════════════════════════════════════════
 
-        private void DrawProperty(object component, PropertyInfo property)
+        private void DrawProperty(object comp, PropertyInfo prop)
         {
-            Type propertyType = property.PropertyType;
-            object? value = property.GetValue(component);
+            Type t = prop.PropertyType;
+            object? val = prop.GetValue(comp);
 
-            if (propertyType.IsArray)
+            if (t.IsArray) { DrawArrayProperty(comp, prop, val); return; }
+            if (t.IsEnum) { DrawEnumProperty(comp, prop, val); return; }
+            if (val == null) { DrawLabelValue(prop.Name, "null"); return; }
+
+            var range = prop.GetCustomAttribute<KrayonCore.RangeAttribute>();
+
+            if (t == typeof(bool))
             {
-                DrawArrayProperty(component, property, value);
-                return;
+                bool v = (bool)val;
+                BeginFieldRow(prop.Name);
+                if (ImGui.Checkbox($"##{prop.Name}", ref v)) prop.SetValue(comp, v);
             }
-
-            if (propertyType.IsEnum)
+            else if (t == typeof(float))
             {
-                // Handle [Flags] enums with checkboxes
-                if (propertyType.GetCustomAttribute<FlagsAttribute>() != null)
-                {
-                    DrawFlagsEnumProperty(component, property, value);
-                }
-                else
-                {
-                    DrawEnumProperty(component, property, value);
-                }
-                return;
+                float v = (float)val;
+                BeginFieldRow(prop.Name);
+                bool changed = range != null
+                    ? ImGui.DragFloat($"##{prop.Name}", ref v, 0.01f, range.Min, range.Max)
+                    : ImGui.DragFloat($"##{prop.Name}", ref v, 0.01f);
+                if (changed) prop.SetValue(comp, v);
             }
-
-            if (value == null)
+            else if (t == typeof(int))
             {
-                ImGui.Text($"{property.Name}: null");
-                return;
+                int v = (int)val;
+                BeginFieldRow(prop.Name);
+                bool changed = range != null
+                    ? ImGui.DragInt($"##{prop.Name}", ref v, 1f, (int)range.Min, (int)range.Max)
+                    : ImGui.DragInt($"##{prop.Name}", ref v);
+                if (changed) prop.SetValue(comp, v);
             }
-
-            var rangeAttr = property.GetCustomAttribute<KrayonCore.RangeAttribute>();
-
-            if (propertyType == typeof(bool))
+            else if (t == typeof(string))
             {
-                bool boolValue = (bool)value;
-                if (ImGui.Checkbox(property.Name, ref boolValue))
-                {
-                    property.SetValue(component, boolValue);
-                }
+                string nv = DrawAssetStringField(prop.Name, (string)val);
+                if (nv != (string)val) prop.SetValue(comp, nv);
             }
-            else if (propertyType == typeof(float))
+            else if (t == typeof(Vector2))
             {
-                float floatValue = (float)value;
-
-                if (rangeAttr != null)
-                {
-                    if (ImGui.DragFloat(property.Name, ref floatValue, 0.01f, rangeAttr.Min, rangeAttr.Max))
-                    {
-                        property.SetValue(component, floatValue);
-                    }
-                }
-                else
-                {
-                    if (ImGui.InputFloat(property.Name, ref floatValue))
-                    {
-                        property.SetValue(component, floatValue);
-                    }
-                }
+                Vector2 v = (Vector2)val;
+                BeginFieldRow(prop.Name);
+                if (ImGui.DragFloat2($"##{prop.Name}", ref v, 0.01f)) prop.SetValue(comp, v);
             }
-            else if (propertyType == typeof(int))
+            else if (t == typeof(Vector3))
             {
-                int intValue = (int)value;
-
-                if (rangeAttr != null)
-                {
-                    if (ImGui.DragInt(property.Name, ref intValue, 1f, (int)rangeAttr.Min, (int)rangeAttr.Max))
-                    {
-                        property.SetValue(component, intValue);
-                    }
-                }
-                else
-                {
-                    if (ImGui.InputInt(property.Name, ref intValue))
-                    {
-                        property.SetValue(component, intValue);
-                    }
-                }
+                Vector3 v = (Vector3)val;
+                BeginFieldRow(prop.Name);
+                if (ImGui.DragFloat3($"##{prop.Name}", ref v, 0.01f)) prop.SetValue(comp, v);
             }
-            else if (propertyType == typeof(string))
+            else if (t == typeof(OpenTK.Mathematics.Vector3))
             {
-                string stringValue = (string)value;
-                if (ImGui.InputText(property.Name, ref stringValue, 256))
-                {
-                    property.SetValue(component, stringValue);
-                }
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
-                        if (payload.NativePtr != null)
-                        {
-                            byte[] data = new byte[payload.DataSize];
-                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
-                            string path = System.Text.Encoding.UTF8.GetString(data);
-                            property.SetValue(component, path);
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
+                var otk = (OpenTK.Mathematics.Vector3)val;
+                Vector3 v = new(otk.X, otk.Y, otk.Z);
+                BeginFieldRow(prop.Name);
+                if (ImGui.DragFloat3($"##{prop.Name}", ref v, 0.01f))
+                    prop.SetValue(comp, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
             }
-            else if (propertyType == typeof(Vector2))
+            else if (t == typeof(Vector4))
             {
-                Vector2 vec2Value = (Vector2)value;
-                if (ImGui.InputFloat2(property.Name, ref vec2Value))
-                {
-                    property.SetValue(component, vec2Value);
-                }
+                Vector4 v = (Vector4)val;
+                BeginFieldRow(prop.Name);
+                if (ImGui.InputFloat4($"##{prop.Name}", ref v)) prop.SetValue(comp, v);
             }
-            else if (propertyType == typeof(Vector3))
+            else if (t == typeof(Quaternion))
             {
-                Vector3 vec3Value = (Vector3)value;
-                if (ImGui.InputFloat3(property.Name, ref vec3Value))
-                {
-                    property.SetValue(component, vec3Value);
-                }
+                var q = (Quaternion)val;
+                Vector4 v = new(q.X, q.Y, q.Z, q.W);
+                BeginFieldRow(prop.Name);
+                if (ImGui.InputFloat4($"##{prop.Name}", ref v))
+                    prop.SetValue(comp, new Quaternion(v.X, v.Y, v.Z, v.W));
             }
-            else if (propertyType == typeof(OpenTK.Mathematics.Vector3))
+            else if (t == typeof(OpenTK.Mathematics.Quaternion))
             {
-                var vec3Value = (OpenTK.Mathematics.Vector3)value;
-                Vector3 numericVec = new Vector3(vec3Value.X, vec3Value.Y, vec3Value.Z);
-
-                if (ImGui.InputFloat3(property.Name, ref numericVec))
-                {
-                    var newValue = new OpenTK.Mathematics.Vector3(numericVec.X, numericVec.Y, numericVec.Z);
-                    property.SetValue(component, newValue);
-                }
+                var q = (OpenTK.Mathematics.Quaternion)val;
+                Vector4 v = new(q.X, q.Y, q.Z, q.W);
+                BeginFieldRow(prop.Name);
+                if (ImGui.InputFloat4($"##{prop.Name}", ref v))
+                    prop.SetValue(comp, new OpenTK.Mathematics.Quaternion(v.X, v.Y, v.Z, v.W));
             }
-            else if (propertyType == typeof(Vector4))
+            else if (t == typeof(GameObject))
             {
-                Vector4 vec4Value = (Vector4)value;
-                if (ImGui.InputFloat4(property.Name, ref vec4Value))
-                {
-                    property.SetValue(component, vec4Value);
-                }
+                DrawObjectRefField(prop.Name, (GameObject)val,
+                    go => prop.SetValue(comp, go));
             }
-            else if (propertyType == typeof(Quaternion))
+            else if (t == typeof(KrayonCore.Material))
             {
-                Quaternion quatValue = (Quaternion)value;
-                Vector4 vec4 = new Vector4(quatValue.X, quatValue.Y, quatValue.Z, quatValue.W);
-                if (ImGui.InputFloat4(property.Name, ref vec4))
-                {
-                    property.SetValue(component, new Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W));
-                }
-            }
-            else if (propertyType == typeof(OpenTK.Mathematics.Quaternion))
-            {
-                var quatValue = (OpenTK.Mathematics.Quaternion)value;
-                Vector4 vec4 = new Vector4(quatValue.X, quatValue.Y, quatValue.Z, quatValue.W);
-                if (ImGui.InputFloat4(property.Name, ref vec4))
-                {
-                    var newValue = new OpenTK.Mathematics.Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W);
-                    property.SetValue(component, newValue);
-                }
-            }
-            else if (propertyType == typeof(GameObject))
-            {
-                GameObject gameObjectValue = (GameObject)value;
-                string displayName = gameObjectValue != null ? gameObjectValue.Name : "None";
-
-                ImGui.Text($"{property.Name}:");
-                ImGui.SameLine();
-
-                if (ImGui.Button($"{displayName}###{property.Name}"))
-                {
-                    ImGui.OpenPopup($"SelectGameObject_{property.Name}");
-                }
-
-                if (ImGui.BeginPopup($"SelectGameObject_{property.Name}"))
-                {
-                    if (ImGui.MenuItem("None"))
-                    {
-                        property.SetValue(component, null);
-                    }
-
-                    ImGui.Separator();
-
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects() ?? new System.Collections.Generic.List<GameObject>();
-                    int objIndex = 0;
-                    foreach (var obj in allObjects)
-                    {
-                        ImGui.PushID($"GO_{objIndex}");
-                        if (ImGui.MenuItem(obj.Name))
-                        {
-                            property.SetValue(component, obj);
-                        }
-                        ImGui.PopID();
-                        objIndex++;
-                    }
-
-                    ImGui.EndPopup();
-                }
-            }
-            else if (propertyType == typeof(KrayonCore.Material))
-            {
-                KrayonCore.Material materialValue = (KrayonCore.Material)value;
-                string displayName = materialValue != null ? materialValue.Name : "None";
-
-                ImGui.Text($"{property.Name}:");
-                ImGui.SameLine();
-
-                if (ImGui.Button($"{displayName}###{property.Name}"))
-                {
-                    ImGui.OpenPopup($"SelectMaterial_{property.Name}");
-                }
-
-                if (ImGui.BeginPopup($"SelectMaterial_{property.Name}"))
-                {
-                    if (ImGui.MenuItem("None"))
-                    {
-                        property.SetValue(component, null);
-                    }
-
-                    ImGui.Separator();
-
-                    var allMaterials = GraphicsEngine.Instance.Materials.GetAll();
-                    int matIndex = 0;
-                    foreach (var mat in allMaterials)
-                    {
-                        ImGui.PushID($"Mat_{matIndex}");
-                        if (ImGui.MenuItem(mat.Name))
-                        {
-                            property.SetValue(component, mat);
-                        }
-                        ImGui.PopID();
-                        matIndex++;
-                    }
-
-                    ImGui.EndPopup();
-                }
+                DrawMaterialRefField(prop.Name, (KrayonCore.Material)val,
+                    mat => prop.SetValue(comp, mat));
             }
             else
             {
-                ImGui.Text($"{property.Name}: {value}");
+                DrawLabelValue(prop.Name, val.ToString());
             }
         }
 
-        private void DrawEnumProperty(object component, PropertyInfo property, object? value)
+        // ════════════════════════════════════════════════════════════════════
+        //  DRAW FIELD  (por reflection)
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawField(object comp, FieldInfo field)
         {
-            if (value == null)
+            Type t = field.FieldType;
+            object? val = field.GetValue(comp);
+
+            if (t.IsArray) { DrawArrayField(comp, field, val); return; }
+            if (t.IsEnum) { DrawEnumField(comp, field, val); return; }
+            if (val == null) { DrawLabelValue(field.Name, "null"); return; }
+
+            var range = field.GetCustomAttribute<KrayonCore.RangeAttribute>();
+
+            if (t == typeof(bool))
             {
-                ImGui.Text($"{property.Name}: null");
-                return;
+                bool v = (bool)val;
+                BeginFieldRow(field.Name);
+                if (ImGui.Checkbox($"##{field.Name}", ref v)) field.SetValue(comp, v);
             }
-
-            string[] enumNames = Enum.GetNames(property.PropertyType);
-            int currentIndex = Array.IndexOf(enumNames, value.ToString());
-
-            if (ImGui.Combo(property.Name, ref currentIndex, enumNames, enumNames.Length))
+            else if (t == typeof(float))
             {
-                object newValue = Enum.Parse(property.PropertyType, enumNames[currentIndex]);
-                property.SetValue(component, newValue);
+                float v = (float)val;
+                BeginFieldRow(field.Name);
+                bool changed = range != null
+                    ? ImGui.DragFloat($"##{field.Name}", ref v, 0.01f, range.Min, range.Max)
+                    : ImGui.DragFloat($"##{field.Name}", ref v, 0.01f);
+                if (changed) field.SetValue(comp, v);
+            }
+            else if (t == typeof(int))
+            {
+                int v = (int)val;
+                BeginFieldRow(field.Name);
+                bool changed = range != null
+                    ? ImGui.DragInt($"##{field.Name}", ref v, 1f, (int)range.Min, (int)range.Max)
+                    : ImGui.DragInt($"##{field.Name}", ref v);
+                if (changed) field.SetValue(comp, v);
+            }
+            else if (t == typeof(string))
+            {
+                string nv = DrawAssetStringField(field.Name, (string)val);
+                if (nv != (string)val) field.SetValue(comp, nv);
+            }
+            else if (t == typeof(Vector2))
+            {
+                Vector2 v = (Vector2)val;
+                BeginFieldRow(field.Name);
+                if (ImGui.DragFloat2($"##{field.Name}", ref v, 0.01f)) field.SetValue(comp, v);
+            }
+            else if (t == typeof(Vector3))
+            {
+                Vector3 v = (Vector3)val;
+                BeginFieldRow(field.Name);
+                if (ImGui.DragFloat3($"##{field.Name}", ref v, 0.01f)) field.SetValue(comp, v);
+            }
+            else if (t == typeof(OpenTK.Mathematics.Vector3))
+            {
+                var otk = (OpenTK.Mathematics.Vector3)val;
+                Vector3 v = new(otk.X, otk.Y, otk.Z);
+                BeginFieldRow(field.Name);
+                if (ImGui.DragFloat3($"##{field.Name}", ref v, 0.01f))
+                    field.SetValue(comp, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
+            }
+            else if (t == typeof(Vector4))
+            {
+                Vector4 v = (Vector4)val;
+                BeginFieldRow(field.Name);
+                if (ImGui.InputFloat4($"##{field.Name}", ref v)) field.SetValue(comp, v);
+            }
+            else if (t == typeof(Quaternion))
+            {
+                var q = (Quaternion)val;
+                Vector4 v = new(q.X, q.Y, q.Z, q.W);
+                BeginFieldRow(field.Name);
+                if (ImGui.InputFloat4($"##{field.Name}", ref v))
+                    field.SetValue(comp, new Quaternion(v.X, v.Y, v.Z, v.W));
+            }
+            else if (t == typeof(OpenTK.Mathematics.Quaternion))
+            {
+                var q = (OpenTK.Mathematics.Quaternion)val;
+                Vector4 v = new(q.X, q.Y, q.Z, q.W);
+                BeginFieldRow(field.Name);
+                if (ImGui.InputFloat4($"##{field.Name}", ref v))
+                    field.SetValue(comp, new OpenTK.Mathematics.Quaternion(v.X, v.Y, v.Z, v.W));
+            }
+            else if (t == typeof(GameObject))
+            {
+                DrawObjectRefField(field.Name, (GameObject)val,
+                    go => field.SetValue(comp, go));
+            }
+            else if (t == typeof(KrayonCore.Material))
+            {
+                DrawMaterialRefField(field.Name, (KrayonCore.Material)val,
+                    mat => field.SetValue(comp, mat));
+            }
+            else
+            {
+                DrawLabelValue(field.Name, val.ToString());
             }
         }
 
-        /// <summary>
-        /// Draws a [Flags] enum property as a popup with checkboxes.
-        /// Works generically for any flags enum (PhysicsLayer, etc).
-        /// </summary>
-        private void DrawFlagsEnumProperty(object component, PropertyInfo property, object? value)
+        // ════════════════════════════════════════════════════════════════════
+        //  ENUM
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawEnumProperty(object comp, PropertyInfo prop, object? val)
         {
-            if (value == null)
+            if (val == null) { DrawLabelValue(prop.Name, "null"); return; }
+            if (prop.PropertyType.GetCustomAttribute<FlagsAttribute>() != null)
             {
-                ImGui.Text($"{property.Name}: null");
+                DrawFlagsField(prop.Name, prop.PropertyType, Convert.ToUInt32(val),
+                    v => prop.SetValue(comp, Enum.ToObject(prop.PropertyType, v)));
                 return;
             }
+            string[] names = Enum.GetNames(prop.PropertyType);
+            int idx = Array.IndexOf(names, val.ToString());
+            BeginFieldRow(prop.Name);
+            if (ImGui.Combo($"##{prop.Name}", ref idx, names, names.Length))
+                prop.SetValue(comp, Enum.Parse(prop.PropertyType, names[idx]));
+        }
 
-            Type enumType = property.PropertyType;
-            uint currentValue = Convert.ToUInt32(value);
-
-            // Build preview text
-            string previewText = GetFlagsPreviewText(enumType, currentValue);
-
-            ImGui.Text(property.Name);
-            ImGui.SameLine();
-
-            float availWidth = ImGui.GetContentRegionAvail().X;
-            if (ImGui.Button($"{previewText}###{property.Name}_flags", new Vector2(availWidth, 0)))
+        private void DrawEnumField(object comp, FieldInfo field, object? val)
+        {
+            if (val == null) { DrawLabelValue(field.Name, "null"); return; }
+            if (field.FieldType.GetCustomAttribute<FlagsAttribute>() != null)
             {
-                ImGui.OpenPopup($"{property.Name}_FlagsPopup");
+                DrawFlagsField(field.Name, field.FieldType, Convert.ToUInt32(val),
+                    v => field.SetValue(comp, Enum.ToObject(field.FieldType, v)));
+                return;
             }
+            string[] names = Enum.GetNames(field.FieldType);
+            int idx = Array.IndexOf(names, val.ToString());
+            BeginFieldRow(field.Name);
+            if (ImGui.Combo($"##{field.Name}", ref idx, names, names.Length))
+                field.SetValue(comp, Enum.Parse(field.FieldType, names[idx]));
+        }
 
-            if (ImGui.BeginPopup($"{property.Name}_FlagsPopup"))
+        private void DrawFlagsField(string label, Type enumType, uint cur, Action<uint> setter)
+        {
+            string preview = GetFlagsPreviewText(enumType, cur);
+            BeginFieldRow(label);
+            float w = ImGui.CalcItemWidth();
+            if (ImGui.Button($"{preview}##flags_{label}", new Vector2(w, 0)))
+                ImGui.OpenPopup($"flags_{label}");
+
+            if (ImGui.BeginPopup($"flags_{label}"))
             {
-                // All / None buttons
-                uint allValue = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
-                if (ImGui.Button("All", new Vector2(60, 0)))
-                {
-                    property.SetValue(component, Enum.ToObject(enumType, allValue));
-                    currentValue = allValue;
-                }
+                uint all = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
+                if (ImGui.Button("All", new Vector2(55, 0))) { cur = all; setter(cur); }
                 ImGui.SameLine();
-                if (ImGui.Button("None", new Vector2(60, 0)))
-                {
-                    property.SetValue(component, Enum.ToObject(enumType, 0u));
-                    currentValue = 0u;
-                }
+                if (ImGui.Button("None", new Vector2(55, 0))) { cur = 0; setter(cur); }
                 ImGui.Separator();
-
                 string[] names = Enum.GetNames(enumType);
                 Array values = Enum.GetValues(enumType);
-
                 for (int i = 0; i < names.Length; i++)
                 {
-                    uint flagValue = Convert.ToUInt32(values.GetValue(i));
-
-                    // Skip 0 (None) and ~0 (All) pseudo-values
-                    if (flagValue == 0 || flagValue == allValue)
-                        continue;
-
-                    bool isSet = (currentValue & flagValue) != 0;
-                    if (ImGui.Checkbox(names[i], ref isSet))
+                    uint fv = Convert.ToUInt32(values.GetValue(i));
+                    if (fv == 0 || fv == all) continue;
+                    bool set = (cur & fv) != 0;
+                    if (ImGui.Checkbox(names[i], ref set))
                     {
-                        if (isSet)
-                            currentValue |= flagValue;
-                        else
-                            currentValue &= ~flagValue;
-
-                        property.SetValue(component, Enum.ToObject(enumType, currentValue));
+                        cur = set ? cur | fv : cur & ~fv;
+                        setter(cur);
                     }
                 }
-
                 ImGui.EndPopup();
             }
         }
 
-        /// <summary>
-        /// Returns a preview string for a flags enum value.
-        /// </summary>
         private string GetFlagsPreviewText(Type enumType, uint value)
         {
             if (value == 0) return "None";
-
-            uint allValue = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
-            if (value == allValue) return "All";
-
-            var names = new System.Collections.Generic.List<string>();
-            string[] enumNames = Enum.GetNames(enumType);
-            Array enumValues = Enum.GetValues(enumType);
-
-            for (int i = 0; i < enumNames.Length; i++)
+            uint all = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
+            if (value == all) return "All";
+            var list = new System.Collections.Generic.List<string>();
+            string[] names = Enum.GetNames(enumType);
+            Array values = Enum.GetValues(enumType);
+            for (int i = 0; i < names.Length; i++)
             {
-                uint flagValue = Convert.ToUInt32(enumValues.GetValue(i));
-                if (flagValue == 0 || flagValue == allValue)
-                    continue;
-
-                if ((value & flagValue) != 0)
-                    names.Add(enumNames[i]);
+                uint fv = Convert.ToUInt32(values.GetValue(i));
+                if (fv == 0 || fv == all) continue;
+                if ((value & fv) != 0) list.Add(names[i]);
             }
-
-            if (names.Count == 0) return "None";
-            if (names.Count <= 2) return string.Join(", ", names);
-            return $"{names[0]}, {names[1]} +{names.Count - 2}";
+            if (list.Count == 0) return "None";
+            if (list.Count <= 2) return string.Join(", ", list);
+            return $"{list[0]}, {list[1]} +{list.Count - 2}";
         }
 
-        private void DrawArrayProperty(object component, PropertyInfo property, object? value)
+        // ════════════════════════════════════════════════════════════════════
+        //  ARRAYS
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawArrayProperty(object comp, PropertyInfo prop, object? val)
         {
-            Type elementType = property.PropertyType.GetElementType()!;
-            Array? array = value as Array;
+            Type elemT = prop.PropertyType.GetElementType()!;
+            Array? arr = val as Array;
+            if (!ImGui.TreeNodeEx($"{prop.Name}##arrp", ImGuiTreeNodeFlags.SpanAvailWidth)) return;
+            DrawArrayControls(ref arr, elemT, v => prop.SetValue(comp, v));
+            ImGui.TreePop();
+        }
 
-            if (ImGui.TreeNode($"{property.Name} (Array)"))
+        private void DrawArrayField(object comp, FieldInfo field, object? val)
+        {
+            Type elemT = field.FieldType.GetElementType()!;
+            Array? arr = val as Array;
+            if (!ImGui.TreeNodeEx($"{field.Name}##arrf", ImGuiTreeNodeFlags.SpanAvailWidth)) return;
+            DrawArrayControls(ref arr, elemT, v => field.SetValue(comp, v));
+            ImGui.TreePop();
+        }
+
+        private void DrawArrayControls(ref Array? arr, Type elemT, Action<Array> setter)
+        {
+            int size = arr?.Length ?? 0;
+            ImGui.SetNextItemWidth(80f);
+            if (ImGui.InputInt("Size##arrsz", ref size))
             {
-                int size = array?.Length ?? 0;
-                if (ImGui.InputInt("Size", ref size))
-                {
-                    if (size < 0) size = 0;
-                    Array newArray = Array.CreateInstance(elementType, size);
-                    if (array != null)
-                    {
-                        int copyLength = Math.Min(array.Length, size);
-                        Array.Copy(array, newArray, copyLength);
-                    }
-                    property.SetValue(component, newArray);
-                    array = newArray;
-                }
-
-                if (array != null)
-                {
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        ImGui.PushID($"Element_{i}");
-                        DrawArrayElement(array, i, elementType);
-                        ImGui.PopID();
-                    }
-                }
-
-                ImGui.TreePop();
+                size = Math.Max(0, size);
+                Array na = Array.CreateInstance(elemT, size);
+                if (arr != null) Array.Copy(arr, na, Math.Min(arr.Length, size));
+                setter(na);
+                arr = na;
+            }
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                ImGui.PushID(i);
+                DrawArrayElement(arr, i, elemT);
+                ImGui.PopID();
             }
         }
 
-        private void DrawArrayElement(Array array, int index, Type elementType)
+        private void DrawArrayElement(Array arr, int i, Type elemT)
         {
-            object? value = array.GetValue(index);
+            object? val = arr.GetValue(i);
 
-            if (elementType == typeof(string))
+            if (elemT == typeof(string))
             {
-                string stringValue = (string?)value ?? "";
-                if (ImGui.InputText($"[{index}]", ref stringValue, 256))
-                {
-                    array.SetValue(stringValue, index);
-                }
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
-                        if (payload.NativePtr != null)
-                        {
-                            byte[] data = new byte[payload.DataSize];
-                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
-                            string path = System.Text.Encoding.UTF8.GetString(data);
-                            array.SetValue(path, index);
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
+                string sv = (string?)val ?? "";
+                string nv = DrawAssetStringField($"[{i}]", sv);
+                if (nv != sv) arr.SetValue(nv, i);
             }
-            else if (elementType == typeof(int))
+            else if (elemT == typeof(int))
             {
-                int intValue = value != null ? (int)value : 0;
-                if (ImGui.InputInt($"[{index}]", ref intValue))
-                {
-                    array.SetValue(intValue, index);
-                }
+                int v = val != null ? (int)val : 0;
+                BeginFieldRow($"[{i}]");
+                if (ImGui.InputInt($"##el{i}", ref v)) arr.SetValue(v, i);
             }
-            else if (elementType == typeof(float))
+            else if (elemT == typeof(float))
             {
-                float floatValue = value != null ? (float)value : 0f;
-                if (ImGui.InputFloat($"[{index}]", ref floatValue))
-                {
-                    array.SetValue(floatValue, index);
-                }
+                float v = val != null ? (float)val : 0f;
+                BeginFieldRow($"[{i}]");
+                if (ImGui.DragFloat($"##el{i}", ref v, 0.01f)) arr.SetValue(v, i);
             }
-            else if (elementType == typeof(bool))
+            else if (elemT == typeof(bool))
             {
-                bool boolValue = value != null && (bool)value;
-                if (ImGui.Checkbox($"[{index}]", ref boolValue))
-                {
-                    array.SetValue(boolValue, index);
-                }
+                bool v = val != null && (bool)val;
+                BeginFieldRow($"[{i}]");
+                if (ImGui.Checkbox($"##el{i}", ref v)) arr.SetValue(v, i);
             }
-            else if (elementType == typeof(Vector2))
+            else if (elemT == typeof(Vector2))
             {
-                Vector2 vec2Value = value != null ? (Vector2)value : Vector2.Zero;
-                if (ImGui.InputFloat2($"[{index}]", ref vec2Value))
-                {
-                    array.SetValue(vec2Value, index);
-                }
+                Vector2 v = val != null ? (Vector2)val : Vector2.Zero;
+                BeginFieldRow($"[{i}]");
+                if (ImGui.DragFloat2($"##el{i}", ref v, 0.01f)) arr.SetValue(v, i);
             }
-            else if (elementType == typeof(Vector3))
+            else if (elemT == typeof(Vector3))
             {
-                Vector3 vec3Value = value != null ? (Vector3)value : Vector3.Zero;
-                if (ImGui.InputFloat3($"[{index}]", ref vec3Value))
-                {
-                    array.SetValue(vec3Value, index);
-                }
+                Vector3 v = val != null ? (Vector3)val : Vector3.Zero;
+                BeginFieldRow($"[{i}]");
+                if (ImGui.DragFloat3($"##el{i}", ref v, 0.01f)) arr.SetValue(v, i);
             }
-            else if (elementType == typeof(OpenTK.Mathematics.Vector3))
+            else if (elemT == typeof(OpenTK.Mathematics.Vector3))
             {
-                var vec3Value = value != null ? (OpenTK.Mathematics.Vector3)value : OpenTK.Mathematics.Vector3.Zero;
-                Vector3 numericVec = new Vector3(vec3Value.X, vec3Value.Y, vec3Value.Z);
-                if (ImGui.InputFloat3($"[{index}]", ref numericVec))
-                {
-                    array.SetValue(new OpenTK.Mathematics.Vector3(numericVec.X, numericVec.Y, numericVec.Z), index);
-                }
+                var otk = val != null ? (OpenTK.Mathematics.Vector3)val : OpenTK.Mathematics.Vector3.Zero;
+                Vector3 v = new(otk.X, otk.Y, otk.Z);
+                BeginFieldRow($"[{i}]");
+                if (ImGui.DragFloat3($"##el{i}", ref v, 0.01f))
+                    arr.SetValue(new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z), i);
             }
-            else if (elementType == typeof(Vector4))
+            else if (elemT == typeof(GameObject))
             {
-                Vector4 vec4Value = value != null ? (Vector4)value : Vector4.Zero;
-                if (ImGui.InputFloat4($"[{index}]", ref vec4Value))
-                {
-                    array.SetValue(vec4Value, index);
-                }
+                DrawObjectRefField($"[{i}]", val as GameObject, go => arr.SetValue(go, i));
             }
-            else if (elementType == typeof(GameObject))
+            else if (elemT == typeof(KrayonCore.Material))
             {
-                GameObject? gameObjectValue = value as GameObject;
-                string displayName = gameObjectValue != null ? gameObjectValue.Name : "None";
-
-                ImGui.Text($"[{index}]:");
-                ImGui.SameLine();
-
-                if (ImGui.Button($"{displayName}###{index}"))
-                {
-                    ImGui.OpenPopup($"SelectGameObject_{index}");
-                }
-
-                if (ImGui.BeginPopup($"SelectGameObject_{index}"))
-                {
-                    if (ImGui.MenuItem("None"))
-                    {
-                        array.SetValue(null, index);
-                    }
-
-                    ImGui.Separator();
-
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects() ?? new System.Collections.Generic.List<GameObject>();
-                    int objIndex = 0;
-                    foreach (var obj in allObjects)
-                    {
-                        ImGui.PushID($"GO_{objIndex}");
-                        if (ImGui.MenuItem(obj.Name))
-                        {
-                            array.SetValue(obj, index);
-                        }
-                        ImGui.PopID();
-                        objIndex++;
-                    }
-
-                    ImGui.EndPopup();
-                }
-            }
-            else if (elementType == typeof(KrayonCore.Material))
-            {
-                KrayonCore.Material? materialValue = value as KrayonCore.Material;
-                string displayName = materialValue != null ? materialValue.Name : "None";
-
-                ImGui.Text($"[{index}]:");
-                ImGui.SameLine();
-
-                if (ImGui.Button($"{displayName}###{index}"))
-                {
-                    ImGui.OpenPopup($"SelectMaterial_{index}");
-                }
-
-                if (ImGui.BeginPopup($"SelectMaterial_{index}"))
-                {
-                    if (ImGui.MenuItem("None"))
-                    {
-                        array.SetValue(null, index);
-                    }
-
-                    ImGui.Separator();
-
-                    var allMaterials = GraphicsEngine.Instance.Materials.GetAll();
-                    int matIndex = 0;
-                    foreach (var mat in allMaterials)
-                    {
-                        ImGui.PushID($"Mat_{matIndex}");
-                        if (ImGui.MenuItem(mat.Name))
-                        {
-                            array.SetValue(mat, index);
-                        }
-                        ImGui.PopID();
-                        matIndex++;
-                    }
-
-                    ImGui.EndPopup();
-                }
+                DrawMaterialRefField($"[{i}]", val as KrayonCore.Material, mat => arr.SetValue(mat, i));
             }
             else
             {
-                ImGui.Text($"[{index}]: {value?.ToString() ?? "null"}");
+                DrawLabelValue($"[{i}]", val?.ToString() ?? "null");
             }
         }
 
-        private void DrawField(object component, FieldInfo field)
+        // ════════════════════════════════════════════════════════════════════
+        //  REFERENCE FIELDS  (GameObject, Material)
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawObjectRefField(string label, GameObject? current, Action<GameObject?> setter)
         {
-            Type fieldType = field.FieldType;
-            object? value = field.GetValue(component);
-
-            if (fieldType.IsArray)
+            string display = current != null ? current.Name : "None";
+            BeginFieldRow(label);
+            float w = ImGui.CalcItemWidth();
+            if (ImGui.Button($"{display}##go_{label}", new Vector2(w, 0)))
+                ImGui.OpenPopup($"gopop_{label}");
+            if (ImGui.BeginPopup($"gopop_{label}"))
             {
-                DrawArrayField(component, field, value);
-                return;
-            }
-
-            if (fieldType.IsEnum)
-            {
-                if (fieldType.GetCustomAttribute<FlagsAttribute>() != null)
-                {
-                    DrawFlagsEnumField(component, field, value);
-                }
-                else
-                {
-                    DrawEnumField(component, field, value);
-                }
-                return;
-            }
-
-            if (value == null)
-            {
-                ImGui.Text($"{field.Name}: null");
-                return;
-            }
-
-            var rangeAttr = field.GetCustomAttribute<KrayonCore.RangeAttribute>();
-
-            if (fieldType == typeof(bool))
-            {
-                bool boolValue = (bool)value;
-                if (ImGui.Checkbox(field.Name, ref boolValue))
-                {
-                    field.SetValue(component, boolValue);
-                }
-            }
-            else if (fieldType == typeof(float))
-            {
-                float floatValue = (float)value;
-
-                if (rangeAttr != null)
-                {
-                    if (ImGui.DragFloat(field.Name, ref floatValue, 0.01f, rangeAttr.Min, rangeAttr.Max))
-                    {
-                        field.SetValue(component, floatValue);
-                    }
-                }
-                else
-                {
-                    if (ImGui.InputFloat(field.Name, ref floatValue))
-                    {
-                        field.SetValue(component, floatValue);
-                    }
-                }
-            }
-            else if (fieldType == typeof(int))
-            {
-                int intValue = (int)value;
-
-                if (rangeAttr != null)
-                {
-                    if (ImGui.DragInt(field.Name, ref intValue, 1f, (int)rangeAttr.Min, (int)rangeAttr.Max))
-                    {
-                        field.SetValue(component, intValue);
-                    }
-                }
-                else
-                {
-                    if (ImGui.InputInt(field.Name, ref intValue))
-                    {
-                        field.SetValue(component, intValue);
-                    }
-                }
-            }
-            else if (fieldType == typeof(string))
-            {
-                string stringValue = (string)value;
-                if (ImGui.InputText(field.Name, ref stringValue, 256))
-                {
-                    field.SetValue(component, stringValue);
-                }
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
-                        if (payload.NativePtr != null)
-                        {
-                            byte[] data = new byte[payload.DataSize];
-                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, data, 0, payload.DataSize);
-                            string path = System.Text.Encoding.UTF8.GetString(data);
-                            field.SetValue(component, path);
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
-            }
-            else if (fieldType == typeof(Vector2))
-            {
-                Vector2 vec2Value = (Vector2)value;
-                if (ImGui.InputFloat2(field.Name, ref vec2Value))
-                {
-                    field.SetValue(component, vec2Value);
-                }
-            }
-            else if (fieldType == typeof(Vector3))
-            {
-                Vector3 vec3Value = (Vector3)value;
-                if (ImGui.InputFloat3(field.Name, ref vec3Value))
-                {
-                    field.SetValue(component, vec3Value);
-                }
-            }
-            else if (fieldType == typeof(OpenTK.Mathematics.Vector3))
-            {
-                var vec3Value = (OpenTK.Mathematics.Vector3)value;
-                Vector3 numericVec = new Vector3(vec3Value.X, vec3Value.Y, vec3Value.Z);
-
-                if (ImGui.InputFloat3(field.Name, ref numericVec))
-                {
-                    var newValue = new OpenTK.Mathematics.Vector3(numericVec.X, numericVec.Y, numericVec.Z);
-                    field.SetValue(component, newValue);
-                }
-            }
-            else if (fieldType == typeof(Vector4))
-            {
-                Vector4 vec4Value = (Vector4)value;
-                if (ImGui.InputFloat4(field.Name, ref vec4Value))
-                {
-                    field.SetValue(component, vec4Value);
-                }
-            }
-            else if (fieldType == typeof(Quaternion))
-            {
-                Quaternion quatValue = (Quaternion)value;
-                Vector4 vec4 = new Vector4(quatValue.X, quatValue.Y, quatValue.Z, quatValue.W);
-                if (ImGui.InputFloat4(field.Name, ref vec4))
-                {
-                    field.SetValue(component, new Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W));
-                }
-            }
-            else if (fieldType == typeof(OpenTK.Mathematics.Quaternion))
-            {
-                var quatValue = (OpenTK.Mathematics.Quaternion)value;
-                Vector4 vec4 = new Vector4(quatValue.X, quatValue.Y, quatValue.Z, quatValue.W);
-                if (ImGui.InputFloat4(field.Name, ref vec4))
-                {
-                    var newValue = new OpenTK.Mathematics.Quaternion(vec4.X, vec4.Y, vec4.Z, vec4.W);
-                    field.SetValue(component, newValue);
-                }
-            }
-            else if (fieldType == typeof(GameObject))
-            {
-                GameObject gameObjectValue = (GameObject)value;
-                string displayName = gameObjectValue != null ? gameObjectValue.Name : "None";
-
-                ImGui.Text($"{field.Name}:");
-                ImGui.SameLine();
-
-                if (ImGui.Button($"{displayName}###{field.Name}"))
-                {
-                    ImGui.OpenPopup($"SelectGameObject_{field.Name}");
-                }
-
-                if (ImGui.BeginPopup($"SelectGameObject_{field.Name}"))
-                {
-                    if (ImGui.MenuItem("None"))
-                    {
-                        field.SetValue(component, null);
-                    }
-
-                    ImGui.Separator();
-
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects() ?? new System.Collections.Generic.List<GameObject>();
-                    int objIndex = 0;
-                    foreach (var obj in allObjects)
-                    {
-                        ImGui.PushID($"GO_{objIndex}");
-                        if (ImGui.MenuItem(obj.Name))
-                        {
-                            field.SetValue(component, obj);
-                        }
-                        ImGui.PopID();
-                        objIndex++;
-                    }
-
-                    ImGui.EndPopup();
-                }
-            }
-            else if (fieldType == typeof(KrayonCore.Material))
-            {
-                KrayonCore.Material materialValue = (KrayonCore.Material)value;
-                string displayName = materialValue != null ? materialValue.Name : "None";
-
-                ImGui.Text($"{field.Name}:");
-                ImGui.SameLine();
-
-                if (ImGui.Button($"{displayName}###{field.Name}"))
-                {
-                    ImGui.OpenPopup($"SelectMaterial_{field.Name}");
-                }
-
-                if (ImGui.BeginPopup($"SelectMaterial_{field.Name}"))
-                {
-                    if (ImGui.MenuItem("None"))
-                    {
-                        field.SetValue(component, null);
-                    }
-
-                    ImGui.Separator();
-
-                    var allMaterials = GraphicsEngine.Instance.Materials.GetAll();
-                    int matIndex = 0;
-                    foreach (var mat in allMaterials)
-                    {
-                        ImGui.PushID($"Mat_{matIndex}");
-                        if (ImGui.MenuItem(mat.Name))
-                        {
-                            field.SetValue(component, mat);
-                        }
-                        ImGui.PopID();
-                        matIndex++;
-                    }
-
-                    ImGui.EndPopup();
-                }
-            }
-            else
-            {
-                ImGui.Text($"{field.Name}: {value}");
-            }
-        }
-
-        private void DrawEnumField(object component, FieldInfo field, object? value)
-        {
-            if (value == null)
-            {
-                ImGui.Text($"{field.Name}: null");
-                return;
-            }
-
-            string[] enumNames = Enum.GetNames(field.FieldType);
-            int currentIndex = Array.IndexOf(enumNames, value.ToString());
-
-            if (ImGui.Combo(field.Name, ref currentIndex, enumNames, enumNames.Length))
-            {
-                object newValue = Enum.Parse(field.FieldType, enumNames[currentIndex]);
-                field.SetValue(component, newValue);
-            }
-        }
-
-        /// <summary>
-        /// Draws a [Flags] enum field as a popup with checkboxes.
-        /// </summary>
-        private void DrawFlagsEnumField(object component, FieldInfo field, object? value)
-        {
-            if (value == null)
-            {
-                ImGui.Text($"{field.Name}: null");
-                return;
-            }
-
-            Type enumType = field.FieldType;
-            uint currentValue = Convert.ToUInt32(value);
-            string previewText = GetFlagsPreviewText(enumType, currentValue);
-
-            ImGui.Text(field.Name);
-            ImGui.SameLine();
-
-            float availWidth = ImGui.GetContentRegionAvail().X;
-            if (ImGui.Button($"{previewText}###{field.Name}_flags", new Vector2(availWidth, 0)))
-            {
-                ImGui.OpenPopup($"{field.Name}_FlagsPopup");
-            }
-
-            if (ImGui.BeginPopup($"{field.Name}_FlagsPopup"))
-            {
-                uint allValue = Convert.ToUInt32(Enum.ToObject(enumType, ~0u));
-                if (ImGui.Button("All", new Vector2(60, 0)))
-                {
-                    field.SetValue(component, Enum.ToObject(enumType, allValue));
-                    currentValue = allValue;
-                }
-                ImGui.SameLine();
-                if (ImGui.Button("None", new Vector2(60, 0)))
-                {
-                    field.SetValue(component, Enum.ToObject(enumType, 0u));
-                    currentValue = 0u;
-                }
+                if (ImGui.MenuItem("None")) setter(null);
                 ImGui.Separator();
-
-                string[] names = Enum.GetNames(enumType);
-                Array values = Enum.GetValues(enumType);
-
-                for (int i = 0; i < names.Length; i++)
+                int idx = 0;
+                foreach (var obj in SceneManager.ActiveScene?.GetAllGameObjects()
+                         ?? new System.Collections.Generic.List<GameObject>())
                 {
-                    uint flagValue = Convert.ToUInt32(values.GetValue(i));
-                    if (flagValue == 0 || flagValue == allValue)
-                        continue;
-
-                    bool isSet = (currentValue & flagValue) != 0;
-                    if (ImGui.Checkbox(names[i], ref isSet))
-                    {
-                        if (isSet)
-                            currentValue |= flagValue;
-                        else
-                            currentValue &= ~flagValue;
-
-                        field.SetValue(component, Enum.ToObject(enumType, currentValue));
-                    }
+                    ImGui.PushID(idx++);
+                    if (ImGui.MenuItem(obj.Name)) setter(obj);
+                    ImGui.PopID();
                 }
-
                 ImGui.EndPopup();
             }
         }
 
-        private void DrawArrayField(object component, FieldInfo field, object? value)
+        private void DrawMaterialRefField(string label, KrayonCore.Material? current, Action<KrayonCore.Material?> setter)
         {
-            Type elementType = field.FieldType.GetElementType()!;
-            Array? array = value as Array;
-
-            if (ImGui.TreeNode($"{field.Name} (Array)"))
+            string display = current != null ? current.Name : "None";
+            BeginFieldRow(label);
+            float w = ImGui.CalcItemWidth();
+            if (ImGui.Button($"{display}##mat_{label}", new Vector2(w, 0)))
+                ImGui.OpenPopup($"matpop_{label}");
+            if (ImGui.BeginPopup($"matpop_{label}"))
             {
-                int size = array?.Length ?? 0;
-                if (ImGui.InputInt("Size", ref size))
+                if (ImGui.MenuItem("None")) setter(null);
+                ImGui.Separator();
+                int idx = 0;
+                foreach (var mat in GraphicsEngine.Instance.Materials.GetAll())
                 {
-                    if (size < 0) size = 0;
-                    Array newArray = Array.CreateInstance(elementType, size);
-                    if (array != null)
-                    {
-                        int copyLength = Math.Min(array.Length, size);
-                        Array.Copy(array, newArray, copyLength);
-                    }
-                    field.SetValue(component, newArray);
-                    array = newArray;
+                    ImGui.PushID(idx++);
+                    if (ImGui.MenuItem(mat.Name)) setter(mat);
+                    ImGui.PopID();
                 }
-
-                if (array != null)
-                {
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        ImGui.PushID($"Element_{i}");
-                        DrawArrayElement(array, i, elementType);
-                        ImGui.PopID();
-                    }
-                }
-
-                ImGui.TreePop();
+                ImGui.EndPopup();
             }
         }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  HELPERS
+        // ════════════════════════════════════════════════════════════════════
+
+        private static void DrawLabelValue(string label, string value)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+            ImGui.Text(label);
+            ImGui.PopStyleColor();
+            ImGui.SameLine(LabelColumnWidth);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDisabled);
+            ImGui.TextUnformatted(value);
+            ImGui.PopStyleColor();
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  ADD COMPONENT BUTTON
+        // ════════════════════════════════════════════════════════════════════
 
         private void DrawAddComponentButton()
         {
-            ImGui.PushID("AddComponent");
+            ImGui.PushID("AddComp");
+            ImGui.PushStyleColor(ImGuiCol.Button, ColField);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ColFieldHover);
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.24f, 0.24f, 0.24f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
 
-            if (ImGui.Button("Add Component", new Vector2(-1, 30)))
-            {
-                ImGui.OpenPopup("AddComponentPopup");
-            }
+            if (ImGui.Button("Add Component", new Vector2(-1f, 26f)))
+                ImGui.OpenPopup("AddCompPopup");
 
-            if (ImGui.BeginPopup("AddComponentPopup"))
+            ImGui.PopStyleColor(4);
+
+            if (ImGui.BeginPopup("AddCompPopup"))
             {
-                int componentIndex = 0;
-                foreach (var componentType in ComponentRegistry.Components)
+                int idx = 0;
+                foreach (var ct in ComponentRegistry.Components)
                 {
-                    ImGui.PushID($"ComponentType_{componentIndex}");
-                    if (ImGui.MenuItem(componentType.Name))
+                    ImGui.PushID(idx++);
+                    if (ImGui.MenuItem(ct.Name))
                     {
-                        EditorActions.SelectedObject!.AddComponent(componentType).Start();
-                        EngineEditor.LogMessage($"Added {componentType.Name} to {EditorActions.SelectedObject.Name}");
+                        EditorActions.SelectedObject!.AddComponent(ct).Start();
+                        EngineEditor.LogMessage($"Added {ct.Name}");
                     }
                     ImGui.PopID();
-                    componentIndex++;
                 }
-
                 ImGui.EndPopup();
             }
-
             ImGui.PopID();
         }
     }

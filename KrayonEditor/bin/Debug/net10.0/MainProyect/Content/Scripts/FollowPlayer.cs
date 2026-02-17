@@ -7,7 +7,7 @@ public class FollowPlayer : KrayonBehaviour
     public GameObject _Player;
     public float FollowSpeed = 5f;
 
-    public float ZOffset = 25.0f; // distancia detrás/delante
+    public float ZOffset = 25.0f;
 
     public override void Start()
     {
