@@ -377,21 +377,29 @@ namespace KrayonEditor.UI
 
             ImGui.PushID($"lr_{idx}");
 
-            // ── Selection button ──────────────────────────────────────────────
-            float rowW = ImGui.GetContentRegionAvail().X - (isBase ? 10f : 36f);
-            ImGui.SetCursorPosX(8);
-            uint bg = isSel
-                ? ImGui.ColorConvertFloat4ToU32(new Vector4(0.19f, 0.40f, 0.62f, 1f))
-                : ImGui.ColorConvertFloat4ToU32(new Vector4(0.20f, 0.20f, 0.20f, 1f));
-            ImGui.PushStyleColor(ImGuiCol.Button,
-                ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0f)));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, bg);
-            // Background rect
+            const float ROW_H = 24f;
+            const float X_W = 22f;   // width of the × button
+            const float MARGIN = 8f;
+
+            float panelW = ImGui.GetContentRegionAvail().X;
+
+            // ── row rect ─────────────────────────────────────────────────────
+            // The invisible button takes all space left of the × (or all space for base layer).
+            float btnW = isBase
+                ? panelW - MARGIN * 2f
+                : panelW - MARGIN * 2f - X_W - 4f;
+
+            ImGui.SetCursorPosX(MARGIN);
             var p = ImGui.GetCursorScreenPos();
+            var dl = ImGui.GetWindowDrawList();
+
+            // ── background rect (selected only) ──────────────────────────────
             if (isSel)
-                ImGui.GetWindowDrawList().AddRectFilled(p, p + new Vector2(rowW, 24),
+                dl.AddRectFilled(p, p + new Vector2(btnW, ROW_H),
                     ImGui.ColorConvertFloat4ToU32(new Vector4(0.19f, 0.40f, 0.62f, 1f)), 3f);
-            if (ImGui.InvisibleButton($"lrbtn{idx}", new Vector2(rowW, 24)))
+
+            // ── invisible selection button ────────────────────────────────────
+            if (ImGui.InvisibleButton($"lrbtn{idx}", new Vector2(btnW, ROW_H)))
             {
                 if (_selectedLayer != idx)
                 {
@@ -400,38 +408,38 @@ namespace KrayonEditor.UI
                     _selectedTransitionFrom = null;
                     _selectedTransitionIdx = -1;
                     _isConnecting = false;
-                    // Ensure special-node positions exist for this layer
                     EnsurePos(PosKey(SpecialNodes.Entry), 80, 140);
                     EnsurePos(PosKey(SpecialNodes.AnyState), 80, 260);
                     EnsurePos(PosKey(SpecialNodes.Exit), 80, 380);
                 }
             }
-            ImGui.PopStyleColor(2);
 
-            // Draw label over the button
-            ImGui.SetCursorScreenPos(p + new Vector2(8, 4));
-            ImGui.PushStyleColor(ImGuiCol.Text,
-                isSel ? new Vector4(1f, 1f, 1f, 1f) : new Vector4(0.75f, 0.75f, 0.75f, 1f));
-            ImGui.Text(layer.Name.Length > 18 ? layer.Name[..18] + "…" : layer.Name);
-            ImGui.PopStyleColor();
+            // ── label drawn via DrawList (doesn't disturb layout) ────────────
+            string display = layer.Name.Length > 18 ? layer.Name[..18] + "…" : layer.Name;
+            uint textCol = isSel
+                ? ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f))
+                : ImGui.ColorConvertFloat4ToU32(new Vector4(0.75f, 0.75f, 0.75f, 1f));
+            dl.AddText(p + new Vector2(8f, (ROW_H - ImGui.GetTextLineHeight()) * 0.5f), textCol, display);
 
-            // ── Delete button (non-base layers) ──────────────────────────────
+            // ── delete button (non-base): placed immediately after the inv. button ──
             if (!isBase)
             {
-                ImGui.SameLine(0, 4);
+                ImGui.SameLine(0, 4f);
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.50f, 0.20f, 0.20f, 1f));
-                if (ImGui.SmallButton($"×##xlr{idx}"))
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0f, 0f, 0f, 0f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.30f, 0.10f, 0.10f, 1f));
+                if (ImGui.Button($"×##xlr{idx}", new Vector2(X_W, ROW_H)))
                 {
                     _itemToDelete = idx.ToString();
                     _showDeleteLayerConfirm = true;
                 }
-                ImGui.PopStyleColor();
+                ImGui.PopStyleColor(3);
             }
 
             // ── Weight + blending (non-base layers, only when selected) ───────
             if (!isBase && isSel)
             {
-                ImGui.SetCursorPosX(8);
+                ImGui.SetCursorPosX(MARGIN);
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.50f, 0.50f, 0.50f, 1f));
                 ImGui.Text("Weight");
                 ImGui.PopStyleColor();
@@ -441,7 +449,7 @@ namespace KrayonEditor.UI
                 if (ImGui.SliderFloat("##lw", ref w, 0f, 1f))
                 { layer.Weight = w; MarkDirty(); }
 
-                ImGui.SetCursorPosX(8);
+                ImGui.SetCursorPosX(MARGIN);
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.50f, 0.50f, 0.50f, 1f));
                 ImGui.Text("Blending");
                 ImGui.PopStyleColor();
@@ -455,11 +463,11 @@ namespace KrayonEditor.UI
                     ImGui.EndCombo();
                 }
 
-                ImGui.SetCursorPosX(8);
+                ImGui.SetCursorPosX(MARGIN);
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.50f, 0.50f, 0.50f, 1f));
                 ImGui.Text("Mask GUID");
                 ImGui.PopStyleColor();
-                ImGui.SetCursorPosX(8);
+                ImGui.SetCursorPosX(MARGIN);
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 10f);
                 string mask = layer.AvatarMask ?? "";
                 if (ImGui.InputText("##lmask", ref mask, 128)) { layer.AvatarMask = mask; MarkDirty(); }
@@ -1369,9 +1377,22 @@ namespace KrayonEditor.UI
                     ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.70f, 0.18f, 0.18f, 1f));
                     if (ImGui.Button("Delete", new Vector2(100, 0)))
                     {
-                        // Remove position keys for this layer
+                        // Remove position keys for this layer; re-key layers above it
                         var keysToRemove = _nodePositions.Keys.Where(k => k.StartsWith($"{layerIdx}/")).ToList();
                         foreach (var k in keysToRemove) _nodePositions.Remove(k);
+
+                        // Re-index position keys for all layers after the deleted one
+                        for (int li = layerIdx + 1; li < _data.Layers.Count; li++)
+                        {
+                            var oldKeys = _nodePositions.Keys.Where(k => k.StartsWith($"{li}/")).ToList();
+                            foreach (var ok in oldKeys)
+                            {
+                                var pos = _nodePositions[ok];
+                                _nodePositions.Remove(ok);
+                                _nodePositions[$"{li - 1}/{ok[(ok.IndexOf('/') + 1)..]}"] = pos;
+                            }
+                        }
+
                         _data.Layers.RemoveAt(layerIdx);
                         if (_selectedLayer >= _data.Layers.Count) _selectedLayer = _data.Layers.Count - 1;
                         _selectedState = null; _selectedTransitionFrom = null; _selectedTransitionIdx = -1;

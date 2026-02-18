@@ -29,22 +29,6 @@
           "transitions": []
         }
       ]
-    },
-    {
-      "name": "Layer 1",
-      "weight": 0,
-      "blendingMode": 1,
-      "avatarMask": "",
-      "defaultState": "",
-      "states": []
-    },
-    {
-      "name": "Layer 2",
-      "weight": 0,
-      "blendingMode": 1,
-      "avatarMask": "",
-      "defaultState": "",
-      "states": []
     }
   ]
 }
