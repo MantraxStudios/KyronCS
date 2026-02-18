@@ -38,7 +38,6 @@ namespace KrayonEditor.UI
         public static TileEditor _TileEditor = new TileEditor();
         public static SpriteAnimationUI _SpriteAnimator = new SpriteAnimationUI();
         public static CompilerUI _CompilerUI = new CompilerUI();
-        public static RoslynCodeEditor editorCode;
         public static AnimatorEditorUI _animatorEditor = new AnimatorEditorUI();
 
 
@@ -48,8 +47,6 @@ namespace KrayonEditor.UI
         public static void Initialize()
         {
             SetupImGuiStyle();
-            editorCode = new RoslynCodeEditor();
-            editorCode.LoadDll(AssetManager.TotalBase + "/Library/KrayonCore.dll");
             LoadWindowsState();
         }
 
@@ -94,7 +91,6 @@ namespace KrayonEditor.UI
             _materials.OnDrawUI();
             _TileEditor.OnDrawUI();
             _CompilerUI.OnDrawUI();
-            editorCode.Draw();
             _animatorEditor.OnDrawUI();
 
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
