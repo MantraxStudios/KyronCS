@@ -81,6 +81,13 @@ namespace KrayonEditor.UI
             _stats.IsVisible = _mainMenuBar.ShowStats;
             _assets.IsVisible = _mainMenuBar.ShowAssets;
 
+            ImGui.DockSpaceOverViewport();
+
+            ImGui.Begin("Main View Port");
+            uint innerDock = ImGui.GetID("InnerDockSpace");
+            ImGui.DockSpace(innerDock, new Vector2(0, 0), ImGuiDockNodeFlags.None);
+            ImGui.End();
+
             _mainMenuBar.OnDrawUI();
             _dockSpace.OnDrawUI();
             _hierarchy.OnDrawUI();
