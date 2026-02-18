@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "3da1a5e4-456a-456b-ae22-4a0bbd256317",
+      "Id": "9d1f772c-4054-451a-97e3-ce1f58c4d5c1",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4cef8c43-7cb3-4087-8db4-942913d037be",
+          "ComponentId": "8040c5b8-3464-42e5-a8b6-14c47938539b",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -28,74 +28,35 @@
             },
             "Scale": {
               "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
+              "x": 0.01,
+              "y": 0.01,
+              "z": 0.01
             }
           }
         },
         {
-          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "64743599-4823-411d-a0b2-cb7bf8059530",
+          "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "35e54dc4-fa04-45dd-8d25-3e0e809cbe67",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "ControllerGuid": "6f743029-3e0d-473e-a8ae-db07d65c634f",
+            "PlaybackSpeed": 1
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "282f3137-1628-424c-a25b-f7c19dd0f232",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "04d9d321-7d8e-4a5d-934a-21331466488d",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
               "values": [
-                "basic"
+                null,
+                null
               ]
             }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Rigidbody, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1f5bdcf5-6975-4bc8-8425-ef7c9de0fa68",
-          "Enabled": true,
-          "SerializedFields": {
-            "MotionType": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.BodyMotionType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Dynamic"
-            },
-            "ShapeType": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.ShapeType, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Box"
-            },
-            "ShapeSize": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "ColliderOffset": {
-              "__type": "Vector3",
-              "x": -2.48,
-              "y": 0,
-              "z": 0
-            },
-            "Mass": 1,
-            "UseGravity": true,
-            "SleepThreshold": -1,
-            "IsKinematic": false,
-            "Layer": {
-              "__type": "Enum",
-              "enumType": "KrayonCore.Physics.PhysicsLayer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-              "value": "Default"
-            },
-            "IsTrigger": false,
-            "FreezePositionX": false,
-            "FreezePositionY": false,
-            "FreezePositionZ": false,
-            "FreezeRotationX": false,
-            "FreezeRotationY": false,
-            "FreezeRotationZ": false,
-            "LinearDamping": 0.05,
-            "AngularDamping": 0.05,
-            "Friction": 0.5,
-            "Restitution": 0
           }
         }
       ]

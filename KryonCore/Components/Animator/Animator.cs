@@ -8,6 +8,9 @@ using System.Text.Json;
 
 namespace KrayonCore.Animation
 {
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Runtime state for a single state inside any layer
+    // ─────────────────────────────────────────────────────────────────────────
     internal class AnimatorState
     {
         public string Name;
@@ -17,6 +20,9 @@ namespace KrayonCore.Animation
         public List<StateTransitionData> Transitions;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Runtime parameter
+    // ─────────────────────────────────────────────────────────────────────────
     internal class AnimatorParameter
     {
         public string Name;
@@ -27,33 +33,81 @@ namespace KrayonCore.Animation
         public bool TriggerValue;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Runtime state for a whole layer
+    // ─────────────────────────────────────────────────────────────────────────
+    internal class AnimatorLayerRuntime
+    {
+        // ── data from asset ──────────────────────────────────────────────────
+        public string Name;
+        public float Weight = 1f;
+        public LayerBlendingMode BlendingMode = LayerBlendingMode.Override;
+
+        /// <summary>
+        /// Bone names that this layer is allowed to affect.
+        /// null = no mask (affects all bones).
+        /// </summary>
+        public HashSet<string> MaskBones; // null → no mask
+
+        // ── state machine ────────────────────────────────────────────────────
+        public Dictionary<string, AnimatorState> States = new();
+        public AnimatorState CurrentState;
+
+        // ── playback ─────────────────────────────────────────────────────────
+        public AnimationClip CurrentClip;
+        public float CurrentTime;
+        public bool IsPlaying;
+        public bool Loop;
+        public float PlaybackSpeed = 1f;
+
+        // ── crossfade ────────────────────────────────────────────────────────
+        public AnimationClip BlendFromClip;
+        public float BlendFromTime;
+        public float BlendFactor;
+        public float BlendDuration;
+        public float BlendElapsed;
+        public bool IsBlending;
+
+        // ── per-layer final matrices (filled by CalculateBoneTransforms) ──────
+        public Matrix4[] Matrices = new Matrix4[Animator.MAX_BONES];
+
+        public AnimatorLayerRuntime()
+        {
+            for (int i = 0; i < Animator.MAX_BONES; i++)
+                Matrices[i] = Matrix4.Identity;
+        }
+    }
+
+    // =========================================================================
+    //  Animator  —  multi-layer skeletal animation controller
+    // =========================================================================
     public class Animator : Component
     {
         public const int MAX_BONES = 256;
 
+        // ── bone matrices uploaded to GPU ─────────────────────────────────────
         private Matrix4[] _finalBoneMatrices;
+
+        // ── model ─────────────────────────────────────────────────────────────
         private AnimatedModel _animatedModel;
 
-        private AnimationClip _currentClip;
-        private float _currentTime = 0f;
-        private float _playbackSpeed = 1f;
-        private bool _isPlaying = false;
-        private bool _loop = true;
+        // ── layers ────────────────────────────────────────────────────────────
+        private readonly List<AnimatorLayerRuntime> _layers = new();
 
-        private AnimationClip _blendFromClip;
-        private float _blendFromTime;
-        private float _blendFactor = 0f;
-        private float _blendDuration = 0f;
-        private float _blendElapsed = 0f;
-        private bool _isBlending = false;
-
-        private readonly Dictionary<string, AnimatorState> _states = new();
+        // ── parameters (shared across all layers) ─────────────────────────────
         private readonly Dictionary<string, AnimatorParameter> _parameters = new();
-        private AnimatorState _currentState;
 
+        // ── convenience shortcuts to layer 0 ─────────────────────────────────
+        private AnimatorLayerRuntime BaseLayer =>
+            _layers.Count > 0 ? _layers[0] : null;
+
+        // ── GPU buffer ────────────────────────────────────────────────────────
         private int _boneUBO = -1;
         private const int BONE_UBO_BINDING = 1;
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Serialised properties
+        // ─────────────────────────────────────────────────────────────────────
         private string _controllerGuid = "";
         [ToStorage]
         public string ControllerGuid
@@ -68,19 +122,25 @@ namespace KrayonCore.Animation
             }
         }
 
-        [NoSerializeToInspector] public Matrix4[] FinalBoneMatrices => _finalBoneMatrices;
-        [NoSerializeToInspector] public bool IsPlaying => _isPlaying;
-        [NoSerializeToInspector] public float CurrentTime => _currentTime;
-        [NoSerializeToInspector] public AnimationClip CurrentClip => _currentClip;
-        [NoSerializeToInspector] public string CurrentStateName => _currentState?.Name ?? "";
-
         [ToStorage]
         public float PlaybackSpeed
         {
-            get => _playbackSpeed;
-            set => _playbackSpeed = value;
+            get => BaseLayer?.PlaybackSpeed ?? 1f;
+            set { if (BaseLayer != null) BaseLayer.PlaybackSpeed = value; }
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Read-only public info (base layer)
+        // ─────────────────────────────────────────────────────────────────────
+        [NoSerializeToInspector] public Matrix4[] FinalBoneMatrices => _finalBoneMatrices;
+        [NoSerializeToInspector] public bool IsPlaying => BaseLayer?.IsPlaying ?? false;
+        [NoSerializeToInspector] public float CurrentTime => BaseLayer?.CurrentTime ?? 0f;
+        [NoSerializeToInspector] public AnimationClip CurrentClip => BaseLayer?.CurrentClip;
+        [NoSerializeToInspector] public string CurrentStateName => BaseLayer?.CurrentState?.Name ?? "";
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Construction
+        // ─────────────────────────────────────────────────────────────────────
         public Animator()
         {
             _finalBoneMatrices = new Matrix4[MAX_BONES];
@@ -91,19 +151,19 @@ namespace KrayonCore.Animation
         public override void Awake() { }
         public override void Start() { }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Model binding
+        // ─────────────────────────────────────────────────────────────────────
         public void SetModel(AnimatedModel model)
         {
             _animatedModel = model;
-            _states.Clear();
+            _layers.Clear();
             _parameters.Clear();
-            _currentState = null;
-            _currentClip = null;
-            _isPlaying = false;
 
             if (!string.IsNullOrEmpty(ControllerGuid))
                 LoadController(ControllerGuid);
             else
-                Console.WriteLine("[Animator] ControllerGuid vacío — asigna un .animcontroller en el inspector.");
+                Console.WriteLine("[Animator] ControllerGuid vacío — asigna un .animcontroller.");
         }
 
         [CallEvent("Reload Controller")]
@@ -113,6 +173,9 @@ namespace KrayonCore.Animation
                 LoadController(_controllerGuid);
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Controller loading
+        // ─────────────────────────────────────────────────────────────────────
         private void LoadController(string guid)
         {
             try
@@ -127,11 +190,19 @@ namespace KrayonCore.Animation
                     return;
                 }
 
-                BuildParameters(data);
-                BuildStates(data);
-                EnterDefaultState(data);
+                // Migrate legacy single-layer assets into Layers[0]
+                data.EnsureBaseLayer();
 
-                Console.WriteLine($"[Animator] Controller \"{data.Name}\" cargado: {_states.Count} estados, {_parameters.Count} parámetros.");
+                _layers.Clear();
+                _parameters.Clear();
+
+                BuildParameters(data);
+                BuildLayers(data);
+
+                int totalStates = 0;
+                foreach (var l in _layers) totalStates += l.States.Count;
+                Console.WriteLine($"[Animator] Controller \"{data.Name}\" cargado: " +
+                                  $"{_layers.Count} capa(s), {totalStates} estados, {_parameters.Count} parámetros.");
             }
             catch (Exception ex)
             {
@@ -139,6 +210,9 @@ namespace KrayonCore.Animation
             }
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Build parameters
+        // ─────────────────────────────────────────────────────────────────────
         private void BuildParameters(AnimatorControllerData data)
         {
             foreach (var p in data.Parameters)
@@ -155,26 +229,82 @@ namespace KrayonCore.Animation
             }
         }
 
-        private void BuildStates(AnimatorControllerData data)
+        // ─────────────────────────────────────────────────────────────────────
+        //  Build layers + state machines
+        // ─────────────────────────────────────────────────────────────────────
+        private void BuildLayers(AnimatorControllerData data)
         {
-            foreach (var sd in data.States)
+            for (int li = 0; li < data.Layers.Count; li++)
             {
-                var state = new AnimatorState
+                var layerData = data.Layers[li];
+                var runtime = new AnimatorLayerRuntime
                 {
-                    Name = sd.Name,
-                    Loop = sd.Loop,
-                    Speed = sd.Speed,
-                    Transitions = sd.Transitions,
-                    Clip = ResolveClip(sd.ClipGuid, sd.ClipName)
+                    Name = layerData.Name,
+                    Weight = li == 0 ? 1f : layerData.Weight,  // base layer always weight 1
+                    BlendingMode = layerData.BlendingMode,
+                    MaskBones = BuildMaskBones(layerData.AvatarMask)
                 };
-                _states[sd.Name] = state;
 
-                Console.WriteLine(state.Clip != null
-                    ? $"[Animator] Estado \"{state.Name}\" → \"{state.Clip.Name}\""
-                    : $"[Animator] Estado \"{state.Name}\" → clip NO RESUELTO ({sd.ClipGuid})");
+                foreach (var sd in layerData.States)
+                {
+                    var state = new AnimatorState
+                    {
+                        Name = sd.Name,
+                        Loop = sd.Loop,
+                        Speed = sd.Speed,
+                        Transitions = sd.Transitions,
+                        Clip = ResolveClip(sd.ClipGuid, sd.ClipName)
+                    };
+                    runtime.States[sd.Name] = state;
+
+                    Console.WriteLine(state.Clip != null
+                        ? $"[Animator] [{runtime.Name}] Estado \"{state.Name}\" → \"{state.Clip.Name}\""
+                        : $"[Animator] [{runtime.Name}] Estado \"{state.Name}\" → clip NO RESUELTO ({sd.ClipGuid})");
+                }
+
+                // Enter default state for this layer
+                string target = layerData.DefaultState;
+                if (string.IsNullOrEmpty(target))
+                    foreach (var k in runtime.States.Keys) { target = k; break; }
+
+                if (!string.IsNullOrEmpty(target) && runtime.States.TryGetValue(target, out var defState))
+                    EnterLayerState(runtime, defState);
+                else if (li == 0 && !string.IsNullOrEmpty(target))
+                    Console.WriteLine($"[Animator] ERROR: Estado default \"{target}\" no encontrado en capa \"{runtime.Name}\".");
+
+                _layers.Add(runtime);
             }
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  AvatarMask → HashSet<string> of bone names
+        // ─────────────────────────────────────────────────────────────────────
+        /// <summary>
+        /// Loads an AvatarMask asset and returns the set of bone names it includes.
+        /// Returns null if maskGuid is empty (= no mask = affects all bones).
+        /// </summary>
+        private static HashSet<string> BuildMaskBones(string maskGuid)
+        {
+            if (string.IsNullOrWhiteSpace(maskGuid))
+                return null;
+
+            try
+            {
+                byte[] raw = AssetManager.GetBytes(Guid.Parse(maskGuid));
+                string json = System.Text.Encoding.UTF8.GetString(raw);
+                var list = JsonSerializer.Deserialize<List<string>>(json);
+                return list != null ? new HashSet<string>(list, StringComparer.Ordinal) : null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Animator] BuildMaskBones: no se pudo cargar máscara ({maskGuid}): {ex.Message}");
+                return null;
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Resolve animation clip from FBX asset
+        // ─────────────────────────────────────────────────────────────────────
         private AnimationClip ResolveClip(string clipGuid, string clipName)
         {
             if (string.IsNullOrEmpty(clipGuid)) return null;
@@ -196,7 +326,7 @@ namespace KrayonCore.Animation
                         if (c.Name == clipName) { found = c; break; }
 
                     if (found == null)
-                        Console.WriteLine($"[Animator] Clip \"{clipName}\" no encontrado, usando el primero.");
+                        Console.WriteLine($"[Animator] Clip \"{clipName}\" no encontrado en FBX, usando el primero.");
                 }
                 found ??= animModel.Animations[0];
 
@@ -212,51 +342,92 @@ namespace KrayonCore.Animation
             }
         }
 
-        private void EnterDefaultState(AnimatorControllerData data)
-        {
-            string target = data.DefaultState;
-
-            if (string.IsNullOrEmpty(target))
-                foreach (var key in _states.Keys) { target = key; break; }
-
-            if (!string.IsNullOrEmpty(target) && _states.TryGetValue(target, out var state))
-            {
-                EnterState(state);
-                Console.WriteLine($"[Animator] Estado inicial: \"{state.Name}\" | Clip: {state.Clip?.Name ?? "NULL"}");
-            }
-            else
-            {
-                Console.WriteLine($"[Animator] ERROR: Estado default \"{target}\" no encontrado.");
-                Console.WriteLine($"[Animator] Estados disponibles: {string.Join(", ", _states.Keys)}");
-            }
-        }
-
-        private void EnterState(AnimatorState state, float blendDuration = 0f)
+        // ─────────────────────────────────────────────────────────────────────
+        //  State machine — enter state  (STATIC — no instance access needed)
+        // ─────────────────────────────────────────────────────────────────────
+        private static void EnterLayerState(AnimatorLayerRuntime layer,
+                                            AnimatorState state,
+                                            float blendDuration = 0f)
         {
             if (state == null || state.Clip == null) return;
 
-            if (blendDuration > 0f && _currentClip != null)
+            if (blendDuration > 0f && layer.CurrentClip != null)
             {
-                _blendFromClip = _currentClip;
-                _blendFromTime = _currentTime;
-                _blendDuration = blendDuration;
-                _blendElapsed = 0f;
-                _blendFactor = 0f;
-                _isBlending = true;
+                layer.BlendFromClip = layer.CurrentClip;
+                layer.BlendFromTime = layer.CurrentTime;
+                layer.BlendDuration = blendDuration;
+                layer.BlendElapsed = 0f;
+                layer.BlendFactor = 0f;
+                layer.IsBlending = true;
             }
             else
             {
-                _isBlending = false;
+                layer.IsBlending = false;
             }
 
-            _currentState = state;
-            _currentClip = state.Clip;
-            _loop = state.Loop;
-            _playbackSpeed = state.Speed;
-            _currentTime = 0f;
-            _isPlaying = true;
+            layer.CurrentState = state;
+            layer.CurrentClip = state.Clip;
+            layer.Loop = state.Loop;
+            layer.PlaybackSpeed = state.Speed;
+            layer.CurrentTime = 0f;
+            layer.IsPlaying = true;
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Public playback API  (operates on base layer 0 for compat)
+        // ─────────────────────────────────────────────────────────────────────
+        public void Play() { if (BaseLayer != null) BaseLayer.IsPlaying = true; }
+        public void Pause() { if (BaseLayer != null) BaseLayer.IsPlaying = false; }
+        public void Stop() { if (BaseLayer != null) { BaseLayer.IsPlaying = false; BaseLayer.CurrentTime = 0f; } }
+
+        public void Play(string stateName)
+            => PlayOnLayer(0, stateName, 0f);
+
+        public void CrossFade(string stateName, float blendDuration = 0.2f)
+            => PlayOnLayer(0, stateName, blendDuration);
+
+        /// <summary>Plays a state on a specific layer index.</summary>
+        public void PlayOnLayer(int layerIndex, string stateName, float blendDuration = 0f)
+        {
+            if (layerIndex < 0 || layerIndex >= _layers.Count)
+            {
+                Console.WriteLine($"[Animator] PlayOnLayer: capa {layerIndex} no existe.");
+                return;
+            }
+            var layer = _layers[layerIndex];
+            if (!layer.States.TryGetValue(stateName, out var state))
+            {
+                Console.WriteLine($"[Animator] PlayOnLayer: estado \"{stateName}\" no existe en capa \"{layer.Name}\".");
+                return;
+            }
+            if (state == layer.CurrentState && blendDuration <= 0f) return;
+            EnterLayerState(layer, state, blendDuration);
+        }
+
+        /// <summary>Sets the weight of an upper layer (index >= 1) at runtime.</summary>
+        public void SetLayerWeight(int layerIndex, float weight)
+        {
+            if (layerIndex <= 0 || layerIndex >= _layers.Count) return;
+            _layers[layerIndex].Weight = Math.Clamp(weight, 0f, 1f);
+        }
+
+        public float GetLayerWeight(int layerIndex)
+            => (layerIndex >= 0 && layerIndex < _layers.Count) ? _layers[layerIndex].Weight : 0f;
+
+        public bool IsInState(string stateName) => BaseLayer?.CurrentState?.Name == stateName;
+
+        public string[] GetStateNames()
+        {
+            if (BaseLayer == null) return Array.Empty<string>();
+            var names = new string[BaseLayer.States.Count];
+            int i = 0;
+            foreach (var k in BaseLayer.States.Keys) names[i++] = k;
+            return names;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Parameter API
+        // ─────────────────────────────────────────────────────────────────────
         public void SetFloat(string name, float value)
         {
             if (_parameters.TryGetValue(name, out var p)) p.FloatValue = value;
@@ -295,98 +466,76 @@ namespace KrayonCore.Animation
         public bool GetBool(string name) =>
             _parameters.TryGetValue(name, out var p) && p.BoolValue;
 
-        public void Play() => _isPlaying = true;
-        public void Pause() => _isPlaying = false;
-        public void Stop() { _isPlaying = false; _currentTime = 0f; }
-
-        public void Play(string stateName)
-        {
-            if (!_states.TryGetValue(stateName, out var state))
-            {
-                Console.WriteLine($"[Animator] Play: estado \"{stateName}\" no existe.");
-                return;
-            }
-            EnterState(state);
-        }
-
-        public void CrossFade(string stateName, float blendDuration = 0.2f)
-        {
-            if (!_states.TryGetValue(stateName, out var state))
-            {
-                Console.WriteLine($"[Animator] CrossFade: estado \"{stateName}\" no existe.");
-                return;
-            }
-            if (state == _currentState) return;
-            EnterState(state, blendDuration);
-        }
-
-        public bool IsInState(string stateName) => _currentState?.Name == stateName;
-
-        public string[] GetStateNames()
-        {
-            var names = new string[_states.Count];
-            int i = 0;
-            foreach (var key in _states.Keys) names[i++] = key;
-            return names;
-        }
-
+        // ─────────────────────────────────────────────────────────────────────
+        //  Per-frame update
+        // ─────────────────────────────────────────────────────────────────────
         public override void OnWillRenderObject()
         {
-            if (!_isPlaying || _currentClip == null || _animatedModel == null)
-                return;
+            if (_animatedModel == null || _layers.Count == 0) return;
 
             float dt = TimerData.DeltaTime;
 
-            _currentTime += dt * _currentClip.TicksPerSecond * _playbackSpeed;
-            if (_currentTime >= _currentClip.Duration)
-            {
-                if (_loop)
-                    _currentTime %= _currentClip.Duration;
-                else
-                {
-                    _currentTime = _currentClip.Duration;
-                    _isPlaying = false;
-                }
-            }
+            foreach (var layer in _layers)
+                TickLayer(layer, dt);
 
-            if (_isBlending)
-            {
-                _blendElapsed += dt;
-                _blendFactor = Math.Clamp(_blendElapsed / _blendDuration, 0f, 1f);
-
-                if (_blendFromClip != null)
-                {
-                    _blendFromTime += dt * _blendFromClip.TicksPerSecond * _playbackSpeed;
-                    if (_blendFromTime >= _blendFromClip.Duration)
-                        _blendFromTime %= _blendFromClip.Duration;
-                }
-
-                if (_blendFactor >= 1f)
-                    _isBlending = false;
-            }
-
-            EvaluateTransitions();
-            CalculateBoneTransforms();
+            CompositeLayers();
         }
 
-        private void EvaluateTransitions()
+        private void TickLayer(AnimatorLayerRuntime layer, float dt)
         {
-            if (_currentState == null) return;
+            if (!layer.IsPlaying || layer.CurrentClip == null) return;
 
-            float normalizedTime = (_currentClip != null && _currentClip.Duration > 0f)
-                ? _currentTime / _currentClip.Duration
-                : 0f;
-
-            foreach (var t in _currentState.Transitions)
+            // Advance clip time
+            layer.CurrentTime += dt * layer.CurrentClip.TicksPerSecond * layer.PlaybackSpeed;
+            if (layer.CurrentTime >= layer.CurrentClip.Duration)
             {
-                if (t.HasExitTime && normalizedTime < t.ExitTime)
-                    continue;
+                if (layer.Loop)
+                    layer.CurrentTime %= layer.CurrentClip.Duration;
+                else
+                {
+                    layer.CurrentTime = layer.CurrentClip.Duration;
+                    layer.IsPlaying = false;
+                }
+            }
 
-                if (!t.CanInterrupt && normalizedTime < 1f)
-                    continue;
+            // Advance crossfade blend
+            if (layer.IsBlending)
+            {
+                layer.BlendElapsed += dt;
+                layer.BlendFactor = Math.Clamp(layer.BlendElapsed / layer.BlendDuration, 0f, 1f);
 
-                if (!_states.TryGetValue(t.ToState, out _))
-                    continue;
+                if (layer.BlendFromClip != null)
+                {
+                    layer.BlendFromTime += dt * layer.BlendFromClip.TicksPerSecond * layer.PlaybackSpeed;
+                    if (layer.BlendFromTime >= layer.BlendFromClip.Duration)
+                        layer.BlendFromTime %= layer.BlendFromClip.Duration;
+                }
+
+                if (layer.BlendFactor >= 1f)
+                    layer.IsBlending = false;
+            }
+
+            EvaluateTransitions(layer);
+            CalculateBoneTransformsForLayer(layer);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Transition evaluation  (per layer)
+        // ─────────────────────────────────────────────────────────────────────
+        private void EvaluateTransitions(AnimatorLayerRuntime layer)
+        {
+            if (layer.CurrentState == null) return;
+
+            float normalizedTime = (layer.CurrentClip != null && layer.CurrentClip.Duration > 0f)
+                ? layer.CurrentTime / layer.CurrentClip.Duration : 0f;
+
+            int layerIndex = _layers.IndexOf(layer);
+
+            foreach (var t in layer.CurrentState.Transitions)
+            {
+                if (t.HasExitTime && normalizedTime < t.ExitTime) continue;
+                if (!t.CanInterrupt && normalizedTime < 1f) continue;
+                if (!layer.States.ContainsKey(t.ToState)) continue;
 
                 bool allMet = true;
                 List<AnimatorParameter> triggersToConsume = null;
@@ -394,16 +543,10 @@ namespace KrayonCore.Animation
                 foreach (var cond in t.Conditions)
                 {
                     if (!_parameters.TryGetValue(cond.Parameter, out var param))
-                    {
-                        allMet = false;
-                        break;
-                    }
+                    { allMet = false; break; }
 
                     if (!EvaluateCondition(param, cond))
-                    {
-                        allMet = false;
-                        break;
-                    }
+                    { allMet = false; break; }
 
                     if (param.Type == ParameterType.Trigger)
                     {
@@ -415,12 +558,7 @@ namespace KrayonCore.Animation
                 if (!allMet) continue;
 
                 triggersToConsume?.ForEach(tr => tr.TriggerValue = false);
-
-                if (t.Duration > 0f)
-                    CrossFade(t.ToState, t.Duration);
-                else
-                    Play(t.ToState);
-
+                PlayOnLayer(layerIndex, t.ToState, t.Duration);
                 break;
             }
         }
@@ -443,59 +581,110 @@ namespace KrayonCore.Animation
             };
         }
 
-        private void CalculateBoneTransforms()
+        // ─────────────────────────────────────────────────────────────────────
+        //  Bone transform calculation  (per layer)
+        // ─────────────────────────────────────────────────────────────────────
+        private void CalculateBoneTransformsForLayer(AnimatorLayerRuntime layer)
         {
             Matrix4 globalInverse = _animatedModel.GlobalInverseTransform;
 
-            if (_isBlending && _blendFromClip != null)
+            for (int i = 0; i < MAX_BONES; i++)
+                layer.Matrices[i] = Matrix4.Identity;
+
+            if (layer.IsBlending && layer.BlendFromClip != null)
             {
-                var matricesA = new Matrix4[MAX_BONES];
-                var matricesB = new Matrix4[MAX_BONES];
-                for (int i = 0; i < MAX_BONES; i++)
-                    matricesA[i] = matricesB[i] = Matrix4.Identity;
+                var matA = new Matrix4[MAX_BONES];
+                var matB = new Matrix4[MAX_BONES];
+                for (int i = 0; i < MAX_BONES; i++) matA[i] = matB[i] = Matrix4.Identity;
 
-                CalculateNodeTransform(_blendFromClip, _blendFromTime, _animatedModel.RootNode, Matrix4.Identity, matricesA, globalInverse);
-                CalculateNodeTransform(_currentClip, _currentTime, _animatedModel.RootNode, Matrix4.Identity, matricesB, globalInverse);
+                CalculateNodeTransform(layer.BlendFromClip, layer.BlendFromTime,
+                    _animatedModel.RootNode, Matrix4.Identity, matA,
+                    globalInverse, _animatedModel.BoneInfoMap, layer.MaskBones);
+
+                CalculateNodeTransform(layer.CurrentClip, layer.CurrentTime,
+                    _animatedModel.RootNode, Matrix4.Identity, matB,
+                    globalInverse, _animatedModel.BoneInfoMap, layer.MaskBones);
 
                 for (int i = 0; i < MAX_BONES; i++)
-                    _finalBoneMatrices[i] = LerpMatrix(matricesA[i], matricesB[i], _blendFactor);
+                    layer.Matrices[i] = LerpMatrix(matA[i], matB[i], layer.BlendFactor);
             }
-            else
+            else if (layer.CurrentClip != null)
             {
-                for (int i = 0; i < MAX_BONES; i++)
-                    _finalBoneMatrices[i] = Matrix4.Identity;
-
-                CalculateNodeTransform(_currentClip, _currentTime, _animatedModel.RootNode, Matrix4.Identity, _finalBoneMatrices, globalInverse);
+                CalculateNodeTransform(layer.CurrentClip, layer.CurrentTime,
+                    _animatedModel.RootNode, Matrix4.Identity, layer.Matrices,
+                    globalInverse, _animatedModel.BoneInfoMap, layer.MaskBones);
             }
         }
 
-        private void CalculateNodeTransform(AnimationClip clip, float time, NodeData node,
-            Matrix4 parentTransform, Matrix4[] outMatrices, Matrix4 globalInverse)
+        // ─────────────────────────────────────────────────────────────────────
+        //  Composite all layers into _finalBoneMatrices
+        // ─────────────────────────────────────────────────────────────────────
+        private void CompositeLayers()
+        {
+            if (_layers.Count == 0) return;
+
+            // Base layer (index 0) is always full weight
+            Array.Copy(_layers[0].Matrices, _finalBoneMatrices, MAX_BONES);
+
+            // Blend upper layers on top
+            for (int li = 1; li < _layers.Count; li++)
+            {
+                var layer = _layers[li];
+                if (layer.Weight <= 0f) continue;
+
+                for (int i = 0; i < MAX_BONES; i++)
+                {
+                    if (!IsBoneInMaskByIndex(i, layer.MaskBones, _animatedModel.BoneInfoMap))
+                        continue;
+
+                    _finalBoneMatrices[i] = layer.BlendingMode == LayerBlendingMode.Override
+                        ? LerpMatrix(_finalBoneMatrices[i], layer.Matrices[i], layer.Weight)
+                        : AddMatrices(_finalBoneMatrices[i], layer.Matrices[i], layer.Weight);
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  CalculateNodeTransform  — STATIC
+        // ─────────────────────────────────────────────────────────────────────
+        private static void CalculateNodeTransform(
+            AnimationClip clip,
+            float time,
+            NodeData node,
+            Matrix4 parentTransform,
+            Matrix4[] outMatrices,
+            Matrix4 globalInverse,
+            Dictionary<string, BoneInfo> boneInfoMap,
+            HashSet<string> maskBones)
         {
             if (node == null) return;
 
             Matrix4 nodeTransform = node.Transform;
+            bool inMask = IsBoneInMask(node.Name, maskBones);
 
-            var boneAnim = clip.FindBoneAnimation(node.Name);
-            if (boneAnim != null)
+            if (inMask)
             {
-                DecomposeMatrix(node.Transform,
-                    out Vector3 bindTrans,
-                    out OpenTK.Mathematics.Quaternion bindRot,
-                    out Vector3 bindScale);
+                var boneAnim = clip.FindBoneAnimation(node.Name);
+                if (boneAnim != null)
+                {
+                    DecomposeMatrix(node.Transform,
+                        out Vector3 bindTrans,
+                        out Quaternion bindRot,
+                        out Vector3 bindScale);
 
-                Vector3 t = boneAnim.Positions.Count > 0 ? boneAnim.InterpolatePosition(time) : bindTrans;
-                var r = boneAnim.Rotations.Count > 0 ? boneAnim.InterpolateRotation(time) : bindRot;
-                Vector3 s = boneAnim.Scales.Count > 0 ? boneAnim.InterpolateScale(time) : bindScale;
+                    Vector3 t = boneAnim.Positions.Count > 0 ? boneAnim.InterpolatePosition(time) : bindTrans;
+                    Quaternion r = boneAnim.Rotations.Count > 0 ? boneAnim.InterpolateRotation(time) : bindRot;
+                    Vector3 s = boneAnim.Scales.Count > 0 ? boneAnim.InterpolateScale(time) : bindScale;
 
-                nodeTransform = Matrix4.CreateScale(s)
-                              * Matrix4.CreateFromQuaternion(r)
-                              * Matrix4.CreateTranslation(t);
+                    nodeTransform = Matrix4.CreateScale(s)
+                                  * Matrix4.CreateFromQuaternion(r)
+                                  * Matrix4.CreateTranslation(t);
+                }
             }
 
             Matrix4 globalTransform = nodeTransform * parentTransform;
 
-            if (_animatedModel.BoneInfoMap.TryGetValue(node.Name, out var boneInfo))
+            if (inMask && boneInfoMap.TryGetValue(node.Name, out var boneInfo))
             {
                 int boneId = boneInfo.Id;
                 if (boneId >= 0 && boneId < MAX_BONES)
@@ -504,9 +693,44 @@ namespace KrayonCore.Animation
 
             if (node.Children == null) return;
             foreach (var child in node.Children)
-                CalculateNodeTransform(clip, time, child, globalTransform, outMatrices, globalInverse);
+                CalculateNodeTransform(clip, time, child, globalTransform,
+                                       outMatrices, globalInverse, boneInfoMap, maskBones);
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  IsBoneInMask — STATIC
+        //
+        //  maskBones == null  →  no mask, all bones pass (returns true).
+        //  maskBones != null  →  only bones whose name is in the set pass.
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Checks by bone name (node name). Used inside CalculateNodeTransform.
+        /// Static — does NOT require an instance reference.
+        /// </summary>
+        private static bool IsBoneInMask(string boneName, HashSet<string> maskBones)
+            => maskBones == null || maskBones.Contains(boneName);
+
+        /// <summary>
+        /// Checks by bone ID via a reverse lookup through the boneInfoMap.
+        /// Used in CompositeLayers where only the matrix index is available.
+        /// Static — does NOT require an instance reference.
+        /// </summary>
+        private static bool IsBoneInMaskByIndex(int boneId,
+                                                HashSet<string> maskBones,
+                                                Dictionary<string, BoneInfo> boneInfoMap)
+        {
+            if (maskBones == null) return true;
+
+            foreach (var kv in boneInfoMap)
+                if (kv.Value.Id == boneId) return maskBones.Contains(kv.Key);
+
+            return false;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  GPU upload
+        // ─────────────────────────────────────────────────────────────────────
         private void EnsureBoneUBO()
         {
             if (_boneUBO != -1) return;
@@ -528,10 +752,8 @@ namespace KrayonCore.Animation
 
             var matrices = new Matrix4[MAX_BONES];
             int boneCount = Math.Min(_animatedModel?.BoneCount ?? 0, MAX_BONES);
-            for (int i = 0; i < boneCount; i++)
-                matrices[i] = _finalBoneMatrices[i];
-            for (int i = boneCount; i < MAX_BONES; i++)
-                matrices[i] = Matrix4.Identity;
+            for (int i = 0; i < boneCount; i++) matrices[i] = _finalBoneMatrices[i];
+            for (int i = boneCount; i < MAX_BONES; i++) matrices[i] = Matrix4.Identity;
 
             GL.BindBuffer(BufferTarget.UniformBuffer, _boneUBO);
             GL.BufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, MAX_BONES * 64, matrices);
@@ -551,14 +773,23 @@ namespace KrayonCore.Animation
             if (loc != -1) GL.Uniform1(loc, 0);
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Math helpers — all STATIC
+        // ─────────────────────────────────────────────────────────────────────
         private static Matrix4 LerpMatrix(Matrix4 a, Matrix4 b, float t) =>
             new(Vector4.Lerp(a.Row0, b.Row0, t),
                 Vector4.Lerp(a.Row1, b.Row1, t),
                 Vector4.Lerp(a.Row2, b.Row2, t),
                 Vector4.Lerp(a.Row3, b.Row3, t));
 
+        private static Matrix4 AddMatrices(Matrix4 a, Matrix4 b, float weight) =>
+            new(a.Row0 + b.Row0 * weight,
+                a.Row1 + b.Row1 * weight,
+                a.Row2 + b.Row2 * weight,
+                a.Row3 + b.Row3 * weight);
+
         private static void DecomposeMatrix(Matrix4 m,
-            out Vector3 translation, out OpenTK.Mathematics.Quaternion rotation, out Vector3 scale)
+            out Vector3 translation, out Quaternion rotation, out Vector3 scale)
         {
             translation = new Vector3(m.Row3.X, m.Row3.Y, m.Row3.Z);
 
@@ -577,10 +808,13 @@ namespace KrayonCore.Animation
                 m.Row1.X * sx, m.Row1.Y * sy, m.Row1.Z * sz,
                 m.Row2.X * sx, m.Row2.Y * sy, m.Row2.Z * sz);
 
-            rotation = OpenTK.Mathematics.Quaternion.FromMatrix(rotMat);
+            rotation = Quaternion.FromMatrix(rotMat);
             rotation.Normalize();
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        //  Cleanup
+        // ─────────────────────────────────────────────────────────────────────
         public override void OnDestroy()
         {
             if (_boneUBO != -1)
@@ -589,10 +823,7 @@ namespace KrayonCore.Animation
                 _boneUBO = -1;
             }
             _animatedModel = null;
-            _currentClip = null;
-            _blendFromClip = null;
-            _currentState = null;
-            _states.Clear();
+            _layers.Clear();
             _parameters.Clear();
         }
     }

@@ -1,64 +1,50 @@
 {
   "name": "Player",
-  "defaultState": "Idle",
-  "parameters": [
-    {
-      "name": "Hola",
-      "type": 0,
-      "defaultValue": 1
-    }
-  ],
+  "defaultState": "Walk",
   "states": [
     {
-      "name": "Idle",
+      "name": "Walk",
       "clipGuid": "04d9d321-7d8e-4a5d-934a-21331466488d",
       "clipName": "Fight Idle",
-      "loop": false,
+      "loop": true,
       "speed": 1,
-      "transitions": [
+      "transitions": []
+    }
+  ],
+  "parameters": [],
+  "layers": [
+    {
+      "name": "Layer 0",
+      "weight": 1,
+      "blendingMode": 0,
+      "avatarMask": "",
+      "defaultState": "Walk",
+      "states": [
         {
-          "toState": "Walk",
-          "duration": 0.2,
-          "canInterrupt": true,
-          "exitTime": 1,
-          "hasExitTime": true,
-          "conditions": []
+          "name": "Walk",
+          "clipGuid": "04d9d321-7d8e-4a5d-934a-21331466488d",
+          "clipName": "Fight Idle",
+          "loop": true,
+          "speed": 1,
+          "transitions": []
         }
       ]
     },
     {
-      "name": "Walk",
-      "clipGuid": "758be04a-a797-477f-941e-f2772931b7d9",
-      "clipName": "Hook Punch",
-      "loop": false,
-      "speed": 1,
-      "transitions": [
-        {
-          "toState": "Hola",
-          "duration": 0.2,
-          "canInterrupt": true,
-          "exitTime": 1,
-          "hasExitTime": true,
-          "conditions": []
-        }
-      ]
+      "name": "Layer 1",
+      "weight": 0,
+      "blendingMode": 1,
+      "avatarMask": "",
+      "defaultState": "",
+      "states": []
     },
     {
-      "name": "Hola",
-      "clipGuid": "71d1b036-26a6-4a81-86ff-a11aee105e53",
-      "clipName": "Walking",
-      "loop": false,
-      "speed": 1,
-      "transitions": [
-        {
-          "toState": "Idle",
-          "duration": 0.2,
-          "canInterrupt": true,
-          "exitTime": 1,
-          "hasExitTime": true,
-          "conditions": []
-        }
-      ]
+      "name": "Layer 2",
+      "weight": 0,
+      "blendingMode": 1,
+      "avatarMask": "",
+      "defaultState": "",
+      "states": []
     }
   ]
 }
