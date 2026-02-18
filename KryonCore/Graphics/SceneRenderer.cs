@@ -12,15 +12,12 @@ namespace KrayonCore
 {
     public class SceneRenderer
     {
-        // ── Lighting ──────────────────────────────────────────────────────
         private LightManager _lightManager = new();
 
-        // ── Instance groups ───────────────────────────────────────────────
         private readonly Dictionary<(Model model, Material material), List<Matrix4>>
             _meshInstanceGroups = new(),
             _spriteInstanceGroups = new();
 
-        // ── Renderer lists ────────────────────────────────────────────────
         private readonly List<SkyboxRenderer> _skyboxRenderers = new();
         private readonly List<MeshRenderer> _meshRenderers = new();
         private readonly List<AnimatedMeshRenderer> _animatedMeshRenderers = new();
@@ -29,20 +26,9 @@ namespace KrayonCore
 
         private bool _needsCleanup = false;
 
-        // ── Render attachments (used by UICanvas internally) ──────────────
         private readonly Dictionary<string, Action<Matrix4, Matrix4, Vector3>> _renderAttachments = new();
 
-        // ── UI ────────────────────────────────────────────────────────────
-        /// <summary>
-        /// Shared UICanvasManager for this renderer.
-        /// Create canvases with: UI.Create("hud").Add(new UILabel { ... })
-        /// </summary>
-        public UICanvasManager UI { get; } = new UICanvasManager();
-
-        // ── Options ───────────────────────────────────────────────────────
         public bool WireframeMode { get; set; } = false;
-
-        // ── Ctor / Initialize ─────────────────────────────────────────────
 
         public SceneRenderer()
         {
@@ -65,8 +51,6 @@ namespace KrayonCore
                 priority: 0
             );
         }
-
-        // ── Renderer registration ─────────────────────────────────────────
 
         public void RegisterRenderer<T>(T renderer) where T : class
         {
@@ -144,8 +128,6 @@ namespace KrayonCore
             _needsCleanup = false;
         }
 
-        // ── Render attachments ────────────────────────────────────────────
-
         public void AttachRender(string name, Action<Matrix4, Matrix4, Vector3> renderCallback)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -161,21 +143,10 @@ namespace KrayonCore
 
         public bool HasRenderAttachment(string name) => _renderAttachments.ContainsKey(name);
 
-        // ── UI helpers ────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Shortcut: creates (or returns existing) a UICanvas attached to this renderer.
-        /// <code>
-        /// sceneRenderer.CreateCanvas("hud").Add(new UILabel { Text = "Hello World!" });
-        /// </code>
-        /// </summary>
         public UICanvas CreateCanvas(string name, int sortOrder = 0)
-            => UI.Create(name, this, sortOrder);
+            => UICanvasManager.Create(name, this, sortOrder);
 
-        /// <summary>Returns a canvas by name, or null if it doesn't exist.</summary>
-        public UICanvas? GetCanvas(string name) => UI.Get(name);
-
-        // ── Main render loop ──────────────────────────────────────────────
+        public UICanvas? GetCanvas(string name) => UICanvasManager.Get(name);
 
         public void Render()
         {
@@ -225,14 +196,11 @@ namespace KrayonCore
             var projection = cam.GetProjectionMatrix();
             var cameraPos = cam.Position;
 
-            // ── 3D world ──────────────────────────────────────────────────
             RenderSkybox(view, projection, cameraPos);
             RenderMeshRenderers(view, projection, cameraPos);
             RenderAnimatedMeshRenderers(view, projection, cameraPos);
             RenderSpriteRenderers(view, projection, cameraPos);
             RenderTileRenderers(view, projection, cameraPos);
-
-            // ── Custom attachments (includes UICanvas callbacks) ──────────
             RenderAttachments(view, projection, cameraPos);
 
             ClearInstanceGroups();
@@ -243,43 +211,32 @@ namespace KrayonCore
         {
             if (_renderAttachments.Count == 0) return;
 
-            // Iterate in key-sorted order so UICanvas sort orders are respected
             foreach (var kvp in _renderAttachments.OrderBy(k => k.Key))
             {
                 try { kvp.Value?.Invoke(view, projection, cameraPos); }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(
-                        $"[SceneRenderer] Error en render attachment '{kvp.Key}': {ex.Message}");
+                    Console.WriteLine($"[SceneRenderer] Error en render attachment '{kvp.Key}': {ex.Message}");
                 }
             }
         }
 
-        // ── Update ────────────────────────────────────────────────────────
-
         public void Update(float deltaTime)
         {
-            UI.Update(deltaTime);
+            UICanvasManager.Update(deltaTime);
         }
-
-        // ── Resize ────────────────────────────────────────────────────────
 
         public void Resize(int width, int height)
         {
             CameraManager.Instance.ResizeAll(width, height);
-            UI.Resize(width, height);
         }
-
-        // ── Shutdown ──────────────────────────────────────────────────────
 
         public void Shutdown()
         {
             ClearInstanceGroups();
             ClearAllRenderers();
-            UI.Shutdown();
+            UICanvasManager.Shutdown();
         }
-
-        // ── Camera / Lighting accessors ───────────────────────────────────
 
         public Camera GetCamera()
             => CameraManager.Instance.Main?.Camera
@@ -287,12 +244,8 @@ namespace KrayonCore
 
         public LightManager GetLightManager() => _lightManager;
 
-        // ── Wireframe ─────────────────────────────────────────────────────
-
         public void ToggleWireframe() => WireframeMode = !WireframeMode;
         public void SetWireframeMode(bool val) => WireframeMode = val;
-
-        // ── Stats ─────────────────────────────────────────────────────────
 
         public int GetRegisteredRenderersCount()
             => _skyboxRenderers.Count + _meshRenderers.Count +
@@ -301,8 +254,6 @@ namespace KrayonCore
         public (int skybox, int mesh, int animatedMesh, int sprite, int tile) GetRendererCounts()
             => (_skyboxRenderers.Count, _meshRenderers.Count,
                 _animatedMeshRenderers.Count, _spriteRenderers.Count, _tileRenderers.Count);
-
-        // ── Private 3D render methods (unchanged) ─────────────────────────
 
         private void ClearInstanceGroups()
         {

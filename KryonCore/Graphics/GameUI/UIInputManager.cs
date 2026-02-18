@@ -1,54 +1,30 @@
 using KrayonCore.Graphics.GameUI;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace KrayonCore.UI
 {
-    /// <summary>
-    /// Distribuye el input del mouse a todos los elementos interactivos de un canvas.
-    ///
-    /// Modo A — coordenadas de ventana directas (juego compilado):
-    ///   UIInputManager.Instance.SetMousePos(e.X, e.Y);
-    ///   UIInputManager.Instance.SetLeftButton(true/false);
-    ///
-    /// Modo B — coordenadas relativas al viewport del editor (ImGui):
-    ///   UIInputManager.Instance.SetMousePosFromViewport(
-    ///       new Vector2(ImGui.GetMousePos().X, ImGui.GetMousePos().Y),
-    ///       new Vector2(cursorPos.X,  cursorPos.Y),
-    ///       new Vector2(viewportSize.X, viewportSize.Y));
-    ///
-    /// Cada frame:
-    ///   UIInputManager.Instance.UpdateAll(sceneRenderer.UI);
-    /// </summary>
-    public sealed class UIInputManager
+    public static class UIInputManager
     {
-        public static UIInputManager Instance { get; } = new();
+        public static Vector2 MouseScreenPos { get; private set; }
+        public static bool LeftDown { get; private set; }
+        public static bool IsInsideViewport { get; private set; } = true;
 
-        // ── Estado ────────────────────────────────────────────────────────
-        public Vector2 MouseScreenPos { get; private set; }
-        public bool LeftDown { get; private set; }
+        private static readonly Queue<char> _charQueue = new();
+        private static readonly Queue<Keys> _keyQueue = new();
+        private static bool _prevLeftDown = false;
 
-        // ── Indica si el mouse está dentro del viewport activo ────────────
-        public bool IsInsideViewport { get; private set; } = true;
+        // ── Mouse ─────────────────────────────────────────────────────────
 
-        // ── Setters modo A (ventana completa) ─────────────────────────────
-        public void SetMousePos(float x, float y)
+        public static void SetMousePos(float x, float y)
         {
             MouseScreenPos = new Vector2(x, y);
             IsInsideViewport = true;
         }
 
-        public void SetLeftButton(bool down) => LeftDown = down;
+        public static void SetLeftButton(bool down) => LeftDown = down;
 
-        // ── Setter modo B (viewport de editor / ImGui) ────────────────────
-        /// <summary>
-        /// Calcula la posición del mouse relativa al viewport del framebuffer,
-        /// igual que hace el editor para el raycast.
-        ///
-        /// <param name="globalMousePos">ImGui.GetMousePos()</param>
-        /// <param name="viewportOrigin">cursorPos de ImGui (esquina top-left del viewport)</param>
-        /// <param name="viewportSize">tamaño del viewport en pantalla</param>
-        /// </summary>
-        public void SetMousePosFromViewport(
+        public static void SetMousePosFromViewport(
             Vector2 globalMousePos,
             Vector2 viewportOrigin,
             Vector2 viewportSize)
@@ -56,28 +32,43 @@ namespace KrayonCore.UI
             float relX = globalMousePos.X - viewportOrigin.X;
             float relY = globalMousePos.Y - viewportOrigin.Y;
 
-            // Guardar si está dentro del viewport
             IsInsideViewport = relX >= 0 && relX <= viewportSize.X
                              && relY >= 0 && relY <= viewportSize.Y;
 
             MouseScreenPos = new Vector2(relX, relY);
         }
 
-        // ── Distribución ──────────────────────────────────────────────────
+        // ── Keyboard events (conectar en InternalLoad) ────────────────────
 
         /// <summary>
-        /// Distribuye el input a todos los UIButton y UISlider del canvas.
-        /// Si el mouse está fuera del viewport no envía eventos.
+        /// Conectar al evento TextInput de la ventana:
+        ///   _window.TextInput += e => UIInputManager.AddTypedChar(e.AsString);
         /// </summary>
-        public void Update(UICanvas canvas)
+        public static void AddTypedChar(string text)
         {
-            // Si estamos en modo editor y el mouse salió del viewport,
-            // liberar todos los controles sin disparar clicks
+            foreach (char c in text)
+                _charQueue.Enqueue(c);
+        }
+
+        /// <summary>
+        /// Conectar al evento KeyDown de la ventana:
+        ///   _window.KeyDown += e => UIInputManager.AddKeyDown(e.Key);
+        /// </summary>
+        public static void AddKeyDown(Keys key) => _keyQueue.Enqueue(key);
+
+        // ── SetKeyboardState ya no es necesario, se deja vacío por compatibilidad ──
+        public static void SetKeyboardState(OpenTK.Windowing.GraphicsLibraryFramework.KeyboardState state) { }
+
+        // ── Update ────────────────────────────────────────────────────────
+
+        public static void Update(UICanvas canvas)
+        {
             Vector2 refPos = IsInsideViewport
                 ? canvas.ScreenToReference(MouseScreenPos)
-                : new Vector2(-9999f, -9999f);   // fuera de cualquier elemento
+                : new Vector2(-9999f, -9999f);
 
             bool effectiveLeft = IsInsideViewport && LeftDown;
+            bool leftJustPressed = IsInsideViewport && LeftDown && !_prevLeftDown;
 
             foreach (var e in canvas.Elements)
             {
@@ -91,15 +82,65 @@ namespace KrayonCore.UI
                     case UISlider sld:
                         sld.UpdateInput(refPos, effectiveLeft);
                         break;
+                    case UIInputText txt:
+                        txt.UpdateInput(refPos, effectiveLeft, leftJustPressed);
+                        break;
                 }
             }
+
+            DispatchKeyboard(canvas);
         }
 
-        /// <summary>Actualiza todos los canvas del manager.</summary>
-        public void UpdateAll(UICanvasManager manager)
+        public static void UpdateAll()
         {
-            foreach (var canvas in manager.All())
+            foreach (var canvas in UICanvasManager.All())
                 if (canvas.Visible) Update(canvas);
+
+            _charQueue.Clear();
+            _keyQueue.Clear();
+            _prevLeftDown = LeftDown;
+        }
+
+        // ── Dispatch ──────────────────────────────────────────────────────
+
+        private static void DispatchKeyboard(UICanvas canvas)
+        {
+            var focused = canvas.Elements
+                .OfType<UIInputText>()
+                .FirstOrDefault(t => t.IsFocused && t.Visible && t.Enabled);
+
+            if (focused is null) return;
+
+            // Caracteres imprimibles + espacio desde TextInput
+            foreach (char c in _charQueue)
+            {
+                switch (c)
+                {
+                    case '\b': focused.ProcessBackspace(); break;
+                    case '\r':
+                    case '\n': focused.ProcessEnter(); break;
+                    default:
+                        if (!char.IsControl(c)) focused.ProcessChar(c);
+                        break;
+                }
+            }
+
+            // Teclas especiales desde KeyDown event
+            foreach (Keys key in _keyQueue)
+            {
+                switch (key)
+                {
+                    case Keys.Backspace: focused.ProcessBackspace(); break;
+                    case Keys.Delete: focused.ProcessDelete(); break;
+                    case Keys.Enter:
+                    case Keys.KeyPadEnter: focused.ProcessEnter(); break;
+                    case Keys.Home: focused.ProcessHome(); break;
+                    case Keys.End: focused.ProcessEnd(); break;
+                    case Keys.Left: focused.ProcessLeft(); break;
+                    case Keys.Right: focused.ProcessRight(); break;
+                    case Keys.Escape: focused.Unfocus(); break;
+                }
+            }
         }
     }
 }

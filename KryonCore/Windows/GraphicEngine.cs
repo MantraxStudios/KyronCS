@@ -6,11 +6,13 @@ using KrayonCore.Core.Input;
 using KrayonCore.Core.Rendering;
 using KrayonCore.Graphics.FrameBuffers;
 using KrayonCore.Graphics.GameUI;
+using KrayonCore.UI;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace KrayonCore.GraphicsData
 {
@@ -131,29 +133,41 @@ namespace KrayonCore.GraphicsData
             if (AppInfo.IsCompiledGame)
                 CSharpScriptManager.Instance.Reload();
 
+            if (_window is not null)
+            {
+                _window.TextInput += e => UIInputManager.AddTypedChar(e.AsString);
+                _window.KeyDown += e => UIInputManager.AddKeyDown(e.Key);
+            }
+
             OnLoad?.Invoke();
 
 
 
-            var a = GetSceneRenderer().CreateCanvas("hud")
-            .Add(new UILabel { Text = "Hello World!", Position = new(20, 20) })
-            .Add(new UIButton
-            {
-                Name = "btnTest",
-                Text = "Click Me",
-                Position = new(20, 70),
-                Size = new(160, 50),
-                FontSize = 22f,
-                NormalColor = new(0.15f, 0.45f, 0.85f, 1f),
-                HoverColor = new(0.25f, 0.55f, 1.00f, 1f),
-                PressedColor = new(0.08f, 0.30f, 0.65f, 1f),
-                OnClick = () => Console.WriteLine("¡Botón clickeado!"),
-            });
+            //var a = GetSceneRenderer().CreateCanvas("hud")
+            //.Add(new UILabel { Text = "Hello World!", Position = new(20, 20) })
+            //.Add(new UIButton
+            //{
+            //    Name = "btnTest",
+            //    Text = "Click Me",
+            //    Position = new(500, 100),
+            //    Size = new(160, 50),
+            //    FontSize = 22f,
+            //    NormalColor = new(0.15f, 0.45f, 0.85f, 1f),
+            //    HoverColor = new(0.25f, 0.55f, 1.00f, 1f),
+            //    PressedColor = new(0.08f, 0.30f, 0.65f, 1f),
+            //    OnClick = () => Console.WriteLine("¡Botón clickeado!"),
+            //});
 
-            var b = GetSceneRenderer().CreateCanvas("menu", sortOrder: 10)
-                .Add(new UILabel { Text = "PAUSED", Position = new(400, 300) });
+            //a.SetReferenceResolution(1920, 1080);
+            //a.SortOrder = -1;
 
-            a.SetReferenceResolution(1920, 1080);
+            //var canvas = UILoader.Load("MainMenu.ui", GetSceneRenderer());
+
+
+            //var canvas = UILoader.Load("MainMenu.ui", GetSceneRenderer());
+            //canvas?.Find<UIButton>("BtnPlay")?.OnClick = () => Console.WriteLine("Iniciando juego");
+            //canvas?.Find<UIButton>("BtnQuit")?.OnClick = () => Console.WriteLine("Saliendo juego");
+            //canvas?.Find<UISlider>("VolumeSlider")?.OnChange = v => Console.WriteLine($"Volumen: {v}");
         }
 
         internal void InternalUpdate(float deltaTime)

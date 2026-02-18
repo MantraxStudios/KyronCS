@@ -641,6 +641,7 @@ namespace KrayonEditor.UI
 
                 Vector2 cursorPos = ImGui.GetCursorScreenPos();
                 EditorActions.ViewPortPosition = cursorPos;
+                EditorActions.ViewPortPositionOrigin = ImGui.GetCursorScreenPos();
 
                 if (frameBuffer != null)
                 {

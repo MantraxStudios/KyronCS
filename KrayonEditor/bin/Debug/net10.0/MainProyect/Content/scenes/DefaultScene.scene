@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "d1be0f9c-142e-49a3-b20d-0645fd8b071b",
+      "Id": "129b4ebd-fd04-416d-9260-e91b8ae41605",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9c9ff34b-33e2-424e-8948-8d8732408b5f",
+          "ComponentId": "8dfda824-6417-4c1a-9735-bac2201a3742",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5c944211-5523-4fbc-9aa8-9c730a841615",
+          "ComponentId": "43e6fb8c-9d82-497d-b208-71a2bb359cfc",
           "Enabled": true,
           "SerializedFields": {
             "ControllerGuid": "6f743029-3e0d-473e-a8ae-db07d65c634f",
@@ -45,7 +45,7 @@
         },
         {
           "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d6c7183e-fee2-4182-8989-3d8a2c7272e0",
+          "ComponentId": "e8327a24-3f5f-422e-8664-4456607a4a0f",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "4c9e1d5e-daaa-45b0-a7ca-26a06f6793a8",
@@ -58,11 +58,23 @@
               ]
             }
           }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.UICanvasRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "e80e5300-21ea-42dd-bd9f-0aa4548d19b7",
+          "Enabled": true,
+          "SerializedFields": {
+            "CanvasPath": "4a130624-4de1-4834-a69d-7a2c4c4b0353",
+            "Visible": true,
+            "SortOrder": 0,
+            "ReferenceWidth": 1920,
+            "ReferenceHeight": 1080
+          }
         }
       ]
     },
     {
-      "Id": "0f2d3f69-b190-41a4-bb5e-0fefcee8706a",
+      "Id": "beb87c59-0f16-4c8e-bdbb-0b5166e5ca65",
       "Name": "DirectionalLight_1",
       "Tag": "Untagged",
       "Active": true,
@@ -70,7 +82,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "d198745b-07e0-4bad-aad0-272ad5b23d75",
+          "ComponentId": "0e29f7e7-78d8-48c5-ba90-c5fb045b5af2",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -96,7 +108,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "618a1178-e9a6-482d-935f-e931b214b410",
+          "ComponentId": "80943a71-b6c1-47b2-b4d0-ad8ff14687c6",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -121,7 +133,7 @@
       ]
     },
     {
-      "Id": "023bb3ac-bf2e-4c6a-828c-ac9b06d7fea7",
+      "Id": "f19375d6-0b70-4214-907b-359e0cc462ff",
       "Name": "Camera_2",
       "Tag": "Untagged",
       "Active": true,
@@ -129,7 +141,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "26735b7f-1c7f-4764-a233-18e1030926bf",
+          "ComponentId": "117aebbe-32c1-4dc0-ae19-e6fff282fa5b",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -155,7 +167,7 @@
         },
         {
           "TypeName": "KrayonCore.Graphics.Camera.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "784b75f5-b7b9-478d-bd00-5705817fb282",
+          "ComponentId": "d566fd2a-af1d-492f-aa4e-f2ca2a23fb4a",
           "Enabled": true,
           "SerializedFields": {
             "CameraName": "",

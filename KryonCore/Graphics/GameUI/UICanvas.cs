@@ -4,15 +4,6 @@ using OpenTK.Mathematics;
 
 namespace KrayonCore.Graphics.GameUI
 {
-    /// <summary>
-    /// Screen-space canvas con preservación de aspect ratio.
-    /// Se adapta automáticamente al viewport real en cada frame —
-    /// no es necesario llamar a Resize() manualmente (aunque se puede).
-    ///
-    /// Quick start:
-    ///   sceneRenderer.CreateCanvas("hud")
-    ///       .Add(new UILabel { Text = "Hello World!", Position = new(20, 20) });
-    /// </summary>
     public sealed class UICanvas : IDisposable
     {
         // ── Identity ──────────────────────────────────────────────────────
@@ -24,11 +15,6 @@ namespace KrayonCore.Graphics.GameUI
         public float ReferenceWidth { get; private set; } = 1920f;
         public float ReferenceHeight { get; private set; } = 1080f;
 
-        /// <summary>
-        /// Fit    = escala uniforme, barras si el aspect difiere (default)
-        /// Fill   = escala uniforme, bordes se recortan
-        /// Stretch = rellena exacto (puede deformar)
-        /// </summary>
         public UIScaleMode ScaleMode { get; set; } = UIScaleMode.Fit;
 
         // ── Computed (leído desde GL cada frame) ──────────────────────────
@@ -37,6 +23,11 @@ namespace KrayonCore.Graphics.GameUI
         public float OffsetY { get; private set; } = 0f;
         public float ScaledW { get; private set; }
         public float ScaledH { get; private set; }
+
+        // ── Display override (editor viewport) ───────────────────────────
+        private bool _hasDisplayOverride = false;
+        private float _displayScale;
+        private float _displayOffsetX, _displayOffsetY;
 
         // ── Elements ──────────────────────────────────────────────────────
         private readonly List<UIElement> _elements = new();
@@ -131,9 +122,40 @@ namespace KrayonCore.Graphics.GameUI
             RenderInternal();
         }
 
+        // ── Display override ──────────────────────────────────────────────
+        /// <summary>
+        /// Fuerza Scale/Offset para ScreenToReference cuando el canvas se muestra
+        /// dentro de un viewport de editor cuyo tamaño difiere del framebuffer GL.
+        /// Llama cada frame con el tamaño real del viewport ImGui.
+        /// </summary>
+        public void SetDisplayViewport(float displayW, float displayH)
+        {
+            float scaleX = displayW / ReferenceWidth;
+            float scaleY = displayH / ReferenceHeight;
+            _displayScale = ScaleMode switch
+            {
+                UIScaleMode.Fit => MathF.Min(scaleX, scaleY),
+                UIScaleMode.Fill => MathF.Max(scaleX, scaleY),
+                UIScaleMode.Stretch => 1f,
+                _ => MathF.Min(scaleX, scaleY),
+            };
+            float scaledW = ReferenceWidth * _displayScale;
+            float scaledH = ReferenceHeight * _displayScale;
+            _displayOffsetX = (displayW - scaledW) * 0.5f;
+            _displayOffsetY = (displayH - scaledH) * 0.5f;
+            _hasDisplayOverride = true;
+        }
+
+        public void ClearDisplayOverride() => _hasDisplayOverride = false;
+
         // ── Coordinate helpers ────────────────────────────────────────────
         public Vector2 ScreenToReference(Vector2 screenPt)
-            => new((screenPt.X - OffsetX) / Scale, (screenPt.Y - OffsetY) / Scale);
+        {
+            float s = _hasDisplayOverride ? _displayScale : Scale;
+            float ox = _hasDisplayOverride ? _displayOffsetX : OffsetX;
+            float oy = _hasDisplayOverride ? _displayOffsetY : OffsetY;
+            return new((screenPt.X - ox) / s, (screenPt.Y - oy) / s);
+        }
 
         public Vector2 ReferenceToScreen(Vector2 refPt)
             => new(refPt.X * Scale + OffsetX, refPt.Y * Scale + OffsetY);
@@ -154,8 +176,6 @@ namespace KrayonCore.Graphics.GameUI
             if (!Visible) return;
             EnsureBatch();
 
-            // ── Leer el viewport actual que estableció la cámara ──────────
-            // prevVP = [x, y, width, height]  (coordenadas GL, origen bottom-left)
             int[] prevVP = new int[4];
             GL.GetInteger(GetPName.Viewport, prevVP);
 
@@ -166,7 +186,6 @@ namespace KrayonCore.Graphics.GameUI
 
             if (camW <= 0 || camH <= 0) return;
 
-            // ── Calcular escala uniforme dentro del viewport de la cámara ─
             float scaleX = camW / ReferenceWidth;
             float scaleY = camH / ReferenceHeight;
 
@@ -189,18 +208,15 @@ namespace KrayonCore.Graphics.GameUI
             {
                 ScaledW = ReferenceWidth * Scale;
                 ScaledH = ReferenceHeight * Scale;
-                // Centrar dentro del viewport de la cámara
                 OffsetX = (camW - ScaledW) * 0.5f;
                 OffsetY = (camH - ScaledH) * 0.5f;
             }
 
-            // ── Viewport del canvas en coordenadas GL (origen bottom-left) ─
             int vpX = camX + (int)OffsetX;
             int vpY = camY + (int)OffsetY;
             int vpW = (int)ScaledW;
             int vpH = (int)ScaledH;
 
-            // ── Guardar GL state ──────────────────────────────────────────
             bool depthTest = GL.IsEnabled(EnableCap.DepthTest);
             bool cullFace = GL.IsEnabled(EnableCap.CullFace);
             bool blend = GL.IsEnabled(EnableCap.Blend);
@@ -215,7 +231,6 @@ namespace KrayonCore.Graphics.GameUI
             GL.Enable(EnableCap.ScissorTest);
             GL.Scissor(vpX, vpY, vpW, vpH);
 
-            // ── Dibujar elementos ─────────────────────────────────────────
             foreach (var e in _elements)
             {
                 if (!e.Visible) continue;
@@ -223,7 +238,6 @@ namespace KrayonCore.Graphics.GameUI
                 e.Draw(_batch!);
             }
 
-            // ── Restaurar GL state ────────────────────────────────────────
             GL.Viewport(camX, camY, camW, camH);
             SetEnabled(EnableCap.ScissorTest, scissor);
             SetEnabled(EnableCap.DepthTest, depthTest);
@@ -250,11 +264,8 @@ namespace KrayonCore.Graphics.GameUI
 
     public enum UIScaleMode
     {
-        /// <summary>Escala uniforme, barras si el aspect difiere (default).</summary>
         Fit,
-        /// <summary>Escala uniforme, bordes pueden recortarse.</summary>
         Fill,
-        /// <summary>Rellena la pantalla exacto (puede deformar).</summary>
         Stretch,
     }
 }

@@ -817,6 +817,7 @@ namespace KrayonCore.Core.Attributes
             ".js" => "GameScript",
             ".mat" => "Material",
             ".cs" => "Script",
+            ".ui" => "UI",
             ".animator" => "AnimatorController",  
             _ => "Unknown"
         };

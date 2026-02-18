@@ -11,6 +11,7 @@ namespace KrayonEditor
         public static GameObject? SelectedObject { get; set; }
         public static bool IsHoveringScene = false;
         public static Vector2 ViewPortPosition;
+        public static Vector2 ViewPortPositionOrigin;
 
         public static void CreateEmptyGameObject()
         {

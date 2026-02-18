@@ -99,9 +99,9 @@ namespace KrayonEditor.Main
             _uiRender = new UIRender();
 
             _engine.OnTextInput += e => _imguiController?.PressChar((char)e.Unicode);
-            _engine!.Window.MouseMove += (e) => UIInputManager.Instance.SetMousePos(e.X, e.Y);
-            _engine!.Window.MouseDown += (e) => { if (e.Button == MouseButton.Left) UIInputManager.Instance.SetLeftButton(true); };
-            _engine!.Window.MouseUp += (e) => { if (e.Button == MouseButton.Left) UIInputManager.Instance.SetLeftButton(false); };
+            _engine!.Window.MouseMove += (e) => UIInputManager.SetMousePos(e.X, e.Y);
+            _engine!.Window.MouseDown += (e) => { if (e.Button == MouseButton.Left) UIInputManager.SetLeftButton(true); };
+            _engine!.Window.MouseUp += (e) => { if (e.Button == MouseButton.Left) UIInputManager.SetLeftButton(false); };
 
             EditorUI.Initialize();
             SetupCamera();
@@ -367,20 +367,21 @@ namespace KrayonEditor.Main
             );
 
             _uiRender?.RenderUI();
+
             System.Numerics.Vector2 globalMouse = ImGui.GetMousePos();
             System.Numerics.Vector2 vpOrigin = EditorActions.ViewPortPosition;
-            System.Numerics.Vector2 vpSize = _lastSceneViewportSize;
+            System.Numerics.Vector2 vpSize = new System.Numerics.Vector2(GraphicsEngine.Instance.GetSceneFrameBuffer().Width, GraphicsEngine.Instance.GetSceneFrameBuffer().Height);
 
-            UIInputManager.Instance.SetMousePosFromViewport(
+            UIInputManager.SetKeyboardState(GraphicsEngine.Instance.GetKeyboardState().GetSnapshot());
+            UIInputManager.SetMousePosFromViewport(
                 new OpenTK.Mathematics.Vector2(globalMouse.X, globalMouse.Y),
                 new OpenTK.Mathematics.Vector2(vpOrigin.X, vpOrigin.Y),
                 new OpenTK.Mathematics.Vector2(vpSize.X, vpSize.Y)
             );
-
-            UIInputManager.Instance.SetLeftButton(
+            UIInputManager.SetLeftButton(
                 GraphicsEngine.Instance.GetMouseState().IsButtonDown(MouseButton.Left));
-
-            UIInputManager.Instance.UpdateAll(GraphicsEngine.Instance.GetSceneRenderer().UI);
+            UIInputManager.UpdateAll();
+            UICanvasManager.Update(dt);
         }
 
         private static void UpdateHoveredObject()

@@ -18,25 +18,17 @@ namespace KrayonCore.EventSystem
         /// </summary>
         public static UIElement? GetUIElementAt(Vector2 screenPos)
         {
-            var ui = GraphicsEngine.Instance.GetSceneRenderer().UI;
-
-            // Recorrer canvas de mayor a menor SortOrder (el de arriba primero)
-            foreach (var canvas in ui.All().OrderByDescending(c => c.SortOrder))
+            foreach (var canvas in UICanvasManager.All().OrderByDescending(c => c.SortOrder))
             {
                 if (!canvas.Visible) continue;
-
                 Vector2 refPos = canvas.ScreenToReference(screenPos);
-
-                // Elementos de mayor ZOrder primero
                 var hit = canvas.Elements
                     .Where(e => e.Visible && e.Enabled)
                     .OrderByDescending(e => e.ZOrder)
                     .FirstOrDefault(e => e.HitTest(refPos));
-
                 if (hit is not null)
                     return hit;
             }
-
             return null;
         }
 

@@ -1,0 +1,150 @@
+{
+  "name": "MainMenu",
+  "sortOrder": -1,
+  "visible": true,
+  "scaleMode": "Fit",
+  "referenceWidth": 1920,
+  "referenceHeight": 1080,
+  "elements": [
+
+    {
+      "type": "image",
+      "name": "Background",
+      "zOrder": 0,
+      "position": [0, 0],
+      "size": [1920, 1080],
+      "color": [0.08, 0.08, 0.09, 1.0]
+    },
+
+    {
+      "type": "label",
+      "name": "Title",
+      "zOrder": 1,
+      "position": [760, 180],
+      "fontName": "Segoe UI",
+      "fontSize": 72,
+      "fontStyle": "Bold",
+      "textColor": "#E8E8E8FF",
+      "shadowColor": "#00000099",
+      "shadowOffset": [2, 2],
+      "text": "KRAYON ENGINE",
+      "superSample": 2
+    },
+
+    {
+      "type": "label",
+      "name": "Subtitle",
+      "zOrder": 1,
+      "position": [870, 285],
+      "fontName": "Segoe UI",
+      "fontSize": 22,
+      "textColor": "#9090A0FF",
+      "text": "v0.1.0 - Early Access"
+    },
+
+    {
+      "type": "button",
+      "name": "BtnPlay",
+      "zOrder": 2,
+      "position": [760, 400],
+      "size": [400, 55],
+      "text": "Play",
+      "fontName": "Segoe UI",
+      "fontSize": 20,
+      "textColor": "#E8E8E8FF",
+      "cornerRadius": 4,
+      "borderWidth": 1,
+      "normalTop":    [0.22, 0.22, 0.22, 1.0],
+      "normalBottom": [0.15, 0.15, 0.15, 1.0],
+      "hoverTop":     [0.31, 0.31, 0.31, 1.0],
+      "hoverBottom":  [0.23, 0.23, 0.23, 1.0],
+      "pressedTop":   [0.11, 0.11, 0.11, 1.0],
+      "pressedBottom":[0.09, 0.09, 0.09, 1.0],
+      "borderColor":  [0.52, 0.52, 0.52, 1.0],
+      "shadowColor":  [0.0, 0.0, 0.0, 0.55],
+      "transitionSpeed": 10
+    },
+
+    {
+      "type": "button",
+      "name": "BtnSettings",
+      "zOrder": 2,
+      "position": [760, 475],
+      "size": [400, 55],
+      "text": "Settings",
+      "fontName": "Segoe UI",
+      "fontSize": 20,
+      "cornerRadius": 4,
+      "borderWidth": 1,
+      "normalColor": [0.18, 0.18, 0.18, 1.0],
+      "hoverColor":  [0.28, 0.28, 0.28, 1.0],
+      "pressedColor":[0.10, 0.10, 0.10, 1.0]
+    },
+
+    {
+      "type": "button",
+      "name": "BtnQuit",
+      "zOrder": 2,
+      "position": [760, 550],
+      "size": [400, 55],
+      "text": "Quit",
+      "fontName": "Segoe UI",
+      "fontSize": 20,
+      "cornerRadius": 4,
+      "normalColor": [0.18, 0.18, 0.18, 1.0],
+      "hoverColor":  [0.28, 0.28, 0.28, 1.0],
+      "pressedColor":[0.10, 0.10, 0.10, 1.0]
+    },
+
+    {
+      "type": "slider",
+      "name": "VolumeSlider",
+      "zOrder": 2,
+      "position": [760, 680],
+      "size": [340, 6],
+      "min": 0,
+      "max": 100,
+      "value": 75,
+      "thumbRadius": 9,
+      "showValue": true,
+      "valueFormat": "F0",
+      "labelFontSize": 14,
+      "labelFontName": "Segoe UI",
+      "labelColor": "#C0C0C0FF",
+      "fillColorA": [0.18, 0.52, 0.90, 1.0],
+      "fillColorB": [0.12, 0.40, 0.75, 1.0]
+    },
+
+    {
+      "type": "label",
+      "name": "VolumeLabel",
+      "zOrder": 2,
+      "position": [ 760, 655 ],
+      "fontName": "Segoe UI",
+      "fontSize": 16,
+      "textColor": "#A0A0A8FF",
+      "text": "Master Volume"
+    },
+
+    {
+      "type": "inputtext",
+      "name": "UsernameField",
+      "zOrder": 3,
+      "position": [ 760, 620 ],
+      "size": [ 400, 45 ],
+      "placeholder": "Enter username...",
+      "maxLength": 32,
+      "fontName": "Segoe UI",
+      "fontSize": 18,
+      "cornerRadius": 4,
+      "borderWidth": 1.5,
+      "textColor": "#E8E8E8FF",
+      "normalColor": [ 0.14, 0.14, 0.14, 1.0 ],
+      "hoverColor": [ 0.20, 0.20, 0.20, 1.0 ],
+      "focusedColor": [ 0.12, 0.12, 0.12, 1.0 ],
+      "borderColor": [ 0.45, 0.45, 0.45, 1.0 ],
+      "borderFocusedColor": [ 0.18, 0.52, 0.90, 1.0 ]
+    }
+
+  ]
+}
