@@ -44,7 +44,6 @@ namespace KrayonEditor.Main
 
         // ── Estado del editor ────────────────────────────────────────────────
         private static GameObject? _selectedObject = null;
-        private static UIRender? _uiRender = null;
         private static bool _isPlaying = false;
         private static float _editorCameraSpeed = 2.5f;
         private static Vector2 _lastSceneViewportSize = new(1280, 720);
@@ -96,7 +95,6 @@ namespace KrayonEditor.Main
             _renderer = _engine!.GetSceneRenderer();
             _window = _engine.Window;
             _imguiController = new ImGuiController(WindowConfig.Width, WindowConfig.Height);
-            _uiRender = new UIRender();
 
             _engine.OnTextInput += e => _imguiController?.PressChar((char)e.Unicode);
             _engine!.Window.MouseMove += (e) => UIInputManager.SetMousePos(e.X, e.Y);
@@ -113,7 +111,6 @@ namespace KrayonEditor.Main
             {
                 if (ShowAllGizmos)
                 {
-                    // Dibuja colisión de TODOS los objetos
                     var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
                     if (allObjects == null) return;
 
@@ -126,24 +123,20 @@ namespace KrayonEditor.Main
                         Vector4 color = isSelected
                             ? new Vector4(0.0f, 1.0f, 1.0f, 1.0f)   // cyan brillante si está seleccionado
                             : new Vector4(0.0f, 0.8f, 0.8f, 0.5f);  // cyan tenue para el resto
+                        float lw = isSelected ? 2.5f : 1.2f;
 
-                        Matrix4 model = Matrix4.CreateScale(rb.ShapeSize * 2.0f) *
-                                        go.Transform.GetWorldMatrix();
-
-                        GizmoCube.Draw(model, view, projection, color,
-                            lineWidth: isSelected ? 2.5f : 1.2f);
+                        DrawRigidbodyGizmo(rb, go, view, projection, color, lw);
                     }
                 }
                 else if (EditorActions.SelectedObject?.HasComponent<Rigidbody>() == true)
                 {
-                    // Solo el seleccionado
                     var rb = EditorActions.SelectedObject.GetComponent<Rigidbody>();
-                    Matrix4 model = Matrix4.CreateScale(rb.ShapeSize * 2.0f) *
-                                    EditorActions.SelectedObject.Transform.GetWorldMatrix();
-                    GizmoCube.Draw(model, view, projection,
+                    var go = EditorActions.SelectedObject;
+                    DrawRigidbodyGizmo(rb, go, view, projection,
                         new Vector4(0.0f, 1.0f, 1.0f, 1.0f), lineWidth: 2.5f);
                 }
             });
+
 
             // ── Gizmo Audio ───────────────────────────────────────────────────
             sceneRenderer.AttachRender("gizmo_audio", (view, projection, cameraPos) =>
@@ -246,6 +239,56 @@ namespace KrayonEditor.Main
         }
 
         // ── Helpers de gizmos ─────────────────────────────────────────────────
+
+        private static void DrawRigidbodyGizmo(
+    Rigidbody rb, GameObject go,
+    Matrix4 view, Matrix4 projection,
+    Vector4 color, float lineWidth)
+        {
+            switch (rb.ShapeType)
+            {
+                case ShapeType.Box:
+                    {
+                        // ShapeSize es la semidimensión → escalar x2 para obtener el tamaño completo
+                        Matrix4 model = Matrix4.CreateScale(rb.ShapeSize * 2.0f)
+                                      * go.Transform.GetWorldMatrix();
+                        GizmoCube.Draw(model, view, projection, color, lineWidth);
+                        break;
+                    }
+
+                case ShapeType.Sphere:
+                    {
+                        // ShapeSize.X es el radio
+                        float diameter = rb.ShapeSize.X * 2.0f;
+                        Matrix4 model = Matrix4.CreateScale(diameter)
+                                      * go.Transform.GetWorldMatrix();
+                        GizmoSphere.Draw(model, view, projection, color, lineWidth);
+                        break;
+                    }
+
+                case ShapeType.Capsule:
+                    {
+                        // Convención de Bepu en CreateCapsule: (halfLength, radius)
+                        //   ShapeSize.Y = halfLength del cilindro central
+                        //   ShapeSize.X = radio
+                        float radius = rb.ShapeSize.X;
+                        float halfLength = rb.ShapeSize.Y;
+
+                        // GizmoCapsule está construido en espacio local con:
+                        //   - radio unitario = 0.5  → escalar XZ por diámetro
+                        //   - halfHeight del cilindro = 0.5  → escalar Y por (cilindro + hemisferios)
+                        //   totalHeight = cilindro * 2 + radio * 2  (dos semiesferas = 1 esfera completa)
+                        float diameter = radius * 2.0f;
+                        float totalHeight = halfLength * 2.0f + diameter;
+
+                        Matrix4 model = Matrix4.CreateScale(diameter, totalHeight, diameter)
+                                      * go.Transform.GetWorldMatrix();
+                        GizmoCapsule.Draw(model, view, projection, color, lineWidth);
+                        break;
+                    }
+            }
+        }
+
 
         private static void DrawLightGizmo(Light light, Matrix4 view, Matrix4 projection, bool isSelected)
         {
@@ -365,8 +408,6 @@ namespace KrayonEditor.Main
                 _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages,
                 out _isPlaying, out _editorCameraSpeed, out _lastSceneViewportSize
             );
-
-            _uiRender?.RenderUI();
 
             System.Numerics.Vector2 globalMouse = ImGui.GetMousePos();
             System.Numerics.Vector2 vpOrigin = EditorActions.ViewPortPosition;
