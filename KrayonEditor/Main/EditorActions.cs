@@ -55,7 +55,7 @@ namespace KrayonEditor
             int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
             var go = SceneManager.ActiveScene.CreateGameObject($"DirectionalLight_{count}");
             go.Transform.SetPosition(0, 5, 0);
-            go.Transform.SetRotation(45, 0, 0);
+            go.Transform.SetRotation(-45, 0, 0);
             var light = go.AddComponent<Light>();
             light.Type = LightType.Directional;
             light.Start();
@@ -69,8 +69,9 @@ namespace KrayonEditor
             int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
             var go = SceneManager.ActiveScene.CreateGameObject($"Camera_{count}");
             go.Transform.SetPosition(0, 5, 0);
-            go.Transform.SetRotation(45, 0, 0);
+            go.Transform.SetRotation(0, 0, 0);
             var cam = go.AddComponent<CameraComponent>();
+            cam.Start();
             EngineEditor.SetSelectedObject(go);
             EngineEditor.LogMessage($"Created {go.Name} with Camera");
         }

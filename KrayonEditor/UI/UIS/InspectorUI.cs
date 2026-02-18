@@ -457,19 +457,22 @@ namespace KrayonEditor.UI
         }
 
         // ════════════════════════════════════════════════════════════════════
-        //  RIGIDBODY
+        //  RIGIDBODY  — reemplazar el método completo DrawRigidbodyInspector
         // ════════════════════════════════════════════════════════════════════
+
+        private static OpenTK.Mathematics.Vector3 ClampVec3(Vector3 v) =>
+            new(Math.Max(0.01f, v.X), Math.Max(0.01f, v.Y), Math.Max(0.01f, v.Z));
 
         private void DrawRigidbodyInspector(KrayonCore.Rigidbody rb)
         {
-            // Motion type
+            // ── Motion Type ───────────────────────────────────────────────
             string[] motionNames = Enum.GetNames(typeof(BodyMotionType));
             int motionIdx = (int)rb.MotionType;
             BeginFieldRow("Motion Type");
             if (ImGui.Combo("##motiontype", ref motionIdx, motionNames, motionNames.Length))
                 rb.MotionType = (BodyMotionType)motionIdx;
 
-            // Flags row
+            // ── Flags (Kinematic / Trigger / Gravity) ─────────────────────
             ImGui.Spacing();
             bool kin = rb.IsKinematic;
             if (ImGui.Checkbox("Kinematic", ref kin)) rb.IsKinematic = kin;
@@ -481,6 +484,7 @@ namespace KrayonEditor.UI
             if (ImGui.Checkbox("Gravity", ref grav)) rb.UseGravity = grav;
             ImGui.Spacing();
 
+            // ── Mass / Sleep ──────────────────────────────────────────────
             float mass = rb.Mass;
             BeginFieldRow("Mass");
             if (ImGui.DragFloat("##mass", ref mass, 0.1f, 0.01f, 1000f))
@@ -495,25 +499,109 @@ namespace KrayonEditor.UI
             ImGui.Separator();
             ImGui.Spacing();
 
+            // ── Shape ─────────────────────────────────────────────────────
             string[] shapeNames = Enum.GetNames(typeof(ShapeType));
             int shapeIdx = (int)rb.ShapeType;
             BeginFieldRow("Shape");
             if (ImGui.Combo("##shapetype", ref shapeIdx, shapeNames, shapeNames.Length))
                 rb.ShapeType = (ShapeType)shapeIdx;
 
+            // Shape Size — label dinámico según la forma
+            string shapeSizeLabel = rb.ShapeType switch
+            {
+                ShapeType.Sphere => "Radius",
+                ShapeType.Capsule => "Radius / Height",
+                _ => "Size"
+            };
+
             var ss = rb.ShapeSize;
-            Vector3 ssv = new(ss.X, ss.Y, ss.Z);
-            BeginFieldRow("Shape Size");
-            if (ImGui.DragFloat3("##shapesize", ref ssv, 0.05f, 0.01f, 100f))
-                rb.ShapeSize = new OpenTK.Mathematics.Vector3(
-                    Math.Max(0.01f, ssv.X), Math.Max(0.01f, ssv.Y), Math.Max(0.01f, ssv.Z));
+            var ssv = new Vector3(ss.X, ss.Y, ss.Z);
+
+            switch (rb.ShapeType)
+            {
+                // Box: X Y Z completo
+                case ShapeType.Box:
+                    {
+                        BeginFieldRow(shapeSizeLabel);
+                        if (ImGui.DragFloat3("##shapesize", ref ssv, 0.05f, 0.01f, 100f))
+                            rb.ShapeSize = ClampVec3(ssv);
+                        break;
+                    }
+
+                // Sphere: solo radio (X)
+                case ShapeType.Sphere:
+                    {
+                        float r = ssv.X;
+                        BeginFieldRow(shapeSizeLabel);
+                        if (ImGui.DragFloat("##shapesize_r", ref r, 0.05f, 0.01f, 100f))
+                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(
+                                Math.Max(0.01f, r), ss.Y, ss.Z);
+                        break;
+                    }
+
+                // Capsule: X = radio, Y = half-length del cilindro
+                case ShapeType.Capsule:
+                    {
+                        float r = ssv.X;
+                        float h = ssv.Y;
+                        float fieldW = (ImGui.GetContentRegionAvail().X - LabelColumnWidth) * 0.5f - 3f;
+
+                        ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+                        ImGui.Text(shapeSizeLabel);
+                        ImGui.PopStyleColor();
+                        ImGui.SameLine(LabelColumnWidth);
+
+                        ImGui.SetNextItemWidth(fieldW);
+                        if (ImGui.DragFloat("##caps_r", ref r, 0.05f, 0.01f, 100f, "R:%.2f"))
+                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(
+                                Math.Max(0.01f, r), ss.Y, ss.Z);
+
+                        ImGui.SameLine(0, 6f);
+                        ImGui.SetNextItemWidth(fieldW);
+                        if (ImGui.DragFloat("##caps_h", ref h, 0.05f, 0.01f, 100f, "H:%.2f"))
+                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(
+                                ss.X, Math.Max(0.01f, h), ss.Z);
+
+                        // Indicador visual de altura total = cilindro + 2 hemisferios
+                        float totalH = h * 2f + r * 2f;
+                        ImGui.SameLine(0, 6f);
+                        ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+                        ImGui.TextUnformatted($"({totalH:F2} total)");
+                        ImGui.PopStyleColor();
+                        break;
+                    }
+            }
+
+            // ── Collider Offset  (igual que Unity: Center X Y Z) ──────────
+            ImGui.Spacing();
+
+            var co = rb.ColliderOffset;
+            var cov = new Vector3(co.X, co.Y, co.Z);
+            BeginFieldRow("Center");
+            if (ImGui.DragFloat3("##coloffset", ref cov, 0.01f))
+                rb.ColliderOffset = new OpenTK.Mathematics.Vector3(cov.X, cov.Y, cov.Z);
+
+            // Botón Reset offset (pequeño, a la derecha)
+            if (cov != Vector3.Zero)
+            {
+                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.28f, 0.28f, 0.28f, 1f));
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.38f, 0.38f, 0.38f, 1f));
+                ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+                if (ImGui.Button("⌀##reset_offset", new Vector2(22f, 0f)))
+                    rb.ColliderOffset = OpenTK.Mathematics.Vector3.Zero;
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip("Reset Center to (0, 0, 0)");
+                ImGui.PopStyleColor(3);
+            }
 
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
 
+            // ── Layer ─────────────────────────────────────────────────────
             DrawPhysicsLayerSelector("Layer", rb);
 
+            // ── Subpaneles plegables ──────────────────────────────────────
             ImGui.Spacing();
             if (ImGui.TreeNodeEx("Constraints", ImGuiTreeNodeFlags.SpanAvailWidth))
             {
@@ -526,6 +614,7 @@ namespace KrayonEditor.UI
                 ImGui.TreePop();
             }
         }
+
 
         private void DrawPhysicsLayerSelector(string label, KrayonCore.Rigidbody rb)
         {

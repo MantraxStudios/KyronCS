@@ -121,8 +121,8 @@ namespace KrayonEditor.Main
                         bool isSelected = go == EditorActions.SelectedObject;
 
                         Vector4 color = isSelected
-                            ? new Vector4(0.0f, 1.0f, 1.0f, 1.0f)   // cyan brillante si está seleccionado
-                            : new Vector4(0.0f, 0.8f, 0.8f, 0.5f);  // cyan tenue para el resto
+                            ? new Vector4(0.0f, 1.0f, 1.0f, 1.0f)   // cyan brillante
+                            : new Vector4(0.0f, 0.8f, 0.8f, 0.5f);  // cyan tenue
                         float lw = isSelected ? 2.5f : 1.2f;
 
                         DrawRigidbodyGizmo(rb, go, view, projection, color, lw);
@@ -131,11 +131,11 @@ namespace KrayonEditor.Main
                 else if (EditorActions.SelectedObject?.HasComponent<Rigidbody>() == true)
                 {
                     var rb = EditorActions.SelectedObject.GetComponent<Rigidbody>();
-                    var go = EditorActions.SelectedObject;
-                    DrawRigidbodyGizmo(rb, go, view, projection,
+                    DrawRigidbodyGizmo(rb, EditorActions.SelectedObject, view, projection,
                         new Vector4(0.0f, 1.0f, 1.0f, 1.0f), lineWidth: 2.5f);
                 }
             });
+
 
 
             // ── Gizmo Audio ───────────────────────────────────────────────────
@@ -245,44 +245,52 @@ namespace KrayonEditor.Main
     Matrix4 view, Matrix4 projection,
     Vector4 color, float lineWidth)
         {
+            Vector3 worldPos = go.Transform.GetWorldPosition();
+            Quaternion worldRot = go.Transform.GetWorldRotation();
+
+            // Rotar el offset local al espacio mundo
+            Vector3 worldOffset = Vector3.Transform(rb.ColliderOffset, worldRot);
+            Vector3 gizmoCenter = worldPos + worldOffset;
+
+            // Usamos rotación pura (sin la escala del objeto) para que ShapeSize sea la escala real
+            Matrix4 rotMat = Matrix4.CreateFromQuaternion(worldRot);
+            Matrix4 transMat = Matrix4.CreateTranslation(gizmoCenter);
+
             switch (rb.ShapeType)
             {
+                // ── Box ───────────────────────────────────────────────────────────
                 case ShapeType.Box:
                     {
-                        // ShapeSize es la semidimensión → escalar x2 para obtener el tamaño completo
+                        // ShapeSize en Bepu = semidimensiones → ×2 para el tamaño completo
                         Matrix4 model = Matrix4.CreateScale(rb.ShapeSize * 2.0f)
-                                      * go.Transform.GetWorldMatrix();
+                                      * rotMat * transMat;
                         GizmoCube.Draw(model, view, projection, color, lineWidth);
                         break;
                     }
 
+                // ── Sphere ────────────────────────────────────────────────────────
                 case ShapeType.Sphere:
                     {
-                        // ShapeSize.X es el radio
                         float diameter = rb.ShapeSize.X * 2.0f;
                         Matrix4 model = Matrix4.CreateScale(diameter)
-                                      * go.Transform.GetWorldMatrix();
+                                       * rotMat * transMat;
                         GizmoSphere.Draw(model, view, projection, color, lineWidth);
                         break;
                     }
 
+                // ── Capsule ───────────────────────────────────────────────────────
                 case ShapeType.Capsule:
                     {
-                        // Convención de Bepu en CreateCapsule: (halfLength, radius)
-                        //   ShapeSize.Y = halfLength del cilindro central
-                        //   ShapeSize.X = radio
+                        // Bepu CreateCapsule(halfLength, radius)
+                        //   ShapeSize.X = radio  |  ShapeSize.Y = halfLength del cilindro
                         float radius = rb.ShapeSize.X;
                         float halfLength = rb.ShapeSize.Y;
-
-                        // GizmoCapsule está construido en espacio local con:
-                        //   - radio unitario = 0.5  → escalar XZ por diámetro
-                        //   - halfHeight del cilindro = 0.5  → escalar Y por (cilindro + hemisferios)
-                        //   totalHeight = cilindro * 2 + radio * 2  (dos semiesferas = 1 esfera completa)
                         float diameter = radius * 2.0f;
-                        float totalHeight = halfLength * 2.0f + diameter;
+                        float totalHeight = halfLength * 2.0f + diameter; // cilindro + 2 hemisferios
 
+                        // GizmoCapsule local: radio unitario = 0.5, halfHeight cilindro = 0.5
                         Matrix4 model = Matrix4.CreateScale(diameter, totalHeight, diameter)
-                                      * go.Transform.GetWorldMatrix();
+                                      * rotMat * transMat;
                         GizmoCapsule.Draw(model, view, projection, color, lineWidth);
                         break;
                     }

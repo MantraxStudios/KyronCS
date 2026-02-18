@@ -19,6 +19,7 @@ namespace KrayonCore
         private Vector3 _previousShapeSize;
         private Vector3 _previousScale;
         private bool _previousIsTrigger;
+        private Vector3 _previousColliderOffset;
 
         private BodyMotionType _motionType = BodyMotionType.Dynamic;
         [ToStorage]
@@ -61,6 +62,25 @@ namespace KrayonCore
                 if (_shapeSize != value)
                 {
                     _shapeSize = value;
+                    if (_isInitialized) RecreatePhysicsBody();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Offset del colisionador en espacio local del GameObject (igual que Unity).
+        /// Se rota junto con el objeto antes de aplicarse en mundo.
+        /// </summary>
+        private Vector3 _colliderOffset = Vector3.Zero;
+        [ToStorage]
+        public Vector3 ColliderOffset
+        {
+            get => _colliderOffset;
+            set
+            {
+                if (_colliderOffset != value)
+                {
+                    _colliderOffset = value;
                     if (_isInitialized) RecreatePhysicsBody();
                 }
             }
@@ -191,14 +211,12 @@ namespace KrayonCore
         }
 
         private BodyMotionType GetFinalMotionType()
-        {
-            return _isKinematic ? BodyMotionType.Kinematic : _motionType;
-        }
+            => _isKinematic ? BodyMotionType.Kinematic : _motionType;
 
         private Vector3 GetCurrentScale()
         {
-            var transform = GameObject.Transform;
-            return new Vector3(transform.ScaleX, transform.ScaleY, transform.ScaleZ);
+            var t = GameObject.Transform;
+            return new Vector3(t.ScaleX, t.ScaleY, t.ScaleZ);
         }
 
         private Vector3 GetFinalShapeSize()
@@ -210,6 +228,19 @@ namespace KrayonCore
                 _shapeSize.Z * scale.Z);
         }
 
+        /// <summary>
+        /// Convierte el offset local en offset de mundo rotando por la
+        /// rotación mundial del objeto, igual que Unity hace internamente.
+        /// </summary>
+        private Vector3 GetWorldOffset()
+        {
+            if (_colliderOffset == Vector3.Zero)
+                return Vector3.Zero;
+
+            Quaternion worldRot = GameObject.Transform.GetWorldRotation();
+            return Vector3.Transform(_colliderOffset, worldRot);
+        }
+
         private void CreatePhysicsBody()
         {
             if (GameObject?.Scene?.PhysicsWorld == null)
@@ -218,7 +249,12 @@ namespace KrayonCore
             var physicsWorld = GameObject.Scene.PhysicsWorld;
             var transform = GameObject.Transform;
 
-            System.Numerics.Vector3 position = ToNumerics(transform.GetWorldPosition());
+            // Posición = posición mundial + offset rotado
+            Vector3 worldPos = transform.GetWorldPosition();
+            Vector3 worldOffset = GetWorldOffset();
+            System.Numerics.Vector3 position =
+                ToNumerics(worldPos + worldOffset);
+
             System.Numerics.Quaternion rotation = ToNumerics(transform.GetWorldRotation());
 
             BodyMotionType finalMotionType = GetFinalMotionType();
@@ -238,6 +274,7 @@ namespace KrayonCore
             _previousShapeSize = _shapeSize;
             _previousScale = GetCurrentScale();
             _previousIsTrigger = _isTrigger;
+            _previousColliderOffset = _colliderOffset;
         }
 
         private void CreateStaticBody(WorldPhysic physicsWorld, System.Numerics.Vector3 position,
@@ -248,7 +285,8 @@ namespace KrayonCore
             switch (_shapeType)
             {
                 case ShapeType.Box:
-                    _staticHandle = physicsWorld.CreateStaticBox(ToNumerics(finalSize), position, rotation, _layer);
+                    _staticHandle = physicsWorld.CreateStaticBox(
+                        ToNumerics(finalSize), position, rotation, _layer);
                     break;
 
                 case ShapeType.Sphere:
@@ -273,23 +311,27 @@ namespace KrayonCore
             }
         }
 
-        private void CreateDynamicOrKinematicBody(WorldPhysic physicsWorld, System.Numerics.Vector3 position,
-            System.Numerics.Quaternion rotation, Vector3 finalSize, bool isDynamic)
+        private void CreateDynamicOrKinematicBody(WorldPhysic physicsWorld,
+            System.Numerics.Vector3 position, System.Numerics.Quaternion rotation,
+            Vector3 finalSize, bool isDynamic)
         {
             switch (_shapeType)
             {
                 case ShapeType.Box:
-                    _bodyHandle = physicsWorld.CreateBox(ToNumerics(finalSize), position, rotation,
+                    _bodyHandle = physicsWorld.CreateBox(
+                        ToNumerics(finalSize), position, rotation,
                         isDynamic, Mass, SleepThreshold, _layer);
                     break;
 
                 case ShapeType.Sphere:
-                    _bodyHandle = physicsWorld.CreateSphere(finalSize.X, position, rotation,
+                    _bodyHandle = physicsWorld.CreateSphere(
+                        finalSize.X, position, rotation,
                         isDynamic, Mass, SleepThreshold, _layer);
                     break;
 
                 case ShapeType.Capsule:
-                    _bodyHandle = physicsWorld.CreateCapsule(finalSize.Y, finalSize.X, position, rotation,
+                    _bodyHandle = physicsWorld.CreateCapsule(
+                        finalSize.Y, finalSize.X, position, rotation,
                         isDynamic, Mass, SleepThreshold, _layer);
                     break;
             }
@@ -356,10 +398,8 @@ namespace KrayonCore
             var collidableId = GetCollidableId();
             if (!collidableId.HasValue) return;
 
-            if (_isTrigger)
-                physicsWorld.TriggerRegistry.Register(collidableId.Value);
-            else
-                physicsWorld.TriggerRegistry.Unregister(collidableId.Value);
+            if (_isTrigger) physicsWorld.TriggerRegistry.Register(collidableId.Value);
+            else physicsWorld.TriggerRegistry.Unregister(collidableId.Value);
         }
 
         private void UpdateLayerRegistration()
@@ -396,7 +436,8 @@ namespace KrayonCore
             if (_bodyHandle.HasValue)
             {
                 BodyMotionType finalMotionType = GetFinalMotionType();
-                if (finalMotionType == BodyMotionType.Dynamic && _previousMotionType == BodyMotionType.Dynamic)
+                if (finalMotionType == BodyMotionType.Dynamic &&
+                    _previousMotionType == BodyMotionType.Dynamic)
                 {
                     var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
                     bodyRef.Velocity.Linear = linearVelocity;
@@ -438,20 +479,20 @@ namespace KrayonCore
 
             BodyMotionType finalMotionType = GetFinalMotionType();
 
-            if (finalMotionType == BodyMotionType.Static || finalMotionType == BodyMotionType.Kinematic)
+            if (finalMotionType == BodyMotionType.Static ||
+                finalMotionType == BodyMotionType.Kinematic)
                 SyncToPhysics();
 
-            if (!_useGravity && _bodyHandle.HasValue && finalMotionType == BodyMotionType.Dynamic)
+            if (!_useGravity && _bodyHandle.HasValue &&
+                finalMotionType == BodyMotionType.Dynamic)
             {
                 var physicsWorld = GameObject.Scene.PhysicsWorld;
                 var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
                 var gravity = physicsWorld.Gravity;
-                var compensationImpulse = new System.Numerics.Vector3(
+                bodyRef.ApplyLinearImpulse(new System.Numerics.Vector3(
                     -gravity.X * Mass * deltaTime,
                     -gravity.Y * Mass * deltaTime,
-                    -gravity.Z * Mass * deltaTime
-                );
-                bodyRef.ApplyLinearImpulse(compensationImpulse);
+                    -gravity.Z * Mass * deltaTime));
             }
         }
 
@@ -461,15 +502,20 @@ namespace KrayonCore
                 return;
 
             BodyMotionType finalMotionType = GetFinalMotionType();
-            if (finalMotionType == BodyMotionType.Kinematic || finalMotionType == BodyMotionType.Static)
-                return;
+            if (finalMotionType == BodyMotionType.Kinematic ||
+                finalMotionType == BodyMotionType.Static) return;
 
             var physicsWorld = GameObject.Scene.PhysicsWorld;
             var bodyRef = physicsWorld.Simulation.Bodies[_bodyHandle.Value];
 
             physicsWorld.Awaken(_bodyHandle.Value);
 
-            Vector3 position = ToOpenTK(bodyRef.Pose.Position);
+            // La física devuelve la posición del centro del colisionador.
+            // Hay que restar el offset (ya rotado) para obtener la posición del GameObject.
+            Vector3 physicsPos = ToOpenTK(bodyRef.Pose.Position);
+            Quaternion physicsRotation = ToOpenTK(bodyRef.Pose.Orientation);
+            Vector3 worldOffset = Vector3.Transform(_colliderOffset, physicsRotation);
+            Vector3 position = physicsPos - worldOffset;
 
             if (FreezePositionX) position.X = GameObject.Transform.GetWorldPosition().X;
             if (FreezePositionY) position.Y = GameObject.Transform.GetWorldPosition().Y;
@@ -495,172 +541,144 @@ namespace KrayonCore
 
             GameObject.Transform.SetWorldPosition(position);
 
-            Quaternion physicsRotation = ToOpenTK(bodyRef.Pose.Orientation);
-
             if (!FreezeRotationX && !FreezeRotationY && !FreezeRotationZ)
             {
                 GameObject.Transform.SetWorldRotation(physicsRotation);
             }
-            else if (FreezeRotationX && FreezeRotationY && FreezeRotationZ)
-            {
-                // nada
-            }
-            else
+            else if (!(FreezeRotationX && FreezeRotationY && FreezeRotationZ))
             {
                 Vector3 physicsEuler = physicsRotation.ToEulerAngles();
                 Vector3 currentEuler = GameObject.Transform.GetWorldRotation().ToEulerAngles();
 
-                Vector3 finalEuler = new Vector3(
+                GameObject.Transform.SetWorldRotation(Quaternion.FromEulerAngles(new Vector3(
                     FreezeRotationX ? currentEuler.X : physicsEuler.X,
                     FreezeRotationY ? currentEuler.Y : physicsEuler.Y,
-                    FreezeRotationZ ? currentEuler.Z : physicsEuler.Z
-                );
-
-                GameObject.Transform.SetWorldRotation(Quaternion.FromEulerAngles(finalEuler));
+                    FreezeRotationZ ? currentEuler.Z : physicsEuler.Z)));
             }
         }
 
         public void SyncToPhysics()
         {
-            if (GameObject?.Scene?.PhysicsWorld == null)
-                return;
+            if (GameObject?.Scene?.PhysicsWorld == null) return;
 
             var sim = GameObject.Scene.PhysicsWorld.Simulation;
-            BodyMotionType finalMotionType = GetFinalMotionType();
+            BodyMotionType fmt = GetFinalMotionType();
 
-            if (finalMotionType == BodyMotionType.Kinematic && _bodyHandle.HasValue)
+            if (fmt == BodyMotionType.Kinematic && _bodyHandle.HasValue)
             {
                 var bodyRef = sim.Bodies[_bodyHandle.Value];
-                var targetPos = ToNumerics(GameObject.Transform.GetWorldPosition());
+                Vector3 goPos = GameObject.Transform.GetWorldPosition();
+                Vector3 offset = GetWorldOffset();
+
+                var targetPos = ToNumerics(goPos + offset);
                 var targetRot = ToNumerics(GameObject.Transform.GetWorldRotation());
 
                 const float dt = 0.016f;
-                var currentPos = bodyRef.Pose.Position;
-                bodyRef.Velocity.Linear = (targetPos - currentPos) / dt;
+                bodyRef.Velocity.Linear = (targetPos - bodyRef.Pose.Position) / dt;
                 bodyRef.Pose.Position = targetPos;
                 bodyRef.Pose.Orientation = targetRot;
 
                 GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
             }
-            else if (finalMotionType == BodyMotionType.Static && _staticHandle.HasValue)
+            else if (fmt == BodyMotionType.Static && _staticHandle.HasValue)
             {
                 var staticRef = sim.Statics[_staticHandle.Value];
-                staticRef.Pose.Position = ToNumerics(GameObject.Transform.GetWorldPosition());
-                staticRef.Pose.Orientation = ToNumerics(GameObject.Transform.GetWorldRotation());
+                staticRef.Pose.Position = ToNumerics(
+                    GameObject.Transform.GetWorldPosition() + GetWorldOffset());
+                staticRef.Pose.Orientation = ToNumerics(
+                    GameObject.Transform.GetWorldRotation());
             }
         }
 
+        // ── API pública ───────────────────────────────────────────────────────
+
         public void AddForce(Vector3 force)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.ApplyLinearImpulse(ToNumerics(force));
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.ApplyLinearImpulse(ToNumerics(force));
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public void AddImpulse(Vector3 impulse)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.ApplyLinearImpulse(ToNumerics(impulse));
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.ApplyLinearImpulse(ToNumerics(impulse));
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public void AddTorque(Vector3 torque)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.ApplyAngularImpulse(ToNumerics(torque));
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.ApplyAngularImpulse(ToNumerics(torque));
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public void SetVelocity(Vector3 velocity)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.Velocity.Linear = ToNumerics(velocity);
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.Velocity.Linear = ToNumerics(velocity);
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public Vector3 GetVelocity()
         {
             if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-                return ToOpenTK(GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value].Velocity.Linear);
+                return ToOpenTK(
+                    GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value].Velocity.Linear);
             return Vector3.Zero;
         }
 
         public void SetAngularVelocity(Vector3 angularVelocity)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.Velocity.Angular = ToNumerics(angularVelocity);
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.Velocity.Angular = ToNumerics(angularVelocity);
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public Vector3 GetAngularVelocity()
         {
             if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-                return ToOpenTK(GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value].Velocity.Angular);
+                return ToOpenTK(
+                    GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value].Velocity.Angular);
             return Vector3.Zero;
         }
 
         public void MovePosition(Vector3 position)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.Pose.Position = ToNumerics(position);
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.Pose.Position = ToNumerics(position + GetWorldOffset());
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public void MoveRotation(Quaternion rotation)
         {
-            if (_bodyHandle.HasValue && GameObject?.Scene?.PhysicsWorld != null)
-            {
-                var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
-                bodyRef.Pose.Orientation = ToNumerics(rotation);
-                GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
-            }
+            if (!_bodyHandle.HasValue || GameObject?.Scene?.PhysicsWorld == null) return;
+            var bodyRef = GameObject.Scene.PhysicsWorld.Simulation.Bodies[_bodyHandle.Value];
+            bodyRef.Pose.Orientation = ToNumerics(rotation);
+            GameObject.Scene.PhysicsWorld.Awaken(_bodyHandle.Value);
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
-
             if (GameObject?.Scene?.PhysicsWorld != null)
                 RemoveCurrentBody(GameObject.Scene.PhysicsWorld);
-
             _isInitialized = false;
         }
 
+        // ── Conversiones ──────────────────────────────────────────────────────
         private static System.Numerics.Vector3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
         private static Vector3 ToOpenTK(System.Numerics.Vector3 v) => new(v.X, v.Y, v.Z);
         private static System.Numerics.Quaternion ToNumerics(Quaternion q) => new(q.X, q.Y, q.Z, q.W);
         private static Quaternion ToOpenTK(System.Numerics.Quaternion q) => new(q.X, q.Y, q.Z, q.W);
     }
 
-    public enum BodyMotionType
-    {
-        Static,
-        Kinematic,
-        Dynamic
-    }
-
-    public enum ShapeType
-    {
-        Box,
-        Sphere,
-        Capsule
-    }
+    public enum BodyMotionType { Static, Kinematic, Dynamic }
+    public enum ShapeType { Box, Sphere, Capsule }
 }
