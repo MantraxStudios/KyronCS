@@ -7,6 +7,7 @@ using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
 using KrayonCore.Graphics.Camera;
+using KrayonEditor.Main;
 
 namespace KrayonEditor.UI
 {

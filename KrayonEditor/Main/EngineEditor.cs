@@ -7,13 +7,16 @@ using KrayonCore.Core.Components;
 using KrayonCore.Core.Input;
 using KrayonCore.EventSystem;
 using KrayonCore.Graphics.Camera;
+using KrayonCore.Graphics.GameUI;
 using KrayonCore.GraphicsData;
+using KrayonCore.UI;
+using KrayonEditor.UI;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Vector2 = System.Numerics.Vector2;
 
-namespace KrayonEditor.UI
+namespace KrayonEditor.Main
 {
     internal static class EngineEditor
     {
@@ -96,6 +99,9 @@ namespace KrayonEditor.UI
             _uiRender = new UIRender();
 
             _engine.OnTextInput += e => _imguiController?.PressChar((char)e.Unicode);
+            _engine!.Window.MouseMove += (e) => UIInputManager.Instance.SetMousePos(e.X, e.Y);
+            _engine!.Window.MouseDown += (e) => { if (e.Button == MouseButton.Left) UIInputManager.Instance.SetLeftButton(true); };
+            _engine!.Window.MouseUp += (e) => { if (e.Button == MouseButton.Left) UIInputManager.Instance.SetLeftButton(false); };
 
             EditorUI.Initialize();
             SetupCamera();
@@ -361,6 +367,20 @@ namespace KrayonEditor.UI
             );
 
             _uiRender?.RenderUI();
+            System.Numerics.Vector2 globalMouse = ImGui.GetMousePos();
+            System.Numerics.Vector2 vpOrigin = EditorActions.ViewPortPosition;
+            System.Numerics.Vector2 vpSize = _lastSceneViewportSize;
+
+            UIInputManager.Instance.SetMousePosFromViewport(
+                new OpenTK.Mathematics.Vector2(globalMouse.X, globalMouse.Y),
+                new OpenTK.Mathematics.Vector2(vpOrigin.X, vpOrigin.Y),
+                new OpenTK.Mathematics.Vector2(vpSize.X, vpSize.Y)
+            );
+
+            UIInputManager.Instance.SetLeftButton(
+                GraphicsEngine.Instance.GetMouseState().IsButtonDown(MouseButton.Left));
+
+            UIInputManager.Instance.UpdateAll(GraphicsEngine.Instance.GetSceneRenderer().UI);
         }
 
         private static void UpdateHoveredObject()

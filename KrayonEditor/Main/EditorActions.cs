@@ -1,7 +1,7 @@
 ﻿using KrayonCore;
 using KrayonCore.Components.RenderComponents;
 using KrayonCore.Graphics.Camera;
-using KrayonEditor.UI;
+using KrayonEditor.Main;
 using System.Numerics;
 
 namespace KrayonEditor

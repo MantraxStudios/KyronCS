@@ -2,6 +2,7 @@
 using KrayonCore.Components.Components;
 using KrayonCore.Components.RenderComponents;
 using KrayonCore.Graphics.FrameBuffers;
+using KrayonCore.Graphics.GameUI;
 using KrayonCore.GraphicsData;
 using LightingSystem;
 using OpenTK.Graphics.OpenGL4;
@@ -11,12 +12,15 @@ namespace KrayonCore
 {
     public class SceneRenderer
     {
+        // ── Lighting ──────────────────────────────────────────────────────
         private LightManager _lightManager = new();
 
+        // ── Instance groups ───────────────────────────────────────────────
         private readonly Dictionary<(Model model, Material material), List<Matrix4>>
             _meshInstanceGroups = new(),
             _spriteInstanceGroups = new();
 
+        // ── Renderer lists ────────────────────────────────────────────────
         private readonly List<SkyboxRenderer> _skyboxRenderers = new();
         private readonly List<MeshRenderer> _meshRenderers = new();
         private readonly List<AnimatedMeshRenderer> _animatedMeshRenderers = new();
@@ -25,9 +29,20 @@ namespace KrayonCore
 
         private bool _needsCleanup = false;
 
+        // ── Render attachments (used by UICanvas internally) ──────────────
         private readonly Dictionary<string, Action<Matrix4, Matrix4, Vector3>> _renderAttachments = new();
 
+        // ── UI ────────────────────────────────────────────────────────────
+        /// <summary>
+        /// Shared UICanvasManager for this renderer.
+        /// Create canvases with: UI.Create("hud").Add(new UILabel { ... })
+        /// </summary>
+        public UICanvasManager UI { get; } = new UICanvasManager();
+
+        // ── Options ───────────────────────────────────────────────────────
         public bool WireframeMode { get; set; } = false;
+
+        // ── Ctor / Initialize ─────────────────────────────────────────────
 
         public SceneRenderer()
         {
@@ -51,6 +66,8 @@ namespace KrayonCore
             );
         }
 
+        // ── Renderer registration ─────────────────────────────────────────
+
         public void RegisterRenderer<T>(T renderer) where T : class
         {
             switch (renderer)
@@ -59,22 +76,18 @@ namespace KrayonCore
                     if (!_skyboxRenderers.Contains(skybox))
                         _skyboxRenderers.Add(skybox);
                     break;
-
                 case AnimatedMeshRenderer animMesh:
                     if (!_animatedMeshRenderers.Contains(animMesh))
                         _animatedMeshRenderers.Add(animMesh);
                     break;
-
                 case MeshRenderer mesh:
                     if (!_meshRenderers.Contains(mesh))
                         _meshRenderers.Add(mesh);
                     break;
-
                 case SpriteRenderer sprite:
                     if (!_spriteRenderers.Contains(sprite))
                         _spriteRenderers.Add(sprite);
                     break;
-
                 case TileRenderer tile:
                     if (!_tileRenderers.Contains(tile))
                         _tileRenderers.Add(tile);
@@ -91,26 +104,21 @@ namespace KrayonCore
                 case SkyboxRenderer skybox:
                     removed = _skyboxRenderers.Remove(skybox);
                     break;
-
                 case AnimatedMeshRenderer animMesh:
                     removed = _animatedMeshRenderers.Remove(animMesh);
                     break;
-
                 case MeshRenderer mesh:
                     removed = _meshRenderers.Remove(mesh);
                     break;
-
                 case SpriteRenderer sprite:
                     removed = _spriteRenderers.Remove(sprite);
                     break;
-
                 case TileRenderer tile:
                     removed = _tileRenderers.Remove(tile);
                     break;
             }
 
-            if (removed)
-                _needsCleanup = true;
+            if (removed) _needsCleanup = true;
         }
 
         public void ClearAllRenderers()
@@ -136,6 +144,8 @@ namespace KrayonCore
             _needsCleanup = false;
         }
 
+        // ── Render attachments ────────────────────────────────────────────
+
         public void AttachRender(string name, Action<Matrix4, Matrix4, Vector3> renderCallback)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -150,6 +160,22 @@ namespace KrayonCore
             => _renderAttachments.TryGetValue(name, out var cb) ? cb : null;
 
         public bool HasRenderAttachment(string name) => _renderAttachments.ContainsKey(name);
+
+        // ── UI helpers ────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Shortcut: creates (or returns existing) a UICanvas attached to this renderer.
+        /// <code>
+        /// sceneRenderer.CreateCanvas("hud").Add(new UILabel { Text = "Hello World!" });
+        /// </code>
+        /// </summary>
+        public UICanvas CreateCanvas(string name, int sortOrder = 0)
+            => UI.Create(name, this, sortOrder);
+
+        /// <summary>Returns a canvas by name, or null if it doesn't exist.</summary>
+        public UICanvas? GetCanvas(string name) => UI.Get(name);
+
+        // ── Main render loop ──────────────────────────────────────────────
 
         public void Render()
         {
@@ -199,11 +225,14 @@ namespace KrayonCore
             var projection = cam.GetProjectionMatrix();
             var cameraPos = cam.Position;
 
+            // ── 3D world ──────────────────────────────────────────────────
             RenderSkybox(view, projection, cameraPos);
             RenderMeshRenderers(view, projection, cameraPos);
             RenderAnimatedMeshRenderers(view, projection, cameraPos);
             RenderSpriteRenderers(view, projection, cameraPos);
             RenderTileRenderers(view, projection, cameraPos);
+
+            // ── Custom attachments (includes UICanvas callbacks) ──────────
             RenderAttachments(view, projection, cameraPos);
 
             ClearInstanceGroups();
@@ -214,27 +243,73 @@ namespace KrayonCore
         {
             if (_renderAttachments.Count == 0) return;
 
-            foreach (var kvp in _renderAttachments)
+            // Iterate in key-sorted order so UICanvas sort orders are respected
+            foreach (var kvp in _renderAttachments.OrderBy(k => k.Key))
             {
-                try
-                {
-                    kvp.Value?.Invoke(view, projection, cameraPos);
-                }
+                try { kvp.Value?.Invoke(view, projection, cameraPos); }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[SceneRenderer] Error en render attachment '{kvp.Key}': {ex.Message}");
+                    Console.WriteLine(
+                        $"[SceneRenderer] Error en render attachment '{kvp.Key}': {ex.Message}");
                 }
             }
         }
 
+        // ── Update ────────────────────────────────────────────────────────
+
+        public void Update(float deltaTime)
+        {
+            UI.Update(deltaTime);
+        }
+
+        // ── Resize ────────────────────────────────────────────────────────
+
+        public void Resize(int width, int height)
+        {
+            CameraManager.Instance.ResizeAll(width, height);
+            UI.Resize(width, height);
+        }
+
+        // ── Shutdown ──────────────────────────────────────────────────────
+
+        public void Shutdown()
+        {
+            ClearInstanceGroups();
+            ClearAllRenderers();
+            UI.Shutdown();
+        }
+
+        // ── Camera / Lighting accessors ───────────────────────────────────
+
+        public Camera GetCamera()
+            => CameraManager.Instance.Main?.Camera
+            ?? throw new InvalidOperationException("No hay cámara principal registrada.");
+
+        public LightManager GetLightManager() => _lightManager;
+
+        // ── Wireframe ─────────────────────────────────────────────────────
+
+        public void ToggleWireframe() => WireframeMode = !WireframeMode;
+        public void SetWireframeMode(bool val) => WireframeMode = val;
+
+        // ── Stats ─────────────────────────────────────────────────────────
+
+        public int GetRegisteredRenderersCount()
+            => _skyboxRenderers.Count + _meshRenderers.Count +
+               _animatedMeshRenderers.Count + _spriteRenderers.Count + _tileRenderers.Count;
+
+        public (int skybox, int mesh, int animatedMesh, int sprite, int tile) GetRendererCounts()
+            => (_skyboxRenderers.Count, _meshRenderers.Count,
+                _animatedMeshRenderers.Count, _spriteRenderers.Count, _tileRenderers.Count);
+
+        // ── Private 3D render methods (unchanged) ─────────────────────────
+
         private void ClearInstanceGroups()
         {
-            foreach (var kvp in _meshInstanceGroups)
-                kvp.Key.model.ClearInstancing();
+            foreach (var kvp in _meshInstanceGroups) kvp.Key.model.ClearInstancing();
             _meshInstanceGroups.Clear();
 
-            foreach (var kvp in _spriteInstanceGroups)
-                kvp.Key.model.ClearInstancing();
+            foreach (var kvp in _spriteInstanceGroups) kvp.Key.model.ClearInstancing();
             _spriteInstanceGroups.Clear();
         }
 
@@ -249,8 +324,7 @@ namespace KrayonCore
             if (cullFaceEnabled)
                 prevCullMode = GL.GetInteger(GetPName.CullFaceMode);
 
-            if (!cullFaceEnabled)
-                GL.Enable(EnableCap.CullFace);
+            if (!cullFaceEnabled) GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Front);
 
             foreach (var renderer in _skyboxRenderers)
@@ -267,8 +341,7 @@ namespace KrayonCore
                 if (renderer.Material is null)
                 {
                     var skyboxMat = GraphicsEngine.Instance.Materials.Get("Sky");
-                    if (skyboxMat is not null)
-                        renderer.SetMaterial(skyboxMat);
+                    if (skyboxMat is not null) renderer.SetMaterial(skyboxMat);
                 }
 
                 if (renderer.SphereModel is null || renderer.Material is null) continue;
@@ -285,27 +358,23 @@ namespace KrayonCore
                 renderer.Material.SetInt("u_UseInstancing", 0);
 
                 if (renderer.Material.AlbedoTexture is null)
-                {
-                    renderer.Material.SetVector3("u_AlbedoColor", new Vector3(
-                        renderer.Color.X, renderer.Color.Y, renderer.Color.Z));
-                }
+                    renderer.Material.SetVector3("u_AlbedoColor",
+                        new Vector3(renderer.Color.X, renderer.Color.Y, renderer.Color.Z));
 
                 renderer.Material.SetFloat("u_Alpha", renderer.Color.W);
                 renderer.Draw();
             }
 
             GL.DepthFunc(DepthFunction.Less);
-            if (cullFaceEnabled)
-                GL.CullFace((CullFaceMode)prevCullMode);
-            else
-                GL.Disable(EnableCap.CullFace);
+            if (cullFaceEnabled) GL.CullFace((CullFaceMode)prevCullMode);
+            else GL.Disable(EnableCap.CullFace);
         }
 
         private void RenderMeshRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_meshRenderers.Count == 0) return;
 
-            var multiMaterialObjects = new List<(MeshRenderer renderer, Transform transform)>();
+            var multiMat = new List<(MeshRenderer renderer, Transform transform)>();
 
             foreach (var renderer in _meshRenderers)
             {
@@ -333,12 +402,11 @@ namespace KrayonCore
                     var key = (renderer.Model, mat);
                     if (!_meshInstanceGroups.ContainsKey(key))
                         _meshInstanceGroups[key] = new List<Matrix4>();
-
                     _meshInstanceGroups[key].Add(worldMatrix);
                 }
                 else if (validCount > 1)
                 {
-                    multiMaterialObjects.Add((renderer, transform));
+                    multiMat.Add((renderer, transform));
                 }
             }
 
@@ -355,7 +423,7 @@ namespace KrayonCore
                 model.ClearInstancing();
             }
 
-            foreach (var (renderer, transform) in multiMaterialObjects)
+            foreach (var (renderer, transform) in multiMat)
             {
                 if (renderer?.Model is null) continue;
                 renderer.Model.ClearInstancing();
@@ -426,28 +494,19 @@ namespace KrayonCore
 
                 for (int i = 0; i < model.SubMeshCount; i++)
                 {
-                    var material = renderer.GetMaterial(i);
-
-                    if (material is null)
-                    {
-                        material = GraphicsEngine.Instance.Materials.Get("basic");
-                        if (material is null) continue;
-                    }
+                    var material = renderer.GetMaterial(i)
+                                ?? GraphicsEngine.Instance.Materials.Get("basic");
+                    if (material is null) continue;
 
                     SetupMaterial(material, view, projection, cameraPos, instanced: false);
                     material.SetMatrix4("model", worldMatrix);
 
                     if (animator != null && animator.IsPlaying)
-                    {
                         animator.UploadBoneMatrices(material.Shader.ProgramID);
-                    }
                     else
-                    {
                         Animator.DisableAnimation(material.Shader.ProgramID);
-                    }
 
                     _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
-
                     model.SubMeshes[i].Mesh.Draw();
                 }
             }
@@ -611,39 +670,5 @@ namespace KrayonCore
             => Enumerable.Range(0, renderer.MaterialCount)
                 .Select(i => renderer.GetMaterial(i))
                 .FirstOrDefault(m => m is not null);
-
-        public void ToggleWireframe() => WireframeMode = !WireframeMode;
-        public void SetWireframeMode(bool val) => WireframeMode = val;
-
-        public void Resize(int width, int height)
-        {
-            CameraManager.Instance.ResizeAll(width, height);
-        }
-
-        public void Update(float deltaTime) { }
-
-        public void Shutdown()
-        {
-            ClearInstanceGroups();
-            ClearAllRenderers();
-        }
-
-        public Camera GetCamera()
-            => CameraManager.Instance.Main?.Camera
-            ?? throw new InvalidOperationException("No hay cámara principal registrada.");
-
-        public LightManager GetLightManager() => _lightManager;
-
-        public int GetRegisteredRenderersCount()
-        {
-            return _skyboxRenderers.Count + _meshRenderers.Count +
-                   _animatedMeshRenderers.Count + _spriteRenderers.Count + _tileRenderers.Count;
-        }
-
-        public (int skybox, int mesh, int animatedMesh, int sprite, int tile) GetRendererCounts()
-        {
-            return (_skyboxRenderers.Count, _meshRenderers.Count,
-                    _animatedMeshRenderers.Count, _spriteRenderers.Count, _tileRenderers.Count);
-        }
     }
 }

@@ -3,6 +3,7 @@ using KrayonCore;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core.Components;
 using KrayonCore.Scripting;
+using KrayonEditor.Main;
 using KrayonEditor.UI;
 
 namespace KrayonEditor
