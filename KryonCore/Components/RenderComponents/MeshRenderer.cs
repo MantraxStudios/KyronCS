@@ -272,44 +272,59 @@ namespace KrayonCore.Components.RenderComponents
         public void SetupAutomaticMaterials()
         {
             if (_model == null)
-            {
                 return;
-            }
 
             MaterialPaths = new string[Model.SubMeshCount];
 
             for (int i = 0; i < Model.SubMeshCount; i++)
             {
                 SubMeshInfo meshInfo = Model._subMeshes[i];
-                string textureFileName = PathUtils.GetFileNameWithExtension(
-                    meshInfo.TextureInfo.DiffuseTexture
-                );
-                string texturePath = PathUtils.FindFileByName(
-                    AssetManager.BasePath,
-                    textureFileName
-                );
-                if (!string.IsNullOrEmpty(texturePath))
+                string diffusePath = meshInfo.TextureInfo?.DiffuseTexture;
+
+                if (string.IsNullOrEmpty(diffusePath))
                 {
-                    string relativePath = PathUtils.GetPathAfterContent(texturePath);
-                    var assetRecord = AssetManager.FindByPath(relativePath);
-
-                    Console.WriteLine($"Relative Path Found: {assetRecord.Guid}");
-
-                    if (assetRecord == null)
-                    {
-                        Console.WriteLine($"Texture not registered in AssetManager: {relativePath}");
-                        continue;
-                    }
-
-                    Material G = GraphicsEngine.Instance.Materials.Create(
-                        PathUtils.GetFileNameWithoutExtension(texturePath),
-                        Guid.Parse("f3df852d-4e51-4e3c-ae64-81184e1b1182"),
-                        Guid.Parse("94804744-32d4-4fa3-8aa0-d7f8f19fc3fb"));
-                    G.LoadAlbedoTexture(assetRecord.Guid);
-                    G.Roughness = 0;
-                    MaterialPaths[i] = G.Name;
+                    Console.WriteLine($"[SubMesh {i}] No diffuse texture assigned.");
+                    continue;
                 }
+
+                string textureFileName = PathUtils.GetFileNameWithExtension(diffusePath);
+                string absolutePath = PathUtils.FindFileByName(AssetManager.BasePath, textureFileName);
+
+                if (string.IsNullOrEmpty(absolutePath))
+                {
+                    Console.WriteLine($"[SubMesh {i}] File not found in project: {textureFileName}");
+                    continue;
+                }
+
+                string relativePath = PathUtils.GetPathAfterContent(absolutePath);
+
+                var assetRecord = AssetManager.FindByPath(relativePath);
+
+                if (assetRecord == null)
+                {
+                    Console.WriteLine($"[SubMesh {i}] Not registered in AssetManager: {relativePath}");
+                    continue;
+                }
+                else
+                {
+                    Console.WriteLine($"Texture name: {diffusePath}");
+                }
+
+                Console.WriteLine($"[SubMesh {i}] Asset found: {assetRecord.Guid} -> {relativePath}");
+
+                string matName = PathUtils.GetFileNameWithoutExtension(relativePath);
+
+                Material mat = GraphicsEngine.Instance.Materials.Create(
+                    matName,
+                    AssetManager.FindByPath("shaders/basic.vert").Guid,
+                    AssetManager.FindByPath("shaders/basic.frag").Guid
+                );
+
+                mat.LoadAlbedoTexture(assetRecord.Guid);
+                mat.Roughness = 0;
+                MaterialPaths[i] = mat.Name;
             }
+
             GraphicsEngine.Instance.Materials.SaveMaterialsData();
         }
     }

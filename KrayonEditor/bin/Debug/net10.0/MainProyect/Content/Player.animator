@@ -4,8 +4,8 @@
   "states": [
     {
       "name": "Walk",
-      "clipGuid": "04d9d321-7d8e-4a5d-934a-21331466488d",
-      "clipName": "Fight Idle",
+      "clipGuid": "9717286d-694e-44a5-91f4-c379a5196189",
+      "clipName": "RIG_Glitchtrap|Springtrap_Pos03_Idle_01",
       "loop": true,
       "speed": 1,
       "transitions": []
@@ -22,8 +22,8 @@
       "states": [
         {
           "name": "Walk",
-          "clipGuid": "04d9d321-7d8e-4a5d-934a-21331466488d",
-          "clipName": "Fight Idle",
+          "clipGuid": "9717286d-694e-44a5-91f4-c379a5196189",
+          "clipName": "RIG_Glitchtrap|Springtrap_Pos03_Idle_01",
           "loop": true,
           "speed": 1,
           "transitions": []

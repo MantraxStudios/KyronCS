@@ -104,6 +104,15 @@
                                 CornerRadius="8" Padding="0,14"
                                 Clicked="OnLoginClicked"/>
 
+                        <Button Text="CONTINUE WITHOUT ACCOUNT"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource TextSecondary}"
+                                FontSize="12"
+                                BorderColor="{StaticResource BorderGray}"
+                                BorderWidth="1"
+                                CornerRadius="8" Padding="0,12"
+                                Clicked="OnContinueWithoutAccount"/>
+
                         <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
                             <Label Text="Don't have an account?"
                                    TextColor="{StaticResource TextSecondary}"
@@ -228,6 +237,15 @@
                                 FontSize="14" FontAttributes="Bold"
                                 CornerRadius="8" Padding="0,14"
                                 Clicked="OnRegisterClicked"/>
+
+                        <Button Text="CONTINUE WITHOUT ACCOUNT"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource TextSecondary}"
+                                FontSize="12"
+                                BorderColor="{StaticResource BorderGray}"
+                                BorderWidth="1"
+                                CornerRadius="8" Padding="0,12"
+                                Clicked="OnContinueWithoutAccount"/>
 
                         <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
                             <Label Text="Already have an account?"

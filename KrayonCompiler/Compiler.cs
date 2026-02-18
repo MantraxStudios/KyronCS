@@ -308,32 +308,65 @@ namespace KrayonCompiler
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  PakFile  (version optimizada)
+    //  PakCore  — núcleo compartido (Flyweight)
+    //  Una sola instancia por archivo en disco.
+    //  PakFile es sólo un wrapper liviano que apunta aquí.
     // ─────────────────────────────────────────────────────────────
 
-    public sealed class PakFile : IDisposable
+    sealed class PakCore : IDisposable
     {
-        // Asignar ANTES de la primera llamada a Load(). Por defecto 128 MB.
-        public long CacheMaxBytes
+        // ── Registro estático ─────────────────────────────────────
+        private static readonly object _registryLock = new object();
+        private static readonly Dictionary<string, PakCore> _registry =
+            new Dictionary<string, PakCore>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Devuelve el núcleo ya cargado para <paramref name="pakPath"/>,
+        /// o lo crea y lo registra la primera vez. Thread-safe.
+        /// </summary>
+        internal static PakCore Acquire(string pakPath)
         {
-            get { return _cacheMaxBytes; }
-            set { _cacheMaxBytes = value; }
+            string key = Path.GetFullPath(pakPath);
+            lock (_registryLock)
+            {
+                PakCore core;
+                if (_registry.TryGetValue(key, out core))
+                    return core;                        // ← reutiliza: no recarga TOC
+
+                core = new PakCore(pakPath, key);
+                _registry[key] = core;
+                return core;
+            }
         }
 
-        private long _cacheMaxBytes;
+        /// <summary>Libera todos los núcleos del registro (usar al cerrar el juego).</summary>
+        public static void ReleaseAll()
+        {
+            lock (_registryLock)
+            {
+                foreach (PakCore c in _registry.Values)
+                    c.Dispose();
+                _registry.Clear();
+            }
+        }
+
+        // ── Estado interno ────────────────────────────────────────
         private MemoryMappedFile _mmf;
         private readonly Dictionary<ulong, AssetEntry> _assets;
         private LruCache _cache;
         private int _disposed;
 
-        public PakFile(string pakPath)
+        public long CacheMaxBytes
         {
-            if (!File.Exists(pakPath))
-                throw new FileNotFoundException("PAK no encontrado", pakPath);
+            get { return _cacheMaxBytes; }
+            set { _cacheMaxBytes = value; }
+        }
+        private long _cacheMaxBytes = 128L * 1024 * 1024;
 
-            _cacheMaxBytes = 128L * 1024 * 1024;
+        // ── Constructor privado ───────────────────────────────────
+        private PakCore(string pakPath, string resolvedKey)
+        {
             _assets = new Dictionary<ulong, AssetEntry>();
-            _cache = null;
             _disposed = 0;
 
             FileStream fileStream = new FileStream(
@@ -349,7 +382,6 @@ namespace KrayonCompiler
 
             MemoryMappedViewAccessor acc = _mmf.CreateViewAccessor(
                 0, 0, MemoryMappedFileAccess.Read);
-
             try
             {
                 byte[] magic = new byte[4];
@@ -371,8 +403,8 @@ namespace KrayonCompiler
                     entry.Size = acc.ReadInt32(pos); pos += 4;
 
                     if (_assets.ContainsKey(entry.Id))
-                        Console.WriteLine(
-                            string.Format("[PakFile] Warning: hash duplicado {0:X16} en TOC.", entry.Id));
+                        Console.WriteLine(string.Format(
+                            "[PakFile] Warning: hash duplicado {0:X16} en TOC.", entry.Id));
 
                     _assets[entry.Id] = entry;
                 }
@@ -382,18 +414,21 @@ namespace KrayonCompiler
                 acc.Dispose();
             }
 
-            Console.WriteLine(
-                string.Format("[PakFile] Cargado: {0} assets desde '{1}'", _assets.Count, pakPath));
+            // Solo se imprime UNA vez por archivo, no por cada new PakFile()
+            Console.WriteLine(string.Format(
+                "[PakFile] Cargado: {0} assets desde '{1}'", _assets.Count, pakPath));
         }
 
-        // ── Carga sincrona ────────────────────────────────────────
+        // ── API interna usada por PakFile ─────────────────────────
 
-        public byte[] Load(string assetName)
+        internal bool ContainsAsset(ulong id)
         {
-            ThrowIfDisposed();
-            EnsureCache();
+            return _assets.ContainsKey(id);
+        }
 
-            ulong id = HashUtil.Hash(assetName);
+        internal byte[] Load(ulong id, string assetNameForLog)
+        {
+            EnsureCache();
 
             byte[] cached;
             if (_cache.TryGet(id, out cached))
@@ -403,13 +438,14 @@ namespace KrayonCompiler
             if (!_assets.TryGetValue(id, out entry))
             {
                 Console.WriteLine(string.Format(
-                    "[PakFile] Asset no encontrado: '{0}' (norm: '{1}', hash: {2:X16})",
-                    assetName, HashUtil.Normalize(assetName), id));
+                    "[PakFile] Asset no encontrado: '{0}' (hash: {1:X16})",
+                    assetNameForLog, id));
                 return null;
             }
 
             byte[] data = ReadEntry(ref entry);
 
+            // Copia separada para la caché (la devuelta al caller puede mutar)
             byte[] forCache = new byte[data.Length];
             Buffer.BlockCopy(data, 0, forCache, 0, data.Length);
             _cache.Put(id, forCache);
@@ -417,66 +453,14 @@ namespace KrayonCompiler
             return data;
         }
 
-        // ── Carga asincrona ───────────────────────────────────────
-
-        public Task<byte[]> LoadAsync(string assetName)
+        internal void InvalidateCache(ulong id)
         {
-            return LoadAsync(assetName, CancellationToken.None);
+            if (_cache != null) _cache.Invalidate(id);
         }
 
-        public Task<byte[]> LoadAsync(string assetName, CancellationToken ct)
+        internal void ClearCache()
         {
-            ThrowIfDisposed();
-            EnsureCache();
-
-            ulong id = HashUtil.Hash(assetName);
-            byte[] cached;
-
-            if (_cache.TryGet(id, out cached))
-                return Task.FromResult(cached);
-
-            return Task.Run(delegate { return Load(assetName); }, ct);
-        }
-
-        // ── Prefetch en background ────────────────────────────────
-
-        public Task PrefetchAsync(IEnumerable<string> assetNames)
-        {
-            return PrefetchAsync(assetNames, CancellationToken.None);
-        }
-
-        public Task PrefetchAsync(IEnumerable<string> assetNames, CancellationToken ct)
-        {
-            return Task.Run(delegate
-            {
-                foreach (string name in assetNames)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    Load(name);
-                }
-            }, ct);
-        }
-
-        // ── Consulta de existencia ────────────────────────────────
-
-        public bool Contains(string assetName)
-        {
-            ulong id = HashUtil.Hash(assetName);
-            return _assets.ContainsKey(id);
-        }
-
-        // ── Control de caché ──────────────────────────────────────
-
-        public void InvalidateCache(string assetName)
-        {
-            if (_cache == null) return;
-            _cache.Invalidate(HashUtil.Hash(assetName));
-        }
-
-        public void ClearCache()
-        {
-            if (_cache != null)
-                _cache.Clear();
+            if (_cache != null) _cache.Clear();
         }
 
         // ── Helpers privados ──────────────────────────────────────
@@ -522,25 +506,137 @@ namespace KrayonCompiler
             }
         }
 
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+            if (_mmf != null) { _mmf.Dispose(); _mmf = null; }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  PakFile  — wrapper público (sin cambios de API)
+    //  new PakFile("Game.pak") es barato: solo busca en el registro.
+    // ─────────────────────────────────────────────────────────────
+
+    public sealed class PakFile : IDisposable
+    {
+        // ── Libera todos los archivos PAK del motor ───────────────
+        /// <summary>
+        /// Llama esto UNA sola vez al cerrar el juego/escena.
+        /// Libera el MemoryMappedFile compartido de cada PAK.
+        /// </summary>
+        public static void ReleaseAll() => PakCore.ReleaseAll();
+
+        // ── Propiedad de caché (delegada al núcleo compartido) ────
+        public long CacheMaxBytes
+        {
+            get { return _core.CacheMaxBytes; }
+            set { _core.CacheMaxBytes = value; }
+        }
+
+        private readonly PakCore _core;
+        private int _disposed;
+
+        // ── Constructor: O(1) si el PAK ya fue cargado ────────────
+        public PakFile(string pakPath)
+        {
+            if (!File.Exists(pakPath))
+                throw new FileNotFoundException("PAK no encontrado", pakPath);
+
+            _core = PakCore.Acquire(pakPath);   // ← reutiliza núcleo si existe
+            _disposed = 0;
+        }
+
+        // ── Carga síncrona ────────────────────────────────────────
+
+        public byte[] Load(string assetName)
+        {
+            ThrowIfDisposed();
+            ulong id = HashUtil.Hash(assetName);
+            return _core.Load(id, assetName);
+        }
+
+        // ── Carga asíncrona ───────────────────────────────────────
+
+        public Task<byte[]> LoadAsync(string assetName)
+        {
+            return LoadAsync(assetName, CancellationToken.None);
+        }
+
+        public Task<byte[]> LoadAsync(string assetName, CancellationToken ct)
+        {
+            ThrowIfDisposed();
+            ulong id = HashUtil.Hash(assetName);
+
+            // Verificar caché en el hilo actual antes de ir al pool
+            byte[] cached;
+            if (_core.ContainsAsset(id))
+            {
+                // Intentar desde caché sin saltar al ThreadPool
+                byte[] hit = _core.Load(id, assetName);
+                if (hit != null) return Task.FromResult(hit);
+            }
+
+            return Task.Run(delegate { return _core.Load(id, assetName); }, ct);
+        }
+
+        // ── Prefetch en background ────────────────────────────────
+
+        public Task PrefetchAsync(IEnumerable<string> assetNames)
+        {
+            return PrefetchAsync(assetNames, CancellationToken.None);
+        }
+
+        public Task PrefetchAsync(IEnumerable<string> assetNames, CancellationToken ct)
+        {
+            return Task.Run(delegate
+            {
+                foreach (string name in assetNames)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    Load(name);
+                }
+            }, ct);
+        }
+
+        // ── Consulta de existencia ────────────────────────────────
+
+        public bool Contains(string assetName)
+        {
+            ulong id = HashUtil.Hash(assetName);
+            return _core.ContainsAsset(id);
+        }
+
+        // ── Control de caché ──────────────────────────────────────
+
+        public void InvalidateCache(string assetName)
+        {
+            if (_disposed != 0) return;
+            _core.InvalidateCache(HashUtil.Hash(assetName));
+        }
+
+        public void ClearCache()
+        {
+            if (_disposed != 0) return;
+            _core.ClearCache();
+        }
+
+        // ── Dispose ───────────────────────────────────────────────
+        // Dispose() ya NO cierra el MMF porque el núcleo es compartido.
+        // El MMF se cierra solo al llamar PakFile.ReleaseAll().
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _disposed, 1);
+            // _core sigue vivo para otras instancias que apuntan al mismo PAK
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowIfDisposed()
         {
             if (_disposed != 0)
                 throw new ObjectDisposedException("PakFile");
-        }
-
-        // ── Dispose ───────────────────────────────────────────────
-
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref _disposed, 1) != 0)
-                return;
-
-            if (_mmf != null)
-            {
-                _mmf.Dispose();
-                _mmf = null;
-            }
         }
     }
 }

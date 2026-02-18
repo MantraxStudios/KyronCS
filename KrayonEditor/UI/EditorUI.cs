@@ -88,6 +88,8 @@ namespace KrayonEditor.UI
             ImGui.DockSpace(innerDock, new Vector2(0, 0), ImGuiDockNodeFlags.None);
             ImGui.End();
 
+            //EditorLayout.Draw();
+
             _mainMenuBar.OnDrawUI();
             _dockSpace.OnDrawUI();
             _hierarchy.OnDrawUI();

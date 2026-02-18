@@ -77,12 +77,25 @@ namespace KrayonCore
             ".obj", ".fbx", ".3ds", ".dae", ".blend", ".ply", ".stl", ".x", ".lwo", ".lws"
         };
 
+        private static readonly HashSet<string> _formatsNeedingFlipWinding = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".fbx"
+        };
+
         private static PostProcessSteps GetPostProcessFlags(string extension)
         {
-            var flags = PostProcessSteps.Triangulate | PostProcessSteps.CalculateTangentSpace;
+            var flags = PostProcessSteps.Triangulate
+                      | PostProcessSteps.CalculateTangentSpace
+                      | PostProcessSteps.JoinIdenticalVertices
+                      | PostProcessSteps.GenerateSmoothNormals
+                      | PostProcessSteps.OptimizeMeshes
+                      | PostProcessSteps.PreTransformVertices;
 
             if (_formatsNeedingFlipUVs.Contains(extension))
                 flags |= PostProcessSteps.FlipUVs;
+
+            if (_formatsNeedingFlipWinding.Contains(extension))
+                flags |= PostProcessSteps.FlipWindingOrder;
 
             return flags;
         }
@@ -195,46 +208,104 @@ namespace KrayonCore
                 var material = scene.Materials[i];
                 var textureInfo = new MaterialTextureInfo();
 
-                if (material.HasTextureDiffuse)
-                    textureInfo.DiffuseTexture = GetTexturePath(material.TextureDiffuse, modelDirectory);
+                foreach (var slot in material.GetMaterialTextures(TextureType.Diffuse))
+                    if (string.IsNullOrEmpty(textureInfo.DiffuseTexture))
+                        textureInfo.DiffuseTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
 
-                if (material.HasTextureNormal)
-                    textureInfo.NormalTexture = GetTexturePath(material.TextureNormal, modelDirectory);
-                else if (material.HasTextureHeight)
-                    textureInfo.NormalTexture = GetTexturePath(material.TextureHeight, modelDirectory);
+                foreach (var slot in material.GetMaterialTextures(TextureType.Normals))
+                    if (string.IsNullOrEmpty(textureInfo.NormalTexture))
+                        textureInfo.NormalTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
 
-                if (material.HasTextureSpecular)
-                    textureInfo.SpecularTexture = GetTexturePath(material.TextureSpecular, modelDirectory);
+                if (string.IsNullOrEmpty(textureInfo.NormalTexture))
+                    foreach (var slot in material.GetMaterialTextures(TextureType.Height))
+                        if (string.IsNullOrEmpty(textureInfo.NormalTexture))
+                            textureInfo.NormalTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
 
-                if (material.HasTextureReflection)
-                    textureInfo.MetallicTexture = GetTexturePath(material.TextureReflection, modelDirectory);
+                foreach (var slot in material.GetMaterialTextures(TextureType.Specular))
+                    if (string.IsNullOrEmpty(textureInfo.SpecularTexture))
+                        textureInfo.SpecularTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
 
-                if (material.HasTextureAmbient)
-                    textureInfo.AmbientOcclusionTexture = GetTexturePath(material.TextureAmbient, modelDirectory);
-                else if (material.HasTextureLightMap)
-                    textureInfo.AmbientOcclusionTexture = GetTexturePath(material.TextureLightMap, modelDirectory);
+                foreach (var slot in material.GetMaterialTextures(TextureType.Reflection))
+                    if (string.IsNullOrEmpty(textureInfo.MetallicTexture))
+                        textureInfo.MetallicTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
 
-                if (material.HasTextureEmissive)
-                    textureInfo.EmissiveTexture = GetTexturePath(material.TextureEmissive, modelDirectory);
+                foreach (var slot in material.GetMaterialTextures(TextureType.Shininess))
+                    if (string.IsNullOrEmpty(textureInfo.RoughnessTexture))
+                        textureInfo.RoughnessTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
+
+                foreach (var slot in material.GetMaterialTextures(TextureType.Ambient))
+                    if (string.IsNullOrEmpty(textureInfo.AmbientOcclusionTexture))
+                        textureInfo.AmbientOcclusionTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
+
+                foreach (var slot in material.GetMaterialTextures(TextureType.Lightmap))
+                    if (string.IsNullOrEmpty(textureInfo.AmbientOcclusionTexture))
+                        textureInfo.AmbientOcclusionTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
+
+                foreach (var slot in material.GetMaterialTextures(TextureType.Emissive))
+                    if (string.IsNullOrEmpty(textureInfo.EmissiveTexture))
+                        textureInfo.EmissiveTexture = ResolveTexturePath(slot.FilePath, modelDirectory);
+
+                foreach (var slot in material.GetMaterialTextures(TextureType.Unknown))
+                {
+                    if (string.IsNullOrEmpty(slot.FilePath)) continue;
+                    string resolved = ResolveTexturePath(slot.FilePath, modelDirectory);
+                    AssignUnknownTexture(textureInfo, resolved);
+                }
 
                 _materials.Add(textureInfo);
             }
         }
 
-        private string GetTexturePath(TextureSlot textureSlot, string modelDirectory)
+        private static void AssignUnknownTexture(MaterialTextureInfo info, string path)
         {
-            if (string.IsNullOrEmpty(textureSlot.FilePath))
+            if (string.IsNullOrEmpty(path)) return;
+
+            string name = System.IO.Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+
+            if (string.IsNullOrEmpty(info.MetallicTexture) &&
+                (name.EndsWith("_metallic") || name.EndsWith("_metal") || name.EndsWith("_m") || name.Contains("metallic")))
+            {
+                info.MetallicTexture = path;
+            }
+            else if (string.IsNullOrEmpty(info.RoughnessTexture) &&
+                (name.EndsWith("_roughness") || name.EndsWith("_rough") || name.EndsWith("_r") || name.Contains("roughness")))
+            {
+                info.RoughnessTexture = path;
+            }
+            else if (string.IsNullOrEmpty(info.AmbientOcclusionTexture) &&
+                (name.EndsWith("_ao") || name.EndsWith("_ambientocclusion") || name.EndsWith("_occlusion") || name.Contains("_ao")))
+            {
+                info.AmbientOcclusionTexture = path;
+            }
+            else if (string.IsNullOrEmpty(info.NormalTexture) &&
+                (name.EndsWith("_normal") || name.EndsWith("_nrm") || name.EndsWith("_n") || name.Contains("normal")))
+            {
+                info.NormalTexture = path;
+            }
+            else if (string.IsNullOrEmpty(info.EmissiveTexture) &&
+                (name.EndsWith("_emissive") || name.EndsWith("_emit") || name.EndsWith("_e") || name.Contains("emissive")))
+            {
+                info.EmissiveTexture = path;
+            }
+            else if (string.IsNullOrEmpty(info.DiffuseTexture) &&
+                (name.EndsWith("_diffuse") || name.EndsWith("_albedo") || name.EndsWith("_d") || name.Contains("albedo") || name.Contains("diffuse")))
+            {
+                Console.WriteLine(path);
+                info.DiffuseTexture = path;
+            }
+        }
+
+        private string ResolveTexturePath(string filePath, string modelDirectory)
+        {
+            if (string.IsNullOrEmpty(filePath))
                 return null;
 
-            string texturePath = textureSlot.FilePath;
-
-            texturePath = texturePath.Replace("\\", "/");
+            string texturePath = filePath.Replace("\\", "/");
 
             if (System.IO.Path.IsPathRooted(texturePath))
                 texturePath = System.IO.Path.GetFileName(texturePath);
 
-            string fullPath = System.IO.Path.Combine(modelDirectory, texturePath);
-            fullPath = fullPath.Replace("\\", "/");
+            string fullPath = System.IO.Path.Combine(modelDirectory, texturePath).Replace("\\", "/");
 
             if (fullPath.StartsWith(AssetManager.BasePath))
             {
@@ -250,24 +321,22 @@ namespace KrayonCore
         {
             for (int i = 0; i < node.MeshCount; i++)
             {
-                Assimp.Mesh mesh = scene.Meshes[node.MeshIndices[i]];
+                Assimp.Mesh assimpMesh = scene.Meshes[node.MeshIndices[i]];
+                var processedMesh = ProcessMesh(assimpMesh);
+                int materialIndex = assimpMesh.MaterialIndex;
 
-                var processedMesh = ProcessMesh(mesh, scene);
-                int materialIndex = mesh.MaterialIndex;
+                MaterialTextureInfo textureInfo = (materialIndex >= 0 && materialIndex < _materials.Count)
+                    ? _materials[materialIndex]
+                    : null;
 
-                MaterialTextureInfo textureInfo = null;
-                if (materialIndex >= 0 && materialIndex < _materials.Count)
-                    textureInfo = _materials[materialIndex];
-
-                var subMeshInfo = new SubMeshInfo(processedMesh, materialIndex, textureInfo);
-                _subMeshes.Add(subMeshInfo);
+                _subMeshes.Add(new SubMeshInfo(processedMesh, materialIndex, textureInfo));
             }
 
             for (int i = 0; i < node.ChildCount; i++)
                 ProcessNode(node.Children[i], scene);
         }
 
-        private Mesh ProcessMesh(Assimp.Mesh mesh, Scene scene)
+        private Mesh ProcessMesh(Assimp.Mesh mesh)
         {
             List<float> vertices = new List<float>();
             List<uint> indices = new List<uint>();
@@ -286,9 +355,7 @@ namespace KrayonCore
                 }
                 else
                 {
-                    vertices.Add(0f);
-                    vertices.Add(0f);
-                    vertices.Add(0f);
+                    vertices.Add(0f); vertices.Add(1f); vertices.Add(0f);
                 }
 
                 if (mesh.HasTextureCoords(0))
@@ -298,8 +365,7 @@ namespace KrayonCore
                 }
                 else
                 {
-                    vertices.Add(0f);
-                    vertices.Add(0f);
+                    vertices.Add(0f); vertices.Add(0f);
                 }
 
                 if (mesh.HasTangentBasis)
@@ -310,9 +376,7 @@ namespace KrayonCore
                 }
                 else
                 {
-                    vertices.Add(1f);
-                    vertices.Add(0f);
-                    vertices.Add(0f);
+                    vertices.Add(1f); vertices.Add(0f); vertices.Add(0f);
                 }
 
                 if (mesh.HasTangentBasis)
@@ -323,9 +387,7 @@ namespace KrayonCore
                 }
                 else
                 {
-                    vertices.Add(0f);
-                    vertices.Add(1f);
-                    vertices.Add(0f);
+                    vertices.Add(0f); vertices.Add(1f); vertices.Add(0f);
                 }
             }
 
@@ -355,18 +417,20 @@ namespace KrayonCore
                 var subMesh = _subMeshes[i];
                 var mesh = subMesh.Mesh;
 
-                var vertices = mesh.GetVertices();
-                var indices = mesh.GetIndices();
+                var verts = mesh.GetVertices();
+                var idxs = mesh.GetIndices();
 
                 subMesh.BaseVertex = currentBaseVertex;
                 subMesh.BaseIndex = currentBaseIndex;
-                subMesh.IndexCount = indices.Length;
+                subMesh.IndexCount = idxs.Length;
 
-                combinedVertices.AddRange(vertices);
-                combinedIndices.AddRange(indices);
+                combinedVertices.AddRange(verts);
+
+                foreach (var idx in idxs)
+                    combinedIndices.Add(idx);
 
                 currentBaseVertex += mesh.VertexCount;
-                currentBaseIndex += indices.Length;
+                currentBaseIndex += idxs.Length;
             }
 
             _combinedMesh = new Mesh(combinedVertices.ToArray(), combinedIndices.ToArray());

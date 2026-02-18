@@ -1,4 +1,117 @@
 {
   "SceneName": "DefaultScene",
-  "GameObjects": []
+  "GameObjects": [
+    {
+      "Id": "a5c0f85b-d51f-4551-ac7b-88e9a4459a9f",
+      "Name": "Cube_0",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "9deab5e1-c868-42a3-9685-7943f0c9c504",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 0.01,
+              "y": 0.01,
+              "z": 0.01
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "59e7fee9-db3b-42ed-b3c9-f30b2eeda907",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "d119bf8a-2627-4872-ab09-46f34cc36359",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "AsphaltDamaged",
+                "Asphalt",
+                "Fuel_pump",
+                "Concrete",
+                "Sign",
+                "MetalPlates",
+                "Roof_tiles",
+                "Plaster",
+                "BrickSmallPainted",
+                "Office_Ceiling",
+                "Refrigerador_02",
+                "Refrigerador_01",
+                "Refrigerador",
+                "Shelving",
+                "Metal_02",
+                null,
+                "Marble",
+                "Metal_01",
+                "Door_01",
+                "Door",
+                "Light",
+                "Metal_03",
+                "Deposit",
+                "Metal",
+                "Checker",
+                "Board",
+                "Foods_01",
+                "Foods_02",
+                "Foods_03",
+                "Foods_04",
+                "Foods_07",
+                "Sweets_others",
+                "Pack_lighters",
+                "Management",
+                "Carpet_01",
+                null,
+                "Coffee_machine",
+                "Others",
+                "ice_slush_machine",
+                "6twelve",
+                "Fridge",
+                "Tree_01",
+                "Tree",
+                "Bush",
+                "Background",
+                "Background_01",
+                "Ground",
+                "Road",
+                "ICE",
+                "Trash",
+                "Brick",
+                "TilesPlain",
+                "Concrete_01",
+                "Bathrooms",
+                "Sanitary",
+                "Toilets_Sing",
+                "Camera",
+                "Fusible",
+                "spotlight",
+                "6twelve_Sign",
+                "Tiles",
+                "Carpet",
+                "Tiles_01"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

@@ -344,9 +344,21 @@ namespace KrayonCore.Components.Components
         // -----------------------------------------------------------------------
         // Helpers de rotación
         // -----------------------------------------------------------------------
-        public void SetRotation(float x, float y, float z) => EulerAngles = new Vector3(x, y, z);
-        public void SetRotation(Vector3 eulerAngles) => EulerAngles = eulerAngles;
-        public void SetRotation(Quaternion rotation) => Rotation = rotation;
+        public void SetRotation(float x, float y, float z) => SetRotation(new Vector3(x, y, z));
+
+        public void SetRotation(Vector3 eulerAngles)
+        {
+            EulerAngles = eulerAngles;
+            if (GameObject.HasComponent<Rigidbody>())
+                GameObject.GetComponent<Rigidbody>().MoveRotation(GetWorldRotation());
+        }
+
+        public void SetRotation(Quaternion rotation)
+        {
+            Rotation = rotation;
+            if (GameObject.HasComponent<Rigidbody>())
+                GameObject.GetComponent<Rigidbody>().MoveRotation(GetWorldRotation());
+        }
 
         public void Rotate(float x, float y, float z)
         {

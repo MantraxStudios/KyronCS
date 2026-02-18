@@ -212,6 +212,13 @@ namespace KrayonCore.Graphics.Camera
 
         public override void OnWillRenderObject()
         {
+            if (AppInfo.IsCompiledGame) return;
+            if (_renderCamera is null) return;
+            SyncTransform();
+        }
+
+        public override void Update(float dt)
+        {
             if (_renderCamera is null) return;
             SyncTransform();
         }

@@ -329,8 +329,7 @@ namespace KrayonCore
 
             foreach (var renderer in _meshRenderers)
             {
-                if (renderer is null || !renderer.Enabled || renderer.Model is null ||
-                    renderer.GameObject is null)
+                if (renderer is null || !renderer.Enabled || renderer.Model is null || renderer.GameObject is null)
                 {
                     if (renderer is null || renderer.GameObject is null)
                         _needsCleanup = true;
@@ -342,23 +341,21 @@ namespace KrayonCore
 
                 ValidateAndFixMaterials(renderer);
 
-                int validCount = CountValidMaterials(renderer);
                 Matrix4 worldMatrix = transform.GetWorldMatrix();
 
-                if (validCount == 1)
-                {
-                    var mat = GetFirstValidMaterial(renderer);
-                    if (mat is null) continue;
-
-                    var key = (renderer.Model, mat);
-                    if (!_meshInstanceGroups.ContainsKey(key))
-                        _meshInstanceGroups[key] = new List<Matrix4>();
-                    _meshInstanceGroups[key].Add(worldMatrix);
-                }
-                else if (validCount > 1)
+                if (renderer.Model.SubMeshCount > 1)
                 {
                     multiMat.Add((renderer, transform));
+                    continue;
                 }
+
+                var mat = GetFirstValidMaterial(renderer);
+                if (mat is null) continue;
+
+                var key = (renderer.Model, mat);
+                if (!_meshInstanceGroups.ContainsKey(key))
+                    _meshInstanceGroups[key] = new List<Matrix4>();
+                _meshInstanceGroups[key].Add(worldMatrix);
             }
 
             foreach (var kvp in _meshInstanceGroups)
@@ -378,13 +375,12 @@ namespace KrayonCore
             {
                 if (renderer?.Model is null) continue;
                 renderer.Model.ClearInstancing();
-                RenderMeshWithMultipleMaterials(
-                    renderer, transform.GetWorldMatrix(), view, projection, cameraPos);
+                RenderMeshWithMultipleMaterials(renderer, transform.GetWorldMatrix(), view, projection, cameraPos);
             }
         }
 
         private void RenderMeshWithMultipleMaterials(MeshRenderer renderer, Matrix4 worldMatrix,
-            Matrix4 view, Matrix4 projection, Vector3 cameraPos)
+    Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (renderer.Model is null) return;
 
@@ -393,13 +389,11 @@ namespace KrayonCore
 
             for (int i = 0; i < renderer.Model.SubMeshCount; i++)
             {
-                var material = (i < renderer.MaterialCount ? renderer.GetMaterial(i) : null)
-                            ?? (renderer.MaterialCount > 0 ? renderer.GetMaterial(0) : null);
+                var material = renderer.GetMaterial(i);
 
                 if (material is null)
                 {
                     fallback ??= GraphicsEngine.Instance.Materials.Get("basic");
-                    fallback?.SetVector3Cached("u_Color", new Vector3(1f, 0f, 1f));
                     material = fallback;
                 }
 
@@ -571,30 +565,15 @@ namespace KrayonCore
         {
             if (renderer.Model is null) return;
 
-            if (renderer.MaterialCount == 0 || !HasAnyValidMaterial(renderer))
+            if (!HasAnyValidMaterial(renderer))
             {
                 var basic = GraphicsEngine.Instance.Materials.Get("basic");
                 if (basic is null) return;
                 basic.SetVector3Cached("u_Color", Vector3.One);
-                renderer.ClearMaterials();
-                renderer.AddMaterial(basic);
-                return;
-            }
-
-            bool hasGaps = false;
-            int lastValidIdx = -1;
-
-            for (int i = 0; i < renderer.MaterialCount; i++)
-            {
-                if (renderer.GetMaterial(i) is not null)
-                {
-                    if (hasGaps) { RebuildMaterialArray(renderer); return; }
-                    lastValidIdx = i;
-                }
-                else if (lastValidIdx >= 0)
-                {
-                    hasGaps = true;
-                }
+                var paths = new string[renderer.Model.SubMeshCount];
+                for (int i = 0; i < paths.Length; i++)
+                    paths[i] = basic.Name;
+                renderer.SaveMaterialPaths(paths);
             }
         }
 

@@ -5,8 +5,8 @@
   "ShowConsole": true,
   "ShowStats": true,
   "ShowAssets": true,
-  "ShowMaterials": false,
+  "ShowMaterials": true,
   "ShowTileEditor": true,
   "ShowSpriteAnimator": false,
-  "ShowCompiler": false
+  "ShowCompiler": true
 }

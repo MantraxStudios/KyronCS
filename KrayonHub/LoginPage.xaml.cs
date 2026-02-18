@@ -84,4 +84,9 @@ public partial class LoginPage : ContentPage
         LoginView.IsVisible = true;
         RegisterView.IsVisible = false;
     }
+
+    private void OnContinueWithoutAccount(object sender, EventArgs e)
+    {
+        Application.Current.MainPage = new MainPage();
+    }
 }

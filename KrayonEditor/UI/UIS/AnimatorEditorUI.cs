@@ -253,16 +253,18 @@ namespace KrayonEditor.UI
             if (!_isVisible || _data == null) return;
 
             string name = Path.GetFileNameWithoutExtension(_assetPath);
-            string title = $"Animator  —  {name}{(_isDirty ? "  *" : "")}###AnimatorEditorWindow";
+            string title = $"Animator Space  —  {name}{(_isDirty ? "  *" : "")}###AnimatorEditorWindow";
 
+            var center = ImGui.GetMainViewport().GetCenter();
+            ImGui.SetNextWindowPos(center, ImGuiCond.FirstUseEver, new Vector2(0.5f, 0.5f));
             ImGui.SetNextWindowSize(new Vector2(1280, 780), ImGuiCond.FirstUseEver);
+
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
             ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.14f, 0.14f, 0.14f, 1f));
             ImGui.Begin(title, ref _isVisible,
                 ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
             ImGui.PopStyleColor();
             ImGui.PopStyleVar();
-
             DrawMenuBar();
 
             float totalH = ImGui.GetContentRegionAvail().Y;

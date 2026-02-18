@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("KrayonCompiler")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3639f79f84c5624939c8acbb8d076922251dfc25")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8c94a289f64d64cc841f4e92982d35fb5f8b3fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("KrayonCompiler")]
 [assembly: System.Reflection.AssemblyTitleAttribute("KrayonCompiler")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
