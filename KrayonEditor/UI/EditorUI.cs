@@ -1,6 +1,8 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Editor.Panels;
 using KrayonCore.GraphicsData;
 using System.Collections.Generic;
 using System.IO;
@@ -39,7 +41,7 @@ namespace KrayonEditor.UI
         public static SpriteAnimationUI _SpriteAnimator = new SpriteAnimationUI();
         public static CompilerUI _CompilerUI = new CompilerUI();
         public static AnimatorEditorUI _animatorEditor = new AnimatorEditorUI();
-
+        public static UICanvasEditor _uiCanvasEditor = new UICanvasEditor();
 
         private static string WindowsStatePath => AssetManager.TotalBase + "Windows.json";
         private static WindowsState _lastState = new WindowsState();
@@ -92,6 +94,14 @@ namespace KrayonEditor.UI
             _TileEditor.OnDrawUI();
             _CompilerUI.OnDrawUI();
             _animatorEditor.OnDrawUI();
+
+            if (_uiCanvasEditor.IsOpen)
+            {
+                ImGui.SetNextWindowSize(new Vector2(950, 620), ImGuiCond.FirstUseEver);
+                if (ImGui.Begin("UI Canvas Editor", ImGuiWindowFlags.MenuBar))
+                    _uiCanvasEditor.OnImGui(TimerData.DeltaTime);
+                ImGui.End();
+            }
 
             _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
             _mainMenuBar.ShowInspector = _inspector.IsVisible;

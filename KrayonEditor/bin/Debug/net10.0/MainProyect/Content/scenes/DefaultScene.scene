@@ -1,4 +1,52 @@
 {
   "SceneName": "DefaultScene",
-  "GameObjects": []
+  "GameObjects": [
+    {
+      "Id": "7bdcf25e-23f8-4fc1-9be9-e502095ff67a",
+      "Name": "GameObject_0",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "bc352a36-9553-4a9e-9922-6240bbc17c22",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.UICanvasRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "b1df8a5a-adf6-426d-b925-a4cb66eaec42",
+          "Enabled": true,
+          "SerializedFields": {
+            "CanvasPath": "4a130624-4de1-4834-a69d-7a2c4c4b0353",
+            "Visible": true,
+            "SortOrder": 0,
+            "ReferenceWidth": 1920,
+            "ReferenceHeight": 1080
+          }
+        }
+      ]
+    }
+  ]
 }

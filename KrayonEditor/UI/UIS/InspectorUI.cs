@@ -254,7 +254,7 @@ namespace KrayonEditor.UI
 
             if (EditorActions.SelectedObject != null &&
                 GraphicsEngine.Instance.GetKeyboardState()
-                    .IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete))
+                    .IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete) && EditorActions.IsHoveringScene)
             {
                 SceneManager.ActiveScene.DestroyGameObject(EditorActions.SelectedObject);
                 EditorActions.SelectedObject = null;

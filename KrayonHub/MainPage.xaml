@@ -436,6 +436,54 @@
                     </VerticalStackLayout>
                 </ScrollView>
 
+                <!-- Update Overlay -->
+                <Grid x:Name="UpdateOverlay" IsVisible="False"
+                  BackgroundColor="#E0000000" InputTransparent="False"
+                  Grid.ColumnSpan="2">
+                                <Border BackgroundColor="{StaticResource CardBg}"
+                        Stroke="{StaticResource Wine}" StrokeThickness="2"
+                        Padding="40,36" MaximumWidthRequest="480"
+                        HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="16"/>
+                                    </Border.StrokeShape>
+                                    <VerticalStackLayout Spacing="20">
+                                        <Label Text="⬇ UPDATING KRAYON ENGINE"
+                               TextColor="{StaticResource White}"
+                               FontSize="16" FontAttributes="Bold"
+                               CharacterSpacing="1.5"
+                               HorizontalOptions="Center"/>
+
+                                        <Label x:Name="LblUpdateStatus"
+                               Text="Preparing..."
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="13" HorizontalOptions="Center"/>
+
+                                        <!-- Barra de progreso -->
+                                        <Border BackgroundColor="#141414"
+                                Stroke="{StaticResource BorderGray}"
+                                StrokeThickness="1" HeightRequest="10">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="5"/>
+                                            </Border.StrokeShape>
+                                            <Grid>
+                                                <BoxView x:Name="ProgressFill"
+                                         Color="{StaticResource Wine}"
+                                         HeightRequest="10"
+                                         HorizontalOptions="Start"
+                                         WidthRequest="0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Label x:Name="LblUpdatePercent"
+                               Text="0%"
+                               TextColor="{StaticResource Wine}"
+                               FontSize="20" FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+
                 <Grid x:Name="DeleteModal" IsVisible="False"
                       BackgroundColor="#90000000" InputTransparent="False">
                     <Border BackgroundColor="{StaticResource CardBg}"

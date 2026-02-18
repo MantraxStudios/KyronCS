@@ -47,6 +47,11 @@ namespace KrayonEditor.UI
         private string _newAnimatorName = "NewAnimator";
         private string _newAnimatorFolder = "";
 
+        private bool _showNewUIPopupatorPopup = false;
+        private string _newUIName = "NewAnimator";
+        private string _newUIFolder = "";
+
+
         private class FolderNode
         {
             public string Path;
@@ -337,6 +342,13 @@ namespace KrayonEditor.UI
                     _showNewAnimatorPopup = true;
                 }
 
+                if (ImGui.MenuItem("New UI Canvas"))
+                {
+                    _newUIFolder = node.Path;
+                    _newUIName = "NewCanvas";
+                    _showNewUIPopupatorPopup = true;
+                }
+
                 if (!string.IsNullOrEmpty(node.Path))
                 {
                     ImGui.Separator();
@@ -578,9 +590,13 @@ namespace KrayonEditor.UI
                     else
                         OpenVSCodeProject();
                 }
-                else if (ext == ".animator")   // ← NUEVO
+                else if (ext == ".animator") 
                 {
                     EditorUI._animatorEditor.OpenAsset(asset.Guid);
+                }
+                else if (ext == ".ui")
+                {
+                    EditorUI._uiCanvasEditor.OpenAsset(asset.Guid);
                 }
             }
 
@@ -596,6 +612,11 @@ namespace KrayonEditor.UI
                 if (ext == ".animator" && ImGui.MenuItem("Open Animator Editor"))  
                 {
                     EditorUI._animatorEditor.OpenAsset(asset.Guid);
+                }
+
+                if (ext == ".ui" && ImGui.MenuItem("Open UI Editor"))
+                {
+                    EditorUI._uiCanvasEditor.OpenAsset(asset.Guid);
                 }
 
                 if (ext == ".cs" || ext == ".animator")

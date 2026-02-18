@@ -59,36 +59,85 @@ public partial class MainPage : ContentPage
         BindCollections();
     }
 
-    private void InitializeData()
+    private async Task InitializeData()
     {
         _allProjects = new ObservableCollection<ProjectItem>();
         LoadProjectsFromDisk();
 
         _allAssets = new ObservableCollection<AssetItem>
-        {
-            new() { Id = "a1", Name = "Player_Sprite.png",  Type = "Sprite",  Size = "24 KB" },
-            new() { Id = "a2", Name = "Forest_Tileset.png",  Type = "Tileset", Size = "156 KB" },
-            new() { Id = "a3", Name = "MainTheme.ogg",       Type = "Audio",   Size = "2.4 MB" },
-            new() { Id = "a4", Name = "Enemy_AI.ks",         Type = "Script",  Size = "8 KB" },
-            new() { Id = "a5", Name = "UI_Font.ttf",         Type = "Font",    Size = "89 KB" },
-            new() { Id = "a6", Name = "Particle_Fire.kfx",   Type = "Effect",  Size = "12 KB" },
-            new() { Id = "a7", Name = "Level_01.kscn",       Type = "Scene",   Size = "340 KB" },
-            new() { Id = "a8", Name = "Explosion_SFX.wav",   Type = "Audio",   Size = "1.1 MB" },
-        };
+    {
+        new() { Id = "a1", Name = "Player_Sprite.png",  Type = "Sprite",  Size = "24 KB" },
+        new() { Id = "a2", Name = "Forest_Tileset.png", Type = "Tileset", Size = "156 KB" },
+        new() { Id = "a3", Name = "MainTheme.ogg",      Type = "Audio",   Size = "2.4 MB" },
+        new() { Id = "a4", Name = "Enemy_AI.ks",        Type = "Script",  Size = "8 KB" },
+        new() { Id = "a5", Name = "UI_Font.ttf",        Type = "Font",    Size = "89 KB" },
+        new() { Id = "a6", Name = "Particle_Fire.kfx",  Type = "Effect",  Size = "12 KB" },
+        new() { Id = "a7", Name = "Level_01.kscn",      Type = "Scene",   Size = "340 KB" },
+        new() { Id = "a8", Name = "Explosion_SFX.wav",  Type = "Audio",   Size = "1.1 MB" },
+    };
 
         _templates = new ObservableCollection<TemplateItem>
-        {
-            new() { Name = "Blank 3D",     Icon = "🧊" },
-        };
+    {
+        new() { Name = "Blank 3D", Icon = "🧊" },
+    };
 
         _filteredProjects = new ObservableCollection<ProjectItem>(_allProjects);
         _filteredAssets = new ObservableCollection<AssetItem>(_allAssets);
+
+        var checker = new VersionChecker("https://mantraxtools.store/version.php");
+        var result = await checker.CheckAsync(); // lee la versión del archivo automáticamente
+
+        if (!result.Success)
+        {
+            await DisplayAlert("Update Check Error", result.ErrorMessage, "OK");
+            return;
+        }
+
+        if (result.UpdateAvailable)
+        {
+            bool download = await DisplayAlert(
+                "Update Available",
+                $"Version {result.RemoteVersion} is available (installed: {result.LocalVersion}).\nDownload now?",
+                "Update", "Later");
+
+            if (download)
+                await RunUpdate(checker, result.DownloadUrl, result.RemoteVersion);
+        }
+    }
+
+    private async Task RunUpdate(VersionChecker checker, string downloadUrl, string remoteVersion)
+    {
+        UpdateOverlay.IsVisible = true;
+        string enginePath = Path.Combine(AppContext.BaseDirectory, "Engine");
+        double barMaxWidth = 400;
+
+        var progress = new Progress<(double percent, string status)>(report =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                LblUpdateStatus.Text = report.status;
+                LblUpdatePercent.Text = $"{(int)report.percent}%";
+                ProgressFill.WidthRequest = barMaxWidth * report.percent / 100.0;
+            });
+        });
+
+        try
+        {
+            await checker.DownloadAndInstallAsync(downloadUrl, remoteVersion, enginePath, progress);
+            UpdateOverlay.IsVisible = false;
+            await DisplayAlert("Update Complete", "Krayon Engine has been updated successfully!", "OK");
+        }
+        catch (Exception ex)
+        {
+            UpdateOverlay.IsVisible = false;
+            await DisplayAlert("Update Failed", $"Could not install the update:\n{ex.Message}", "OK");
+        }
     }
 
     private void LoadProjectsFromDisk()
     {
-        string appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string projectsPath = Path.Combine(appDataRoaming, "Proyects");
+        string projectsPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Projects");
 
         if (!Directory.Exists(projectsPath))
         {
@@ -96,68 +145,71 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        var directories = Directory.GetDirectories(projectsPath);
-
-        foreach (var dir in directories)
+        foreach (var dir in Directory.GetDirectories(projectsPath))
         {
             var dirInfo = new DirectoryInfo(dir);
-            var projectName = dirInfo.Name;
-            string projectJsonPath = Path.Combine(dir, "project.json");
+            var folderName = dirInfo.Name;
+            string jsonPath = Path.Combine(dir, "project.json");
 
-            if (File.Exists(projectJsonPath))
+            string realName = folderName; // fallback
+            string template = "UNKNOWN";
+            string icon = "📁";
+            string modified = dirInfo.LastWriteTime.ToString("yyyy-MM-dd");
+            int scenes = 0, assets = 0;
+
+            if (File.Exists(jsonPath))
             {
                 try
                 {
-                    string jsonContent = File.ReadAllText(projectJsonPath);
-                    var projectInfo = JsonSerializer.Deserialize<ProjectInfo>(jsonContent);
+                    var info = JsonSerializer.Deserialize<ProjectInfo>(File.ReadAllText(jsonPath));
 
-                    if (projectInfo != null)
+                    if (info != null)
                     {
-                        var project = new ProjectItem
-                        {
-                            Id = $"p{Path.GetFileName(dir).GetHashCode()}",
-                            Name = projectInfo.Name,
-                            Template = projectInfo.Template,
-                            Icon = projectInfo.Icon,
-                            LastModified = projectInfo.CreatedDate,
-                            Scenes = projectInfo.Scenes,
-                            Assets = projectInfo.Assets
-                        };
+                        realName = !string.IsNullOrWhiteSpace(info.Name) ? info.Name : folderName;
+                        template = info.Template ?? "UNKNOWN";
+                        icon = info.Icon ?? "📁";
+                        modified = info.CreatedDate ?? modified;
+                        scenes = info.Scenes;
+                        assets = info.Assets;
+                    }
+                }
+                catch { /* usa los fallbacks */ }
+            }
 
-                        _allProjects.Add(project);
+            // Si el nombre del JSON difiere del nombre de carpeta → renombrar carpeta
+            if (!string.Equals(folderName, realName, StringComparison.OrdinalIgnoreCase))
+            {
+                string newPath = Path.Combine(projectsPath, realName);
+
+                try
+                {
+                    // Si ya existe una carpeta con ese nombre no renombramos para no pisar nada
+                    if (!Directory.Exists(newPath))
+                    {
+                        Directory.Move(dir, newPath);
+                    }
+                    else
+                    {
+                        // Conflicto: dejamos el nombre de carpeta como está
+                        realName = folderName;
                     }
                 }
                 catch
                 {
-                    var project = new ProjectItem
-                    {
-                        Id = $"p{Path.GetFileName(dir).GetHashCode()}",
-                        Name = projectName,
-                        Template = "UNKNOWN",
-                        Icon = "📁",
-                        LastModified = dirInfo.LastWriteTime.ToString("yyyy-MM-dd"),
-                        Scenes = 0,
-                        Assets = 0
-                    };
-
-                    _allProjects.Add(project);
+                    realName = folderName;
                 }
             }
-            else
-            {
-                var project = new ProjectItem
-                {
-                    Id = $"p{Path.GetFileName(dir).GetHashCode()}",
-                    Name = projectName,
-                    Template = "UNKNOWN",
-                    Icon = "📁",
-                    LastModified = dirInfo.LastWriteTime.ToString("yyyy-MM-dd"),
-                    Scenes = 0,
-                    Assets = 0
-                };
 
-                _allProjects.Add(project);
-            }
+            _allProjects.Add(new ProjectItem
+            {
+                Id = realName,
+                Name = realName,
+                Template = template,
+                Icon = icon,
+                LastModified = modified,
+                Scenes = scenes,
+                Assets = assets
+            });
         }
     }
 
@@ -248,9 +300,9 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (!CreateProyect(name, selectedTemplate))
+        if (!CreateProject(name, selectedTemplate))
         {
-            DisplayAlert("Already Exist Proyect", $"\"{name}\".", "OK");
+            DisplayAlert("Already Exists", $"A project named \"{name}\" already exists.", "OK");
             return;
         }
 
@@ -277,50 +329,40 @@ public partial class MainPage : ContentPage
         DisplayAlert("Project Created", $"\"{name}\" has been created successfully.", "OK");
     }
 
-    public bool CreateProyect(string ProyectName, TemplateItem template)
+    public bool CreateProject(string projectName, TemplateItem template)
     {
-        string appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string projectsPath = Path.Combine(appDataRoaming, "Proyects");
+        string projectsPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Projects");
 
         if (!Directory.Exists(projectsPath))
-        {
             Directory.CreateDirectory(projectsPath);
-        }
 
-        string projectPath = Path.Combine(projectsPath, ProyectName);
+        string projectPath = Path.Combine(projectsPath, projectName);
 
-        if (!Directory.Exists(projectPath))
-        {
-            Directory.CreateDirectory(projectPath);
-
-            var projectInfo = new ProjectInfo
-            {
-                Name = ProyectName,
-                Template = template.Name.ToUpper(),
-                Icon = template.Icon,
-                CreatedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                Scenes = 1,
-                Assets = 0
-            };
-
-            string jsonContent = JsonSerializer.Serialize(projectInfo, new JsonSerializerOptions { WriteIndented = true });
-            string jsonPath = Path.Combine(projectPath, "project.json");
-            File.WriteAllText(jsonPath, jsonContent);
-
-            string zipPath = @"Data/Content.zip";
-            string extractPath = $"{projectPath}/";
-
-            Directory.CreateDirectory(extractPath);
-
-            ZipFile.ExtractToDirectory(zipPath, extractPath, overwriteFiles: true);
-
-
-            return true;
-        }
-        else
-        {
+        if (Directory.Exists(projectPath))
             return false;
-        }
+
+        Directory.CreateDirectory(projectPath);
+
+        var projectInfo = new ProjectInfo
+        {
+            Name = projectName,
+            Template = template.Name.ToUpper(),
+            Icon = template.Icon,
+            CreatedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            Scenes = 1,
+            Assets = 0
+        };
+
+        File.WriteAllText(
+            Path.Combine(projectPath, "project.json"),
+            JsonSerializer.Serialize(projectInfo, new JsonSerializerOptions { WriteIndented = true }));
+
+        string zipPath = Path.Combine(AppContext.BaseDirectory, "Engine", "Data", "Content.zip");
+        if (File.Exists(zipPath))
+            ZipFile.ExtractToDirectory(zipPath, projectPath, overwriteFiles: true);
+
+        return true;
     }
 
     private async void OnOpenProject(object sender, EventArgs e)
@@ -331,7 +373,7 @@ public partial class MainPage : ContentPage
             if (project != null)
             {
                 string appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string projectPath = Path.Combine(appDataRoaming, "Proyects", project.Name) + "/";
+                string projectPath = Path.Combine(appDataRoaming, "Projects", project.Name) + "/";
 
                 if (Directory.Exists(projectPath))
                 {
@@ -385,7 +427,7 @@ public partial class MainPage : ContentPage
         if (project != null)
         {
             string appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string projectPath = Path.Combine(appDataRoaming, "Proyects", project.Name);
+            string projectPath = Path.Combine(appDataRoaming, "Projects", project.Name);
 
             if (Directory.Exists(projectPath))
             {
