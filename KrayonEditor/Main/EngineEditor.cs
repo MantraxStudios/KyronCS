@@ -10,6 +10,7 @@ using KrayonCore.Graphics.Camera;
 using KrayonCore.Graphics.GameUI;
 using KrayonCore.GraphicsData;
 using KrayonCore.UI;
+using KrayonCore.Utilities;
 using KrayonEditor.UI;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
@@ -71,10 +72,18 @@ namespace KrayonEditor.Main
             _engine.OnResize += HandleResize;
             _engine.OnClose += HandleClose;
             _engine.OnFileDrop += OnFilesDropped;
+            _engine.OnTryClose += HandleWindowTryClose;
 
             _engine.CreateWindow(WindowConfig.Width, WindowConfig.Height, "Kryon Engine - Editor");
             _engine.Run();
         }
+
+        private static void HandleWindowTryClose()
+        {
+            if (EditorActions.IsDirty)
+                EditorNotifications.Error("You cannot close the engine until you have saved your scene.");
+        }
+
 
         // ── Handlers del ciclo de vida ───────────────────────────────────────
         private static void HandleLoad()
@@ -402,6 +411,26 @@ namespace KrayonEditor.Main
         // ── Update ────────────────────────────────────────────────────────────
         private static void HandleUpdate(float dt)
         {
+            byte[] currentBytes = SceneManager.CloneSceneToBytes(SceneManager.PrimaryScene);
+
+            if (currentBytes.SequenceEqual(SceneManager.CurrentSceneData))
+            {
+                EditorActions.IsDirty = false;
+            }
+            else
+            {
+                EditorActions.IsDirty = true;
+            }
+
+            if (EditorActions.IsDirty)
+            {
+                GraphicsEngine.Instance.CantNoClose();
+            }
+            else
+            {
+                GraphicsEngine.Instance.CanClose();
+            }
+
             if (_editorCamera is null || _window is null) return;
 
             HandleInput(dt);

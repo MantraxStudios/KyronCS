@@ -5,6 +5,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace KrayonCore.GraphicsData
@@ -14,6 +15,7 @@ namespace KrayonCore.GraphicsData
         private readonly GraphicsEngine _engine;
 
         private readonly Stopwatch _renderTimer = Stopwatch.StartNew();
+        public static bool CanIClose = false;
 
         public Action OnLoadRender { get; set; }
         public Action OnRederFrame { get; set; }
@@ -31,6 +33,7 @@ namespace KrayonCore.GraphicsData
         public Action<TextInputEventArgs> OnTextInputEvent { get; set; }
         public Action<FileDropEventArgs> OnDropFileEvent { get; set; }
         public Action<ResizeEventArgs> OnResizeEvent { get; set; }
+        public event Action? OnTryClose;
 
         public GameWindowInternal(int width, int height, string title, GraphicsEngine engine)
             : base(
@@ -58,6 +61,7 @@ namespace KrayonCore.GraphicsData
             MouseMove += e => OnMouseMoveEvent?.Invoke(e);
             MouseWheel += e => OnMouseWheelEvent?.Invoke(e);
             FileDrop += e => OnDropFileEvent?.Invoke(e);
+            Closing += OnWindowClosing;
 
             TextInput += e =>
             {
@@ -134,6 +138,22 @@ namespace KrayonCore.GraphicsData
             base.OnUnload();
             _engine.InternalClose();
             OnUnloadRender?.Invoke();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            OnTryClose?.Invoke();
+
+            if (!CanIClose)
+                e.Cancel = true;
+        }
+
+        private void OnWindowClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            OnTryClose?.Invoke();
+
+            if (!CanIClose)
+                e.Cancel = true;
         }
 
         public void OnStartRender() => OnLoadRender?.Invoke();

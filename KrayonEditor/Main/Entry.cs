@@ -5,6 +5,7 @@ using KrayonCore.Core.Components;
 using KrayonCore.Scripting;
 using KrayonEditor.Main;
 using KrayonEditor.UI;
+using KrayonCore.GraphicsData;
 
 namespace KrayonEditor
 {
@@ -48,6 +49,16 @@ namespace KrayonEditor
             };
 
             _scriptWatcher.Start();
+
+            SceneManager.OnSceneLoaded += scene =>
+            {
+                SceneManager.CurrentSceneData = SceneManager.CloneSceneToBytes(scene);
+            };
+
+            SceneManager.OnSceneSaved += (scene, path) =>
+            {
+                SceneManager.CurrentSceneData = SceneManager.CloneSceneToBytes(scene);
+            };
 
             EngineEditor.Run();
 

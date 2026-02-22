@@ -12,9 +12,14 @@ namespace KrayonCore
         private static Dictionary<string, GameScene> _scenes = new Dictionary<string, GameScene>();
         private static List<GameScene> _PrimaryScenes = new List<GameScene>();
 
+        public static event Action<GameScene, string> OnSceneSaved;
+        public static event Action<GameScene> OnSceneLoaded;
+        public static event Action<GameScene> OnSceneUnloaded;
+
         public static IReadOnlyList<GameScene> PrimaryScenes => _PrimaryScenes;
 
         public static GameScene PrimaryScene => _PrimaryScenes.Count > 0 ? _PrimaryScenes[0] : null;
+        public static byte[] CurrentSceneData;
 
         public static GameScene CreateScene(string name)
         {
@@ -68,6 +73,7 @@ namespace KrayonCore
                     {
                         oldScene.OnUnload();
                         oldScene.Clear();
+                        OnSceneUnloaded?.Invoke(oldScene);
                     }
                 }
 
@@ -95,6 +101,7 @@ namespace KrayonCore
                 _PrimaryScenes.Add(sceneToLoad);
                 sceneToLoad.OnLoad();
                 sceneToLoad.Start();
+                OnSceneLoaded?.Invoke(sceneToLoad);
             }
         }
 
@@ -106,6 +113,7 @@ namespace KrayonCore
                 scene.OnUnload();
                 scene.Clear();
                 _scenes.Remove(name);
+                OnSceneUnloaded?.Invoke(scene);
             }
         }
 
@@ -115,13 +123,17 @@ namespace KrayonCore
             {
                 _PrimaryScenes.Remove(scene);
                 scene.OnUnload();
+                OnSceneUnloaded?.Invoke(scene);
             }
         }
 
         private static void UnloadAllPrimaryScenes()
         {
             foreach (var scene in _PrimaryScenes)
+            {
                 scene.OnUnload();
+                OnSceneUnloaded?.Invoke(scene);
+            }
 
             _PrimaryScenes.Clear();
         }
@@ -159,9 +171,6 @@ namespace KrayonCore
 
         #region GameObject Cross-Scene Utilities
 
-        /// <summary>
-        /// Devuelve true si el GameObject pertenece a la escena indicada.
-        /// </summary>
         public static bool ContainsGameObject(GameScene scene, GameObject go)
         {
             foreach (var obj in scene.GetAllGameObjects())
@@ -169,15 +178,10 @@ namespace KrayonCore
             return false;
         }
 
-        /// <summary>
-        /// Mueve un GameObject de su escena actual a la escena destino.
-        /// Desvincula al objeto de su padre antes de moverlo.
-        /// </summary>
         public static void MoveGameObjectToScene(GameObject go, GameScene targetScene)
         {
             if (go == null || targetScene == null) return;
 
-            // Buscar la escena origen entre todas las escenas primarias
             GameScene sourceScene = null;
             foreach (var scene in _PrimaryScenes)
             {
@@ -197,7 +201,6 @@ namespace KrayonCore
 
             if (sourceScene == targetScene) return;
 
-            // Desvincular del padre para evitar que se arrastre la jerarquía
             go.Transform.SetParent(null);
 
             sourceScene.RemoveGameObject(go);
@@ -206,9 +209,6 @@ namespace KrayonCore
             Console.WriteLine($"'{go.Name}' moved from '{sourceScene.Name}' to '{targetScene.Name}'");
         }
 
-        /// <summary>
-        /// Busca un GameObject por ID en todas las escenas primarias activas.
-        /// </summary>
         public static GameObject FindGameObjectById(Guid id)
         {
             foreach (var scene in _PrimaryScenes)
@@ -221,9 +221,6 @@ namespace KrayonCore
             return null;
         }
 
-        /// <summary>
-        /// Devuelve la escena primaria a la que pertenece el GameObject, o null si no se encuentra.
-        /// </summary>
         public static GameScene GetOwnerScene(GameObject go)
         {
             foreach (var scene in _PrimaryScenes)
@@ -246,6 +243,7 @@ namespace KrayonCore
             }
 
             SceneSaveSystem.SaveScene(PrimaryScene, filePath);
+            OnSceneSaved?.Invoke(PrimaryScene, filePath);
         }
 
         public static void SaveScene(string sceneName, string filePath)
@@ -257,6 +255,7 @@ namespace KrayonCore
             }
 
             SceneSaveSystem.SaveScene(scene, filePath);
+            OnSceneSaved?.Invoke(scene, filePath);
         }
 
         public static byte[] CloneSceneToBytes(GameScene original)
@@ -269,14 +268,11 @@ namespace KrayonCore
 
         public static void LoadSceneFromBytes(Byte[] scene_bytes)
         {
-            GameScene sceneToLoad = null;
-
-
             UnloadAllPrimaryScenes();
 
             GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
 
-            sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
+            GameScene sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
 
             if (sceneToLoad == null) return;
 
@@ -287,17 +283,18 @@ namespace KrayonCore
                 {
                     oldScene.OnUnload();
                     oldScene.Clear();
+                    OnSceneUnloaded?.Invoke(oldScene);
                 }
             }
 
             _scenes[sceneToLoad.Name] = sceneToLoad;
-
 
             if (!_PrimaryScenes.Contains(sceneToLoad))
             {
                 _PrimaryScenes.Add(sceneToLoad);
                 sceneToLoad.OnLoad();
                 sceneToLoad.Start();
+                OnSceneLoaded?.Invoke(sceneToLoad);
             }
         }
 
@@ -310,6 +307,7 @@ namespace KrayonCore
             {
                 string filePath = Path.Combine(directoryPath, $"{scene.Name}.scene");
                 SceneSaveSystem.SaveScene(scene, filePath);
+                OnSceneSaved?.Invoke(scene, filePath);
             }
 
             Console.WriteLine($"Se guardaron {_scenes.Count} escenas en '{directoryPath}'");

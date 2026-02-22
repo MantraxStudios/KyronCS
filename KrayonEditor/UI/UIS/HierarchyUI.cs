@@ -88,7 +88,7 @@ namespace KrayonEditor.UI
                 ImGuiTreeNodeFlags.SpanAvailWidth;
 
             bool sceneOpen = ImGui.TreeNodeEx(
-                $"{scene.Name}##{scene.GetHashCode()}",
+                $"{scene.Name} {(EditorActions.IsDirty ? "*" : string.Empty)} ##{scene.GetHashCode()}",
                 sceneFlags
             );
 

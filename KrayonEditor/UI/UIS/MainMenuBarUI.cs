@@ -39,6 +39,7 @@ namespace KrayonEditor.UI
         private const string PREF_LAST_SCENE = "LastOpenedScene";
         private const int MAX_RECENT_SCENES = 10;
 
+
         public override void OnDrawUI()
         {
             if (ImGui.BeginMainMenuBar())
@@ -375,9 +376,10 @@ namespace KrayonEditor.UI
             SaveAllMaterials();
             EditorPrefs.AutoSave();
             EngineEditor.LogMessage("Exit requested");
+
+            GraphicsEngine.Instance.Window.Close();
         }
 
-        // Ejecuta el guardado después de la confirmación
         private void PerformSaveScene(string sceneName)
         {
             try

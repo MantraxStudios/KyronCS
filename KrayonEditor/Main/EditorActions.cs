@@ -12,6 +12,7 @@ namespace KrayonEditor
         public static bool IsHoveringScene = false;
         public static Vector2 ViewPortPosition;
         public static Vector2 ViewPortPositionOrigin;
+        public static bool IsDirty = false;
 
         public static void CreateEmptyGameObject()
         {

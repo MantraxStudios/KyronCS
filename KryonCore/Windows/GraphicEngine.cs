@@ -55,6 +55,7 @@ namespace KrayonCore.GraphicsData
         public event Action? OnClose;
         public event Action<TextInputEventArgs>? OnTextInput;
         public event Action<string[]>? OnFileDrop;
+        public event Action? OnTryClose;
 
         // ── Constructor ──────────────────────────────────────────────────────
         public GraphicsEngine()
@@ -69,6 +70,7 @@ namespace KrayonCore.GraphicsData
         {
             _window = new GameWindowInternal(width, height, title, this);
             _inputSystem = new InputSystem(_window);
+            _window.OnTryClose += HandleWindowTryClose;
         }
 
         public void Run()
@@ -106,6 +108,11 @@ namespace KrayonCore.GraphicsData
                 Console.WriteLine($"[FileDrop] {string.Join(", ", e.FileNames)}");
                 OnFileDrop?.Invoke(e.FileNames);
             }
+        }
+
+        private void HandleWindowTryClose()
+        {
+            OnTryClose?.Invoke();
         }
 
         internal void InternalLoad()
@@ -168,6 +175,16 @@ namespace KrayonCore.GraphicsData
             //canvas?.Find<UIButton>("BtnPlay")?.OnClick = () => Console.WriteLine("Iniciando juego");
             //canvas?.Find<UIButton>("BtnQuit")?.OnClick = () => Console.WriteLine("Saliendo juego");
             //canvas?.Find<UISlider>("VolumeSlider")?.OnChange = v => Console.WriteLine($"Volumen: {v}");
+        }
+
+        public void CanClose()
+        {
+            GameWindowInternal.CanIClose = true;
+        }
+
+        public void CantNoClose()
+        {
+            GameWindowInternal.CanIClose = false;
         }
 
         internal void InternalUpdate(float deltaTime)
