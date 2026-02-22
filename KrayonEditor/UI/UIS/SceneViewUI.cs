@@ -59,7 +59,6 @@ namespace KrayonEditor.UI
 
             DrawTransformButtons(); Separator();
             DrawSpaceButton(); Separator();
-            DrawViewButtons(); Separator();
             DrawSnapControls(); Separator();
             DrawVFXButton(); Separator();
             DrawCameraSpeed();
@@ -93,6 +92,79 @@ namespace KrayonEditor.UI
             DrawGizmoButton("##Rotate", "rotate", GizmoMode.Rotate, "Rotate (E)");
             ImGui.SameLine();
             DrawGizmoButton("##Scale", "scale", GizmoMode.Scale, "Scale (R)");
+            ImGui.SameLine();
+
+            ImGui.Text("|");
+
+            ImGui.SameLine();
+
+            DrawGizmoButton(
+                "##PlayGameInfo",
+                AppInfo.IsPlayingGame ? "stop" : "play",
+                "Ejecuta la escena",
+                () =>
+                {
+                    if (!AppInfo.IsPlayingGame)
+                    {
+                        Console.WriteLine("Preparing Clone And Play For Scene");
+                        AppInfo._RuntimeScene = SceneManager.CloneSceneToBytes(SceneManager.PrimaryScene);
+                        AppInfo.IsPlayingGame = true;
+                    }
+                    else
+                    {
+                        SceneManager.LoadSceneFromBytes(AppInfo._RuntimeScene);
+                        AppInfo.IsPlayingGame = false;
+                        Console.WriteLine("Stop Scene");
+                    }
+
+                    EditorActions.SelectedObject = null;
+                }
+            );
+
+            ImGui.SameLine();
+
+            DrawGizmoButton(
+                "##WireMode",
+                !GraphicsEngine.Instance.GetSceneRenderer().WireframeMode ? "model" : "wireframe",
+                "Change wire o triangle render",
+                () =>
+                {
+                    GraphicsEngine.Instance.GetSceneRenderer().ToggleWireframe();
+                }
+            );
+
+            ImGui.SameLine();
+
+            DrawGizmoButton(
+                "##Camera",
+                GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ProjectionMode == ProjectionMode.Orthographic ? "cameraOrtho" : "cameraProj",
+                "Change camera mode",
+                () =>
+                {
+                    GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ToggleProjectionMode();
+                }
+            );
+            ImGui.SameLine();
+            DrawGizmoButton(
+               "##snap",
+               "snap",
+               "Snap Settings",
+               () =>
+               {
+                   ImGui.OpenPopup("SnapSettings");
+               }
+           );
+
+            ImGui.SameLine();
+            DrawGizmoButton(
+               "##vfx",
+               "vfx",
+               "Post Processing Settings",
+               () =>
+               {
+                   ImGui.OpenPopup("VFXSettings");
+               }
+           );
         }
 
         private void DrawGizmoButton(string id, string iconName, GizmoMode mode, string tooltip)
@@ -105,6 +177,21 @@ namespace KrayonEditor.UI
                 TransformGizmo.SetMode(mode);
 
             if (active) ImGui.PopStyleColor(3);
+
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip(tooltip);
+        }
+
+        private void DrawGizmoButton(
+            string id,
+            string iconName,
+            string tooltip,
+            Action onClick)
+        {
+            if (ImGui.ImageButton(id, IconManager.GetIcon(iconName), ToolbarIconSize))
+            {
+                onClick?.Invoke();
+            }
 
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip(tooltip);
@@ -132,58 +219,6 @@ namespace KrayonEditor.UI
 
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip(isWorld ? "Switch to Local Space" : "Switch to World Space");
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  VIEW BUTTONS
-        // ─────────────────────────────────────────────────────────────────────
-
-        private void DrawViewButtons()
-        {
-            var renderer = GraphicsEngine.Instance.GetSceneRenderer();
-            bool wireframe = renderer.WireframeMode;
-            Vector2 buttonSize = new(75, 32);
-
-            if (ImGui.Button("Camera", buttonSize))
-                renderer.GetCamera().ToggleProjectionMode();
-
-            if (ImGui.IsItemHovered())
-            {
-                string mode = renderer.GetCamera().IsPerspective ? "Perspective" : "Orthographic";
-                ImGui.SetTooltip($"{mode}\nClick to toggle");
-            }
-
-            ImGui.SameLine();
-
-            if (wireframe) PushActiveButtonColors();
-
-            if (ImGui.Button("Wireframe", buttonSize))
-                renderer.ToggleWireframe();
-
-            if (wireframe) ImGui.PopStyleColor(3);
-
-            if (ImGui.IsItemHovered())
-                ImGui.SetTooltip(wireframe ? "Wireframe ON\nClick to disable" : "Wireframe OFF\nClick to enable");
-
-            ImGui.SameLine();
-            if (!AppInfo.IsPlayingGame)
-            {
-                if (ImGui.Button("Play"))
-                {
-                    Console.WriteLine("Preparing Clone And Play For Scene");
-                    AppInfo._RuntimeScene = SceneManager.CloneSceneToBytes(SceneManager.PrimaryScene);
-                    AppInfo.IsPlayingGame = true;
-                }
-            }
-            else
-            {
-                if (ImGui.Button("Stop") && AppInfo.IsPlayingGame)
-                {
-                    SceneManager.LoadSceneFromBytes(AppInfo._RuntimeScene);
-                    AppInfo.IsPlayingGame = false;
-                    Console.WriteLine("Stop Scene");
-                }
-            }
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -219,9 +254,6 @@ namespace KrayonEditor.UI
             }
 
             ImGui.SameLine();
-
-            if (ImGui.Button("Settings", new Vector2(70, 0)))
-                ImGui.OpenPopup("SnapSettings");
 
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip("Snap Settings");
@@ -284,9 +316,6 @@ namespace KrayonEditor.UI
                 ImGui.SetTooltip("Post Processing Effects");
 
             ImGui.SameLine();
-
-            if (ImGui.Button("VFX Settings", new Vector2(90, 0)))
-                ImGui.OpenPopup("VFXSettings");
 
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip("VFX Settings");

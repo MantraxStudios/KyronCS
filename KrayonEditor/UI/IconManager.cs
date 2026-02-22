@@ -23,21 +23,25 @@ namespace KrayonEditor.UI
         {
             string iconsPath = "Icons/";
 
-            // Cargar iconos de transformación
             LoadIcon("move", Path.Combine(iconsPath, "move.png"));
             LoadIcon("rotate", Path.Combine(iconsPath, "rotate.png"));
             LoadIcon("scale", Path.Combine(iconsPath, "scale.png"));
 
-            // Cargar iconos de reproducción
             LoadIcon("play", Path.Combine(iconsPath, "play.png"));
-            LoadIcon("pause", Path.Combine(iconsPath, "pause.png"));
             LoadIcon("stop", Path.Combine(iconsPath, "stop.png"));
 
             // Cargar iconos de vista
-            LoadIcon("camera", Path.Combine(iconsPath, "camera.png"));
+            LoadIcon("cameraOrtho", Path.Combine(iconsPath, "camOrtho.png"));
+            LoadIcon("cameraProj", Path.Combine(iconsPath, "camProj.png"));
             LoadIcon("wireframe", Path.Combine(iconsPath, "wireframe.png"));
+            LoadIcon("vfx", Path.Combine(iconsPath, "postprocessing.png"));
+            LoadIcon("snap", Path.Combine(iconsPath, "snap.png"));
+            LoadIcon("animator", Path.Combine(iconsPath, "animator.png"));
+            LoadIcon("texture", Path.Combine(iconsPath, "texture.png"));
+            LoadIcon("prefab", Path.Combine(iconsPath, "prefab.png"));
+            LoadIcon("model", Path.Combine(iconsPath, "model.png"));
+            LoadIcon("folder", Path.Combine(iconsPath, "folder.png"));
 
-            // Puedes agregar más iconos aquí
             Console.WriteLine($"IconManager: {_icons.Count} icons loaded");
         }
 

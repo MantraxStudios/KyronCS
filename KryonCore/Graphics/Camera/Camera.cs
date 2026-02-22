@@ -30,7 +30,7 @@ namespace KrayonCore
         }
 
         // ── Proyección ───────────────────────────────────────────────────────
-        public ProjectionMode ProjectionMode { get; set; } = ProjectionMode.Orthographic;
+        public ProjectionMode ProjectionMode { get; set; } = ProjectionMode.Perspective;
         public bool IsPerspective => ProjectionMode == ProjectionMode.Perspective;
 
         public float Fov { get; set; } = 45.0f;
