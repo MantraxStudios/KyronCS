@@ -146,7 +146,7 @@ namespace KrayonEditor.UI
             if (isSelected) flags |= ImGuiTreeNodeFlags.Selected;
             if (!hasChildren) flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
 
-            bool nodeOpen = ImGui.TreeNodeEx($"{go.Name}##{go.Id}", flags);
+            bool nodeOpen = ImGui.TreeNodeEx($"{go.Name}##{go.Id.GetHashCode()}", flags);
 
             if (ImGui.IsItemClicked())
                 EditorActions.SelectedObject = go;

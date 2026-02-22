@@ -448,7 +448,7 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            var sceneWindow = EditorUI._sceneView;
+            var sceneWindow = UIRender.GetUI<SceneViewUI>();
             if (sceneWindow == null || !EditorActions.IsHoveringScene)
             {
                 CleanupPreviewObject();

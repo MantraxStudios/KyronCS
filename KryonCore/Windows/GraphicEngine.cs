@@ -395,8 +395,8 @@ namespace KrayonCore.GraphicsData
         private void CreateMaterial(string name, Guid vert, Guid frag,
             Action<Material>? configure = null)
         {
-            var mat = _materials.Create(name, vert, frag);
-            if (mat is not null) configure?.Invoke(mat);
+            // var mat = _materials.Create(name, vert, frag);
+            //if (mat is not null) configure?.Invoke(mat);
         }
 
         private void ConfigureDefaultPostProcessing()

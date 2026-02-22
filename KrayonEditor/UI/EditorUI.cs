@@ -28,21 +28,6 @@ namespace KrayonEditor.UI
 
     internal static class EditorUI
     {
-        private static MainMenuBarUI _mainMenuBar = new MainMenuBarUI();
-        public static DockSpaceUI _dockSpace = new DockSpaceUI();
-        public static HierarchyUI _hierarchy = new HierarchyUI();
-        public static InspectorUI _inspector = new InspectorUI();
-        public static SceneViewUI _sceneView = new SceneViewUI();
-        public static ConsoleUI _console = new ConsoleUI();
-        public static StatsUI _stats = new StatsUI();
-        public static AssetsUI _assets = new AssetsUI();
-        public static MaterialUI _materials = new MaterialUI();
-        public static TileEditor _TileEditor = new TileEditor();
-        public static SpriteAnimationUI _SpriteAnimator = new SpriteAnimationUI();
-        public static CompilerUI _CompilerUI = new CompilerUI();
-        public static AnimatorEditorUI _animatorEditor = new AnimatorEditorUI();
-        public static UICanvasEditor _uiCanvasEditor = new UICanvasEditor();
-
         private static string WindowsStatePath => AssetManager.TotalBase + "Windows.json";
         private static WindowsState _lastState = new WindowsState();
 
@@ -52,32 +37,14 @@ namespace KrayonEditor.UI
             LoadWindowsState();
         }
 
-        public static void Draw(
-            GraphicsEngine? engine,
-            Camera? mainCamera,
-            bool isPlaying,
-            float editorCameraSpeed,
-            Vector2 lastSceneViewportSize,
-            double currentFps,
-            double currentFrameTime,
-            List<string> consoleMessages,
-            out float newEditorCameraSpeed,
-            out Vector2 newLastSceneViewportSize)
+        public static void Draw()
         {
-            _sceneView.Engine = engine;
-            _sceneView.MainCamera = mainCamera;
-            _sceneView.EditorCameraSpeed = editorCameraSpeed;
-            _sceneView.LastViewportSize = lastSceneViewportSize;
-            _console.Messages = consoleMessages;
-            _stats.MainCamera = mainCamera;
-            _stats.CurrentFps = currentFps;
-            _stats.CurrentFrameTime = currentFrameTime;
-
-            _hierarchy.IsVisible = _mainMenuBar.ShowHierarchy;
-            _inspector.IsVisible = _mainMenuBar.ShowInspector;
-            _console.IsVisible = _mainMenuBar.ShowConsole;
-            _stats.IsVisible = _mainMenuBar.ShowStats;
-            _assets.IsVisible = _mainMenuBar.ShowAssets;
+            var sceneView = UIRender.GetUI<SceneViewUI>();
+            var hierarchy = UIRender.GetUI<HierarchyUI>();
+            var inspector = UIRender.GetUI<InspectorUI>();
+            var console = UIRender.GetUI<ConsoleUI>();
+            var assets = UIRender.GetUI<AssetsUI>();
+            var mainMenuBar = UIRender.GetUI<MainMenuBarUI>();
 
             ImGui.DockSpaceOverViewport();
 
@@ -86,38 +53,7 @@ namespace KrayonEditor.UI
             ImGui.DockSpace(innerDock, new Vector2(0, 0), ImGuiDockNodeFlags.None);
             ImGui.End();
 
-            //EditorLayout.Draw();
-
-            _mainMenuBar.OnDrawUI();
-            _dockSpace.OnDrawUI();
-            _hierarchy.OnDrawUI();
-            _inspector.OnDrawUI();
-            _sceneView.OnDrawUI();
-            _console.OnDrawUI();
-            _stats.OnDrawUI();
-            _assets.OnDrawUI();
-            _SpriteAnimator.OnDrawUI();
-            _materials.OnDrawUI();
-            _TileEditor.OnDrawUI();
-            _CompilerUI.OnDrawUI();
-            _animatorEditor.OnDrawUI();
-
-            if (_uiCanvasEditor.IsOpen)
-            {
-                ImGui.SetNextWindowSize(new Vector2(950, 620), ImGuiCond.FirstUseEver);
-                if (ImGui.Begin("UI Canvas Editor", ImGuiWindowFlags.MenuBar))
-                    _uiCanvasEditor.OnImGui(TimerData.DeltaTime);
-                ImGui.End();
-            }
-
-            _mainMenuBar.ShowHierarchy = _hierarchy.IsVisible;
-            _mainMenuBar.ShowInspector = _inspector.IsVisible;
-            _mainMenuBar.ShowConsole = _console.IsVisible;
-            _mainMenuBar.ShowStats = _stats.IsVisible;
-            _mainMenuBar.ShowAssets = _assets.IsVisible;
-
-            newEditorCameraSpeed = _sceneView.EditorCameraSpeed;
-            newLastSceneViewportSize = _sceneView.LastViewportSize;
+            UIRender.Render();
 
             CheckAndSaveWindowsState();
 
@@ -142,16 +78,15 @@ namespace KrayonEditor.UI
 
                     if (state != null)
                     {
-                        _hierarchy.IsVisible = state.ShowHierarchy;
-                        _inspector.IsVisible = state.ShowInspector;
-                        _sceneView.IsVisible = state.ShowSceneView;
-                        _console.IsVisible = state.ShowConsole;
-                        _stats.IsVisible = state.ShowStats;
-                        _assets.IsVisible = state.ShowAssets;
-                        _materials.IsVisible = state.ShowMaterials;
-                        _TileEditor.IsVisible = state.ShowTileEditor;
-                        _SpriteAnimator.IsVisible = state.ShowSpriteAnimator;
-                        _CompilerUI.IsVisible = state.ShowCompiler;
+                        UIRender.GetUI<HierarchyUI>().IsVisible = state.ShowHierarchy;
+                        UIRender.GetUI<InspectorUI>().IsVisible = state.ShowInspector;
+                        UIRender.GetUI<SceneViewUI>().IsVisible = state.ShowSceneView;
+                        UIRender.GetUI<ConsoleUI>().IsVisible = state.ShowConsole;
+                        UIRender.GetUI<AssetsUI>().IsVisible = state.ShowAssets;
+                        UIRender.GetUI<MaterialUI>().IsVisible = state.ShowMaterials;
+                        UIRender.GetUI<TileEditor>().IsVisible = state.ShowTileEditor;
+                        UIRender.GetUI<SpriteAnimationUI>().IsVisible = state.ShowSpriteAnimator;
+                        UIRender.GetUI<CompilerUI>().IsVisible = state.ShowCompiler;
 
                         _lastState = state;
                         Console.WriteLine("[EditorUI] Windows state loaded");
@@ -168,16 +103,15 @@ namespace KrayonEditor.UI
         {
             var currentState = new WindowsState
             {
-                ShowHierarchy = _hierarchy.IsVisible,
-                ShowInspector = _inspector.IsVisible,
-                ShowSceneView = _sceneView.IsVisible,
-                ShowConsole = _console.IsVisible,
-                ShowStats = _stats.IsVisible,
-                ShowAssets = _assets.IsVisible,
-                ShowMaterials = _materials.IsVisible,
-                ShowTileEditor = _TileEditor.IsVisible,
-                ShowSpriteAnimator = _SpriteAnimator.IsVisible,
-                ShowCompiler = _CompilerUI.IsVisible
+                ShowHierarchy = UIRender.GetUI<HierarchyUI>().IsVisible,
+                ShowInspector = UIRender.GetUI<InspectorUI>().IsVisible,
+                ShowSceneView = UIRender.GetUI<SceneViewUI>().IsVisible,
+                ShowConsole = UIRender.GetUI<ConsoleUI>().IsVisible,
+                ShowAssets = UIRender.GetUI<AssetsUI>().IsVisible,
+                ShowMaterials = UIRender.GetUI<MaterialUI>().IsVisible,
+                ShowTileEditor = UIRender.GetUI<TileEditor>().IsVisible,
+                ShowSpriteAnimator = UIRender.GetUI<SpriteAnimationUI>().IsVisible,
+                ShowCompiler = UIRender.GetUI<CompilerUI>().IsVisible
             };
 
             if (HasStateChanged(currentState))
@@ -205,11 +139,7 @@ namespace KrayonEditor.UI
         {
             try
             {
-                string json = JsonSerializer.Serialize(state, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-
+                string json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(WindowsStatePath, json, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
                 Console.WriteLine("[EditorUI] Windows state saved");
             }
@@ -222,105 +152,42 @@ namespace KrayonEditor.UI
         private static void SetupImGuiStyle()
         {
             var style = ImGui.GetStyle();
-
             style.WindowPadding = new Vector2(8, 8);
             style.FramePadding = new Vector2(5, 4);
             style.CellPadding = new Vector2(4, 2);
             style.ItemSpacing = new Vector2(8, 4);
-            style.TouchExtraPadding = new Vector2(0, 0);
             style.IndentSpacing = 21;
             style.ScrollbarSize = 14;
             style.GrabMinSize = 8;
-
             style.WindowBorderSize = 1;
             style.ChildBorderSize = 1;
             style.PopupBorderSize = 1;
-            style.FrameBorderSize = 0;
-            style.TabBorderSize = 0;
-
-            style.WindowRounding = 0;
-            style.ChildRounding = 0;
-            style.FrameRounding = 0;
-            style.PopupRounding = 0;
-            style.ScrollbarRounding = 0;
-            style.GrabRounding = 0;
-            style.TabRounding = 0;
-            style.LogSliderDeadzone = 4;
 
             var colors = style.Colors;
-
             colors[(int)ImGuiCol.WindowBg] = new Vector4(0.15f, 0.15f, 0.15f, 1.0f);
             colors[(int)ImGuiCol.ChildBg] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
             colors[(int)ImGuiCol.PopupBg] = new Vector4(0.18f, 0.18f, 0.18f, 0.98f);
             colors[(int)ImGuiCol.Border] = new Vector4(0.08f, 0.08f, 0.08f, 1.0f);
-            colors[(int)ImGuiCol.BorderShadow] = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-
             colors[(int)ImGuiCol.TitleBg] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
             colors[(int)ImGuiCol.TitleBgActive] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);
-            colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
             colors[(int)ImGuiCol.MenuBarBg] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);
-
             colors[(int)ImGuiCol.FrameBg] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
             colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);
             colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.25f, 0.25f, 0.25f, 1.0f);
-
-            colors[(int)ImGuiCol.Tab] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);
-            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.25f, 0.25f, 0.25f, 1.0f);
-            colors[(int)ImGuiCol.TabSelected] = new Vector4(0.15f, 0.15f, 0.15f, 1.0f);
-            colors[(int)ImGuiCol.TabSelectedOverline] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-            colors[(int)ImGuiCol.TabDimmed] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
-            colors[(int)ImGuiCol.TabDimmedSelected] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);
-            colors[(int)ImGuiCol.TabDimmedSelectedOverline] = new Vector4(0.45f, 0.20f, 0.25f, 1.0f);
-
-            colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
-            colors[(int)ImGuiCol.ScrollbarGrab] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);
-            colors[(int)ImGuiCol.ScrollbarGrabHovered] = new Vector4(0.25f, 0.25f, 0.25f, 1.0f);
-            colors[(int)ImGuiCol.ScrollbarGrabActive] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-
-            colors[(int)ImGuiCol.SliderGrab] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-            colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.65f, 0.30f, 0.35f, 1.0f);
-
             colors[(int)ImGuiCol.Button] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);
             colors[(int)ImGuiCol.ButtonHovered] = new Vector4(0.55f, 0.25f, 0.30f, 0.5f);
             colors[(int)ImGuiCol.ButtonActive] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-
             colors[(int)ImGuiCol.Header] = new Vector4(0.20f, 0.20f, 0.20f, 1.0f);
             colors[(int)ImGuiCol.HeaderHovered] = new Vector4(0.55f, 0.25f, 0.30f, 0.3f);
             colors[(int)ImGuiCol.HeaderActive] = new Vector4(0.55f, 0.25f, 0.30f, 0.5f);
-
             colors[(int)ImGuiCol.Separator] = new Vector4(0.08f, 0.08f, 0.08f, 1.0f);
-            colors[(int)ImGuiCol.SeparatorHovered] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-            colors[(int)ImGuiCol.SeparatorActive] = new Vector4(0.65f, 0.30f, 0.35f, 1.0f);
-
-            colors[(int)ImGuiCol.ResizeGrip] = new Vector4(0.55f, 0.25f, 0.30f, 0.2f);
-            colors[(int)ImGuiCol.ResizeGripHovered] = new Vector4(0.55f, 0.25f, 0.30f, 0.6f);
-            colors[(int)ImGuiCol.ResizeGripActive] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-
-            colors[(int)ImGuiCol.CheckMark] = new Vector4(0.65f, 0.30f, 0.35f, 1.0f);
+            colors[(int)ImGuiCol.SliderGrab] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
             colors[(int)ImGuiCol.Text] = new Vector4(0.95f, 0.95f, 0.95f, 1.0f);
             colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.50f, 0.50f, 0.50f, 1.0f);
-            colors[(int)ImGuiCol.TextSelectedBg] = new Vector4(0.55f, 0.25f, 0.30f, 0.35f);
-
             colors[(int)ImGuiCol.DockingPreview] = new Vector4(0.55f, 0.25f, 0.30f, 0.7f);
-            colors[(int)ImGuiCol.DockingEmptyBg] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
-
-            colors[(int)ImGuiCol.PlotLines] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-            colors[(int)ImGuiCol.PlotLinesHovered] = new Vector4(0.65f, 0.30f, 0.35f, 1.0f);
-            colors[(int)ImGuiCol.PlotHistogram] = new Vector4(0.55f, 0.25f, 0.30f, 1.0f);
-            colors[(int)ImGuiCol.PlotHistogramHovered] = new Vector4(0.65f, 0.30f, 0.35f, 1.0f);
-
-            colors[(int)ImGuiCol.TableHeaderBg] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);
-            colors[(int)ImGuiCol.TableBorderStrong] = new Vector4(0.08f, 0.08f, 0.08f, 1.0f);
-            colors[(int)ImGuiCol.TableBorderLight] = new Vector4(0.12f, 0.12f, 0.12f, 1.0f);
-            colors[(int)ImGuiCol.TableRowBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-            colors[(int)ImGuiCol.TableRowBgAlt] = new Vector4(0.55f, 0.25f, 0.30f, 0.06f);
-
-            colors[(int)ImGuiCol.DragDropTarget] = new Vector4(0.65f, 0.30f, 0.35f, 1.0f);
-
-            colors[(int)ImGuiCol.NavWindowingHighlight] = new Vector4(0.55f, 0.25f, 0.30f, 0.7f);
-            colors[(int)ImGuiCol.NavWindowingDimBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.3f);
-
-            colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.5f);
+            colors[(int)ImGuiCol.Tab] = new Vector4(0.18f, 0.18f, 0.18f, 1.0f);
+            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.25f, 0.25f, 0.25f, 1.0f);
+            colors[(int)ImGuiCol.TabSelected] = new Vector4(0.15f, 0.15f, 0.15f, 1.0f);
         }
     }
 }

@@ -1,5 +1,6 @@
 using ImGuiNET;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Editor.Panels;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -592,12 +593,12 @@ namespace KrayonEditor.UI
                 }
                 else if (ext == ".animator") 
                 {
-                    EditorUI._animatorEditor.OpenAsset(asset.Guid);
+                    UIRender.GetUI<AnimatorEditorUI>().OpenAsset(asset.Guid);
                 }
-                else if (ext == ".ui")
-                {
-                    EditorUI._uiCanvasEditor.OpenAsset(asset.Guid);
-                }
+                //else if (ext == ".ui")
+                //{
+                //    UIRender.GetUI<UICanvasEditor>().OpenAsset(asset.Guid);
+                //}
             }
 
             if (ImGui.BeginPopupContextItem($"AssetCtx_{asset.Guid}"))
@@ -611,13 +612,13 @@ namespace KrayonEditor.UI
 
                 if (ext == ".animator" && ImGui.MenuItem("Open Animator Editor"))  
                 {
-                    EditorUI._animatorEditor.OpenAsset(asset.Guid);
+                    UIRender.GetUI<AnimatorEditorUI>().OpenAsset(asset.Guid);
                 }
 
-                if (ext == ".ui" && ImGui.MenuItem("Open UI Editor"))
-                {
-                    EditorUI._uiCanvasEditor.OpenAsset(asset.Guid);
-                }
+                //if (ext == ".ui" && ImGui.MenuItem("Open UI Editor"))
+                //{
+                //    EditorUI._uiCanvasEditor.OpenAsset(asset.Guid);
+                //}
 
                 if (ext == ".cs" || ext == ".animator")
                     ImGui.Separator();

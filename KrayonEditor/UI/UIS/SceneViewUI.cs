@@ -14,8 +14,21 @@ namespace KrayonEditor.UI
 {
     public class SceneViewUI : UIBehaviour
     {
-        public GraphicsEngine? Engine { get; set; }
-        public Camera? MainCamera { get; set; }
+        public GraphicsEngine? Engine
+        {
+            get
+            {
+                return GraphicsEngine.Instance;
+            }
+        }
+        public Camera? MainCamera
+        {
+            get
+            {
+                return Engine.GetSceneRenderer().GetCamera ();
+            }
+        }
+
         public float EditorCameraSpeed { get; set; } = 5.0f;
         public Vector2 LastViewportSize { get; set; }
 
@@ -571,7 +584,27 @@ namespace KrayonEditor.UI
             EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, MainCamera);
 
             if (EditorActions.SelectedObject != null && MainCamera != null)
-                TransformGizmo.Draw(EditorActions.SelectedObject, MainCamera, cursorPos, viewportSize, isHovered);
+            {
+                var transform = new GizmoTransform(
+                    EditorActions.SelectedObject.Transform.GetWorldPosition(),
+                    EditorActions.SelectedObject.Transform.GetWorldRotation(),
+                    EditorActions.SelectedObject.Transform.GetWorldScale());
+
+                bool modified = TransformGizmo.Draw(
+                    ref transform,
+                    MainCamera.GetViewMatrix(),
+                    MainCamera.GetProjectionMatrix(),
+                    cursorPos,
+                    viewportSize,
+                    isHovered);
+
+                if (modified)
+                {
+                    EditorActions.SelectedObject.Transform.SetWorldPosition(transform.Position);
+                    EditorActions.SelectedObject.Transform.SetWorldRotation(transform.Rotation);
+                    EditorActions.SelectedObject.Transform.SetWorldScale(transform.Scale);
+                }
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────────

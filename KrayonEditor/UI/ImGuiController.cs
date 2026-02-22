@@ -39,6 +39,7 @@ namespace KrayonEditor.UI
             io.Fonts.AddFontDefault();
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
             io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+            io.MouseDrawCursor = true;
 
             CreateDeviceResources();
 
@@ -46,6 +47,8 @@ namespace KrayonEditor.UI
 
             ImGui.NewFrame();
             _frameBegun = true;
+
+            UIRender.StartUI();
         }
 
         public void WindowResized(int width, int height)

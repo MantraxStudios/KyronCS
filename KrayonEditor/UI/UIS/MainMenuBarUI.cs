@@ -140,54 +140,41 @@ namespace KrayonEditor.UI
 
                 if (ImGui.BeginMenu("Window"))
                 {
-                    if (ImGui.MenuItem("Hierarchy", null, EditorUI._hierarchy.IsVisible))
+                    if (ImGui.MenuItem("Hierarchy", null, UIRender.GetUI<HierarchyUI>().IsVisible))
                     {
-                        EditorUI._hierarchy.IsVisible = !EditorUI._hierarchy.IsVisible;
+                        UIRender.GetUI<HierarchyUI>().IsVisible = !UIRender.GetUI<HierarchyUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Inspector", null, EditorUI._inspector.IsVisible))
+                    if (ImGui.MenuItem("Inspector", null, UIRender.GetUI<InspectorUI>().IsVisible))
                     {
-                        EditorUI._inspector.IsVisible = !EditorUI._inspector.IsVisible;
+                        UIRender.GetUI<InspectorUI>().IsVisible = !UIRender.GetUI<InspectorUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Scene View", null, EditorUI._sceneView.IsVisible))
+                    if (ImGui.MenuItem("Scene View", null, UIRender.GetUI<SceneViewUI>().IsVisible))
                     {
-                        EditorUI._sceneView.IsVisible = !EditorUI._sceneView.IsVisible;
+                        UIRender.GetUI<SceneViewUI>().IsVisible = !UIRender.GetUI<SceneViewUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Console", null, EditorUI._console.IsVisible))
+                    if (ImGui.MenuItem("Console", null, UIRender.GetUI<ConsoleUI>().IsVisible))
                     {
-                        EditorUI._console.IsVisible = !EditorUI._console.IsVisible;
+                        UIRender.GetUI<ConsoleUI>().IsVisible = !UIRender.GetUI<ConsoleUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Stats", null, EditorUI._stats.IsVisible))
+                    if (ImGui.MenuItem("Assets", null, UIRender.GetUI<AssetsUI>().IsVisible))
                     {
-                        EditorUI._stats.IsVisible = !EditorUI._stats.IsVisible;
+                        UIRender.GetUI<AssetsUI>().IsVisible = !UIRender.GetUI<AssetsUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Assets", null, EditorUI._assets.IsVisible))
+                    if (ImGui.MenuItem("Materials", null, UIRender.GetUI<MaterialUI>().IsVisible))
                     {
-                        EditorUI._assets.IsVisible = !EditorUI._assets.IsVisible;
+                        UIRender.GetUI<MaterialUI>().IsVisible = !UIRender.GetUI<MaterialUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Materials", null, EditorUI._materials.IsVisible))
+                    if (ImGui.MenuItem("Tile Editor", null, UIRender.GetUI<TileEditor>().IsVisible))
                     {
-                        EditorUI._materials.IsVisible = !EditorUI._materials.IsVisible;
+                        UIRender.GetUI<TileEditor>().IsVisible = !UIRender.GetUI<TileEditor>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Tile Editor", null, EditorUI._TileEditor.IsVisible))
+                    if (ImGui.MenuItem("Sprite Animator", null, UIRender.GetUI<SpriteAnimationUI>().IsVisible))
                     {
-                        EditorUI._TileEditor.IsVisible = !EditorUI._TileEditor.IsVisible;
+                        UIRender.GetUI<SpriteAnimationUI>().IsVisible = !UIRender.GetUI<SpriteAnimationUI>().IsVisible;
                     }
-
-                    if (ImGui.MenuItem("Sprite Animator", null, EditorUI._SpriteAnimator.IsVisible))
+                    if (ImGui.MenuItem("Compiler", null, UIRender.GetUI<CompilerUI>().IsVisible))
                     {
-                        EditorUI._SpriteAnimator.IsVisible = !EditorUI._SpriteAnimator.IsVisible;
-                    }
-
-                    if (ImGui.MenuItem("Compiler", null, EditorUI._CompilerUI.IsVisible))
-                    {
-                        EditorUI._CompilerUI.IsVisible = !EditorUI._CompilerUI.IsVisible;
+                        UIRender.GetUI<CompilerUI>().IsVisible = !UIRender.GetUI<CompilerUI>().IsVisible;
                     }
 
                     ImGui.EndMenu();

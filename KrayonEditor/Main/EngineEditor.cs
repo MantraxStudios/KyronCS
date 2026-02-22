@@ -440,10 +440,7 @@ namespace KrayonEditor.Main
             _imguiController?.Update(_window, dt);
             EditorNotifications.Draw(dt);
 
-            EditorUI.Draw(
-                _engine!, _editorCamera, _isPlaying, _editorCameraSpeed,
-                _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages, out _editorCameraSpeed, out _lastSceneViewportSize
-            );
+            EditorUI.Draw();
 
             System.Numerics.Vector2 globalMouse = ImGui.GetMousePos();
             System.Numerics.Vector2 vpOrigin = EditorActions.ViewPortPosition;
@@ -677,7 +674,7 @@ namespace KrayonEditor.Main
 
         // ── Archivos ─────────────────────────────────────────────────────────
         private static void OnFilesDropped(string[] filePaths)
-            => EditorUI._assets.HandleExternalDrop(filePaths, "");
+            => UIRender.GetUI<AssetsUI>().HandleExternalDrop(filePaths, "");
 
         // ── Consola ──────────────────────────────────────────────────────────
         public static void LogMessage(string message)
