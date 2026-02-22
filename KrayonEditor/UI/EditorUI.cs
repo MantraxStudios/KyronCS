@@ -61,13 +61,11 @@ namespace KrayonEditor.UI
             double currentFps,
             double currentFrameTime,
             List<string> consoleMessages,
-            out bool newIsPlaying,
             out float newEditorCameraSpeed,
             out Vector2 newLastSceneViewportSize)
         {
             _sceneView.Engine = engine;
             _sceneView.MainCamera = mainCamera;
-            _sceneView.IsPlaying = isPlaying;
             _sceneView.EditorCameraSpeed = editorCameraSpeed;
             _sceneView.LastViewportSize = lastSceneViewportSize;
             _console.Messages = consoleMessages;
@@ -118,7 +116,6 @@ namespace KrayonEditor.UI
             _mainMenuBar.ShowStats = _stats.IsVisible;
             _mainMenuBar.ShowAssets = _assets.IsVisible;
 
-            newIsPlaying = _sceneView.IsPlaying;
             newEditorCameraSpeed = _sceneView.EditorCameraSpeed;
             newLastSceneViewportSize = _sceneView.LastViewportSize;
 

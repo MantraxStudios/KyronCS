@@ -413,8 +413,7 @@ namespace KrayonEditor.Main
 
             EditorUI.Draw(
                 _engine!, _editorCamera, _isPlaying, _editorCameraSpeed,
-                _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages,
-                out _isPlaying, out _editorCameraSpeed, out _lastSceneViewportSize
+                _lastSceneViewportSize, _currentFps, _currentFrameTime, _consoleMessages, out _editorCameraSpeed, out _lastSceneViewportSize
             );
 
             System.Numerics.Vector2 globalMouse = ImGui.GetMousePos();

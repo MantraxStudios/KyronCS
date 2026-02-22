@@ -38,7 +38,7 @@ namespace KrayonCore.Core.Components
 
         public override void Awake()
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             CSharpScriptManager.Instance.Initialize();
 
@@ -48,7 +48,7 @@ namespace KrayonCore.Core.Components
 
         public override void Start()
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             SubscribeToCollisionEvents();
 
@@ -57,7 +57,7 @@ namespace KrayonCore.Core.Components
 
         public override void Update(float deltaTime)
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             if (_updateMethod == null) return;
             try
@@ -72,7 +72,7 @@ namespace KrayonCore.Core.Components
 
         public override void OnDestroy()
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             UnsubscribeFromCollisionEvents();
             InvokeMethod(_destroyMethod);
@@ -152,7 +152,7 @@ namespace KrayonCore.Core.Components
 
         private void InvokeMethod(MethodInfo method)
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             if (method == null) return;
             try
@@ -171,7 +171,7 @@ namespace KrayonCore.Core.Components
 
         private void SubscribeToCollisionEvents()
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             UnsubscribeFromCollisionEvents();
 
@@ -196,7 +196,7 @@ namespace KrayonCore.Core.Components
 
         private void UnsubscribeFromCollisionEvents()
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             if (!_subscribedToEvents || _rigidbody == null) return;
 
@@ -219,7 +219,7 @@ namespace KrayonCore.Core.Components
 
         private void InvokeCollisionMethod(MethodInfo method, ContactInfo contact)
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             if (method == null || _scriptInstance == null) return;
             try

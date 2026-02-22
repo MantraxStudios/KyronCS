@@ -42,6 +42,18 @@ namespace KrayonCore
             Console.WriteLine($"Escena '{scene.Name}' guardada en: {filePath}");
         }
 
+        public static byte[] SaveSceneToBytes(GameScene scene)
+        {
+            if (scene == null)
+                throw new ArgumentNullException(nameof(scene));
+
+            var sceneData = SerializeScene(scene);
+
+            var json = JsonSerializer.Serialize(sceneData, JsonOptions);
+
+            return System.Text.Encoding.UTF8.GetBytes(json);
+        }
+
         public static GameScene LoadScene(string filePath)
         {
             string json;

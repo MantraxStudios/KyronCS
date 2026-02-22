@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
 using KrayonCore.GraphicsData;
 using KrayonEditor.Main;
@@ -44,24 +45,52 @@ namespace KrayonEditor.UI
             {
                 if (ImGui.BeginMenu("File"))
                 {
-                    if (ImGui.MenuItem("New Scene", "Ctrl+N"))
+                    if (ImGui.MenuItem("New Scene"))
                     {
-                        ShowNewSceneDialog();
+                        if (!AppInfo.IsPlayingGame)
+                        {
+                            ShowNewSceneDialog();
+                        }
+                        else
+                        {
+                            EditorNotifications.Success("You cannot create a new scene during playback.");
+                        }
                     }
 
-                    if (ImGui.MenuItem("Open Scene", "Ctrl+O"))
+                    if (ImGui.MenuItem("Open Scene"))
                     {
-                        OpenSceneDialog();
+                        if (!AppInfo.IsPlayingGame)
+                        {
+                            OpenSceneDialog();
+                        }
+                        else
+                        {
+                            EditorNotifications.Success("You cannot change scenes during playback.");
+                        }
                     }
 
                     if (ImGui.MenuItem("Save Scene", "Ctrl+S"))
                     {
-                        SaveCurrentScene();
+                        if (!AppInfo.IsPlayingGame)
+                        {
+                            SaveCurrentScene();
+                        }
+                        else
+                        {
+                            EditorNotifications.Success("You cannot save the scene during playback.");
+                        }
                     }
 
-                    if (ImGui.MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+                    if (ImGui.MenuItem("Save Scene As..."))
                     {
-                        SaveSceneAsDialog();
+                        if (!AppInfo.IsPlayingGame)
+                        {
+                            SaveSceneAsDialog();
+                        }
+                        else
+                        {
+                            EditorNotifications.Success("You cannot save the scene during playback.");
+                        }
                     }
 
                     ImGui.Separator();
@@ -76,7 +105,14 @@ namespace KrayonEditor.UI
 
                     if (ImGui.MenuItem("Exit", "Alt+F4"))
                     {
-                        OnExit();
+                        if (!AppInfo.IsPlayingGame)
+                        {
+                            OnExit();
+                        }
+                        else
+                        {
+                            EditorNotifications.Success("You cannot turn off the engine during playback.");
+                        }
                     }
 
                     ImGui.EndMenu();
@@ -178,7 +214,14 @@ namespace KrayonEditor.UI
 
             if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) && ImGui.IsKeyPressed(ImGuiKey.S) && !ImGui.IsKeyDown(ImGuiKey.MouseRight))
             {
-                SaveCurrentScene();
+                if (!AppInfo.IsPlayingGame)
+                {
+                    SaveCurrentScene();
+                }
+                else
+                {
+                    EditorNotifications.Success("You cannot save the scene during playback.");
+                }
             }
         }
 

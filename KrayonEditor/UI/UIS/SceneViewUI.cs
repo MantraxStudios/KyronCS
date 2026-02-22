@@ -8,6 +8,7 @@ using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
 using KrayonCore.Graphics.Camera;
 using KrayonEditor.Main;
+using KrayonCore.Core;
 
 namespace KrayonEditor.UI
 {
@@ -15,7 +16,6 @@ namespace KrayonEditor.UI
     {
         public GraphicsEngine? Engine { get; set; }
         public Camera? MainCamera { get; set; }
-        public bool IsPlaying { get; set; }
         public float EditorCameraSpeed { get; set; } = 5.0f;
         public Vector2 LastViewportSize { get; set; }
 
@@ -164,6 +164,26 @@ namespace KrayonEditor.UI
 
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip(wireframe ? "Wireframe ON\nClick to disable" : "Wireframe OFF\nClick to enable");
+
+            ImGui.SameLine();
+            if (!AppInfo.IsPlayingGame)
+            {
+                if (ImGui.Button("Play"))
+                {
+                    Console.WriteLine("Preparing Clone And Play For Scene");
+                    AppInfo._RuntimeScene = SceneManager.CloneSceneToBytes(SceneManager.PrimaryScene);
+                    AppInfo.IsPlayingGame = true;
+                }
+            }
+            else
+            {
+                if (ImGui.Button("Stop") && AppInfo.IsPlayingGame)
+                {
+                    SceneManager.LoadSceneFromBytes(AppInfo._RuntimeScene);
+                    AppInfo.IsPlayingGame = false;
+                    Console.WriteLine("Stop Scene");
+                }
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────────

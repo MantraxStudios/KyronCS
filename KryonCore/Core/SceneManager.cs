@@ -139,7 +139,7 @@ namespace KrayonCore
 
         public static void Update(float deltaTime)
         {
-            if (!AppInfo.IsCompiledGame) return;
+            if (!AppInfo.IsPlayingGame) return;
 
             foreach (var scene in _PrimaryScenes)
                 scene.Update(deltaTime);
@@ -257,6 +257,48 @@ namespace KrayonCore
             }
 
             SceneSaveSystem.SaveScene(scene, filePath);
+        }
+
+        public static byte[] CloneSceneToBytes(GameScene original)
+        {
+            if (original == null)
+                return null;
+
+            return SceneSaveSystem.SaveSceneToBytes(original);
+        }
+
+        public static void LoadSceneFromBytes(Byte[] scene_bytes)
+        {
+            GameScene sceneToLoad = null;
+
+
+            UnloadAllPrimaryScenes();
+
+            GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+
+            sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
+
+            if (sceneToLoad == null) return;
+
+            if (_scenes.ContainsKey(sceneToLoad.Name))
+            {
+                var oldScene = _scenes[sceneToLoad.Name];
+                if (!_PrimaryScenes.Contains(oldScene))
+                {
+                    oldScene.OnUnload();
+                    oldScene.Clear();
+                }
+            }
+
+            _scenes[sceneToLoad.Name] = sceneToLoad;
+
+
+            if (!_PrimaryScenes.Contains(sceneToLoad))
+            {
+                _PrimaryScenes.Add(sceneToLoad);
+                sceneToLoad.OnLoad();
+                sceneToLoad.Start();
+            }
         }
 
         public static void SaveAllScenes(string directoryPath)
