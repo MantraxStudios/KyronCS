@@ -10,40 +10,31 @@ namespace KrayonCore
     public static class SceneManager
     {
         private static Dictionary<string, GameScene> _scenes = new Dictionary<string, GameScene>();
-        private static GameScene _activeScene;
+        private static List<GameScene> _PrimaryScenes = new List<GameScene>();
 
-        public static GameScene ActiveScene
-        {
-            get => _activeScene;
-            private set => _activeScene = value;
-        }
+        public static IReadOnlyList<GameScene> PrimaryScenes => _PrimaryScenes;
+
+        public static GameScene PrimaryScene => _PrimaryScenes.Count > 0 ? _PrimaryScenes[0] : null;
 
         public static GameScene CreateScene(string name)
         {
             if (_scenes.ContainsKey(name))
-            {
                 return _scenes[name];
-            }
 
             GameScene scene = new GameScene(name);
             _scenes[name] = scene;
-
             return scene;
         }
 
-        /// <summary>
-        /// Carga una escena. Puede recibir el nombre de una escena existente o una ruta de archivo .scene
-        /// </summary>
-        /// <param name="nameOrPath">Nombre de la escena o ruta del archivo .scene</param>
-        public static void LoadScene(string nameOrPath)
+        public static void LoadScene(string nameOrPath, bool additive = true)
         {
             GameScene sceneToLoad = null;
             bool isFile = nameOrPath.EndsWith(".scene", StringComparison.OrdinalIgnoreCase);
 
             if (isFile)
             {
-                if (_activeScene != null)
-                    _activeScene.OnUnload();
+                if (!additive)
+                    UnloadAllPrimaryScenes();
 
                 GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
 
@@ -73,12 +64,13 @@ namespace KrayonCore
                 if (_scenes.ContainsKey(sceneToLoad.Name))
                 {
                     var oldScene = _scenes[sceneToLoad.Name];
-                    if (oldScene != _activeScene)
+                    if (!_PrimaryScenes.Contains(oldScene))
                     {
                         oldScene.OnUnload();
                         oldScene.Clear();
                     }
                 }
+
                 _scenes[sceneToLoad.Name] = sceneToLoad;
             }
             else
@@ -88,17 +80,55 @@ namespace KrayonCore
                     Console.WriteLine($"Error: No se encontró la escena '{nameOrPath}'");
                     return;
                 }
+
                 sceneToLoad = _scenes[nameOrPath];
 
-                if (_activeScene != null)
-                    _activeScene.OnUnload();
-
-                GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+                if (!additive)
+                {
+                    UnloadAllPrimaryScenes();
+                    GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+                }
             }
 
-            _activeScene = sceneToLoad;
-            _activeScene.OnLoad();
-            _activeScene.Start();
+            if (!_PrimaryScenes.Contains(sceneToLoad))
+            {
+                _PrimaryScenes.Add(sceneToLoad);
+                sceneToLoad.OnLoad();
+                sceneToLoad.Start();
+            }
+        }
+
+        public static void UnloadScene(string name)
+        {
+            if (_scenes.TryGetValue(name, out GameScene scene))
+            {
+                _PrimaryScenes.Remove(scene);
+                scene.OnUnload();
+                scene.Clear();
+                _scenes.Remove(name);
+            }
+        }
+
+        public static void UnloadPrimaryScene(string name)
+        {
+            if (_scenes.TryGetValue(name, out GameScene scene) && _PrimaryScenes.Contains(scene))
+            {
+                _PrimaryScenes.Remove(scene);
+                scene.OnUnload();
+            }
+        }
+
+        private static void UnloadAllPrimaryScenes()
+        {
+            foreach (var scene in _PrimaryScenes)
+                scene.OnUnload();
+
+            _PrimaryScenes.Clear();
+        }
+
+        public static bool IsSceneActive(string name)
+        {
+            return _scenes.TryGetValue(name, out GameScene scene) && _PrimaryScenes.Contains(scene);
         }
 
         public static GameScene GetScene(string name)
@@ -107,82 +137,132 @@ namespace KrayonCore
             return scene;
         }
 
-        public static void UnloadScene(string name)
-        {
-            if (_scenes.TryGetValue(name, out GameScene scene))
-            {
-                if (scene == _activeScene)
-                {
-                    _activeScene = null;
-                }
-
-                scene.OnUnload();
-                scene.Clear();
-                _scenes.Remove(name);
-            }
-        }
-
         public static void Update(float deltaTime)
         {
-            if (AppInfo.IsCompiledGame)
-                _activeScene?.Update(deltaTime);
+            if (!AppInfo.IsCompiledGame) return;
+
+            foreach (var scene in _PrimaryScenes)
+                scene.Update(deltaTime);
         }
 
         public static void Render()
         {
-            _activeScene?.Render();
+            foreach (var scene in _PrimaryScenes)
+                scene.Render();
         }
 
-        public static IEnumerable<GameScene> GetAllScenes()
-        {
-            return _scenes.Values;
-        }
+        public static IEnumerable<GameScene> GetAllScenes() => _scenes.Values;
 
         public static int SceneCount => _scenes.Count;
 
-        #region Save/Load Methods
+        public static int PrimarySceneCount => _PrimaryScenes.Count;
+
+        #region GameObject Cross-Scene Utilities
 
         /// <summary>
-        /// Guarda la escena activa en un archivo
+        /// Devuelve true si el GameObject pertenece a la escena indicada.
         /// </summary>
-        /// <param name="filePath">Ruta del archivo donde guardar la escena</param>
-        public static void SaveActiveScene(string filePath)
+        public static bool ContainsGameObject(GameScene scene, GameObject go)
         {
-            if (_activeScene == null)
-            {
-                System.Console.WriteLine("Error: No hay una escena activa para guardar");
-                return;
-            }
-
-            SceneSaveSystem.SaveScene(_activeScene, filePath);
+            foreach (var obj in scene.GetAllGameObjects())
+                if (obj == go) return true;
+            return false;
         }
 
         /// <summary>
-        /// Guarda una escena específica en un archivo
+        /// Mueve un GameObject de su escena actual a la escena destino.
+        /// Desvincula al objeto de su padre antes de moverlo.
         /// </summary>
-        /// <param name="sceneName">Nombre de la escena a guardar</param>
-        /// <param name="filePath">Ruta del archivo donde guardar la escena</param>
+        public static void MoveGameObjectToScene(GameObject go, GameScene targetScene)
+        {
+            if (go == null || targetScene == null) return;
+
+            // Buscar la escena origen entre todas las escenas primarias
+            GameScene sourceScene = null;
+            foreach (var scene in _PrimaryScenes)
+            {
+                if (scene == targetScene) continue;
+                if (ContainsGameObject(scene, go))
+                {
+                    sourceScene = scene;
+                    break;
+                }
+            }
+
+            if (sourceScene == null)
+            {
+                Console.WriteLine($"Warning: No se encontró la escena origen de '{go.Name}'");
+                return;
+            }
+
+            if (sourceScene == targetScene) return;
+
+            // Desvincular del padre para evitar que se arrastre la jerarquía
+            go.Transform.SetParent(null);
+
+            sourceScene.RemoveGameObject(go);
+            targetScene.AddGameObject(go);
+
+            Console.WriteLine($"'{go.Name}' moved from '{sourceScene.Name}' to '{targetScene.Name}'");
+        }
+
+        /// <summary>
+        /// Busca un GameObject por ID en todas las escenas primarias activas.
+        /// </summary>
+        public static GameObject FindGameObjectById(Guid id)
+        {
+            foreach (var scene in _PrimaryScenes)
+            {
+                foreach (var obj in scene.GetAllGameObjects())
+                {
+                    if (obj.Id == id) return obj;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Devuelve la escena primaria a la que pertenece el GameObject, o null si no se encuentra.
+        /// </summary>
+        public static GameScene GetOwnerScene(GameObject go)
+        {
+            foreach (var scene in _PrimaryScenes)
+            {
+                if (ContainsGameObject(scene, go)) return scene;
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region Save/Load Methods
+
+        public static void SavePrimaryScene(string filePath)
+        {
+            if (PrimaryScene == null)
+            {
+                Console.WriteLine("Error: No hay una escena activa para guardar");
+                return;
+            }
+
+            SceneSaveSystem.SaveScene(PrimaryScene, filePath);
+        }
+
         public static void SaveScene(string sceneName, string filePath)
         {
             if (!_scenes.TryGetValue(sceneName, out GameScene scene))
             {
-                System.Console.WriteLine($"Error: No se encontró la escena '{sceneName}'");
+                Console.WriteLine($"Error: No se encontró la escena '{sceneName}'");
                 return;
             }
 
             SceneSaveSystem.SaveScene(scene, filePath);
         }
 
-        /// <summary>
-        /// Guarda todas las escenas cargadas en un directorio
-        /// </summary>
-        /// <param name="directoryPath">Directorio donde guardar las escenas</param>
         public static void SaveAllScenes(string directoryPath)
         {
             if (!Directory.Exists(directoryPath))
-            {
                 Directory.CreateDirectory(directoryPath);
-            }
 
             foreach (var scene in _scenes.Values)
             {
@@ -190,18 +270,14 @@ namespace KrayonCore
                 SceneSaveSystem.SaveScene(scene, filePath);
             }
 
-            System.Console.WriteLine($"Se guardaron {_scenes.Count} escenas en '{directoryPath}'");
+            Console.WriteLine($"Se guardaron {_scenes.Count} escenas en '{directoryPath}'");
         }
 
-        /// <summary>
-        /// Carga todas las escenas desde un directorio (sin activarlas)
-        /// </summary>
-        /// <param name="directoryPath">Directorio desde donde cargar las escenas</param>
         public static void LoadAllScenesFromDirectory(string directoryPath)
         {
             if (!Directory.Exists(directoryPath))
             {
-                System.Console.WriteLine($"Error: No se encontró el directorio '{directoryPath}'");
+                Console.WriteLine($"Error: No se encontró el directorio '{directoryPath}'");
                 return;
             }
 
@@ -211,23 +287,20 @@ namespace KrayonCore
             {
                 try
                 {
-                    // Cargar escena sin activarla, solo agregarla al diccionario
                     var scene = SceneSaveSystem.LoadScene(filePath);
 
                     if (_scenes.ContainsKey(scene.Name))
-                    {
                         _scenes[scene.Name].Clear();
-                    }
 
                     _scenes[scene.Name] = scene;
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
-                    System.Console.WriteLine($"Error al cargar escena desde '{filePath}': {ex.Message}");
+                    Console.WriteLine($"Error al cargar escena desde '{filePath}': {ex.Message}");
                 }
             }
 
-            System.Console.WriteLine($"Se cargaron {sceneFiles.Length} escenas desde '{directoryPath}'");
+            Console.WriteLine($"Se cargaron {sceneFiles.Length} escenas desde '{directoryPath}'");
         }
 
         #endregion

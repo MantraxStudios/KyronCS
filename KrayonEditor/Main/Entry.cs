@@ -29,7 +29,7 @@ namespace KrayonEditor
 
                 Console.WriteLine("[Engine] Reiniciando scripts en la escena...");
 
-                foreach (GameObject item in SceneManager.ActiveScene.GetAllGameObjects())
+                foreach (GameObject item in SceneManager.PrimaryScene.GetAllGameObjects())
                 {
                     if (item.HasComponent<CSharpLogic>())
                     {

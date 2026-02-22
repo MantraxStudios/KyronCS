@@ -172,7 +172,7 @@ namespace KrayonCore.EventSystem
             GameObject closest = null;
             float closestDist = float.MaxValue;
 
-            var objects = SceneManager.ActiveScene.GetAllGameObjects();
+            var objects = SceneManager.PrimaryScene.GetAllGameObjects();
 
             for (int i = 0; i < objects.Count; i++)
             {
@@ -269,7 +269,7 @@ namespace KrayonCore.EventSystem
 
         public static GameObject GetObjectAtWorldPosition(Vector2 worldPos)
         {
-            var objects = SceneManager.ActiveScene.GetAllGameObjects();
+            var objects = SceneManager.PrimaryScene.GetAllGameObjects();
             for (int i = 0; i < objects.Count; i++)
             {
                 GameObject obj = objects[i];

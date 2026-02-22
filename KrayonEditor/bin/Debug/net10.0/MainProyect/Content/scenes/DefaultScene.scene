@@ -2,7 +2,7 @@
   "SceneName": "DefaultScene",
   "GameObjects": [
     {
-      "Id": "a5c0f85b-d51f-4551-ac7b-88e9a4459a9f",
+      "Id": "24c6973e-d3ad-48b0-959e-77bb6910027e",
       "Name": "Cube_0",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "9deab5e1-c868-42a3-9685-7943f0c9c504",
+          "ComponentId": "e4a7630c-aa14-46e5-8581-243770fe1d3b",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,77 +36,65 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "59e7fee9-db3b-42ed-b3c9-f30b2eeda907",
+          "ComponentId": "f695accd-ef7e-4284-9514-1218e2b9b130",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "d119bf8a-2627-4872-ab09-46f34cc36359",
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
               "values": [
-                "AsphaltDamaged",
-                "Asphalt",
-                "Fuel_pump",
-                "Concrete",
-                "Sign",
-                "MetalPlates",
-                "Roof_tiles",
-                "Plaster",
-                "BrickSmallPainted",
-                "Office_Ceiling",
-                "Refrigerador_02",
-                "Refrigerador_01",
-                "Refrigerador",
-                "Shelving",
-                "Metal_02",
-                null,
-                "Marble",
-                "Metal_01",
-                "Door_01",
-                "Door",
-                "Light",
-                "Metal_03",
-                "Deposit",
-                "Metal",
-                "Checker",
-                "Board",
-                "Foods_01",
-                "Foods_02",
-                "Foods_03",
-                "Foods_04",
-                "Foods_07",
-                "Sweets_others",
-                "Pack_lighters",
-                "Management",
-                "Carpet_01",
-                null,
-                "Coffee_machine",
-                "Others",
-                "ice_slush_machine",
-                "6twelve",
-                "Fridge",
-                "Tree_01",
-                "Tree",
-                "Bush",
-                "Background",
-                "Background_01",
-                "Ground",
-                "Road",
-                "ICE",
-                "Trash",
-                "Brick",
-                "TilesPlain",
-                "Concrete_01",
-                "Bathrooms",
-                "Sanitary",
-                "Toilets_Sing",
-                "Camera",
-                "Fusible",
-                "spotlight",
-                "6twelve_Sign",
-                "Tiles",
-                "Carpet",
-                "Tiles_01"
+                "basic"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "a065c5cc-18c1-4a3c-909c-aaf73cbc9597",
+      "Name": "Cube_0 (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "8b98cbac-8902-4d40-9110-47ebae959f31",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 0,
+              "z": 6.219857
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 0.01,
+              "y": 0.01,
+              "z": 0.01
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "431d095b-244e-46cb-9d38-4595998b4497",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
               ]
             }
           }

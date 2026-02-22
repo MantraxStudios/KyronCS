@@ -12,6 +12,15 @@ namespace LightingSystem
         public float Intensity { get; set; }
         public bool Enabled { get; set; }
 
+        // ── Shadow settings ───────────────────────────────────────────────────
+        /// <summary>Whether this light contributes a shadow map.</summary>
+        public bool CastShadows { get; set; } = false;
+        /// <summary>
+        /// Maximum shadow distance. 0 = use ShadowManager default.
+        /// Meaningful for PointLight and SpotLight.
+        /// </summary>
+        public float ShadowFarPlane { get; set; } = 0f;
+
         protected Light()
         {
             Color = Vector3.One;
@@ -44,8 +53,6 @@ namespace LightingSystem
     public class PointLight : Light
     {
         public Vector3 Position { get; set; }
-
-        // Atenuación
         public float Constant { get; set; }
         public float Linear { get; set; }
         public float Quadratic { get; set; }
@@ -74,12 +81,8 @@ namespace LightingSystem
     {
         public Vector3 Position { get; set; }
         public Vector3 Direction { get; set; }
-
-        // Ángulos del cono de luz (en radianes)
         public float InnerCutOff { get; set; }
         public float OuterCutOff { get; set; }
-
-        // Atenuación
         public float Constant { get; set; }
         public float Linear { get; set; }
         public float Quadratic { get; set; }
@@ -112,224 +115,114 @@ namespace LightingSystem
     // ==================== LIGHT MANAGER ====================
     public class LightManager
     {
-        // Máximo de 32 luces por defecto para cada tipo
         private const int MAX_DIRECTIONAL_LIGHTS = 32;
         private const int MAX_POINT_LIGHTS = 32;
         private const int MAX_SPOT_LIGHTS = 32;
 
-        private List<DirectionalLight> directionalLights;
-        private List<PointLight> pointLights;
-        private List<SpotLight> spotLights;
+        private List<DirectionalLight> directionalLights = new();
+        private List<PointLight> pointLights = new();
+        private List<SpotLight> spotLights = new();
 
-        public LightManager()
-        {
-            directionalLights = new List<DirectionalLight>();
-            pointLights = new List<PointLight>();
-            spotLights = new List<SpotLight>();
-        }
-
-        // ========== AGREGAR LUCES ==========
-
+        // ── Add ──────────────────────────────────────────────────────────────
         public bool AddDirectionalLight(DirectionalLight light)
         {
-            if (directionalLights.Count < MAX_DIRECTIONAL_LIGHTS)
-            {
-                directionalLights.Add(light);
-                return true;
-            }
+            if (directionalLights.Count < MAX_DIRECTIONAL_LIGHTS) { directionalLights.Add(light); return true; }
             return false;
         }
-
         public bool AddPointLight(PointLight light)
         {
-            if (pointLights.Count < MAX_POINT_LIGHTS)
-            {
-                pointLights.Add(light);
-                return true;
-            }
+            if (pointLights.Count < MAX_POINT_LIGHTS) { pointLights.Add(light); return true; }
             return false;
         }
-
         public bool AddSpotLight(SpotLight light)
         {
-            if (spotLights.Count < MAX_SPOT_LIGHTS)
-            {
-                spotLights.Add(light);
-                return true;
-            }
+            if (spotLights.Count < MAX_SPOT_LIGHTS) { spotLights.Add(light); return true; }
             return false;
         }
 
-        // ========== ELIMINAR LUCES ==========
+        // ── Remove ───────────────────────────────────────────────────────────
+        public bool RemoveDirectionalLight(DirectionalLight light) => directionalLights.Remove(light);
+        public bool RemovePointLight(PointLight light) => pointLights.Remove(light);
+        public bool RemoveSpotLight(SpotLight light) => spotLights.Remove(light);
 
-        public bool RemoveDirectionalLight(DirectionalLight light)
-        {
-            return directionalLights.Remove(light);
-        }
+        public void RemoveDirectionalLightAt(int i) { if (i >= 0 && i < directionalLights.Count) directionalLights.RemoveAt(i); }
+        public void RemovePointLightAt(int i) { if (i >= 0 && i < pointLights.Count) pointLights.RemoveAt(i); }
+        public void RemoveSpotLightAt(int i) { if (i >= 0 && i < spotLights.Count) spotLights.RemoveAt(i); }
 
-        public bool RemovePointLight(PointLight light)
-        {
-            return pointLights.Remove(light);
-        }
+        // ── Clear ────────────────────────────────────────────────────────────
+        public void Clear() { directionalLights.Clear(); pointLights.Clear(); spotLights.Clear(); }
+        public void ClearDirectionalLights() => directionalLights.Clear();
+        public void ClearPointLights() => pointLights.Clear();
+        public void ClearSpotLights() => spotLights.Clear();
 
-        public bool RemoveSpotLight(SpotLight light)
-        {
-            return spotLights.Remove(light);
-        }
-
-        // ========== ELIMINAR POR ÍNDICE ==========
-
-        public void RemoveDirectionalLightAt(int index)
-        {
-            if (index >= 0 && index < directionalLights.Count)
-                directionalLights.RemoveAt(index);
-        }
-
-        public void RemovePointLightAt(int index)
-        {
-            if (index >= 0 && index < pointLights.Count)
-                pointLights.RemoveAt(index);
-        }
-
-        public void RemoveSpotLightAt(int index)
-        {
-            if (index >= 0 && index < spotLights.Count)
-                spotLights.RemoveAt(index);
-        }
-
-        // ========== LIMPIAR TODAS ==========
-
-        public void Clear()
-        {
-            directionalLights.Clear();
-            pointLights.Clear();
-            spotLights.Clear();
-        }
-
-        public void ClearDirectionalLights()
-        {
-            directionalLights.Clear();
-        }
-
-        public void ClearPointLights()
-        {
-            pointLights.Clear();
-        }
-
-        public void ClearSpotLights()
-        {
-            spotLights.Clear();
-        }
-
-        // ========== OBTENER LUCES ==========
-
+        // ── Get (read-only lists, used by ShadowManager) ──────────────────────
         public IReadOnlyList<DirectionalLight> GetDirectionalLights() => directionalLights;
         public IReadOnlyList<PointLight> GetPointLights() => pointLights;
         public IReadOnlyList<SpotLight> GetSpotLights() => spotLights;
 
-        public DirectionalLight GetDirectionalLight(int index)
-        {
-            if (index >= 0 && index < directionalLights.Count)
-                return directionalLights[index];
-            return null;
-        }
+        public DirectionalLight? GetDirectionalLight(int i) => (i >= 0 && i < directionalLights.Count) ? directionalLights[i] : null;
+        public PointLight? GetPointLight(int i) => (i >= 0 && i < pointLights.Count) ? pointLights[i] : null;
+        public SpotLight? GetSpotLight(int i) => (i >= 0 && i < spotLights.Count) ? spotLights[i] : null;
 
-        public PointLight GetPointLight(int index)
-        {
-            if (index >= 0 && index < pointLights.Count)
-                return pointLights[index];
-            return null;
-        }
-
-        public SpotLight GetSpotLight(int index)
-        {
-            if (index >= 0 && index < spotLights.Count)
-                return spotLights[index];
-            return null;
-        }
-
-        // ========== MÉTODO PRINCIPAL: APLICAR AL SHADER ==========
-
+        // ── Apply to shader ───────────────────────────────────────────────────
         public void ApplyLightsToShader(int shaderProgram)
         {
-            int activeDirLights = 0;
-            int activePointLights = 0;
-            int activeSpotLights = 0;
+            int activeDirLights = 0, activePointLights = 0, activeSpotLights = 0;
 
-            // Aplicar luces direccionales
             for (int i = 0; i < directionalLights.Count; i++)
-            {
                 if (directionalLights[i].Enabled)
-                {
-                    directionalLights[i].ApplyToShader(shaderProgram, $"dirLights[{activeDirLights}]");
-                    activeDirLights++;
-                }
-            }
+                    directionalLights[i].ApplyToShader(shaderProgram, $"dirLights[{activeDirLights++}]");
 
-            // Aplicar luces puntuales
-            for (int i = 0; i < pointLights.Count; i++)
-            {
-                if (pointLights[i].Enabled)
-                {
-                    pointLights[i].ApplyToShader(shaderProgram, $"pointLights[{activePointLights}]");
-                    activePointLights++;
-                }
-            }
+            var orderedPointLights = pointLights
+                .Where(l => l.Enabled && l.CastShadows)
+                .Concat(pointLights.Where(l => l.Enabled && !l.CastShadows));
 
-            // Aplicar spotlights
-            for (int i = 0; i < spotLights.Count; i++)
-            {
-                if (spotLights[i].Enabled)
-                {
-                    spotLights[i].ApplyToShader(shaderProgram, $"spotLights[{activeSpotLights}]");
-                    activeSpotLights++;
-                }
-            }
+            foreach (var light in orderedPointLights)
+                light.ApplyToShader(shaderProgram, $"pointLights[{activePointLights++}]");
 
-            // Enviar número de luces activas al shader
+            var orderedSpotLights = spotLights
+                .Where(l => l.Enabled && l.CastShadows)
+                .Concat(spotLights.Where(l => l.Enabled && !l.CastShadows));
+
+            foreach (var light in orderedSpotLights)
+                light.ApplyToShader(shaderProgram, $"spotLights[{activeSpotLights++}]");
+
             GL.Uniform1(GL.GetUniformLocation(shaderProgram, "numDirLights"), activeDirLights);
             GL.Uniform1(GL.GetUniformLocation(shaderProgram, "numPointLights"), activePointLights);
             GL.Uniform1(GL.GetUniformLocation(shaderProgram, "numSpotLights"), activeSpotLights);
         }
 
-        // ========== CONTADORES ==========
-
+        // ── Counters / utils ──────────────────────────────────────────────────
         public int GetDirectionalLightCount() => directionalLights.Count;
         public int GetPointLightCount() => pointLights.Count;
         public int GetSpotLightCount() => spotLights.Count;
-
         public int GetMaxDirectionalLights() => MAX_DIRECTIONAL_LIGHTS;
         public int GetMaxPointLights() => MAX_POINT_LIGHTS;
         public int GetMaxSpotLights() => MAX_SPOT_LIGHTS;
 
-        // ========== UTILIDADES ==========
-
         public void EnableAllLights()
         {
-            foreach (var light in directionalLights) light.Enabled = true;
-            foreach (var light in pointLights) light.Enabled = true;
-            foreach (var light in spotLights) light.Enabled = true;
+            foreach (var l in directionalLights) l.Enabled = true;
+            foreach (var l in pointLights) l.Enabled = true;
+            foreach (var l in spotLights) l.Enabled = true;
         }
 
         public void DisableAllLights()
         {
-            foreach (var light in directionalLights) light.Enabled = false;
-            foreach (var light in pointLights) light.Enabled = false;
-            foreach (var light in spotLights) light.Enabled = false;
+            foreach (var l in directionalLights) l.Enabled = false;
+            foreach (var l in pointLights) l.Enabled = false;
+            foreach (var l in spotLights) l.Enabled = false;
         }
 
-        public int GetTotalLightCount()
-        {
-            return directionalLights.Count + pointLights.Count + spotLights.Count;
-        }
+        public int GetTotalLightCount() => directionalLights.Count + pointLights.Count + spotLights.Count;
 
         public int GetActiveLightCount()
         {
-            int count = 0;
-            foreach (var light in directionalLights) if (light.Enabled) count++;
-            foreach (var light in pointLights) if (light.Enabled) count++;
-            foreach (var light in spotLights) if (light.Enabled) count++;
-            return count;
+            int c = 0;
+            foreach (var l in directionalLights) if (l.Enabled) c++;
+            foreach (var l in pointLights) if (l.Enabled) c++;
+            foreach (var l in spotLights) if (l.Enabled) c++;
+            return c;
         }
     }
 }

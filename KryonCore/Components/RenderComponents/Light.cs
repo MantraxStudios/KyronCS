@@ -52,6 +52,12 @@ namespace KrayonCore.Components.RenderComponents
         [ToStorage, Range(0.0f, 100.0f)]
         public float OuterCutOffDegrees { get; set; } = 17.5f;
 
+        [ToStorage]
+        public bool CastShadows { get; set; } = false;
+
+        [ToStorage, Range(0.0f, 500.0f)]
+        public float ShadowFarPlane { get; set; } = 0f;
+
         private LightingSystem.Light _currentLight;
         private bool _addedToManager = false;
         private Transform _transform;
@@ -102,7 +108,9 @@ namespace KrayonCore.Components.RenderComponents
                         Direction = direction,
                         Color = Color,
                         Intensity = Intensity,
-                        Enabled = Enabled
+                        Enabled = Enabled,
+                        CastShadows = CastShadows,
+                        ShadowFarPlane = ShadowFarPlane
                     };
                     break;
 
@@ -115,7 +123,9 @@ namespace KrayonCore.Components.RenderComponents
                         Constant = Constant,
                         Linear = Linear,
                         Quadratic = Quadratic,
-                        Enabled = Enabled
+                        Enabled = Enabled,
+                        CastShadows = CastShadows,
+                        ShadowFarPlane = ShadowFarPlane
                     };
                     break;
 
@@ -131,7 +141,9 @@ namespace KrayonCore.Components.RenderComponents
                         Constant = Constant,
                         Linear = Linear,
                         Quadratic = Quadratic,
-                        Enabled = Enabled
+                        Enabled = Enabled,
+                        CastShadows = CastShadows,
+                        ShadowFarPlane = ShadowFarPlane
                     };
                     break;
             }
@@ -275,6 +287,8 @@ namespace KrayonCore.Components.RenderComponents
             _currentLight.Color = Color;
             _currentLight.Intensity = Intensity;
             _currentLight.Enabled = Enabled;
+            _currentLight.CastShadows = CastShadows;
+            _currentLight.ShadowFarPlane = ShadowFarPlane;
 
             Vector3 position = _transform != null ? _transform.Position : Vector3.Zero;
             Vector3 direction = _transform != null ? _transform.Forward : new Vector3(0, -1, 0);

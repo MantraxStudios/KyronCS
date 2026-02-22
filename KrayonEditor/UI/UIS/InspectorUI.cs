@@ -256,7 +256,7 @@ namespace KrayonEditor.UI
                 GraphicsEngine.Instance.GetKeyboardState()
                     .IsKeyPressed(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Delete) && EditorActions.IsHoveringScene)
             {
-                SceneManager.ActiveScene.DestroyGameObject(EditorActions.SelectedObject);
+                SceneManager.PrimaryScene.DestroyGameObject(EditorActions.SelectedObject);
                 EditorActions.SelectedObject = null;
             }
         }
@@ -1116,7 +1116,7 @@ namespace KrayonEditor.UI
                 if (ImGui.MenuItem("None")) setter(null);
                 ImGui.Separator();
                 int idx = 0;
-                foreach (var obj in SceneManager.ActiveScene?.GetAllGameObjects()
+                foreach (var obj in SceneManager.PrimaryScene?.GetAllGameObjects()
                          ?? new System.Collections.Generic.List<GameObject>())
                 {
                     ImGui.PushID(idx++);

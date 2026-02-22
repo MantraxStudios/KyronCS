@@ -112,7 +112,7 @@ namespace KrayonCore.GraphicsData
         {
             AssetManager.Initialize();
 
-            if (SceneManager.ActiveScene is null)
+            if (SceneManager.PrimaryScene is null)
             {
                 SceneManager.CreateScene("DefaultScene");
                 SceneManager.LoadScene("DefaultScene");
@@ -210,7 +210,7 @@ namespace KrayonCore.GraphicsData
 
         internal void InternalClose()
         {
-            SceneManager.ActiveScene?.OnUnload();
+            SceneManager.PrimaryScene?.OnUnload();
             _fullscreenQuad?.Dispose();
             _screenQuad?.Dispose();
             Buffers.Dispose();

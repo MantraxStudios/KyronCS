@@ -21,6 +21,7 @@ namespace KrayonCore
 
         public event Action OnComponentAdded;
         public event Action OnComponentRemoved;
+        public GameScene SelfScene;
 
         public GameObject(string name = "GameObject")
         {
@@ -71,9 +72,9 @@ namespace KrayonCore
                 }
             }
 
-            if (SceneManager.ActiveScene != null)
+            if (SceneManager.PrimaryScene != null)
             {
-                SceneManager.ActiveScene.AddGameObject(clone);
+                SceneManager.PrimaryScene.AddGameObject(clone);
             }
 
             return clone;
@@ -418,21 +419,6 @@ namespace KrayonCore
             }
             _components.Clear();
             _componentsList.Clear();
-        }
-
-        public static GameObject Find(string name)
-        {
-            return SceneManager.ActiveScene?.FindGameObject(name);
-        }
-
-        public static GameObject FindWithTag(string tag)
-        {
-            return SceneManager.ActiveScene?.FindGameObjectWithTag(tag);
-        }
-
-        public static GameObject[] FindGameObjectsWithTag(string tag)
-        {
-            return SceneManager.ActiveScene?.FindGameObjectsWithTag(tag) ?? new GameObject[0];
         }
 
         public static void Destroy(GameObject gameObject)

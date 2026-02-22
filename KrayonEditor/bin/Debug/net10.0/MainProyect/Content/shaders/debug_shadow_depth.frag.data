@@ -1,0 +1,6 @@
+{
+  "Guid": "a049ce06-e4b7-4f64-b274-bb4dbed243ec",
+  "Path": "shaders/debug_shadow_depth.frag",
+  "Type": "Shader",
+  "ImportedAt": "2026-02-19T00:41:14.2399442-03:00"
+}

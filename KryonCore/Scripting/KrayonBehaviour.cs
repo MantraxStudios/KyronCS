@@ -25,7 +25,7 @@ namespace KrayonCore
         public virtual void OnTriggerExit(GameObject other) { }
 
         public Camera GetMainCamera() { return GraphicsEngine.Instance.GetSceneRenderer().GetCamera(); }
-        public void DestroyObject(GameObject objectToDestroy) { SceneManager.ActiveScene.DestroyGameObject(objectToDestroy); }
+        public void DestroyObject(GameObject objectToDestroy) { objectToDestroy.SelfScene.DestroyGameObject(objectToDestroy); }
 
         // -------------------- INVOKE SYSTEM --------------------
         private Dictionary<string, CancellationTokenSource> _invokeTokens = new();

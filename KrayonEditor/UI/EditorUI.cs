@@ -128,7 +128,7 @@ namespace KrayonEditor.UI
             {
                 if (EditorActions.SelectedObject != null)
                 {
-                    GameObject clone = SceneManager.ActiveScene.Instantiate(EditorActions.SelectedObject);
+                    GameObject clone = SceneManager.PrimaryScene.Instantiate(EditorActions.SelectedObject);
                     EditorActions.SelectedObject = clone;
                 }
             }

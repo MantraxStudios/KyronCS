@@ -46,37 +46,25 @@ namespace KrayonCore
             return go;
         }
 
-        // NUEVO MÉTODO: Clonar GameObject y agregarlo a la escena
         public GameObject Instantiate(GameObject original, bool cloneChildren = true)
         {
             if (original == null)
                 throw new ArgumentNullException(nameof(original));
 
-            // Clonar el GameObject
             GameObject clone = original.Clone(cloneChildren);
-            
-            // Asegurarse de que está en esta escena
+
             if (clone.Scene != this)
-            {
                 AddGameObject(clone);
-            }
 
-            // Si hay hijos clonados, asegurarse de que también estén en la escena
             if (cloneChildren)
-            {
                 AddClonedChildrenToScene(clone);
-            }
 
-            // Inicializar componentes si la escena está cargada
             if (IsLoaded)
-            {
                 clone.StartComponents();
-            }
 
             return clone;
         }
 
-        // SOBRECARGA: Clonar con posición específica
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
@@ -85,7 +73,6 @@ namespace KrayonCore
             return clone;
         }
 
-        // SOBRECARGA: Clonar con posición y rotación
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
@@ -95,7 +82,6 @@ namespace KrayonCore
             return clone;
         }
 
-        // SOBRECARGA: Clonar con Transform completo
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, OpenTK.Mathematics.Vector3 scale, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
@@ -110,18 +96,19 @@ namespace KrayonCore
             foreach (var child in parent.Transform.Children)
             {
                 GameObject childGO = child.GameObject;
-                
+
                 if (!_gameObjects.ContainsKey(childGO.Id))
-                {
                     AddGameObject(childGO);
-                }
-                
-                // Recursivo para nietos
+
                 AddClonedChildrenToScene(childGO);
             }
         }
 
-        internal void AddGameObject(GameObject gameObject)
+        /// <summary>
+        /// Agrega un GameObject a esta escena. Si ya pertenece a otra escena,
+        /// usa SceneManager.MoveGameObjectToScene en su lugar.
+        /// </summary>
+        public void AddGameObject(GameObject gameObject)
         {
             if (!_gameObjects.ContainsKey(gameObject.Id))
             {
@@ -135,6 +122,34 @@ namespace KrayonCore
                 OnGameObjectAdded?.Invoke(gameObject);
                 OnSceneChanged?.Invoke();
             }
+        }
+
+        /// <summary>
+        /// Quita un GameObject de esta escena SIN destruirlo ni destruir sus componentes.
+        /// Usar cuando se quiere mover el objeto a otra escena.
+        /// Para eliminar definitivamente, usar DestroyGameObject.
+        /// </summary>
+        public void RemoveGameObject(GameObject gameObject)
+        {
+            if (gameObject == null || !_gameObjects.ContainsKey(gameObject.Id))
+                return;
+
+            gameObject.OnComponentAdded -= NotifyComponentAdded;
+            gameObject.OnComponentRemoved -= NotifyComponentRemoved;
+
+            _gameObjects.Remove(gameObject.Id);
+            _gameObjectsList.Remove(gameObject);
+
+            // Limpiar la referencia de escena
+            gameObject.Scene = null;
+
+            OnGameObjectRemoved?.Invoke(gameObject);
+            OnSceneChanged?.Invoke();
+        }
+
+        public bool ContainsGameObject(GameObject gameObject)
+        {
+            return gameObject != null && _gameObjects.ContainsKey(gameObject.Id);
         }
 
         public GameObject GetGameObject(Guid id)
@@ -223,9 +238,7 @@ namespace KrayonCore
             IsLoaded = false;
 
             foreach (GameObject item in _gameObjectsList)
-            {
                 item.DestroyComponents();
-            }
 
             CleanupPhysics();
         }
@@ -237,10 +250,7 @@ namespace KrayonCore
             foreach (var go in physicsObjects)
             {
                 var rigidbody = go.GetComponent<Rigidbody>();
-                if (rigidbody != null)
-                {
-                    rigidbody.ForceReinitialize();
-                }
+                rigidbody?.ForceReinitialize();
             }
         }
 
@@ -251,39 +261,29 @@ namespace KrayonCore
             foreach (var go in physicsObjects)
             {
                 var rigidbody = go.GetComponent<Rigidbody>();
-                if (rigidbody != null)
-                {
-                    rigidbody.CleanupPhysics();
-                }
+                rigidbody?.CleanupPhysics();
             }
         }
 
         internal void Start()
         {
             foreach (var go in _gameObjectsList)
-            {
                 go.StartComponents();
-            }
         }
 
         internal void Update(float deltaTime)
         {
             foreach (var go in _gameObjectsList)
-            {
                 go.UpdateComponents(deltaTime);
-            }
 
             UpdatePhysics(deltaTime);
-
             ProcessDestructions();
         }
 
         internal void Render()
         {
             foreach (var go in _gameObjectsList)
-            {
                 go.RenderComponents();
-            }
         }
 
         private void UpdatePhysics(float deltaTime)
@@ -302,10 +302,7 @@ namespace KrayonCore
             foreach (var go in physicsObjects)
             {
                 var rigidbody = go.GetComponent<Rigidbody>();
-                if (rigidbody != null)
-                {
-                    rigidbody.SyncFromPhysics();
-                }
+                rigidbody?.SyncFromPhysics();
             }
         }
 
@@ -326,7 +323,6 @@ namespace KrayonCore
                 }
 
                 _toDestroy.Clear();
-
                 OnSceneChanged?.Invoke();
             }
         }

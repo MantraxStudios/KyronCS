@@ -62,10 +62,10 @@ namespace KrayonEditor.UI
         {
             if (ImGui.CollapsingHeader("Scene", ImGuiTreeNodeFlags.DefaultOpen))
             {
-                if (SceneManager.ActiveScene != null)
+                if (SceneManager.PrimaryScene != null)
                 {
-                    ImGui.Text($"Active: {SceneManager.ActiveScene.Name}");
-                    ImGui.Text($"Objects: {SceneManager.ActiveScene.GetAllGameObjects().Count}");
+                    ImGui.Text($"Active: {SceneManager.PrimaryScene.Name}");
+                    ImGui.Text($"Objects: {SceneManager.PrimaryScene.GetAllGameObjects().Count}");
                 }
                 ImGui.Text($"Total Scenes: {SceneManager.SceneCount}");
             }

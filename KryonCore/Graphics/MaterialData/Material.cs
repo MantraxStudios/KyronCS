@@ -48,6 +48,7 @@ namespace KrayonCore
         public bool UseRoughnessMap { get; set; } = false;
         public bool UseAOMap { get; set; } = false;
         public bool UseEmissiveMap { get; set; } = false;
+        public float Alpha { get; set; } = 1.0f;
         public float NormalMapIntensity { get; set; } = 1.0f;
         public Vector3 AmbientLight { get; set; } = new Vector3(0.03f, 0.03f, 0.03f);
         public float AmbientStrength { get; set; } = 1.0f;
@@ -135,6 +136,7 @@ namespace KrayonCore
             SetFloatCached("u_Roughness", Roughness);
             SetFloatCached("u_AO", AO);
             SetVector3Cached("u_EmissiveColor", EmissiveColor);
+            SetFloatCached("u_Alpha", Alpha);
 
             SetFloatCached("u_NormalMapIntensity", NormalMapIntensity);
             SetVector3Cached("u_AmbientLight", AmbientLight);

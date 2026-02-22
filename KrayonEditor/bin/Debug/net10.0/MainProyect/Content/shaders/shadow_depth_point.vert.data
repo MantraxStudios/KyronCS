@@ -1,0 +1,6 @@
+{
+  "Guid": "a0eee288-d0e8-45ca-b524-0c5253418fa1",
+  "Path": "shaders/shadow_depth_point.vert",
+  "Type": "Shader",
+  "ImportedAt": "2026-02-18T20:00:46.8086151-03:00"
+}

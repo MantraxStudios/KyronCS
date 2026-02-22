@@ -270,7 +270,7 @@ namespace KrayonEditor.UI
         {
             SectionLabel("SPRITES");
 
-            var scene = SceneManager.ActiveScene;
+            var scene = SceneManager.PrimaryScene;
             if (scene == null)
             {
                 ImGui.TextColored(ColMuted, "No active scene loaded");
@@ -1184,7 +1184,7 @@ namespace KrayonEditor.UI
         private bool IsSpriteValid()
         {
             if (_selectedSprite == null) return false;
-            var scene = SceneManager.ActiveScene;
+            var scene = SceneManager.PrimaryScene;
             if (scene == null) return false;
             foreach (var go in scene.GetAllGameObjects())
                 if (go.GetComponent<SpriteRenderer>() == _selectedSprite)

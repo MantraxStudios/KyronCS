@@ -15,9 +15,9 @@ namespace KrayonEditor
 
         public static void CreateEmptyGameObject()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"GameObject_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"GameObject_{count}");
             go.Transform.SetPosition(0, 0, 0);
             EngineEditor.SetSelectedObject(go);
             EngineEditor.LogMessage($"Created {go.Name}");
@@ -25,9 +25,9 @@ namespace KrayonEditor
 
         public static GameObject CreateCubeGameObject()
         {
-            if (SceneManager.ActiveScene == null) return null;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"Cube_{count}");
+            if (SceneManager.PrimaryScene == null) return null;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"Cube_{count}");
             go.Transform.SetPosition(0, 0, 0);
             var meshRenderer = go.AddComponent<MeshRenderer>();
             meshRenderer.Model = Model.Load("models/Cube.fbx");
@@ -38,22 +38,22 @@ namespace KrayonEditor
 
         public static void SetupAllMaterials()
         {
-            if (SceneManager.ActiveScene == null) return;
+            if (SceneManager.PrimaryScene == null) return;
             
-            for (int i = 0; i < SceneManager.ActiveScene.GetAllGameObjects().Count; i++)
+            for (int i = 0; i < SceneManager.PrimaryScene.GetAllGameObjects().Count; i++)
             {
-                if (SceneManager.ActiveScene.GetAllGameObjects()[i].HasComponent<MeshRenderer>())
+                if (SceneManager.PrimaryScene.GetAllGameObjects()[i].HasComponent<MeshRenderer>())
                 {
-                    SceneManager.ActiveScene.GetAllGameObjects()[i].GetComponent<MeshRenderer>().SetupAutomaticMaterials();
+                    SceneManager.PrimaryScene.GetAllGameObjects()[i].GetComponent<MeshRenderer>().SetupAutomaticMaterials();
                 }
             }
         }
 
         public static void CreateDirectionalLight()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"DirectionalLight_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"DirectionalLight_{count}");
             go.Transform.SetPosition(0, 5, 0);
             go.Transform.SetRotation(-45, 0, 0);
             var light = go.AddComponent<Light>();
@@ -65,9 +65,9 @@ namespace KrayonEditor
 
         public static void CreateCamera()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"Camera_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"Camera_{count}");
             go.Transform.SetPosition(0, 5, 0);
             go.Transform.SetRotation(0, 0, 0);
             var cam = go.AddComponent<CameraComponent>();
@@ -78,9 +78,9 @@ namespace KrayonEditor
 
         public static void CreatePointLight()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"PointLight_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"PointLight_{count}");
             go.Transform.SetPosition(0, 2, 0);
             var light = go.AddComponent<Light>();
             light.Type = LightType.Point;
@@ -91,9 +91,9 @@ namespace KrayonEditor
 
         public static void CreateSpotLight()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"SpotLight_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"SpotLight_{count}");
             go.Transform.SetPosition(0, 5, 0);
             go.Transform.SetRotation(45, 0, 0);
             var light = go.AddComponent<Light>();
@@ -105,9 +105,9 @@ namespace KrayonEditor
 
         public static void CreateModelGameObject()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"Model_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"Model_{count}");
             go.Transform.SetPosition(0, 0, 0);
             var meshRenderer = go.AddComponent<MeshRenderer>();
             EngineEditor.SetSelectedObject(go);
@@ -116,9 +116,9 @@ namespace KrayonEditor
 
         public static void CreateTileRendererGameObject()
         {
-            if (SceneManager.ActiveScene == null) return;
-            int count = SceneManager.ActiveScene.GetAllGameObjects().Count;
-            var go = SceneManager.ActiveScene.CreateGameObject($"TileRenderer_{count}");
+            if (SceneManager.PrimaryScene == null) return;
+            int count = SceneManager.PrimaryScene.GetAllGameObjects().Count;
+            var go = SceneManager.PrimaryScene.CreateGameObject($"TileRenderer_{count}");
             go.Transform.SetPosition(0, 0, 0);
             var tileRenderer = go.AddComponent<TileRenderer>();
             tileRenderer.Start();

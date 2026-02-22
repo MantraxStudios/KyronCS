@@ -143,7 +143,7 @@ namespace KrayonEditor.UI
                 SceneManager.LoadScene(filePath);
             }
 
-            var scene = SceneManager.ActiveScene;
+            var scene = SceneManager.PrimaryScene;
 
             if (scene == null)
             {

@@ -491,7 +491,7 @@ namespace KrayonEditor.UI
 
             if (_previewObject == null)
             {
-                var scene = SceneManager.ActiveScene;
+                var scene = SceneManager.PrimaryScene;
                 if (scene != null)
                 {
                     _previewObject = scene.CreateGameObject();
@@ -514,7 +514,7 @@ namespace KrayonEditor.UI
 
                 if (mouseState.IsButtonPressed(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Left))
                 {
-                    var scene = SceneManager.ActiveScene;
+                    var scene = SceneManager.PrimaryScene;
                     if (scene != null)
                     {
                         var newObject = scene.CreateGameObject();
@@ -547,7 +547,7 @@ namespace KrayonEditor.UI
         {
             if (_previewObject != null)
             {
-                var scene = SceneManager.ActiveScene;
+                var scene = SceneManager.PrimaryScene;
                 scene?.DestroyGameObject(_previewObject);
                 _previewObject = null;
             }
@@ -810,7 +810,7 @@ namespace KrayonEditor.UI
 
         private void CreateSpriteObject()
         {
-            var scene = SceneManager.ActiveScene;
+            var scene = SceneManager.PrimaryScene;
             if (scene == null)
             {
                 Console.WriteLine("[TileEditor] ✗ No active scene");
@@ -887,7 +887,7 @@ namespace KrayonEditor.UI
             CleanupTempObject();
             ClearMaterial();
 
-            var scene = SceneManager.ActiveScene;
+            var scene = SceneManager.PrimaryScene;
             if (scene == null)
             {
                 Console.WriteLine("[TileEditor] ✗ No active scene");
@@ -953,7 +953,7 @@ namespace KrayonEditor.UI
         {
             if (_tempLoaderObject != null)
             {
-                var scene = SceneManager.ActiveScene;
+                var scene = SceneManager.PrimaryScene;
                 scene?.DestroyGameObject(_tempLoaderObject);
                 _tempLoaderObject = null;
             }

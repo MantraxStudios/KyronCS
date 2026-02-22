@@ -156,13 +156,13 @@ namespace KrayonEditor.UI
                     ImGui.EndMenu();
                 }
 
-                if (SceneManager.ActiveScene != null)
+                if (SceneManager.PrimaryScene != null)
                 {
                     float offset = ImGui.GetWindowWidth() - 250;
                     if (offset > 0)
                     {
                         ImGui.SetCursorPosX(offset);
-                        ImGui.Text($"Scene: {SceneManager.ActiveScene.Name}");
+                        ImGui.Text($"Scene: {SceneManager.PrimaryScene.Name}");
                     }
                 }
 
@@ -216,13 +216,13 @@ namespace KrayonEditor.UI
         {
             try
             {
-                if (SceneManager.ActiveScene == null)
+                if (SceneManager.PrimaryScene == null)
                 {
                     EngineEditor.LogMessage("No hay escena activa para guardar");
                     return;
                 }
 
-                string sceneName = SceneManager.ActiveScene.Name;
+                string sceneName = SceneManager.PrimaryScene.Name;
                 string sceneFilePath = GetSceneFilePath(sceneName);
 
                 // Verificar si el archivo ya existe
@@ -246,13 +246,13 @@ namespace KrayonEditor.UI
 
         private void SaveSceneAsDialog()
         {
-            if (SceneManager.ActiveScene == null)
+            if (SceneManager.PrimaryScene == null)
             {
                 EngineEditor.LogMessage("No hay escena activa para guardar");
                 return;
             }
 
-            _sceneNameInput = SceneManager.ActiveScene.Name;
+            _sceneNameInput = SceneManager.PrimaryScene.Name;
             _showSaveDialog = true;
         }
 
@@ -341,12 +341,12 @@ namespace KrayonEditor.UI
             {
                 string filePath = GetSceneFilePath(sceneName);
 
-                if (SceneManager.ActiveScene != null)
+                if (SceneManager.PrimaryScene != null)
                 {
-                    SceneManager.ActiveScene.Name = sceneName;
+                    SceneManager.PrimaryScene.Name = sceneName;
                 }
 
-                SceneManager.SaveActiveScene(filePath);
+                SceneManager.SavePrimaryScene(filePath);
                 SaveAllMaterials();
                 GraphicsEngine.Instance._fullscreenQuad.GetSettings().Save(AssetManager.VFXPath);
 
@@ -401,7 +401,7 @@ namespace KrayonEditor.UI
                 ImGui.SetNextItemWidth(300);
                 ImGui.InputText("##newscenename", ref _sceneNameInput, 100);
 
-                if (SceneManager.ActiveScene != null)
+                if (SceneManager.PrimaryScene != null)
                 {
                     ImGui.Spacing();
                     ImGui.TextColored(new System.Numerics.Vector4(1, 0.8f, 0, 1),

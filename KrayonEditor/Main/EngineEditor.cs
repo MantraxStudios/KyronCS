@@ -111,7 +111,7 @@ namespace KrayonEditor.Main
             {
                 if (ShowAllGizmos)
                 {
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    var allObjects = SceneManager.PrimaryScene?.GetAllGameObjects();
                     if (allObjects == null) return;
 
                     foreach (var go in allObjects)
@@ -143,7 +143,7 @@ namespace KrayonEditor.Main
             {
                 if (ShowAllGizmos)
                 {
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    var allObjects = SceneManager.PrimaryScene?.GetAllGameObjects();
                     if (allObjects == null) return;
 
                     foreach (var go in allObjects)
@@ -188,7 +188,7 @@ namespace KrayonEditor.Main
             {
                 if (ShowAllGizmos)
                 {
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    var allObjects = SceneManager.PrimaryScene?.GetAllGameObjects();
                     if (allObjects == null) return;
 
                     foreach (var go in allObjects)
@@ -210,7 +210,7 @@ namespace KrayonEditor.Main
             {
                 if (ShowAllGizmos)
                 {
-                    var allObjects = SceneManager.ActiveScene?.GetAllGameObjects();
+                    var allObjects = SceneManager.PrimaryScene?.GetAllGameObjects();
                     if (allObjects == null) return;
 
                     foreach (var go in allObjects)
