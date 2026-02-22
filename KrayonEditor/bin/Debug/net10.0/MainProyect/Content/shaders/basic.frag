@@ -18,9 +18,6 @@ const float PI = 3.14159265359;
 #define MAX_POINT_LIGHTS 32
 #define MAX_SPOT_LIGHTS 32
 
-#define MAX_SHADOW_POINT_LIGHTS 4
-#define MAX_SHADOW_SPOT_LIGHTS 4
-
 struct DirLight {
     vec3 direction;
     vec3 color;
@@ -89,15 +86,6 @@ uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform int numDirLights;
 uniform int numPointLights;
 uniform int numSpotLights;
-
-uniform samplerCube u_PointShadowMaps[MAX_SHADOW_POINT_LIGHTS];
-uniform sampler2D u_SpotShadowMap;
-
-uniform mat4 u_LightSpaceMatrix;
-uniform mat4 u_SpotLightSpaceMatrices[MAX_SHADOW_SPOT_LIGHTS];
-
-uniform float u_PointLightFarPlanes[MAX_SHADOW_POINT_LIGHTS];
-uniform int u_NumShadowPointLights;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -179,7 +167,6 @@ vec3 CalcAmbientPBR(vec3 albedo, vec3 N, vec3 V, vec3 F0,
 {
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     vec3 kD = (1.0 - F) * (1.0 - metallic);
-    // Diffuse ambient + specular ambient aproximado (sin IBL)
     vec3 diffuse = kD * albedo;
     vec3 specular = F * 0.1;
     return (diffuse + specular) * ambientLight * ao * ambientStrength;
@@ -189,49 +176,6 @@ vec3 ApplyToneMapping(vec3 color)
 {
     color = color / (color + vec3(1.0));
     return pow(color, vec3(1.0 / 2.2));
-}
-
-float CalcPointShadow(int idx, vec3 fragPos, vec3 lightPos, vec3 normal)
-{
-    vec3 toLight = fragPos - lightPos;
-    float dist = length(toLight);
-    float farPlane = u_PointLightFarPlanes[idx];
-    
-    vec3 dir = normalize(toLight);
-    float closestDist = texture(u_PointShadowMaps[idx], dir).r;
-    float currentDist = dist / farPlane;
-
-    float baseBias = 0.02;
-    float angleFactor = clamp(1.0 - dot(normal, -dir), 0.0, 1.0);
-    float bias = baseBias + angleFactor * 0.05;
-
-    // If current distance is much further than stored, we're in shadow
-    if (currentDist - bias > closestDist)
-        return 1.0;
-    else
-        return 0.0;
-}
-
-float CalcSpotShadow(int idx, vec3 fragPos)
-{
-    vec4 fragPosLS = u_SpotLightSpaceMatrices[idx] * vec4(fragPos, 1.0);
-
-    if (fragPosLS.w <= 0.0) return 0.0;
-
-    vec3 projCoords = fragPosLS.xyz / fragPosLS.w;
-    projCoords = projCoords * 0.5 + 0.5;
-
-    if (projCoords.z <= 0.0 || projCoords.z >= 1.0) return 0.0;
-    if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
-        projCoords.y < 0.0 || projCoords.y > 1.0) return 0.0;
-
-    float closestDepth = texture(u_SpotShadowMap, projCoords.xy).r;
-    float currentDepth = projCoords.z;
-    float bias = 0.005;
-
-    float shadow = (currentDepth - bias) > closestDepth ? 1.0 : 0.0;
-    
-    return shadow;
 }
 
 vec3 getNormalFromMap()
@@ -249,15 +193,15 @@ void main()
     if (alpha < 0.01) discard;
 
     MaterialPBR material;
-    material.albedo = (u_UseAlbedoMap == 1) ? pow(texture(u_AlbedoMap, TexCoord).rgb, vec3(2.2)) : u_AlbedoColor;
-    material.metallic = (u_UseMetallicMap == 1) ? texture(u_MetallicMap, TexCoord).r : u_Metallic;
+    material.albedo    = (u_UseAlbedoMap    == 1) ? pow(texture(u_AlbedoMap,    TexCoord).rgb, vec3(2.2)) : u_AlbedoColor;
+    material.metallic  = (u_UseMetallicMap  == 1) ? texture(u_MetallicMap,  TexCoord).r : u_Metallic;
     material.roughness = (u_UseRoughnessMap == 1) ? texture(u_RoughnessMap, TexCoord).r : u_Roughness;
-    material.ao = (u_UseAOMap == 1) ? texture(u_AOMap, TexCoord).r : u_AO;
+    material.ao        = (u_UseAOMap        == 1) ? texture(u_AOMap,        TexCoord).r : u_AO;
 
     vec3 emissive = (u_UseEmissiveMap == 1) ? texture(u_EmissiveMap, TexCoord).rgb : u_EmissiveColor;
 
-    vec3 N = getNormalFromMap();
-    vec3 V = normalize(u_CameraPos - FragPos);
+    vec3 N  = getNormalFromMap();
+    vec3 V  = normalize(u_CameraPos - FragPos);
     vec3 F0 = mix(vec3(0.04), material.albedo, material.metallic);
 
     vec3 Lo = vec3(0.0);
@@ -270,26 +214,14 @@ void main()
 
     for (int i = 0; i < numPointLights; i++)
     {
-        float shadow = 0.0;
-        if (i < u_NumShadowPointLights)
-        {
-            shadow = CalcPointShadow(i, FragPos, pointLights[i].position, N);
-        }
         Lo += CalcPointLightPBR(pointLights[i], N, V, F0,
-                                material.albedo, material.metallic, material.roughness, FragPos)
-            * (1.0 - shadow);
+                                material.albedo, material.metallic, material.roughness, FragPos);
     }
 
     for (int i = 0; i < numSpotLights; i++)
     {
-        float shadow = 0.0;
-        if (i < MAX_SHADOW_SPOT_LIGHTS)
-        {
-            shadow = CalcSpotShadow(i, FragPos);
-        }
         Lo += CalcSpotLightPBR(spotLights[i], N, V, F0,
-                               material.albedo, material.metallic, material.roughness, FragPos)
-            * (1.0 - shadow);
+                               material.albedo, material.metallic, material.roughness, FragPos);
     }
 
     vec3 ambient = CalcAmbientPBR(material.albedo, N, V, F0,
@@ -298,8 +230,8 @@ void main()
 
     vec3 color = ApplyToneMapping(ambient + Lo);
 
-    FragColor = vec4(color, alpha);
+    FragColor     = vec4(color, alpha);
     EmissionColor = vec4(emissive, alpha);
     PositionOutput = ViewPos;
-    NormalOutput = normalize(mat3(u_View) * N);
+    NormalOutput   = normalize(mat3(u_View) * N);
 }

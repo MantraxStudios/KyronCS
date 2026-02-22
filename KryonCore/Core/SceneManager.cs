@@ -26,7 +26,7 @@ namespace KrayonCore
             return scene;
         }
 
-        public static void LoadScene(string nameOrPath, bool additive = true)
+        public static void LoadScene(string nameOrPath, bool additive = false)
         {
             GameScene sceneToLoad = null;
             bool isFile = nameOrPath.EndsWith(".scene", StringComparison.OrdinalIgnoreCase);

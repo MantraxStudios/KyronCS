@@ -23,8 +23,6 @@ namespace KrayonEditor.UI
         private static readonly Vector4 ActiveButtonHoveredColor = new(0.4f, 0.6f, 0.9f, 1.0f);
         private static readonly Vector4 ActiveButtonPressedColor = new(0.2f, 0.4f, 0.7f, 1.0f);
         private static readonly Vector2 ToolbarIconSize = new(20, 20);
-        private bool _showShadowDebug = false;
-
         public SceneViewUI()
         {
             IconManager.Initialize();
@@ -163,15 +161,6 @@ namespace KrayonEditor.UI
                 renderer.ToggleWireframe();
 
             if (wireframe) ImGui.PopStyleColor(3);
-
-            ImGui.SameLine();
-            bool showShadow = _showShadowDebug;
-            if (showShadow) PushActiveButtonColors();
-            if (ImGui.Button("Shadows", buttonSize))
-            {
-                _showShadowDebug = !showShadow;
-            }
-            if (showShadow) ImGui.PopStyleColor(3);
 
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip(wireframe ? "Wireframe ON\nClick to disable" : "Wireframe OFF\nClick to enable");
@@ -492,25 +481,6 @@ namespace KrayonEditor.UI
             ImGui.Image(frameBuffer.ColorTexture, viewportSize, new Vector2(0, 1), new Vector2(1, 0));
             EditorActions.IsHoveringScene = ImGui.IsItemHovered();
             bool isHovered = EditorActions.IsHoveringScene;
-
-            // Debug: small shadow map preview in top-right of scene
-            if (_showShadowDebug)
-            {
-                var renderer = GraphicsEngine.Instance.GetSceneRenderer();
-                int texId = renderer?.ShadowManager.GetSpotShadowTextureId() ?? 0;
-                if (texId != 0)
-                {
-                    var topLeft = cursorPos + new Vector2(viewportSize.X - 170, 10);
-                    ImGui.SetCursorScreenPos(topLeft);
-                    ImGui.Image((IntPtr)texId, new Vector2(160, 160), new Vector2(0, 1), new Vector2(1, 0));
-                    ImGui.SetCursorScreenPos(cursorPos + new Vector2(0, 0));
-                }
-                else
-                {
-                    ImGui.SetCursorScreenPos(cursorPos + new Vector2(viewportSize.X - 170, 10));
-                    ImGui.Text($"No shadow texture (ID={texId})");
-                }
-            }
 
             var mouse = GraphicsEngine.Instance.GetMouseState();
 

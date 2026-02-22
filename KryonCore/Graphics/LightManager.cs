@@ -12,15 +12,6 @@ namespace LightingSystem
         public float Intensity { get; set; }
         public bool Enabled { get; set; }
 
-        // ── Shadow settings ───────────────────────────────────────────────────
-        /// <summary>Whether this light contributes a shadow map.</summary>
-        public bool CastShadows { get; set; } = false;
-        /// <summary>
-        /// Maximum shadow distance. 0 = use ShadowManager default.
-        /// Meaningful for PointLight and SpotLight.
-        /// </summary>
-        public float ShadowFarPlane { get; set; } = 0f;
-
         protected Light()
         {
             Color = Vector3.One;
@@ -155,7 +146,7 @@ namespace LightingSystem
         public void ClearPointLights() => pointLights.Clear();
         public void ClearSpotLights() => spotLights.Clear();
 
-        // ── Get (read-only lists, used by ShadowManager) ──────────────────────
+        // ── Get (read-only lists) ─────────────────────────────────────────────
         public IReadOnlyList<DirectionalLight> GetDirectionalLights() => directionalLights;
         public IReadOnlyList<PointLight> GetPointLights() => pointLights;
         public IReadOnlyList<SpotLight> GetSpotLights() => spotLights;
@@ -173,19 +164,13 @@ namespace LightingSystem
                 if (directionalLights[i].Enabled)
                     directionalLights[i].ApplyToShader(shaderProgram, $"dirLights[{activeDirLights++}]");
 
-            var orderedPointLights = pointLights
-                .Where(l => l.Enabled && l.CastShadows)
-                .Concat(pointLights.Where(l => l.Enabled && !l.CastShadows));
+            foreach (var light in pointLights)
+                if (light.Enabled)
+                    light.ApplyToShader(shaderProgram, $"pointLights[{activePointLights++}]");
 
-            foreach (var light in orderedPointLights)
-                light.ApplyToShader(shaderProgram, $"pointLights[{activePointLights++}]");
-
-            var orderedSpotLights = spotLights
-                .Where(l => l.Enabled && l.CastShadows)
-                .Concat(spotLights.Where(l => l.Enabled && !l.CastShadows));
-
-            foreach (var light in orderedSpotLights)
-                light.ApplyToShader(shaderProgram, $"spotLights[{activeSpotLights++}]");
+            foreach (var light in spotLights)
+                if (light.Enabled)
+                    light.ApplyToShader(shaderProgram, $"spotLights[{activeSpotLights++}]");
 
             GL.Uniform1(GL.GetUniformLocation(shaderProgram, "numDirLights"), activeDirLights);
             GL.Uniform1(GL.GetUniformLocation(shaderProgram, "numPointLights"), activePointLights);

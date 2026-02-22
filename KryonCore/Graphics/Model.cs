@@ -88,30 +88,28 @@ namespace KrayonCore
             ".obj", ".fbx", ".3ds", ".dae", ".blend", ".ply", ".stl", ".x", ".lwo", ".lws"
         };
 
-        private static readonly HashSet<string> _formatsNeedingFlipWinding = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".fbx"
-        };
-
         private static readonly HashSet<string> _formatsNeedingNormalize = new(StringComparer.OrdinalIgnoreCase)
         {
             ".fbx"
         };
 
+        private static string NormalizeExtension(string extension)
+            => extension.StartsWith('.') ? extension : "." + extension;
+
         private static PostProcessSteps GetPostProcessFlags(string extension)
         {
+            extension = NormalizeExtension(extension);
+
             var flags = PostProcessSteps.Triangulate
                       | PostProcessSteps.CalculateTangentSpace
                       | PostProcessSteps.JoinIdenticalVertices
                       | PostProcessSteps.GenerateSmoothNormals
+                      | PostProcessSteps.FixInFacingNormals
                       | PostProcessSteps.OptimizeMeshes
                       | PostProcessSteps.PreTransformVertices;
 
             if (_formatsNeedingFlipUVs.Contains(extension))
                 flags |= PostProcessSteps.FlipUVs;
-
-            if (_formatsNeedingFlipWinding.Contains(extension))
-                flags |= PostProcessSteps.FlipWindingOrder;
 
             return flags;
         }
@@ -219,6 +217,8 @@ namespace KrayonCore
 
         private void BuildFromScene(Scene scene, string extension)
         {
+            extension = NormalizeExtension(extension);
+
             // 1. Datos crudos
             var rawList = new List<RawSubMesh>();
             CollectRaw(scene.RootNode, scene, rawList);

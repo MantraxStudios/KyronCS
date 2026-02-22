@@ -96,9 +96,10 @@ void main()
     mat3 normalMatrix = mat3(transpose(inverse(worldMatrix)));
     Normal = normalize(normalMatrix * skinnedNormal);
 
-    vec3 T = normalize(normalMatrix * skinnedTangent);
-    vec3 B = normalize(normalMatrix * skinnedBiTangent);
     vec3 N = Normal;
+    vec3 T = normalize(normalMatrix * skinnedTangent);
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = normalize(cross(N, T));
     TBN = mat3(T, B, N);
 
     ViewNormal = normalize(mat3(transpose(inverse(view))) * Normal);

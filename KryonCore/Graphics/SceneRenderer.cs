@@ -15,11 +15,6 @@ namespace KrayonCore
     {
         private LightManager _lightManager = new();
 
-        // ── Shadow system ─────────────────────────────────────────────────────
-        private readonly ShadowManager _shadowManager = new();
-        public ShadowManager ShadowManager => _shadowManager;
-
-        // ── Renderer lists ────────────────────────────────────────────────────
         private readonly Dictionary<(Model model, Material material), List<Matrix4>>
             _meshInstanceGroups = new(),
             _spriteInstanceGroups = new();
@@ -36,9 +31,6 @@ namespace KrayonCore
 
         public bool WireframeMode { get; set; } = false;
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Init
-        // ─────────────────────────────────────────────────────────────────────
         public SceneRenderer()
         {
             CameraManager.Instance.Create(
@@ -59,13 +51,8 @@ namespace KrayonCore
                 WindowConfig.Width / (float)WindowConfig.Height,
                 priority: 0
             );
-
-            _shadowManager.Initialize();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Renderer registration
-        // ─────────────────────────────────────────────────────────────────────
         public void RegisterRenderer<T>(T renderer) where T : class
         {
             switch (renderer)
@@ -112,9 +99,6 @@ namespace KrayonCore
             _needsCleanup = false;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Cleanup helpers
-        // ─────────────────────────────────────────────────────────────────────
         private void CleanupNullRenderers()
         {
             if (!_needsCleanup) return;
@@ -126,9 +110,6 @@ namespace KrayonCore
             _needsCleanup = false;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Render attachments
-        // ─────────────────────────────────────────────────────────────────────
         public void AttachRender(string name, Action<Matrix4, Matrix4, Vector3> renderCallback)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -144,30 +125,15 @@ namespace KrayonCore
 
         public bool HasRenderAttachment(string name) => _renderAttachments.ContainsKey(name);
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  UI
-        // ─────────────────────────────────────────────────────────────────────
         public UICanvas CreateCanvas(string name, int sortOrder = 0)
             => UICanvasManager.Create(name, this, sortOrder);
 
         public UICanvas? GetCanvas(string name) => UICanvasManager.Get(name);
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Main render
-        // ─────────────────────────────────────────────────────────────────────
         public void Render()
         {
             CleanupNullRenderers();
 
-            // ── 1. Shadow passes ──────────────────────────────────────────────
-            var mainCam = CameraManager.Instance.Main?.Camera;
-            if (mainCam is not null)
-            {
-                _shadowManager.RenderShadows(_lightManager, mainCam, RenderDepthOnly);
-                GL.Viewport(0, 0, WindowConfig.Width, WindowConfig.Height);
-            }
-
-            // ── 2. Main scene render ──────────────────────────────────────────
             GL.PolygonMode(MaterialFace.FrontAndBack,
                 WireframeMode ? PolygonMode.Line : PolygonMode.Fill);
 
@@ -177,82 +143,6 @@ namespace KrayonCore
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Depth-only pass (usado por ShadowManager)
-        // ─────────────────────────────────────────────────────────────────────
-        private void RenderDepthOnly(Shader depthShader, Matrix4 view, Matrix4 projection)
-        {
-            int progId = depthShader.ProgramID;
-            int modelLoc = GL.GetUniformLocation(progId, "model");
-            int instanceLoc = GL.GetUniformLocation(progId, "u_UseInstancing");
-            int animLoc = GL.GetUniformLocation(progId, "u_UseAnimation");
-
-            // ── Static mesh renderers (instanced) ─────────────────────────────
-            var depthGroups = new Dictionary<Model, List<Matrix4>>();
-
-            foreach (var renderer in _meshRenderers)
-            {
-                if (renderer is null || !renderer.Enabled || renderer.Model is null || renderer.GameObject is null)
-                    continue;
-
-                var transform = renderer.GameObject.GetComponent<Transform>();
-                if (transform is null) continue;
-
-                if (!depthGroups.ContainsKey(renderer.Model))
-                    depthGroups[renderer.Model] = new List<Matrix4>();
-                depthGroups[renderer.Model].Add(transform.GetWorldMatrix());
-            }
-
-            // FIX: setear u_UseAnimation = 0 para meshes estáticos
-            if (animLoc >= 0) GL.Uniform1(animLoc, 0);
-
-            foreach (var kvp in depthGroups)
-            {
-                var (model, matrices) = (kvp.Key, kvp.Value);
-                if (matrices.Count == 0) continue;
-
-                model.SetupInstancing(matrices.ToArray());
-                GL.Uniform1(instanceLoc, 1);
-                model.DrawInstanced(matrices.Count);
-                model.ClearInstancing();
-            }
-
-            // ── Animated mesh renderers ────────────────────────────────────────
-            // FIX: setear u_UseAnimation = 1 y subir bone matrices para que
-            // las sombras de meshes animados sigan la pose actual (no T-pose).
-            foreach (var renderer in _animatedMeshRenderers)
-            {
-                if (renderer is null || !renderer.Enabled || renderer.AnimatedModel is null || renderer.GameObject is null)
-                    continue;
-
-                var transform = renderer.GameObject.GetComponent<Transform>();
-                if (transform is null) continue;
-
-                var animator = renderer.GetAnimator();
-                Matrix4 world = transform.GetWorldMatrix();
-                GL.UniformMatrix4(modelLoc, false, ref world);
-                GL.Uniform1(instanceLoc, 0);
-
-                if (animator != null && animator.IsPlaying)
-                {
-                    // Animar: subir bone matrices al depth shader y activar skinning
-                    GL.Uniform1(animLoc, 1);
-                    animator.UploadBoneMatrices(progId);
-                }
-                else
-                {
-                    // Sin animación activa
-                    GL.Uniform1(animLoc, 0);
-                }
-
-                for (int i = 0; i < renderer.AnimatedModel.SubMeshCount; i++)
-                    renderer.AnimatedModel.SubMeshes[i].Mesh.Draw();
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Per-camera scene render
-        // ─────────────────────────────────────────────────────────────────────
         private void RenderFromCamera(RenderCamera renderCam)
         {
             FrameBuffer? target = renderCam.GetTargetBuffer()
@@ -309,9 +199,6 @@ namespace KrayonCore
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Public helpers
-        // ─────────────────────────────────────────────────────────────────────
         public void Update(float deltaTime) => UICanvasManager.Update(deltaTime);
 
         public void Resize(int width, int height) => CameraManager.Instance.ResizeAll(width, height);
@@ -321,7 +208,6 @@ namespace KrayonCore
             ClearInstanceGroups();
             ClearAllRenderers();
             UICanvasManager.Shutdown();
-            _shadowManager.Dispose();
         }
 
         public Camera GetCamera()
@@ -341,9 +227,6 @@ namespace KrayonCore
             => (_skyboxRenderers.Count, _meshRenderers.Count,
                 _animatedMeshRenderers.Count, _spriteRenderers.Count, _tileRenderers.Count);
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Instance groups
-        // ─────────────────────────────────────────────────────────────────────
         private void ClearInstanceGroups()
         {
             foreach (var kvp in _meshInstanceGroups) kvp.Key.model.ClearInstancing();
@@ -352,9 +235,6 @@ namespace KrayonCore
             _spriteInstanceGroups.Clear();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Skybox
-        // ─────────────────────────────────────────────────────────────────────
         private void RenderSkybox(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_skyboxRenderers.Count == 0) return;
@@ -402,9 +282,6 @@ namespace KrayonCore
             else GL.Disable(EnableCap.CullFace);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Mesh renderers
-        // ─────────────────────────────────────────────────────────────────────
         private void RenderMeshRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_meshRenderers.Count == 0) return;
@@ -503,9 +380,6 @@ namespace KrayonCore
             GL.BindVertexArray(0);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Animated mesh renderers
-        // ─────────────────────────────────────────────────────────────────────
         private void RenderAnimatedMeshRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_animatedMeshRenderers.Count == 0) return;
@@ -545,9 +419,6 @@ namespace KrayonCore
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Sprite renderers
-        // ─────────────────────────────────────────────────────────────────────
         private void RenderSpriteRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_spriteRenderers.Count == 0) return;
@@ -586,9 +457,6 @@ namespace KrayonCore
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Tile renderers
-        // ─────────────────────────────────────────────────────────────────────
         private void RenderTileRenderers(Matrix4 view, Matrix4 projection, Vector3 cameraPos)
         {
             if (_tileRenderers.Count == 0) return;
@@ -626,9 +494,6 @@ namespace KrayonCore
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  SetupMaterial
-        // ─────────────────────────────────────────────────────────────────────
         private void SetupMaterial(Material material, Matrix4 view, Matrix4 projection,
             Vector3 cameraPos, bool instanced)
         {
@@ -638,19 +503,10 @@ namespace KrayonCore
             material.SetMatrix4("view", view);
             material.SetMatrix4("projection", projection);
             material.SetVector3("u_CameraPos", cameraPos);
-
-            // FIX: u_View es un uniform separado de "view", se usa en el frag shader
-            // para transformar normales al view space del G-buffer (NormalOutput).
-            // Sin esto NormalOutput siempre sale en cero/negro.
             material.SetMatrix4("u_View", view);
-
             _lightManager.ApplyLightsToShader(material.Shader.ProgramID);
-            _shadowManager.BindShadowsToShader(material.Shader.ProgramID);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Material helpers
-        // ─────────────────────────────────────────────────────────────────────
         private void ValidateAndFixMaterials(MeshRenderer renderer)
         {
             if (renderer.Model is null) return;

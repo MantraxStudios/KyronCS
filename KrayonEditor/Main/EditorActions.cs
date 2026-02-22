@@ -30,7 +30,6 @@ namespace KrayonEditor
             var go = SceneManager.PrimaryScene.CreateGameObject($"Cube_{count}");
             go.Transform.SetPosition(0, 0, 0);
             var meshRenderer = go.AddComponent<MeshRenderer>();
-            meshRenderer.Model = Model.Load("models/Cube.fbx");
             EngineEditor.SetSelectedObject(go);
             EngineEditor.LogMessage($"Created {go.Name} with MeshRenderer");
             return go;
