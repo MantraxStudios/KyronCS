@@ -114,6 +114,46 @@ namespace KrayonCore
             }
         }
 
+        public static void LoadSceneFromBytes(Byte[] scene_bytes)
+        {
+            UnloadAllPrimaryScenes();
+
+            GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+
+            GameScene sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
+
+            if (sceneToLoad == null) return;
+
+            if (_scenes.ContainsKey(sceneToLoad.Name))
+            {
+                var oldScene = _scenes[sceneToLoad.Name];
+                if (!_PrimaryScenes.Contains(oldScene))
+                {
+                    oldScene.OnUnload();
+                    oldScene.Clear();
+                    OnSceneUnloaded?.Invoke(oldScene);
+                }
+            }
+
+            _scenes[sceneToLoad.Name] = sceneToLoad;
+
+            if (!_PrimaryScenes.Contains(sceneToLoad))
+            {
+                _PrimaryScenes.Add(sceneToLoad);
+                sceneToLoad.OnLoad();
+                sceneToLoad.Start();
+                OnSceneLoaded?.Invoke(sceneToLoad);
+            }
+
+            foreach (var go in sceneToLoad.GetAllGameObjects())
+            {
+                var csl = go.GetComponent<CSharpLogic>();
+                if (csl != null)
+                    csl.ResolveGameObjectReferences();
+            }
+        }
+
+
         public static void UnloadScene(string name)
         {
             if (_scenes.TryGetValue(name, out GameScene scene))
@@ -220,9 +260,12 @@ namespace KrayonCore
 
         public static GameObject FindGameObjectById(Guid id)
         {
-            foreach (var obj in PrimaryScene.GetAllGameObjects())
+            if (PrimaryScene != null)
             {
-                if (obj.Id == id) return obj;
+                foreach (var obj in PrimaryScene.GetAllGameObjects())
+                {
+                    if (obj.Id == id) return obj;
+                }
             }
             return null;
         }
@@ -270,45 +313,6 @@ namespace KrayonCore
                 return null;
 
             return SceneSaveSystem.SaveSceneToBytes(original);
-        }
-
-        public static void LoadSceneFromBytes(Byte[] scene_bytes)
-        {
-            UnloadAllPrimaryScenes();
-
-            GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
-
-            GameScene sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
-
-            if (sceneToLoad == null) return;
-
-            if (_scenes.ContainsKey(sceneToLoad.Name))
-            {
-                var oldScene = _scenes[sceneToLoad.Name];
-                if (!_PrimaryScenes.Contains(oldScene))
-                {
-                    oldScene.OnUnload();
-                    oldScene.Clear();
-                    OnSceneUnloaded?.Invoke(oldScene);
-                }
-            }
-
-            _scenes[sceneToLoad.Name] = sceneToLoad;
-
-            if (!_PrimaryScenes.Contains(sceneToLoad))
-            {
-                _PrimaryScenes.Add(sceneToLoad);
-                sceneToLoad.OnLoad();
-                sceneToLoad.Start();
-                OnSceneLoaded?.Invoke(sceneToLoad);
-            }
-
-            foreach (var go in sceneToLoad.GetAllGameObjects())
-            {
-                var csl = go.GetComponent<CSharpLogic>();
-                if (csl != null)
-                    csl.ResolveGameObjectReferences();
-            }
         }
 
         public static void SaveAllScenes(string directoryPath)
