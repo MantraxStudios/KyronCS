@@ -23,6 +23,11 @@ namespace KrayonCore
         public event Action OnComponentRemoved;
         public GameScene SelfScene;
 
+        internal void SetId(Guid id)
+        {
+            Id = id;
+        }
+
         public GameObject(string name = "GameObject")
         {
             Id = Guid.NewGuid();

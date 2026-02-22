@@ -119,6 +119,8 @@ namespace KrayonCore.GraphicsData
         {
             AssetManager.Initialize();
 
+            CSharpScriptManager.Instance.Initialize();
+
             if (SceneManager.PrimaryScene is null)
             {
                 SceneManager.CreateScene("DefaultScene");

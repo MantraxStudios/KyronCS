@@ -9,12 +9,12 @@ using KrayonCore.GraphicsData;
 using KrayonCore.Core.Attributes;
 using System.IO;
 using KrayonEditor.Main;
+using KrayonCore.Core.Components;
 
 namespace KrayonEditor.UI
 {
     public class InspectorUI : UIBehaviour
     {
-        // ── Paleta de colores estilo Unity Dark ──────────────────────────────
         private static readonly Vector4 ColHeader = new(0.17f, 0.17f, 0.17f, 1f);
         private static readonly Vector4 ColHeaderHover = new(0.22f, 0.22f, 0.22f, 1f);
         private static readonly Vector4 ColHeaderActive = new(0.14f, 0.14f, 0.14f, 1f);
@@ -28,12 +28,7 @@ namespace KrayonEditor.UI
         private static readonly Vector4 ColTextDim = new(0.55f, 0.55f, 0.55f, 1f);
         private static readonly Vector4 ColTextDisabled = new(0.40f, 0.40f, 0.40f, 1f);
 
-        // Ancho fijo de la columna de labels (igual en todos los campos)
         private const float LabelColumnWidth = 148f;
-
-        // ════════════════════════════════════════════════════════════════════
-        //  APPLY THEME
-        // ════════════════════════════════════════════════════════════════════
 
         private static void PushUnityTheme()
         {
@@ -65,10 +60,6 @@ namespace KrayonEditor.UI
             ImGui.PopStyleColor(16);
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  LABEL + FIELD ROW  (columna fija a la izquierda como Unity)
-        // ════════════════════════════════════════════════════════════════════
-
         private static void BeginFieldRow(string label)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
@@ -86,10 +77,6 @@ namespace KrayonEditor.UI
             ImGui.SameLine(LabelColumnWidth);
             ImGui.SetNextItemWidth(fieldWidth);
         }
-
-        // ════════════════════════════════════════════════════════════════════
-        //  ASSET STRING FIELD  (estilo Unity: rect arrastrable + boton X)
-        // ════════════════════════════════════════════════════════════════════
 
         private static string ResolveGuidLabel(string value)
         {
@@ -133,11 +120,9 @@ namespace KrayonEditor.UI
                 dl.AddRectFilled(pos, new Vector2(pos.X + fieldW, pos.Y + h), bgCol, radius);
                 dl.AddRect(pos, new Vector2(pos.X + fieldW, pos.Y + h), brCol, radius);
 
-                // Punto de color acento como icono
                 float dotR = h * 0.20f;
                 dl.AddCircleFilled(new Vector2(pos.X + h * 0.5f, pos.Y + h * 0.5f), dotR, dotCol);
 
-                // Nombre truncado
                 string txt = resolved;
                 float maxTW = fieldW - h * 0.9f - 4f;
                 while (txt.Length > 4 && ImGui.CalcTextSize(txt).X > maxTW)
@@ -200,31 +185,16 @@ namespace KrayonEditor.UI
             return rawValue;
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  COMPONENT HEADER  (barra oscura con nombre, como Unity)
-        // ════════════════════════════════════════════════════════════════════
-
         private static bool DrawComponentHeader(string name, bool isEnabled)
         {
-            uint bgCol = ImGui.ColorConvertFloat4ToU32(
-                isEnabled ? new Vector4(0.23f, 0.23f, 0.23f, 1f)
-                          : new Vector4(0.18f, 0.18f, 0.18f, 1f));
-
             ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.23f, 0.23f, 0.23f, 1f));
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.27f, 0.27f, 0.27f, 1f));
             ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.20f, 0.20f, 0.20f, 1f));
-            ImGui.PushStyleColor(ImGuiCol.Text,
-                isEnabled ? ColTextMain : ColTextDisabled);
-
+            ImGui.PushStyleColor(ImGuiCol.Text, isEnabled ? ColTextMain : ColTextDisabled);
             bool open = ImGui.CollapsingHeader(name, ImGuiTreeNodeFlags.DefaultOpen);
-
             ImGui.PopStyleColor(4);
             return open;
         }
-
-        // ════════════════════════════════════════════════════════════════════
-        //  ON DRAW UI
-        // ════════════════════════════════════════════════════════════════════
 
         public override void OnDrawUI()
         {
@@ -261,10 +231,6 @@ namespace KrayonEditor.UI
             }
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  OBJECT HEADER  (Name + Tag en una fila)
-        // ════════════════════════════════════════════════════════════════════
-
         private void DrawObjectHeader()
         {
             float avail = ImGui.GetContentRegionAvail().X;
@@ -288,10 +254,6 @@ namespace KrayonEditor.UI
             ImGui.Spacing();
             ImGui.Separator();
         }
-
-        // ════════════════════════════════════════════════════════════════════
-        //  TRANSFORM
-        // ════════════════════════════════════════════════════════════════════
 
         private void DrawTransformComponent()
         {
@@ -330,10 +292,6 @@ namespace KrayonEditor.UI
             ImGui.PopID();
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  COMPONENTS LOOP
-        // ════════════════════════════════════════════════════════════════════
-
         private void DrawComponents()
         {
             var components = EditorActions.SelectedObject!.GetAllComponents().ToList();
@@ -358,7 +316,6 @@ namespace KrayonEditor.UI
 
             bool open = DrawComponentHeader(name, isEnabled);
 
-            // Context menu (clic derecho en el header)
             if (ImGui.BeginPopupContextItem($"ctx_{name}"))
             {
                 if (hasEnabled)
@@ -389,6 +346,10 @@ namespace KrayonEditor.UI
             {
                 DrawRigidbodyInspector(rb);
             }
+            else if (component is CSharpLogic csl)
+            {
+                DrawCSharpLogicInspector(csl);
+            }
             else
             {
                 foreach (var prop in ct.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -409,6 +370,119 @@ namespace KrayonEditor.UI
             ImGui.Unindent(4f);
             ImGui.PopStyleColor();
             ImGui.Spacing();
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  CSHARPLOGIC INSPECTOR
+        // ════════════════════════════════════════════════════════════════════
+
+        private void DrawCSharpLogicInspector(CSharpLogic csl)
+        {
+            string scriptVal = DrawAssetStringField("Script", csl.Script);
+            if (scriptVal != csl.Script)
+                csl.Script = scriptVal;
+
+            if (csl.GetScriptVariables().Count == 0 && !string.IsNullOrEmpty(csl.Script))
+                csl.LoadScript();
+
+            var vars = csl.GetScriptVariables();
+            if (vars.Count == 0) return;
+
+            ImGui.Spacing();
+            ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
+            ImGui.TextUnformatted("Script Variables");
+            ImGui.PopStyleColor();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            int vi = 0;
+            foreach (var (varName, varType, varValue) in vars)
+            {
+                ImGui.PushID($"sv_{vi}");
+                DrawScriptVariable(csl, varName, varType, varValue);
+                ImGui.PopID();
+                vi++;
+            }
+        }
+
+        private void DrawScriptVariable(CSharpLogic csl, string varName, Type varType, object varValue)
+        {
+            if (varType == typeof(bool))
+            {
+                bool v = varValue != null && (bool)varValue;
+                BeginFieldRow(varName);
+                if (ImGui.Checkbox($"##{varName}", ref v))
+                    csl.SetScriptVariable(varName, v);
+            }
+            else if (varType == typeof(float))
+            {
+                float v = varValue != null ? (float)varValue : 0f;
+                BeginFieldRow(varName);
+                if (ImGui.DragFloat($"##{varName}", ref v, 0.01f))
+                    csl.SetScriptVariable(varName, v);
+            }
+            else if (varType == typeof(int))
+            {
+                int v = varValue != null ? (int)varValue : 0;
+                BeginFieldRow(varName);
+                if (ImGui.DragInt($"##{varName}", ref v))
+                    csl.SetScriptVariable(varName, v);
+            }
+            else if (varType == typeof(string))
+            {
+                string sv = (string)varValue ?? "";
+                string nv = DrawAssetStringField(varName, sv);
+                if (nv != sv)
+                    csl.SetScriptVariable(varName, nv);
+            }
+            else if (varType == typeof(Vector2))
+            {
+                Vector2 v = varValue != null ? (Vector2)varValue : Vector2.Zero;
+                BeginFieldRow(varName);
+                if (ImGui.DragFloat2($"##{varName}", ref v, 0.01f))
+                    csl.SetScriptVariable(varName, v);
+            }
+            else if (varType == typeof(Vector3))
+            {
+                Vector3 v = varValue != null ? (Vector3)varValue : Vector3.Zero;
+                BeginFieldRow(varName);
+                if (ImGui.DragFloat3($"##{varName}", ref v, 0.01f))
+                    csl.SetScriptVariable(varName, v);
+            }
+            else if (varType == typeof(OpenTK.Mathematics.Vector3))
+            {
+                var otk = varValue != null ? (OpenTK.Mathematics.Vector3)varValue : OpenTK.Mathematics.Vector3.Zero;
+                Vector3 v = new(otk.X, otk.Y, otk.Z);
+                BeginFieldRow(varName);
+                if (ImGui.DragFloat3($"##{varName}", ref v, 0.01f))
+                    csl.SetScriptVariable(varName, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
+            }
+            else if (varType == typeof(Vector4))
+            {
+                Vector4 v = varValue != null ? (Vector4)varValue : Vector4.Zero;
+                BeginFieldRow(varName);
+                if (ImGui.InputFloat4($"##{varName}", ref v))
+                    csl.SetScriptVariable(varName, v);
+            }
+            else if (varType.IsEnum)
+            {
+                string[] names = Enum.GetNames(varType);
+                int idx = varValue != null ? Array.IndexOf(names, varValue.ToString()) : 0;
+                if (idx < 0) idx = 0;
+                BeginFieldRow(varName);
+                if (ImGui.Combo($"##{varName}", ref idx, names, names.Length))
+                    csl.SetScriptVariable(varName, Enum.Parse(varType, names[idx]));
+            }
+            else if (varType == typeof(GameObject))
+            {
+                // SetScriptVariable guarda el GUID automáticamente
+                DrawObjectRefField(varName, varValue as GameObject,
+                    go => csl.SetScriptVariable(varName, go));
+            }
+            else
+            {
+                DrawLabelValue(varName, varValue?.ToString() ?? "null");
+            }
         }
 
         // ════════════════════════════════════════════════════════════════════
@@ -457,7 +531,7 @@ namespace KrayonEditor.UI
         }
 
         // ════════════════════════════════════════════════════════════════════
-        //  RIGIDBODY  — reemplazar el método completo DrawRigidbodyInspector
+        //  RIGIDBODY INSPECTOR
         // ════════════════════════════════════════════════════════════════════
 
         private static OpenTK.Mathematics.Vector3 ClampVec3(Vector3 v) =>
@@ -465,14 +539,12 @@ namespace KrayonEditor.UI
 
         private void DrawRigidbodyInspector(KrayonCore.Rigidbody rb)
         {
-            // ── Motion Type ───────────────────────────────────────────────
             string[] motionNames = Enum.GetNames(typeof(BodyMotionType));
             int motionIdx = (int)rb.MotionType;
             BeginFieldRow("Motion Type");
             if (ImGui.Combo("##motiontype", ref motionIdx, motionNames, motionNames.Length))
                 rb.MotionType = (BodyMotionType)motionIdx;
 
-            // ── Flags (Kinematic / Trigger / Gravity) ─────────────────────
             ImGui.Spacing();
             bool kin = rb.IsKinematic;
             if (ImGui.Checkbox("Kinematic", ref kin)) rb.IsKinematic = kin;
@@ -484,7 +556,6 @@ namespace KrayonEditor.UI
             if (ImGui.Checkbox("Gravity", ref grav)) rb.UseGravity = grav;
             ImGui.Spacing();
 
-            // ── Mass / Sleep ──────────────────────────────────────────────
             float mass = rb.Mass;
             BeginFieldRow("Mass");
             if (ImGui.DragFloat("##mass", ref mass, 0.1f, 0.01f, 1000f))
@@ -499,14 +570,12 @@ namespace KrayonEditor.UI
             ImGui.Separator();
             ImGui.Spacing();
 
-            // ── Shape ─────────────────────────────────────────────────────
             string[] shapeNames = Enum.GetNames(typeof(ShapeType));
             int shapeIdx = (int)rb.ShapeType;
             BeginFieldRow("Shape");
             if (ImGui.Combo("##shapetype", ref shapeIdx, shapeNames, shapeNames.Length))
                 rb.ShapeType = (ShapeType)shapeIdx;
 
-            // Shape Size — label dinámico según la forma
             string shapeSizeLabel = rb.ShapeType switch
             {
                 ShapeType.Sphere => "Radius",
@@ -519,7 +588,6 @@ namespace KrayonEditor.UI
 
             switch (rb.ShapeType)
             {
-                // Box: X Y Z completo
                 case ShapeType.Box:
                     {
                         BeginFieldRow(shapeSizeLabel);
@@ -527,19 +595,14 @@ namespace KrayonEditor.UI
                             rb.ShapeSize = ClampVec3(ssv);
                         break;
                     }
-
-                // Sphere: solo radio (X)
                 case ShapeType.Sphere:
                     {
                         float r = ssv.X;
                         BeginFieldRow(shapeSizeLabel);
                         if (ImGui.DragFloat("##shapesize_r", ref r, 0.05f, 0.01f, 100f))
-                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(
-                                Math.Max(0.01f, r), ss.Y, ss.Z);
+                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(Math.Max(0.01f, r), ss.Y, ss.Z);
                         break;
                     }
-
-                // Capsule: X = radio, Y = half-length del cilindro
                 case ShapeType.Capsule:
                     {
                         float r = ssv.X;
@@ -553,16 +616,13 @@ namespace KrayonEditor.UI
 
                         ImGui.SetNextItemWidth(fieldW);
                         if (ImGui.DragFloat("##caps_r", ref r, 0.05f, 0.01f, 100f, "R:%.2f"))
-                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(
-                                Math.Max(0.01f, r), ss.Y, ss.Z);
+                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(Math.Max(0.01f, r), ss.Y, ss.Z);
 
                         ImGui.SameLine(0, 6f);
                         ImGui.SetNextItemWidth(fieldW);
                         if (ImGui.DragFloat("##caps_h", ref h, 0.05f, 0.01f, 100f, "H:%.2f"))
-                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(
-                                ss.X, Math.Max(0.01f, h), ss.Z);
+                            rb.ShapeSize = new OpenTK.Mathematics.Vector3(ss.X, Math.Max(0.01f, h), ss.Z);
 
-                        // Indicador visual de altura total = cilindro + 2 hemisferios
                         float totalH = h * 2f + r * 2f;
                         ImGui.SameLine(0, 6f);
                         ImGui.PushStyleColor(ImGuiCol.Text, ColTextDim);
@@ -572,7 +632,6 @@ namespace KrayonEditor.UI
                     }
             }
 
-            // ── Collider Offset  (igual que Unity: Center X Y Z) ──────────
             ImGui.Spacing();
 
             var co = rb.ColliderOffset;
@@ -581,7 +640,6 @@ namespace KrayonEditor.UI
             if (ImGui.DragFloat3("##coloffset", ref cov, 0.01f))
                 rb.ColliderOffset = new OpenTK.Mathematics.Vector3(cov.X, cov.Y, cov.Z);
 
-            // Botón Reset offset (pequeño, a la derecha)
             if (cov != Vector3.Zero)
             {
                 ImGui.SameLine();
@@ -598,10 +656,8 @@ namespace KrayonEditor.UI
             ImGui.Separator();
             ImGui.Spacing();
 
-            // ── Layer ─────────────────────────────────────────────────────
             DrawPhysicsLayerSelector("Layer", rb);
 
-            // ── Subpaneles plegables ──────────────────────────────────────
             ImGui.Spacing();
             if (ImGui.TreeNodeEx("Constraints", ImGuiTreeNodeFlags.SpanAvailWidth))
             {
@@ -614,7 +670,6 @@ namespace KrayonEditor.UI
                 ImGui.TreePop();
             }
         }
-
 
         private void DrawPhysicsLayerSelector(string label, KrayonCore.Rigidbody rb)
         {
@@ -705,7 +760,7 @@ namespace KrayonEditor.UI
         }
 
         // ════════════════════════════════════════════════════════════════════
-        //  DRAW PROPERTY  (por reflection)
+        //  DRAW PROPERTY / FIELD (reflection genérico)
         // ════════════════════════════════════════════════════════════════════
 
         private void DrawProperty(object comp, PropertyInfo prop)
@@ -792,23 +847,17 @@ namespace KrayonEditor.UI
             }
             else if (t == typeof(GameObject))
             {
-                DrawObjectRefField(prop.Name, (GameObject)val,
-                    go => prop.SetValue(comp, go));
+                DrawObjectRefField(prop.Name, (GameObject)val, go => prop.SetValue(comp, go));
             }
             else if (t == typeof(KrayonCore.Material))
             {
-                DrawMaterialRefField(prop.Name, (KrayonCore.Material)val,
-                    mat => prop.SetValue(comp, mat));
+                DrawMaterialRefField(prop.Name, (KrayonCore.Material)val, mat => prop.SetValue(comp, mat));
             }
             else
             {
                 DrawLabelValue(prop.Name, val.ToString());
             }
         }
-
-        // ════════════════════════════════════════════════════════════════════
-        //  DRAW FIELD  (por reflection)
-        // ════════════════════════════════════════════════════════════════════
 
         private void DrawField(object comp, FieldInfo field)
         {
@@ -894,13 +943,11 @@ namespace KrayonEditor.UI
             }
             else if (t == typeof(GameObject))
             {
-                DrawObjectRefField(field.Name, (GameObject)val,
-                    go => field.SetValue(comp, go));
+                DrawObjectRefField(field.Name, (GameObject)val, go => field.SetValue(comp, go));
             }
             else if (t == typeof(KrayonCore.Material))
             {
-                DrawMaterialRefField(field.Name, (KrayonCore.Material)val,
-                    mat => field.SetValue(comp, mat));
+                DrawMaterialRefField(field.Name, (KrayonCore.Material)val, mat => field.SetValue(comp, mat));
             }
             else
             {
@@ -1101,7 +1148,7 @@ namespace KrayonEditor.UI
         }
 
         // ════════════════════════════════════════════════════════════════════
-        //  REFERENCE FIELDS  (GameObject, Material)
+        //  REFERENCE FIELDS
         // ════════════════════════════════════════════════════════════════════
 
         private void DrawObjectRefField(string label, GameObject? current, Action<GameObject?> setter)

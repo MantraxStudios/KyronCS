@@ -1,6 +1,8 @@
 ﻿using Acornima.Ast;
+using Assimp;
 using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
+using KrayonCore.Core.Components;
 using KrayonCore.GraphicsData;
 using System.Collections.Generic;
 using System.IO;
@@ -102,6 +104,13 @@ namespace KrayonCore
                 sceneToLoad.OnLoad();
                 sceneToLoad.Start();
                 OnSceneLoaded?.Invoke(sceneToLoad);
+            }
+
+            foreach (var go in sceneToLoad.GetAllGameObjects())
+            {
+                var csl = go.GetComponent<CSharpLogic>();
+                if (csl != null)
+                    csl.ResolveGameObjectReferences();
             }
         }
 
@@ -211,12 +220,9 @@ namespace KrayonCore
 
         public static GameObject FindGameObjectById(Guid id)
         {
-            foreach (var scene in _PrimaryScenes)
+            foreach (var obj in PrimaryScene.GetAllGameObjects())
             {
-                foreach (var obj in scene.GetAllGameObjects())
-                {
-                    if (obj.Id == id) return obj;
-                }
+                if (obj.Id == id) return obj;
             }
             return null;
         }
@@ -295,6 +301,13 @@ namespace KrayonCore
                 sceneToLoad.OnLoad();
                 sceneToLoad.Start();
                 OnSceneLoaded?.Invoke(sceneToLoad);
+            }
+
+            foreach (var go in sceneToLoad.GetAllGameObjects())
+            {
+                var csl = go.GetComponent<CSharpLogic>();
+                if (csl != null)
+                    csl.ResolveGameObjectReferences();
             }
         }
 
