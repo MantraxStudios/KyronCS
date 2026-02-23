@@ -97,8 +97,8 @@ namespace KrayonCore
 
             foreach (var property in properties)
             {
-                if (!property.CanWrite || 
-                    !property.CanRead || 
+                if (!property.CanWrite ||
+                    !property.CanRead ||
                     property.Name == "GameObject" ||
                     property.Name == "Transform")
                     continue;
@@ -106,12 +106,12 @@ namespace KrayonCore
                 try
                 {
                     object value = property.GetValue(original);
-                    
+
                     if (value != null && IsCloneableType(property.PropertyType))
                     {
                         value = DeepCloneValue(value);
                     }
-                    
+
                     property.SetValue(newComponent, value);
                 }
                 catch (Exception ex)
@@ -129,12 +129,12 @@ namespace KrayonCore
                 try
                 {
                     object value = field.GetValue(original);
-                    
+
                     if (value != null && IsCloneableType(field.FieldType))
                     {
                         value = DeepCloneValue(value);
                     }
-                    
+
                     field.SetValue(newComponent, value);
                 }
                 catch (Exception ex)
@@ -147,9 +147,9 @@ namespace KrayonCore
         private bool IsCloneableType(Type type)
         {
             // Tipos que necesitan clonado profundo
-            return type.IsArray || 
-                   type.IsClass && 
-                   type != typeof(string) && 
+            return type.IsArray ||
+                   type.IsClass &&
+                   type != typeof(string) &&
                    !type.IsSubclassOf(typeof(Component)) &&
                    !type.IsSubclassOf(typeof(GameObject));
         }
@@ -167,7 +167,7 @@ namespace KrayonCore
                 Type elementType = type.GetElementType();
                 Array originalArray = (Array)original;
                 Array clonedArray = Array.CreateInstance(elementType, originalArray.Length);
-                
+
                 for (int i = 0; i < originalArray.Length; i++)
                 {
                     object element = originalArray.GetValue(i);
@@ -180,7 +180,7 @@ namespace KrayonCore
                         clonedArray.SetValue(element, i);
                     }
                 }
-                
+
                 return clonedArray;
             }
 
@@ -189,7 +189,7 @@ namespace KrayonCore
             {
                 var list = (System.Collections.IList)original;
                 var clonedList = (System.Collections.IList)Activator.CreateInstance(type);
-                
+
                 foreach (var item in list)
                 {
                     if (item != null && IsCloneableType(item.GetType()))
@@ -201,7 +201,7 @@ namespace KrayonCore
                         clonedList.Add(item);
                     }
                 }
-                
+
                 return clonedList;
             }
 
@@ -226,6 +226,7 @@ namespace KrayonCore
             T component = new T();
             component.GameObject = this;
             _components[type] = component;
+            component.SelfScene = SelfScene;
             _componentsList.Add(component);
 
             component.Awake();
@@ -313,6 +314,24 @@ namespace KrayonCore
         public bool HasComponent<T>() where T : Component
         {
             return _components.ContainsKey(typeof(T));
+        }
+
+        /// <summary>
+        /// Intenta obtener un componente del tipo especificado.
+        /// Retorna true si el componente existe, false en caso contrario.
+        /// </summary>
+        public bool TryGetComponent<T>(out T component) where T : Component
+        {
+            Type type = typeof(T);
+
+            if (_components.TryGetValue(type, out Component foundComponent))
+            {
+                component = (T)foundComponent;
+                return true;
+            }
+
+            component = null;
+            return false;
         }
 
         public bool RemoveComponent<T>() where T : Component

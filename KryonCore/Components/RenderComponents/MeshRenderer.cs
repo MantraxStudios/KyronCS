@@ -84,7 +84,7 @@ namespace KrayonCore.Components.RenderComponents
         public override void Awake()
         {
             Console.WriteLine($"*********MATERIAL EN ESTE OBJETO {MaterialPaths.Length}");
-            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+            SelfScene.SelfRenderScene.RegisterRenderer(this);
 
             foreach (var item in MaterialPaths)
             {
@@ -263,7 +263,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void OnDestroy()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+            SelfScene.SelfRenderScene?.UnregisterRenderer(this);
             _model = null;
             MaterialPaths = new string[0];
         }

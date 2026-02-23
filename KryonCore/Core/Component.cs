@@ -4,6 +4,7 @@ namespace KrayonCore
 {
     public abstract class Component : IComponent
     {
+        public GameScene SelfScene;
         [NoSerializeToInspector] public Guid Id { get; private set; }
         [NoSerializeToInspector] public GameObject GameObject { get; set; }
         public bool Enabled { get; set; } = true;

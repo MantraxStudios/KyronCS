@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using KrayonCore.GraphicsData;
 using KrayonCore.Physics;
 
 namespace KrayonCore
@@ -27,6 +28,11 @@ namespace KrayonCore
         public event Action OnComponentAdded;
         public event Action OnComponentRemoved;
 
+        public List<Camera> Cameras { get; private set; }
+
+        public Camera GetMainCamera { get { return Cameras[0]; } }
+        public SceneRenderer SelfRenderScene;
+
         public GameScene(string name)
         {
             Id = Guid.NewGuid();
@@ -37,11 +43,13 @@ namespace KrayonCore
             IsLoaded = false;
 
             _physicsWorld = new WorldPhysic();
+            SelfRenderScene = GraphicsEngine.Instance.AddSceneRenderer();
         }
 
         public GameObject CreateGameObject(string name = "GameObject")
         {
             GameObject go = new GameObject(name);
+            go.SelfScene = this;
             AddGameObject(go);
             return go;
         }
@@ -52,6 +60,7 @@ namespace KrayonCore
                 throw new ArgumentNullException(nameof(original));
 
             GameObject clone = original.Clone(cloneChildren);
+            clone.SelfScene = this;
 
             if (clone.Scene != this)
                 AddGameObject(clone);
@@ -68,6 +77,8 @@ namespace KrayonCore
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
+            clone.SelfScene = this;
+
             clone.StartComponents();
             clone.Transform.SetPosition(position.X, position.Y, position.Z);
             return clone;
@@ -76,6 +87,8 @@ namespace KrayonCore
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
+            clone.SelfScene = this;
+
             clone.StartComponents();
             clone.Transform.SetPosition(position.X, position.Y, position.Z);
             clone.Transform.SetRotation(rotation.X, rotation.Y, rotation.Z);
@@ -85,6 +98,8 @@ namespace KrayonCore
         public GameObject Instantiate(GameObject original, OpenTK.Mathematics.Vector3 position, OpenTK.Mathematics.Vector3 rotation, OpenTK.Mathematics.Vector3 scale, bool cloneChildren = true)
         {
             GameObject clone = Instantiate(original, cloneChildren);
+            clone.SelfScene = this;
+
             clone.Transform.SetPosition(position.X, position.Y, position.Z);
             clone.Transform.SetRotation(rotation.X, rotation.Y, rotation.Z);
             clone.Transform.SetScale(scale.X, scale.Y, scale.Z);
@@ -364,6 +379,8 @@ namespace KrayonCore
             Clear();
             _physicsWorld?.Dispose();
             _physicsWorld = null;
+
+            GraphicsEngine.Instance.RemoveSceneRenderer(SelfRenderScene);
         }
     }
 }

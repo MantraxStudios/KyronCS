@@ -1,4 +1,5 @@
 ﻿using KrayonCore.Editor.Panels;
+using KrayonEditor.UI.UIS;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +23,7 @@ namespace KrayonEditor.UI
             RegisterUI(new SpriteAnimationUI());
             RegisterUI(new CompilerUI());
             RegisterUI(new AnimatorEditorUI());
+            RegisterUI(new EntityEditorUI());
             //RegisterUI(new UICanvasEditor());
         }
 

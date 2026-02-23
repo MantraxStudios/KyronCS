@@ -32,6 +32,7 @@ namespace KrayonCore
         public float ViewportY { get; set; } = 0f;
         public float ViewportWidth { get; set; } = 1f;
         public float ViewportHeight { get; set; } = 1f;
+        public GameScene _Scene;
 
         // ── Constructor ──────────────────────────────────────────────────────
         public RenderCamera(string name, Vector3 position, float aspectRatio, int priority = 0)
@@ -53,10 +54,10 @@ namespace KrayonCore
             TargetBufferName = $"cam_{Name}_scene";
             PostProcessBufferName = $"cam_{Name}_pp";
 
-            FrameBufferManager.Instance.Create(
+            _Scene.SelfRenderScene.Buffers.Create(
                 TargetBufferName, width, height, useEmission, useGBuffer);
 
-            FrameBufferManager.Instance.Create(
+            _Scene.SelfRenderScene.Buffers.Create(
                 PostProcessBufferName, width, height,
                 useEmission: false, useGBuffer: false);
         }
@@ -73,13 +74,13 @@ namespace KrayonCore
         /// <summary>Buffer de escena (con GBuffer). Aquí renderiza el SceneRenderer.</summary>
         public FrameBuffer? GetTargetBuffer()
             => TargetBufferName is not null
-                ? FrameBufferManager.Instance.TryGet(TargetBufferName)
+                ? _Scene.SelfRenderScene.Buffers.TryGet(TargetBufferName)
                 : null;
 
         /// <summary>Buffer de post-proceso. Resultado final que se muestra.</summary>
         public FrameBuffer? GetPostProcessBuffer()
             => PostProcessBufferName is not null
-                ? FrameBufferManager.Instance.TryGet(PostProcessBufferName)
+                ? _Scene.SelfRenderScene.Buffers.TryGet(PostProcessBufferName)
                 : null;
 
         /// <summary>
@@ -100,19 +101,19 @@ namespace KrayonCore
         public void ResizeBuffer(int width, int height)
         {
             if (TargetBufferName is not null)
-                FrameBufferManager.Instance.Resize(TargetBufferName, width, height);
+                _Scene.SelfRenderScene.Buffers.Resize(TargetBufferName, width, height);
 
             if (PostProcessBufferName is not null)
-                FrameBufferManager.Instance.Resize(PostProcessBufferName, width, height);
+                _Scene.SelfRenderScene.Buffers.Resize(PostProcessBufferName, width, height);
         }
 
         public void Dispose()
         {
             if (TargetBufferName is not null)
-                FrameBufferManager.Instance.Remove(TargetBufferName);
+                _Scene.SelfRenderScene.Buffers.Remove(TargetBufferName);
 
             if (PostProcessBufferName is not null)
-                FrameBufferManager.Instance.Remove(PostProcessBufferName);
+                _Scene.SelfRenderScene.Buffers.Remove(PostProcessBufferName);
         }
     }
 }

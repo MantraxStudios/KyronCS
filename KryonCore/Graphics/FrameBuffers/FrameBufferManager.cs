@@ -8,10 +8,6 @@ namespace KrayonCore
     /// </summary>
     public sealed class FrameBufferManager : IDisposable
     {
-        // ── Singleton ────────────────────────────────────────────────────────
-        public static FrameBufferManager Instance { get; } = new();
-        private FrameBufferManager() { }
-
         // ── Registro ─────────────────────────────────────────────────────────
         private readonly Dictionary<string, FrameBuffer> _buffers = new();
         private bool _disposed;

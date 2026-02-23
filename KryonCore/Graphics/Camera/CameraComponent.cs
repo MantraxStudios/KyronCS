@@ -236,7 +236,7 @@ namespace KrayonCore.Graphics.Camera
         public void SetAsMain()
         {
             if (_renderCamera is not null)
-                CameraManager.Instance.SetMain(_renderCamera.Name);
+                SelfScene.SelfRenderScene.ManagerCams.SetMain(_renderCamera.Name);
         }
 
         public void ResizeBuffer(int width, int height)
@@ -260,18 +260,19 @@ namespace KrayonCore.Graphics.Camera
         // ── Privados ─────────────────────────────────────────────────────────
         private void CreateAndRegisterCamera()
         {
-            var name = EffectiveName;
+            var name = SelfScene.Name;
 
-            if (CameraManager.Instance.Has(name))
+            if (SelfScene.SelfRenderScene.ManagerCams.Has(name))
             {
                 Console.WriteLine($"[CameraComponent] Cámara '{name}' ya existe, reemplazando");
-                CameraManager.Instance.Remove(name);
+                SelfScene.SelfRenderScene.ManagerCams.Remove(name);
             }
 
             var position = GetPosition();
             var aspectRatio = _aspectRatio > 0 ? _aspectRatio : 16f / 9f;
 
-            _renderCamera = CameraManager.Instance.Create(name, position, aspectRatio, _priority);
+            _renderCamera = SelfScene.SelfRenderScene.ManagerCams.Create(name, position, aspectRatio, _priority);
+            _renderCamera._Scene = SelfScene;
 
             // Aplicar toda la configuración desde los backing fields
             ApplyAllSettings();
@@ -345,7 +346,7 @@ namespace KrayonCore.Graphics.Camera
         {
             if (_renderCamera is null || !_isRegistered) return;
 
-            CameraManager.Instance.Remove(_renderCamera.Name);
+            SelfScene.SelfRenderScene.ManagerCams.Remove(_renderCamera.Name);
             _renderCamera = null;
             _isRegistered = false;
 

@@ -25,7 +25,7 @@ namespace KrayonEditor.UI
         {
             get
             {
-                return Engine.GetSceneRenderer().GetCamera ();
+                return Engine.GetSceneRenderer().GetCamera();
             }
         }
 

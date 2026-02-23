@@ -2,17 +2,10 @@
 
 namespace KrayonCore
 {
-    public sealed class CameraManager
+    public class CameraManager
     {
-        // ── Singleton ────────────────────────────────────────────────────────
-        public static CameraManager Instance { get; } = new();
-        private CameraManager() { }
-
-        // ── Estado ───────────────────────────────────────────────────────────
         private readonly Dictionary<string, RenderCamera> _cameras = new();
         private string? _mainCamera = null;
-
-        // ── API pública ──────────────────────────────────────────────────────
 
         /// <summary>Registra una cámara. La primera registrada se convierte en main.</summary>
         public RenderCamera Add(RenderCamera camera)
@@ -33,7 +26,20 @@ namespace KrayonCore
         /// <summary>Crea y registra una cámara en una sola llamada.</summary>
         public RenderCamera Create(string name, Vector3 position,
             float aspectRatio, int priority = 0)
-            => Add(new RenderCamera(name, position, aspectRatio, priority));
+        {
+            string uniqueName = name;
+            int counter = 1;
+
+            while (_cameras.ContainsKey(uniqueName))
+            {
+                uniqueName = $"{name}_{counter}";
+                counter++;
+            }
+
+            Console.WriteLine($"Camera: { _cameras.Count}");
+
+            return Add(new RenderCamera(uniqueName, position, aspectRatio, priority));
+        }
 
         /// <summary>Obtiene una cámara por nombre. Lanza excepción si no existe.</summary>
         public RenderCamera Get(string name)
@@ -98,6 +104,8 @@ namespace KrayonCore
             _cameras.Clear();
             _mainCamera = null;
         }
+
+        public int Count => _cameras.Count;
 
         public IReadOnlyCollection<string> Names => _cameras.Keys;
     }
