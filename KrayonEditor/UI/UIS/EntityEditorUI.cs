@@ -2,9 +2,6 @@
 using KrayonCore;
 using KrayonCore.Components.RenderComponents;
 using KrayonCore.Graphics.Camera;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Numerics;
 
 namespace KrayonEditor.UI.UIS
@@ -14,6 +11,9 @@ namespace KrayonEditor.UI.UIS
         public GameScene Scene;
         public CameraComponent _Cam;
         private GameObject _selectedObject;
+
+        private bool _firstMouse = true;
+        private float _cameraSpeed = 2.5f;
 
         public override void OnDrawUI()
         {
@@ -32,35 +32,32 @@ namespace KrayonEditor.UI.UIS
         {
             ImGui.SetNextWindowDockID(ImGui.GetID("EntityEditorDock"), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSize(new Vector2(250, 400), ImGuiCond.FirstUseEver);
-
             ImGui.Begin("Entity Hierarchy");
 
             if (ImGui.Button("New Scene"))
             {
                 Scene = SceneManager.CreateScene("Entity Scene");
-                GameObject _OBJ = Scene.CreateGameObject();
-                _OBJ.Name = "Editor Camera";
-                _OBJ.AddComponent<MeshRenderer>().Start();
-                _OBJ.Transform.Position = new OpenTK.Mathematics.Vector3(0, 0, -5);
-                GameObject _CAM = Scene.CreateGameObject();
-                _Cam = _CAM.AddComponent<CameraComponent>();
+
+                GameObject obj = Scene.CreateGameObject();
+                obj.Name = "Editor Camera";
+                obj.AddComponent<MeshRenderer>().Start();
+                obj.Transform.Position = new OpenTK.Mathematics.Vector3(0, 0, -5);
+
+                GameObject camObj = Scene.CreateGameObject();
+                _Cam = camObj.AddComponent<CameraComponent>();
                 _Cam.Start();
-                _CAM.Transform.Position = new OpenTK.Mathematics.Vector3(0, 0, 5);
+                camObj.Transform.Position = new OpenTK.Mathematics.Vector3(0, 0, 5);
             }
 
             if (Scene != null)
             {
-                ImGuiTreeNodeFlags sceneFlags = ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanAvailWidth;
+                var sceneFlags = ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanAvailWidth;
                 if (ImGui.TreeNodeEx($"{Scene.Name}##scene", sceneFlags))
                 {
-                    var allObjects = Scene.GetAllGameObjects();
-                    foreach (var go in allObjects)
+                    foreach (var go in Scene.GetAllGameObjects())
                     {
-                        if (_Cam.GameObject != go)
-                        {
-                            if (go.Transform.Parent == null)
-                                DrawGameObjectNode(go);
-                        }
+                        if (_Cam.GameObject != go && go.Transform.Parent == null)
+                            DrawGameObjectNode(go);
                     }
                     ImGui.TreePop();
                 }
@@ -73,13 +70,10 @@ namespace KrayonEditor.UI.UIS
         {
             bool isSelected = _selectedObject == go;
             bool hasChildren = go.Transform.Children.Count > 0;
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.SpanAvailWidth;
 
-            if (isSelected)
-                flags |= ImGuiTreeNodeFlags.Selected;
-
-            if (!hasChildren)
-                flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
+            var flags = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.SpanAvailWidth;
+            if (isSelected) flags |= ImGuiTreeNodeFlags.Selected;
+            if (!hasChildren) flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
 
             bool nodeOpen = ImGui.TreeNodeEx($"{go.Name}##{go.Id.GetHashCode()}", flags);
 
@@ -97,7 +91,6 @@ namespace KrayonEditor.UI.UIS
         private void DrawViewport()
         {
             ImGui.SetNextWindowDockID(ImGui.GetID("EntityEditorDock"), ImGuiCond.FirstUseEver);
-
             ImGui.Begin("Entity Viewport");
 
             if (Scene != null && _Cam != null)
@@ -105,7 +98,8 @@ namespace KrayonEditor.UI.UIS
                 var viewportSize = ImGui.GetContentRegionAvail();
                 var fb = _Cam.RenderCamera.GetFinalTextureId(false);
 
-                if (_Cam.RenderCamera.ViewportWidth != (int)viewportSize.X || _Cam.RenderCamera.ViewportHeight != (int)viewportSize.Y)
+                if (_Cam.RenderCamera.ViewportWidth != (int)viewportSize.X ||
+                    _Cam.RenderCamera.ViewportHeight != (int)viewportSize.Y)
                 {
                     _Cam.ResizeBuffer((int)viewportSize.X, (int)viewportSize.Y);
                     _Cam.RenderCamera.Camera.UpdateAspectRatio((int)viewportSize.X, (int)viewportSize.Y);
@@ -115,16 +109,51 @@ namespace KrayonEditor.UI.UIS
                 ImGui.Image(fb, viewportSize, new Vector2(0, 1), new Vector2(1, 0));
                 bool isHovered = ImGui.IsItemHovered();
 
+                if (isHovered)
+                    HandleCameraInput();
+
                 DrawGizmo(cursorPos, viewportSize, isHovered);
             }
 
             ImGui.End();
         }
 
+        private void HandleCameraInput()
+        {
+            if (_Cam?.RenderCamera?.Camera is null) return;
+
+            var io = ImGui.GetIO();
+            var camera = _Cam.RenderCamera.Camera;
+            float dt = io.DeltaTime;
+
+            if (ImGui.IsMouseDown(ImGuiMouseButton.Right))
+            {
+                Vector2 delta = io.MouseDelta;
+                if (!_firstMouse)
+                    camera.Rotate(delta.X, -delta.Y);
+                _firstMouse = false;
+
+                float speed = _cameraSpeed * dt * (io.KeyCtrl ? 2.0f : 1.0f);
+
+                if (ImGui.IsKeyDown(ImGuiKey.W)) camera.Move(CameraMovement.Forward, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.S)) camera.Move(CameraMovement.Backward, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.A)) camera.Move(CameraMovement.Left, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.D)) camera.Move(CameraMovement.Right, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.Space)) camera.Move(CameraMovement.Up, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.LeftShift)) camera.Move(CameraMovement.Down, speed);
+            }
+            else
+            {
+                _firstMouse = true;
+            }
+
+            if (io.MouseWheel != 0)
+                camera.Zoom(io.MouseWheel);
+        }
+
         private void DrawGizmo(Vector2 cursorPos, Vector2 viewportSize, bool isHovered)
         {
-            if (_selectedObject == null || _Cam == null || !isHovered)
-                return;
+            if (_selectedObject == null || _Cam == null || !isHovered) return;
 
             var transform = new GizmoTransform(
                 _selectedObject.Transform.GetWorldPosition(),

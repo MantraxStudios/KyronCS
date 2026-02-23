@@ -583,7 +583,7 @@ namespace KrayonEditor.UI
 
             EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, MainCamera);
 
-            if (EditorActions.SelectedObject != null && MainCamera != null)
+            if (EditorActions.SelectedObject != null && MainCamera != null && EditorActions.IsHoveringScene)
             {
                 var transform = new GizmoTransform(
                     EditorActions.SelectedObject.Transform.GetWorldPosition(),
