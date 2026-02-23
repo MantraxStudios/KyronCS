@@ -10,13 +10,13 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1bde2054-f5a8-4928-918d-ebaefcb3d59e",
+          "ComponentId": "10f0bca7-4510-4447-9da7-af93433cf8ef",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
-              "y": 0,
+              "y": -0.031935833,
               "z": 0
             },
             "Rotation": {
@@ -36,7 +36,107 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "f63b2b4e-424a-4f3b-9169-8d858d7f7c5a",
+          "ComponentId": "0ebb76d1-6ecd-4ec5-a8f7-ec95659e26cb",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Light"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "0ca53094-a35c-476b-b5e6-50b34376339d",
+      "Name": "Cube_0 (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "dc85bef6-98aa-4bf3-ab64-335849eee186",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": -0.031935833,
+              "z": 1.6138288
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "a023430d-c4ae-40b8-9d3d-672a56b11642",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "Light"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Id": "27f06b17-f856-4744-9254-141f01f22532",
+      "Name": "Cube_0 (Clone) (Clone)",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "7b411e47-9ac9-4f54-8948-14b9c8816ea9",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 1.6620638,
+              "y": -0.031935833,
+              "z": 1.6138288
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "a9777141-2343-4612-80d3-78ec4ba51689",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",

@@ -40,46 +40,38 @@ namespace KrayonCore
 
         public GameObject Clone(bool cloneChildren = true)
         {
-            GameObject clone = new GameObject(this.Name + " (Clone)");
-            clone.Tag = this.Tag;
-            clone.Active = this.Active;
+            GameObject clone = new GameObject(Name + " (Clone)");
+            clone.Tag = Tag;
+            clone.Active = Active;
 
-            clone.Transform.SetPosition(
-                this.Transform.X,
-                this.Transform.Y,
-                this.Transform.Z
-            );
-            clone.Transform.SetRotation(
-                this.Transform.RotationX,
-                this.Transform.RotationY,
-                this.Transform.RotationZ
-            );
-            clone.Transform.SetScale(
-                this.Transform.ScaleX,
-                this.Transform.ScaleY,
-                this.Transform.ScaleZ
-            );
+            clone.Transform.SetPosition(Transform.X, Transform.Y, Transform.Z);
+            clone.Transform.SetRotation(Transform.RotationX, Transform.RotationY, Transform.RotationZ);
+            clone.Transform.SetScale(Transform.ScaleX, Transform.ScaleY, Transform.ScaleZ);
 
             foreach (var component in _componentsList)
             {
-                if (component is Transform)
-                    continue;
-
+                if (component is Transform) continue;
                 CloneComponent(component, clone);
             }
 
             if (cloneChildren)
             {
-                foreach (var child in this.Transform.Children)
+                foreach (var child in Transform.Children)
                 {
-                    GameObject childClone = child.GameObject.Clone(true);
+                    var childClone = child.GameObject.Clone(true);
                     childClone.Transform.SetParent(clone.Transform, false);
                 }
             }
 
+            // Primero agregar a la escena para que SelfScene y Scene estén asignados
             if (SceneManager.PrimaryScene != null)
-            {
                 SceneManager.PrimaryScene.AddGameObject(clone);
+
+            // Ahora sí disparar Awake con SelfScene válido
+            foreach (var component in clone.GetAllComponents())
+            {
+                if (component is Transform) continue;
+                component.Awake();
             }
 
             return clone;
@@ -89,58 +81,35 @@ namespace KrayonCore
         {
             Type componentType = original.GetType();
 
-            Component newComponent = target.AddComponent(componentType);
+            // Usar sin Awake para que SelfScene esté asignado cuando se llame
+            Component newComponent = target.AddComponentWithoutAwake(componentType);
 
-            PropertyInfo[] properties = componentType.GetProperties(
-                BindingFlags.Public | BindingFlags.Instance
-            );
-
+            var properties = componentType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             foreach (var property in properties)
             {
-                if (!property.CanWrite ||
-                    !property.CanRead ||
-                    property.Name == "GameObject" ||
-                    property.Name == "Transform")
-                    continue;
-
+                if (!property.CanWrite || !property.CanRead ||
+                    property.Name == "GameObject" || property.Name == "Transform") continue;
                 try
                 {
                     object value = property.GetValue(original);
-
                     if (value != null && IsCloneableType(property.PropertyType))
-                    {
                         value = DeepCloneValue(value);
-                    }
-
                     property.SetValue(newComponent, value);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error copying property {property.Name}: {ex.Message}");
-                }
+                catch (Exception ex) { Console.WriteLine($"Error copying property {property.Name}: {ex.Message}"); }
             }
 
-            FieldInfo[] fields = componentType.GetFields(
-                BindingFlags.Public | BindingFlags.Instance
-            );
-
+            var fields = componentType.GetFields(BindingFlags.Public | BindingFlags.Instance);
             foreach (var field in fields)
             {
                 try
                 {
                     object value = field.GetValue(original);
-
                     if (value != null && IsCloneableType(field.FieldType))
-                    {
                         value = DeepCloneValue(value);
-                    }
-
                     field.SetValue(newComponent, value);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error copying field {field.Name}: {ex.Message}");
-                }
+                catch (Exception ex) { Console.WriteLine($"Error copying field {field.Name}: {ex.Message}"); }
             }
         }
 
