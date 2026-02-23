@@ -1,26 +1,12 @@
 #version 330 core
 
-#include "includes/ssao.glsl"
-
 out vec4 FragColor;
 
 in vec2 TexCoord;
 
 uniform sampler2D u_ScreenTexture;
 uniform sampler2D u_EmissionTexture;
-uniform sampler2D u_PositionTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_NoiseTexture;
 
-uniform vec3  u_SSAOKernel[64];
-uniform int   u_SSAOKernelSize;
-uniform float u_SSAORadius;
-uniform float u_SSAOBias;
-uniform float u_SSAOPower;
-uniform int   u_SSAOEnabled;
-
-uniform mat4  u_Projection;
-uniform mat4  u_View;
 uniform vec2  u_Resolution;
 uniform float u_Time;
 
@@ -128,10 +114,10 @@ vec3 ApplyBloom(vec2 uv)
 
 vec3 ApplyGrain(vec3 color, vec2 uv)
 {
-    float frame    = floor(u_Time * 24.0);
-    vec2  grainUV  = floor(uv * u_Resolution / max(u_GrainSize, 0.5));
-    float noise    = rand(grainUV + vec2(frame * 0.8143, frame * 0.5891)) * 2.0 - 1.0;
-    float lumResp  = sqrt(max(luma(color) - luma(color) * luma(color), 0.0)) * 3.5;
+    float frame   = floor(u_Time * 24.0);
+    vec2  grainUV = floor(uv * u_Resolution / max(u_GrainSize, 0.5));
+    float noise   = rand(grainUV + vec2(frame * 0.8143, frame * 0.5891)) * 2.0 - 1.0;
+    float lumResp = sqrt(max(luma(color) - luma(color) * luma(color), 0.0)) * 3.5;
     return color + noise * u_GrainIntensity * lumResp;
 }
 
@@ -141,39 +127,14 @@ void main()
 
     if (u_PostProcessEnabled == 1)
     {
-        if (u_SSAOEnabled == 1)
-        {
-            float ao = CalculateSSAO(
-                TexCoord,
-                u_PositionTexture,
-                u_NormalTexture,
-                u_NoiseTexture,
-                u_SSAOKernel,
-                u_SSAOKernelSize,
-                u_SSAORadius,
-                u_SSAOBias,
-                u_Projection,
-                u_Resolution
-            );
-            ao     = pow(clamp(ao, 0.0, 1.0), u_SSAOPower);
-            color *= ao;
-        }
-
         if (u_BloomEnabled == 1)
-        {
-            vec3 bloom = ApplyBloom(TexCoord);
-            color += bloom;
-        }
+            color += ApplyBloom(TexCoord);
 
         if (u_ColorCorrectionEnabled == 1)
-        {
             color = ApplyColorCorrection(color);
-        }
 
         if (u_GrainEnabled == 1)
-        {
             color = ApplyGrain(color, TexCoord);
-        }
     }
 
     FragColor = vec4(color, 1.0);

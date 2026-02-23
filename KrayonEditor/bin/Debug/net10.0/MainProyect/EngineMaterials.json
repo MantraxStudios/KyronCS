@@ -786,7 +786,7 @@
       "MetallicTextureGUID": null,
       "RoughnessTextureGUID": null,
       "AOTextureGUID": null,
-      "EmissiveTextureGUID": null,
+      "EmissiveTextureGUID": "c2d7572c-7d5e-4d0a-9f03-23424442699d",
       "AlbedoColor": {
         "X": 1.0,
         "Y": 1.0,
@@ -805,7 +805,7 @@
       "UseMetallicMap": false,
       "UseRoughnessMap": false,
       "UseAOMap": false,
-      "UseEmissiveMap": false,
+      "UseEmissiveMap": true,
       "NormalMapIntensity": 1.0,
       "AmbientLight": {
         "X": 0.03,
@@ -2468,6 +2468,43 @@
       "UseAlbedoMap": true,
       "UseNormalMap": true,
       "UseMetallicMap": true,
+      "UseRoughnessMap": false,
+      "UseAOMap": false,
+      "UseEmissiveMap": false,
+      "NormalMapIntensity": 1.0,
+      "AmbientLight": {
+        "X": 0.03,
+        "Y": 0.03,
+        "Z": 0.03
+      },
+      "AmbientStrength": 1.0
+    },
+    "fullscreen": {
+      "Name": "fullscreen",
+      "VertexShaderGUID": "1e6bf414-5684-458e-8d8b-4e9761dfa320",
+      "FragmentShaderGUID": "ddcb17f8-2875-4229-a74f-63353d482808",
+      "AlbedoTextureGUID": null,
+      "NormalTextureGUID": null,
+      "MetallicTextureGUID": null,
+      "RoughnessTextureGUID": null,
+      "AOTextureGUID": null,
+      "EmissiveTextureGUID": null,
+      "AlbedoColor": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "Metallic": 0.0,
+      "Roughness": 0.5,
+      "AO": 1.0,
+      "EmissiveColor": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "UseAlbedoMap": false,
+      "UseNormalMap": false,
+      "UseMetallicMap": false,
       "UseRoughnessMap": false,
       "UseAOMap": false,
       "UseEmissiveMap": false,
