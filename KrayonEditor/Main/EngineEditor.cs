@@ -1,6 +1,6 @@
 ﻿using ImGuiNET;
 using KrayonCore;
-using KrayonCore.Components.Components;
+using KrayonCore.Components;
 using KrayonCore.Components.RenderComponents;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Core.Components;

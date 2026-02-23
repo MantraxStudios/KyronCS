@@ -39,6 +39,8 @@ namespace KrayonEditor.UI
                 ImGui.TextUnformatted("No object selected");
             }
 
+            ComponentInspector.DrawAssetPickerModal();
+
             ImGui.End();
 
             if (EditorActions.SelectedObject != null &&

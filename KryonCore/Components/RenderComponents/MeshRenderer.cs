@@ -29,7 +29,7 @@ namespace KrayonCore.Components.RenderComponents
             }
         }
 
-        [ToStorage]
+        [ToStorage, MaterialRef]
         public string[] MaterialPaths { get; set; } = new string[0];
 
         [NoSerializeToInspector] private Model? _model;
@@ -53,6 +53,11 @@ namespace KrayonCore.Components.RenderComponents
                     if (!string.IsNullOrEmpty(MaterialPaths[i]))
                     {
                         materials[i] = GraphicsEngine.Instance.Materials.Get(MaterialPaths[i]);
+                    }
+
+                    if (materials[i] == null && i == 0)
+                    {
+                        materials[i] = GraphicsEngine.Instance.Materials.Get("basic");
                     }
                 }
                 return materials;
@@ -86,6 +91,11 @@ namespace KrayonCore.Components.RenderComponents
             if (SelfScene == null)
             {
                 Console.WriteLine($"La Escena Fue Null: {GraphicsEngine.Instance.SceneRenderers.Count}");
+            }
+
+            if (SelfScene.SelfRenderScene == null)
+            {
+                Console.WriteLine($"La Escena Render Fue Null: {GraphicsEngine.Instance.SceneRenderers.Count}");
             }
 
             SelfScene.SelfRenderScene.RegisterRenderer(this);

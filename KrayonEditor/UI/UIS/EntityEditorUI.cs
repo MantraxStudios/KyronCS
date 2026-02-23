@@ -151,11 +151,11 @@ namespace KrayonEditor.UI.UIS
             if (_selectedObject == null)
             {
                 ImGui.TextDisabled("No object selected.");
+                ComponentInspector.DrawAssetPickerModal();
                 ImGui.End();
                 return;
             }
 
-            // ── Header ──
             float avail = ImGui.GetContentRegionAvail().X;
             float tagW = 90f;
             float nameW = avail - tagW - ImGui.GetStyle().ItemSpacing.X;
@@ -177,18 +177,16 @@ namespace KrayonEditor.UI.UIS
 
             ImGui.Separator();
 
-            // ── Transform ──
             ComponentInspector.DrawTransform(_selectedObject.Transform);
 
             ImGui.Separator();
             ImGui.Spacing();
 
-            // ── Componentes ──
             var components = _selectedObject.GetAllComponents().ToList();
             int idx = 0;
             foreach (var component in components)
             {
-                if (component is KrayonCore.Components.Components.Transform) { idx++; continue; }
+                if (component is KrayonCore.Components.Transform) { idx++; continue; }
                 ImGui.PushID($"comp_{idx}");
                 ComponentInspector.DrawComponentWithReflection(component, _selectedObject);
                 ImGui.PopID();
@@ -198,8 +196,9 @@ namespace KrayonEditor.UI.UIS
             ImGui.Spacing();
             ImGui.Separator();
 
-            // ── Add Component ──
             ComponentInspector.DrawAddComponentButton(_selectedObject);
+
+            ComponentInspector.DrawAssetPickerModal();
 
             ImGui.End();
         }

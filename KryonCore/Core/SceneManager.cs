@@ -360,6 +360,17 @@ namespace KrayonCore
             Console.WriteLine($"Se cargaron {sceneFiles.Length} escenas desde '{directoryPath}'");
         }
 
+        public static GameScene LoadSceneOnlyFromBytes(byte[] sceneBytes, SceneRenderer RenderScene)
+        {
+            if (sceneBytes == null || sceneBytes.Length == 0)
+            {
+                Console.WriteLine("Error: Los bytes de la escena son inválidos");
+                return null;
+            }
+
+            return SceneSaveSystem.LoadScene(sceneBytes, RenderScene);
+        }
+
         #endregion
     }
 }

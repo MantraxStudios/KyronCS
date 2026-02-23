@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using KrayonCore.GraphicsData;
-using KrayonCore.Components.Components;
+using KrayonCore.Components;
 
 namespace KrayonCore.Components.RenderComponents
 {

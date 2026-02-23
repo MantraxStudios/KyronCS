@@ -32,8 +32,9 @@ namespace KrayonCore
 
         public Camera GetMainCamera { get { return Cameras[0]; } }
         public SceneRenderer SelfRenderScene;
+        protected bool ItsMyRenderScene = false;
 
-        public GameScene(string name)
+        public GameScene(string name, SceneRenderer RenderScene = null)
         {
             Id = Guid.NewGuid();
             Name = name;
@@ -43,7 +44,17 @@ namespace KrayonCore
             IsLoaded = false;
 
             _physicsWorld = new WorldPhysic();
-            SelfRenderScene = GraphicsEngine.Instance.AddSceneRenderer();
+
+            if (RenderScene == null)
+            {
+                SelfRenderScene = GraphicsEngine.Instance.AddSceneRenderer();
+                ItsMyRenderScene = true;
+            }
+            else
+            {
+                SelfRenderScene = RenderScene;
+                ItsMyRenderScene = false;
+            }
         }
 
         public GameObject CreateGameObject(string name = "GameObject")
@@ -382,7 +393,8 @@ namespace KrayonCore
             _physicsWorld?.Dispose();
             _physicsWorld = null;
 
-            GraphicsEngine.Instance.RemoveSceneRenderer(SelfRenderScene);
+            if (ItsMyRenderScene)
+                GraphicsEngine.Instance.RemoveSceneRenderer(SelfRenderScene);
 
             Console.WriteLine("-*-***-*-*-*-*-*-*-*-*-*-*-Limpiando Render");
         }

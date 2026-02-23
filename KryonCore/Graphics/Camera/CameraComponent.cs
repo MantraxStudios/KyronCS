@@ -1,4 +1,4 @@
-﻿using KrayonCore.Components.Components;
+﻿using KrayonCore.Components;
 using KrayonCore.Core;
 using KrayonCore.Graphics.FrameBuffers;
 using KrayonCore.GraphicsData;

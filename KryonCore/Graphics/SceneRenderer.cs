@@ -1,5 +1,5 @@
 using KrayonCore.Animation;
-using KrayonCore.Components.Components;
+using KrayonCore.Components;
 using KrayonCore.Components.RenderComponents;
 using KrayonCore.Core.Rendering;
 using KrayonCore.Graphics.FrameBuffers;

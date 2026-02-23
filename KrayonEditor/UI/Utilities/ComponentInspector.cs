@@ -7,6 +7,7 @@ using KrayonCore.Core.Components;
 using KrayonEditor.Main;
 using System;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Reflection;
 
@@ -15,6 +16,21 @@ namespace KrayonEditor.UI
     public static class ComponentInspector
     {
         private const float LabelColumnWidth = 148f;
+
+        private static string _pickerSearch = "";
+        private static Action<string>? _pickerCallback = null;
+        private static string? _pickerFilterType = null;
+        private static string _pickerPopupId = "##AssetPickerModal";
+        private static string? _pickerPendingLabel = null;
+        private static string? _pickerPendingResult = null;
+        private static bool _pickerWantsOpen = false;
+
+        private static string _matPickerSearch = "";
+        private static Action<string>? _matPickerCallback = null;
+        private static string _matPickerPopupId = "##MatPickerModal";
+        private static string? _matPickerPendingLabel = null;
+        private static string? _matPickerPendingResult = null;
+        private static bool _matPickerWantsOpen = false;
 
         public static void BeginFieldRow(string label)
         {
@@ -53,8 +69,270 @@ namespace KrayonEditor.UI
             return value;
         }
 
-        public static string DrawAssetStringField(string label, string rawValue)
+        private static void OpenAssetPicker(Action<string> onSelected, string? filterType = null)
         {
+            _pickerSearch = "";
+            _pickerCallback = onSelected;
+            _pickerFilterType = filterType;
+            _pickerWantsOpen = true;
+        }
+
+        private static void OpenMaterialPicker(string label, Action<string> onSelected)
+        {
+            _matPickerSearch = "";
+            _matPickerCallback = onSelected;
+            _matPickerWantsOpen = true;
+        }
+
+        public static string DrawMaterialStringField(string label, string currentName)
+        {
+            if (_matPickerPendingLabel == label && _matPickerPendingResult != null)
+            {
+                currentName = _matPickerPendingResult;
+                _matPickerPendingLabel = null;
+                _matPickerPendingResult = null;
+            }
+
+            bool hasMat = !string.IsNullOrEmpty(currentName);
+
+            float clearW = 20f;
+            float spacing = ImGui.GetStyle().ItemSpacing.X;
+            float fieldW = ImGui.GetContentRegionAvail().X - LabelColumnWidth - clearW - spacing;
+            if (fieldW < 40f) fieldW = 40f;
+
+            ImGui.Text(label);
+            ImGui.SameLine(LabelColumnWidth);
+
+            var dl = ImGui.GetWindowDrawList();
+            var pos = ImGui.GetCursorScreenPos();
+            float h = ImGui.GetFrameHeight();
+
+            uint bgCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg]);
+            uint bgHov = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered]);
+            uint brCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Border]);
+            uint dotCol = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.5f, 0.1f, 1f));
+            uint txtCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]);
+            uint dimCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.TextDisabled]);
+
+            bool hovered = ImGui.IsMouseHoveringRect(pos, new Vector2(pos.X + fieldW, pos.Y + h));
+
+            dl.AddRectFilled(pos, new Vector2(pos.X + fieldW, pos.Y + h), hovered ? bgHov : bgCol, 3f);
+            dl.AddRect(pos, new Vector2(pos.X + fieldW, pos.Y + h), brCol, 3f);
+
+            if (hasMat)
+            {
+                dl.AddCircleFilled(new Vector2(pos.X + h * 0.5f, pos.Y + h * 0.5f), h * 0.20f, dotCol);
+                string txt = currentName;
+                float maxTW = fieldW - h * 0.9f - 4f;
+                while (txt.Length > 4 && ImGui.CalcTextSize(txt).X > maxTW)
+                    txt = txt[..^4] + "...";
+                dl.AddText(new Vector2(pos.X + h * 0.9f, pos.Y + (h - ImGui.GetTextLineHeight()) * 0.5f), txtCol, txt);
+            }
+            else
+            {
+                string ptxt = "None (click to select)";
+                float maxTW = fieldW - 8f;
+                while (ptxt.Length > 4 && ImGui.CalcTextSize(ptxt).X > maxTW)
+                    ptxt = ptxt[..^4] + "...";
+                dl.AddText(new Vector2(pos.X + 5f, pos.Y + (h - ImGui.GetTextLineHeight()) * 0.5f), dimCol, ptxt);
+            }
+
+            ImGui.InvisibleButton($"##matfield_{label}", new Vector2(fieldW, h));
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                ImGui.SetTooltip(hasMat ? currentName : "Click to select material");
+            }
+
+            if (ImGui.IsItemClicked())
+            {
+                string capturedLabel = label;
+                OpenMaterialPicker(label, name =>
+                {
+                    _matPickerPendingLabel = capturedLabel;
+                    _matPickerPendingResult = name;
+                });
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button($"x##{label}_matclr", new Vector2(clearW, h)))
+                currentName = "";
+
+            return currentName;
+        }
+
+        public static void DrawAssetPickerModal()
+        {
+            if (_pickerWantsOpen)
+            {
+                ImGui.OpenPopup(_pickerPopupId);
+                _pickerWantsOpen = false;
+            }
+
+            if (_matPickerWantsOpen)
+            {
+                ImGui.OpenPopup(_matPickerPopupId);
+                _matPickerWantsOpen = false;
+            }
+
+            ImGui.SetNextWindowSize(new Vector2(440, 520), ImGuiCond.Appearing);
+            ImGui.SetNextWindowPos(
+                new Vector2(ImGui.GetIO().DisplaySize.X * 0.5f, ImGui.GetIO().DisplaySize.Y * 0.5f),
+                ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+
+            bool open = true;
+            if (ImGui.BeginPopupModal(_pickerPopupId, ref open,
+                ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.TextUnformatted("Select Asset");
+                ImGui.SameLine(ImGui.GetContentRegionAvail().X - 22f);
+                if (ImGui.Button("x##closepicker", new Vector2(22f, 0f)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                ImGui.SetNextItemWidth(-1f);
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+                ImGui.InputTextWithHint("##pickersearch", "Search by name...", ref _pickerSearch, 256);
+                ImGui.Spacing();
+
+                var assets = AssetManager.All()
+                    .Where(a =>
+                        (_pickerFilterType == null || a.Type == _pickerFilterType) &&
+                        (string.IsNullOrEmpty(_pickerSearch) ||
+                         Path.GetFileName(a.Path).Contains(_pickerSearch, StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(a => a.Type)
+                    .ThenBy(a => Path.GetFileName(a.Path))
+                    .ToList();
+
+                if (ImGui.BeginChild("##pickerlist", new Vector2(-1f, -36f)))
+                {
+                    string? lastType = null;
+                    foreach (var asset in assets)
+                    {
+                        if (asset.Type != lastType)
+                        {
+                            if (lastType != null) ImGui.Spacing();
+                            ImGui.TextDisabled(asset.Type);
+                            ImGui.Separator();
+                            lastType = asset.Type;
+                        }
+
+                        string fileName = Path.GetFileName(asset.Path);
+                        string dir = Path.GetDirectoryName(asset.Path)?.Replace("\\", "/") ?? "";
+
+                        bool sel = false;
+                        if (ImGui.Selectable($"{fileName}##{asset.Guid}", ref sel))
+                        {
+                            _pickerCallback?.Invoke(asset.Guid.ToString());
+                            ImGui.CloseCurrentPopup();
+                        }
+
+                        if (ImGui.IsItemHovered())
+                            ImGui.SetTooltip(string.IsNullOrEmpty(dir) ? fileName : $"{dir}/{fileName}");
+                    }
+
+                    if (assets.Count == 0)
+                    {
+                        ImGui.Spacing();
+                        ImGui.TextDisabled(string.IsNullOrEmpty(_pickerSearch)
+                            ? "No assets found."
+                            : $"No results for \"{_pickerSearch}\"");
+                    }
+
+                    ImGui.EndChild();
+                }
+
+                ImGui.Spacing();
+                if (ImGui.Button("Cancel", new Vector2(-1f, 0f)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+
+            ImGui.SetNextWindowSize(new Vector2(440, 520), ImGuiCond.Appearing);
+            ImGui.SetNextWindowPos(
+                new Vector2(ImGui.GetIO().DisplaySize.X * 0.5f, ImGui.GetIO().DisplaySize.Y * 0.5f),
+                ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+
+            bool matOpen = true;
+            if (ImGui.BeginPopupModal(_matPickerPopupId, ref matOpen,
+                ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove))
+            {
+                ImGui.TextUnformatted("Select Material");
+                ImGui.SameLine(ImGui.GetContentRegionAvail().X - 22f);
+                if (ImGui.Button("x##closematpicker", new Vector2(22f, 0f)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                ImGui.SetNextItemWidth(-1f);
+                if (ImGui.IsWindowAppearing())
+                    ImGui.SetKeyboardFocusHere();
+                ImGui.InputTextWithHint("##matpickersearch", "Search by name...", ref _matPickerSearch, 256);
+                ImGui.Spacing();
+
+                var materials = GraphicsEngine.Instance.Materials.GetAll()
+                    .Where(m => string.IsNullOrEmpty(_matPickerSearch) ||
+                                m.Name.Contains(_matPickerSearch, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(m => m.Name)
+                    .ToList();
+
+                if (ImGui.BeginChild("##matpickerlist", new Vector2(-1f, -36f)))
+                {
+                    ImGui.TextDisabled("Materials");
+                    ImGui.Separator();
+                    ImGui.Spacing();
+
+                    bool noneSel = false;
+                    if (ImGui.Selectable("None##matnone", ref noneSel))
+                    {
+                        _matPickerCallback?.Invoke("");
+                        ImGui.CloseCurrentPopup();
+                    }
+
+                    foreach (var mat in materials)
+                    {
+                        bool sel = false;
+                        if (ImGui.Selectable($"{mat.Name}##mat_{mat.Name}", ref sel))
+                        {
+                            _matPickerCallback?.Invoke(mat.Name);
+                            ImGui.CloseCurrentPopup();
+                        }
+                    }
+
+                    if (materials.Count == 0)
+                    {
+                        ImGui.Spacing();
+                        ImGui.TextDisabled(string.IsNullOrEmpty(_matPickerSearch)
+                            ? "No materials found."
+                            : $"No results for \"{_matPickerSearch}\"");
+                    }
+
+                    ImGui.EndChild();
+                }
+
+                ImGui.Spacing();
+                if (ImGui.Button("Cancel", new Vector2(-1f, 0f)))
+                    ImGui.CloseCurrentPopup();
+
+                ImGui.EndPopup();
+            }
+        }
+
+        public static string DrawAssetStringField(string label, string rawValue, string? filterType = null)
+        {
+            if (_pickerPendingLabel == label && _pickerPendingResult != null)
+            {
+                rawValue = _pickerPendingResult;
+                _pickerPendingLabel = null;
+                _pickerPendingResult = null;
+            }
+
             bool isGuid = Guid.TryParse(rawValue, out _);
             string resolved = ResolveGuidLabel(rawValue);
             bool hasAsset = isGuid && resolved != rawValue;
@@ -67,73 +345,86 @@ namespace KrayonEditor.UI
             ImGui.Text(label);
             ImGui.SameLine(LabelColumnWidth);
 
+            var dl = ImGui.GetWindowDrawList();
+            var pos = ImGui.GetCursorScreenPos();
+            float h = ImGui.GetFrameHeight();
+
+            uint bgCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg]);
+            uint bgHov = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered]);
+            uint brCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Border]);
+            uint dotCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.CheckMark]);
+            uint txtCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]);
+            uint dimCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.TextDisabled]);
+
+            bool hovered = ImGui.IsMouseHoveringRect(pos, new Vector2(pos.X + fieldW, pos.Y + h));
+
+            dl.AddRectFilled(pos, new Vector2(pos.X + fieldW, pos.Y + h), hovered ? bgHov : bgCol, 3f);
+            dl.AddRect(pos, new Vector2(pos.X + fieldW, pos.Y + h), brCol, 3f);
+
             if (hasAsset)
             {
-                var dl = ImGui.GetWindowDrawList();
-                var pos = ImGui.GetCursorScreenPos();
-                float h = ImGui.GetFrameHeight();
-
-                uint bgCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg]);
-                uint brCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Border]);
-                uint dotCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.CheckMark]);
-                uint txtCol = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Text]);
-
-                dl.AddRectFilled(pos, new Vector2(pos.X + fieldW, pos.Y + h), bgCol, 3f);
-                dl.AddRect(pos, new Vector2(pos.X + fieldW, pos.Y + h), brCol, 3f);
                 dl.AddCircleFilled(new Vector2(pos.X + h * 0.5f, pos.Y + h * 0.5f), h * 0.20f, dotCol);
-
                 string txt = resolved;
                 float maxTW = fieldW - h * 0.9f - 4f;
                 while (txt.Length > 4 && ImGui.CalcTextSize(txt).X > maxTW)
                     txt = txt[..^4] + "...";
                 dl.AddText(new Vector2(pos.X + h * 0.9f, pos.Y + (h - ImGui.GetTextLineHeight()) * 0.5f), txtCol, txt);
-
-                ImGui.InvisibleButton($"##asset_{label}", new Vector2(fieldW, h));
-                if (ImGui.IsItemHovered()) { ImGui.SetMouseCursor(ImGuiMouseCursor.Hand); ImGui.SetTooltip($"{resolved}\n{rawValue}"); }
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
-                        if (payload.NativePtr != null)
-                        {
-                            byte[] d = new byte[payload.DataSize];
-                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, d, 0, payload.DataSize);
-                            rawValue = System.Text.Encoding.UTF8.GetString(d);
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
-
-                ImGui.SameLine();
-                if (ImGui.Button($"x##{label}_clr", new Vector2(clearW, h))) rawValue = "";
             }
             else
             {
-                ImGui.SetNextItemWidth(fieldW + clearW + spacing);
-                ImGui.InputText($"##{label}_in", ref rawValue, 512);
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
-                        if (payload.NativePtr != null)
-                        {
-                            byte[] d = new byte[payload.DataSize];
-                            System.Runtime.InteropServices.Marshal.Copy(payload.Data, d, 0, payload.DataSize);
-                            rawValue = System.Text.Encoding.UTF8.GetString(d);
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
+                string placeholder = string.IsNullOrEmpty(rawValue) ? "None (click to select)" : rawValue;
+                uint col = string.IsNullOrEmpty(rawValue) ? dimCol : txtCol;
+                string ptxt = placeholder;
+                float maxTW = fieldW - 8f;
+                while (ptxt.Length > 4 && ImGui.CalcTextSize(ptxt).X > maxTW)
+                    ptxt = ptxt[..^4] + "...";
+                dl.AddText(new Vector2(pos.X + 5f, pos.Y + (h - ImGui.GetTextLineHeight()) * 0.5f), col, ptxt);
             }
+
+            ImGui.InvisibleButton($"##assetfield_{label}", new Vector2(fieldW, h));
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                if (hasAsset)
+                    ImGui.SetTooltip($"{resolved}\n{rawValue}");
+                else
+                    ImGui.SetTooltip("Click to select asset");
+            }
+
+            if (ImGui.IsItemClicked())
+            {
+                string capturedLabel = label;
+                OpenAssetPicker(guid =>
+                {
+                    _pickerPendingLabel = capturedLabel;
+                    _pickerPendingResult = guid;
+                }, filterType);
+            }
+
+            if (ImGui.BeginDragDropTarget())
+            {
+                unsafe
+                {
+                    var payload = ImGui.AcceptDragDropPayload("ASSET_PATH");
+                    if (payload.NativePtr != null)
+                    {
+                        byte[] d = new byte[payload.DataSize];
+                        System.Runtime.InteropServices.Marshal.Copy(payload.Data, d, 0, payload.DataSize);
+                        rawValue = System.Text.Encoding.UTF8.GetString(d);
+                    }
+                }
+                ImGui.EndDragDropTarget();
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button($"x##{label}_clr", new Vector2(clearW, h)))
+                rawValue = "";
 
             return rawValue;
         }
 
-        public static void DrawTransform(KrayonCore.Components.Components.Transform t)
+        public static void DrawTransform(KrayonCore.Components.Transform t)
         {
             ImGui.PushID("Transform");
             if (ImGui.CollapsingHeader("Transform", ImGuiTreeNodeFlags.DefaultOpen))
@@ -245,7 +536,7 @@ namespace KrayonEditor.UI
 
         private static void DrawCSharpLogicInspector(CSharpLogic csl)
         {
-            string scriptVal = DrawAssetStringField("Script", csl.Script);
+            string scriptVal = DrawAssetStringField("Script", csl.Script, "GameScript");
             if (scriptVal != csl.Script) csl.Script = scriptVal;
 
             if (csl.GetScriptVariables().Count == 0 && !string.IsNullOrEmpty(csl.Script))
@@ -581,8 +872,16 @@ namespace KrayonEditor.UI
             }
             else if (t == typeof(string))
             {
-                string nv = DrawAssetStringField(prop.Name, (string)val);
-                if (nv != (string)val) prop.SetValue(comp, nv);
+                if (prop.GetCustomAttribute<MaterialRefAttribute>() != null)
+                {
+                    string nv = DrawMaterialStringField(prop.Name, (string)val);
+                    if (nv != (string)val) prop.SetValue(comp, nv);
+                }
+                else
+                {
+                    string nv = DrawAssetStringField(prop.Name, (string)val);
+                    if (nv != (string)val) prop.SetValue(comp, nv);
+                }
             }
             else if (t == typeof(Vector2))
             {
@@ -660,8 +959,16 @@ namespace KrayonEditor.UI
             }
             else if (t == typeof(string))
             {
-                string nv = DrawAssetStringField(field.Name, (string)val);
-                if (nv != (string)val) field.SetValue(comp, nv);
+                if (field.GetCustomAttribute<MaterialRefAttribute>() != null)
+                {
+                    string nv = DrawMaterialStringField(field.Name, (string)val);
+                    if (nv != (string)val) field.SetValue(comp, nv);
+                }
+                else
+                {
+                    string nv = DrawAssetStringField(field.Name, (string)val);
+                    if (nv != (string)val) field.SetValue(comp, nv);
+                }
             }
             else if (t == typeof(Vector2))
             {
@@ -788,8 +1095,9 @@ namespace KrayonEditor.UI
         {
             Type elemT = prop.PropertyType.GetElementType()!;
             Array? arr = val as Array;
+            bool isMaterialRef = prop.GetCustomAttribute<MaterialRefAttribute>() != null;
             if (!ImGui.TreeNodeEx($"{prop.Name}##arrp", ImGuiTreeNodeFlags.SpanAvailWidth)) return;
-            DrawArrayControls(ref arr, elemT, v => prop.SetValue(comp, v));
+            DrawArrayControls(ref arr, elemT, v => prop.SetValue(comp, v), isMaterialRef);
             ImGui.TreePop();
         }
 
@@ -797,12 +1105,13 @@ namespace KrayonEditor.UI
         {
             Type elemT = field.FieldType.GetElementType()!;
             Array? arr = val as Array;
+            bool isMaterialRef = field.GetCustomAttribute<MaterialRefAttribute>() != null;
             if (!ImGui.TreeNodeEx($"{field.Name}##arrf", ImGuiTreeNodeFlags.SpanAvailWidth)) return;
-            DrawArrayControls(ref arr, elemT, v => field.SetValue(comp, v));
+            DrawArrayControls(ref arr, elemT, v => field.SetValue(comp, v), isMaterialRef);
             ImGui.TreePop();
         }
 
-        private static void DrawArrayControls(ref Array? arr, Type elemT, Action<Array> setter)
+        private static void DrawArrayControls(ref Array? arr, Type elemT, Action<Array> setter, bool isMaterialRef = false)
         {
             int size = arr?.Length ?? 0;
             ImGui.SetNextItemWidth(80f);
@@ -815,16 +1124,18 @@ namespace KrayonEditor.UI
                 arr = na;
             }
             if (arr == null) return;
-            for (int i = 0; i < arr.Length; i++) { ImGui.PushID(i); DrawArrayElement(arr, i, elemT); ImGui.PopID(); }
+            for (int i = 0; i < arr.Length; i++) { ImGui.PushID(i); DrawArrayElement(arr, i, elemT, isMaterialRef); ImGui.PopID(); }
         }
 
-        private static void DrawArrayElement(Array arr, int i, Type elemT)
+        private static void DrawArrayElement(Array arr, int i, Type elemT, bool isMaterialRef = false)
         {
             object? val = arr.GetValue(i);
             if (elemT == typeof(string))
             {
                 string sv = (string?)val ?? "";
-                string nv = DrawAssetStringField($"[{i}]", sv);
+                string nv = isMaterialRef
+                    ? DrawMaterialStringField($"[{i}]", sv)
+                    : DrawAssetStringField($"[{i}]", sv);
                 if (nv != sv) arr.SetValue(nv, i);
             }
             else if (elemT == typeof(int)) { int v = val != null ? (int)val : 0; BeginFieldRow($"[{i}]"); if (ImGui.InputInt($"##el{i}", ref v, 0)) arr.SetValue(v, i); }

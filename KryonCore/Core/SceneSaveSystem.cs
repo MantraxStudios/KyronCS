@@ -86,7 +86,7 @@ namespace KrayonCore
             return scene;
         }
 
-        public static GameScene LoadScene(byte[] bytes)
+        public static GameScene LoadScene(byte[] bytes, SceneRenderer RenderScene = null)
         {
             var json = Encoding.UTF8.GetString(bytes);
 
@@ -95,7 +95,7 @@ namespace KrayonCore
             if (sceneData == null)
                 throw new Exception("Error al deserializar los datos de la escena");
 
-            return DeserializeScene(sceneData);
+            return DeserializeScene(sceneData, RenderScene);
         }
 
 
@@ -135,9 +135,9 @@ namespace KrayonCore
             return goData;
         }
 
-        private static GameScene DeserializeScene(SceneData sceneData)
+        private static GameScene DeserializeScene(SceneData sceneData, SceneRenderer RenderScene = null)
         {
-            var scene = new GameScene(sceneData.SceneName);
+            var scene = new GameScene(sceneData.SceneName, RenderScene);
             var gameObjectMap = new System.Collections.Generic.Dictionary<Guid, GameObject>();
 
             foreach (var goData in sceneData.GameObjects)
