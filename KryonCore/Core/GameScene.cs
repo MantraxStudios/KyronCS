@@ -128,6 +128,7 @@ namespace KrayonCore
             if (!_gameObjects.ContainsKey(gameObject.Id))
             {
                 gameObject.Scene = this;
+                gameObject.SelfScene = this;
                 _gameObjects[gameObject.Id] = gameObject;
                 _gameObjectsList.Add(gameObject);
 
@@ -136,6 +137,7 @@ namespace KrayonCore
 
                 OnGameObjectAdded?.Invoke(gameObject);
                 OnSceneChanged?.Invoke();
+                Console.WriteLine($"Object Loaded In Scene: {gameObject.SelfScene.Name}");
             }
         }
 
@@ -381,6 +383,8 @@ namespace KrayonCore
             _physicsWorld = null;
 
             GraphicsEngine.Instance.RemoveSceneRenderer(SelfRenderScene);
+
+            Console.WriteLine("-*-***-*-*-*-*-*-*-*-*-*-*-Limpiando Render");
         }
     }
 }

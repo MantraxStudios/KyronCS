@@ -217,23 +217,17 @@ namespace KrayonCore
         public T AddComponent<T>() where T : Component, new()
         {
             Type type = typeof(T);
-
-            if (_components.ContainsKey(type))
-            {
-                return (T)_components[type];
-            }
+            if (_components.ContainsKey(type)) return (T)_components[type];
 
             T component = new T();
             component.GameObject = this;
             _components[type] = component;
-            component.SelfScene = SelfScene;
             _componentsList.Add(component);
 
             component.Awake();
 
             OnComponentAdded?.Invoke();
             Scene?.NotifyComponentAdded();
-
             return component;
         }
 

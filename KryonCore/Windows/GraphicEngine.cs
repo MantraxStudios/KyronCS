@@ -35,6 +35,8 @@ namespace KrayonCore.GraphicsData
         public InputSystem? Input => _inputSystem;
         public PostProcessingSettings? PostProcessing => _fullscreenQuad?.GetSettings();
         public GameWindow? Window => _window;
+
+        // Buffers del editor (SceneRenderer[0])
         public FrameBufferManager Buffers => GetSceneRenderer().Buffers;
         public List<SceneRenderer> SceneRenderers { get; } = new();
 
@@ -85,10 +87,13 @@ namespace KrayonCore.GraphicsData
         public MouseState GetMouseState() => _window?.MouseState ?? default;
         public SceneRenderer GetSceneRenderer() => SceneRenderers[0];
 
-        public FrameBuffer GetSceneFrameBuffer() =>
-            _fullscreenQuad?.GetSettings().Enabled == false
-                ? Buffers.Get(SceneBufferName)
-                : Buffers.Get(PostProcessBufferName);
+        public FrameBuffer GetSceneFrameBuffer()
+        {
+            bool ppEnabled = _fullscreenQuad?.GetSettings().Enabled == true;
+            return ppEnabled
+                ? Buffers.Get(PostProcessBufferName)
+                : Buffers.Get(SceneBufferName);
+        }
 
         public void ResizeFrameBuffer(string name, int width, int height) => Buffers.Resize(name, width, height);
         public void ResizeAllFrameBuffers(int width, int height) => Buffers.ResizeAll(width, height);
@@ -119,7 +124,6 @@ namespace KrayonCore.GraphicsData
 
             _materials.LoadMaterialsData();
             CreateDefaultMaterials();
-            InitializeFrameBuffers();
             InitializeFullscreenQuad();
             InitializeScreenQuad();
             ConfigureDefaultPostProcessing();
@@ -163,7 +167,8 @@ namespace KrayonCore.GraphicsData
 
         internal void InternalResize(int width, int height)
         {
-            Buffers.ResizeAll(width, height);
+            // Cada SceneRenderer redimensiona sus propios buffers
+            SceneRenderers.ForEach(r => r.Buffers.ResizeAll(width, height));
             SceneRenderers.ForEach(r => r.Resize(width, height));
             OnResize?.Invoke(width, height);
         }
@@ -173,7 +178,7 @@ namespace KrayonCore.GraphicsData
             SceneManager.PrimaryScene?.OnUnload();
             _fullscreenQuad?.Dispose();
             _screenQuad?.Dispose();
-            Buffers.Dispose();
+            // Cada SceneRenderer tiene sus propios buffers, se limpian en Shutdown
             SceneRenderers.ForEach(r => r.Shutdown());
             Audio.Dispose();
             OnClose?.Invoke();
@@ -183,17 +188,20 @@ namespace KrayonCore.GraphicsData
         {
             if (_fullscreenQuad is null || !_fullscreenQuad.GetSettings().Enabled) return;
 
-            foreach (var renderCam in SceneRenderers.SelectMany(r => r.ManagerCams.GetRenderOrder()))
+            foreach (var sceneRenderer in SceneRenderers)
             {
-                if (!renderCam.PostProcessingEnabled) continue;
+                foreach (var renderCam in sceneRenderer.ManagerCams.GetRenderOrder())
+                {
+                    if (!renderCam.PostProcessingEnabled) continue;
 
-                var sceneBuffer = renderCam.GetTargetBuffer();
-                var ppBuffer = renderCam.GetPostProcessBuffer();
-                if (sceneBuffer is null || ppBuffer is null) continue;
+                    var sceneBuffer = renderCam.GetTargetBuffer();
+                    var ppBuffer = renderCam.GetPostProcessBuffer();
+                    if (sceneBuffer is null || ppBuffer is null) continue;
 
-                ApplyPostProcess(sceneBuffer, ppBuffer,
-                    renderCam.Camera.GetProjectionMatrix(),
-                    renderCam.Camera.GetViewMatrix());
+                    ApplyPostProcess(sceneBuffer, ppBuffer,
+                        renderCam.Camera.GetProjectionMatrix(),
+                        renderCam.Camera.GetViewMatrix());
+                }
             }
         }
 
@@ -201,17 +209,18 @@ namespace KrayonCore.GraphicsData
         {
             if (_fullscreenQuad is null || !_fullscreenQuad.GetSettings().Enabled) return;
 
-            var scene = Buffers.TryGet(SceneBufferName);
-            var postProcess = Buffers.TryGet(PostProcessBufferName);
+            // Solo aplica al primer SceneRenderer (el del editor)
+            var editorRenderer = SceneRenderers.FirstOrDefault();
+            if (editorRenderer is null) return;
+
+            var scene = editorRenderer.Buffers.TryGet(SceneBufferName);
+            var postProcess = editorRenderer.Buffers.TryGet(PostProcessBufferName);
             if (scene is null || postProcess is null) return;
 
-            foreach (var renderer in SceneRenderers)
-            {
-                var camera = renderer.GetCamera();
-                ApplyPostProcess(scene, postProcess,
-                    camera.GetProjectionMatrix(),
-                    camera.GetViewMatrix());
-            }
+            var camera = editorRenderer.GetCamera();
+            ApplyPostProcess(scene, postProcess,
+                camera.GetProjectionMatrix(),
+                camera.GetViewMatrix());
         }
 
         private void ApplyPostProcess(FrameBuffer source, FrameBuffer dest, Matrix4 projection, Matrix4 view)
@@ -219,7 +228,8 @@ namespace KrayonCore.GraphicsData
             if (_fullscreenQuad is null) return;
 
             dest.Bind();
-            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y, WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
+            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y,
+                WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _fullscreenQuad.Render(
@@ -237,27 +247,37 @@ namespace KrayonCore.GraphicsData
 
             bool ppEnabled = _fullscreenQuad?.GetSettings().Enabled == true;
 
-            int finalTex = AppInfo.IsCompiledGame
-                ? GetSceneRenderer().ManagerCams.GetRenderOrder()
-                    .FirstOrDefault(rc => rc.Name != "main")
-                    ?.GetFinalTextureId(ppEnabled) ?? 0
-                : ppEnabled
-                    ? Buffers.TryGet(PostProcessBufferName)?.ColorTexture ?? 0
-                    : Buffers.TryGet(SceneBufferName)?.ColorTexture ?? 0;
-
-            if (finalTex == 0) return;
-
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             GL.Viewport(0, 0, _window.ClientSize.X, _window.ClientSize.Y);
-            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y, WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
+            GL.ClearColor(WindowConfig.ColorClear.X, WindowConfig.ColorClear.Y,
+                WindowConfig.ColorClear.Z, WindowConfig.ColorClear.W);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            _screenQuad.Render(finalTex);
-        }
 
-        private void InitializeFrameBuffers()
-        {
-            Buffers.Create(SceneBufferName, 1280, 720, useEmission: true, useGBuffer: true);
-            Buffers.Create(PostProcessBufferName, 1280, 720, useEmission: false, useGBuffer: false);
+            if (AppInfo.IsCompiledGame)
+            {
+                // Todos los SceneRenderers son de juego, tomar la primera cámara de cada uno
+                foreach (var sceneRenderer in SceneRenderers)
+                {
+                    var cam = sceneRenderer.ManagerCams.GetRenderOrder().FirstOrDefault();
+                    if (cam is null) continue;
+
+                    int tex = cam.GetFinalTextureId(ppEnabled);
+                    if (tex != 0) _screenQuad.Render(tex);
+                }
+            }
+            else
+            {
+                // Editor: SceneRenderer[0] es el editor, [1+] son escenas de juego
+                // En el viewport del editor se muestra el [0]
+                var editorRenderer = SceneRenderers.FirstOrDefault();
+                if (editorRenderer is null) return;
+
+                int finalTex = ppEnabled
+                    ? editorRenderer.Buffers.TryGet(PostProcessBufferName)?.ColorTexture ?? 0
+                    : editorRenderer.Buffers.TryGet(SceneBufferName)?.ColorTexture ?? 0;
+
+                if (finalTex != 0) _screenQuad.Render(finalTex);
+            }
         }
 
         private void InitializeFullscreenQuad()
@@ -292,13 +312,11 @@ namespace KrayonCore.GraphicsData
                 AssetManager.FindByPath("shaders/screen.frag").Guid);
         }
 
-        private void CreateMaterial(string name, Guid vert, Guid frag,
-            Action<Material>? configure = null)
+        private void CreateMaterial(string name, Guid vert, Guid frag, Action<Material>? configure = null)
         {
             var mat = _materials.Create(name, vert, frag);
             if (mat is not null) configure?.Invoke(mat);
         }
-
 
         private void ConfigureDefaultPostProcessing()
         {

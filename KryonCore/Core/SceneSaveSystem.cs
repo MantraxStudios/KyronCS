@@ -145,7 +145,7 @@ namespace KrayonCore
                 var gameObject = new GameObject(goData.Name)
                 {
                     Tag = goData.Tag,
-                    Active = goData.Active,
+                    Active = goData.Active
                 };
 
                 gameObject.SetId(goData.Id);

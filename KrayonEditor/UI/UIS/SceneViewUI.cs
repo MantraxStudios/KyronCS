@@ -527,7 +527,9 @@ namespace KrayonEditor.UI
             if (LastViewportSize != viewportSize)
             {
                 LastViewportSize = viewportSize;
+
                 Engine?.ResizeFrameBuffer("scene", (int)viewportSize.X, (int)viewportSize.Y);
+                Engine?.ResizeFrameBuffer("postProcess", (int)viewportSize.X, (int)viewportSize.Y);
 
                 if (MainCamera != null)
                     MainCamera.AspectRatio = viewportSize.X / viewportSize.Y;

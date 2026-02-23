@@ -38,8 +38,13 @@ namespace KrayonCore
         public void Initialize()
         {
             _lightManager = new LightManager();
+            
+            Buffers.Create("scene", 1280, 720, useEmission: true, useGBuffer: true);
+            Buffers.Create("postProcess", 1280, 720, useEmission: false, useGBuffer: false);
+
             ManagerCams.Create("main", new Vector3(0, 0, 5),
                 WindowConfig.Width / (float)WindowConfig.Height, priority: 0);
+
             Console.WriteLine($"Esta Escena Tiene un total de {ManagerCams.Count}");
         }
 
@@ -107,7 +112,11 @@ namespace KrayonCore
         public UICanvas? GetCanvas(string name) => UICanvasManager.Get(name);
 
         public void Update(float deltaTime) => UICanvasManager.Update(deltaTime);
-        public void Resize(int width, int height) => ManagerCams.ResizeAll(width, height);
+        public void Resize(int width, int height)
+        {
+            Buffers.ResizeAll(width, height);
+            ManagerCams.ResizeAll(width, height);
+        }
         public Camera GetCamera() => ManagerCams.Main?.Camera
             ?? throw new InvalidOperationException("No hay cámara principal registrada.");
         public LightManager GetLightManager() => _lightManager;
@@ -125,6 +134,7 @@ namespace KrayonCore
             ClearInstanceGroups();
             ClearAllRenderers();
             UICanvasManager.Shutdown();
+            Buffers.Dispose();
         }
 
         public void Render()

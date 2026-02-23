@@ -74,7 +74,7 @@ namespace KrayonCore
                     if (!_PrimaryScenes.Contains(oldScene))
                     {
                         oldScene.OnUnload();
-                        oldScene.Clear();
+                        oldScene.Dispose();
                         OnSceneUnloaded?.Invoke(oldScene);
                     }
                 }
@@ -130,7 +130,7 @@ namespace KrayonCore
                 if (!_PrimaryScenes.Contains(oldScene))
                 {
                     oldScene.OnUnload();
-                    oldScene.Clear();
+                    oldScene.Dispose();
                     OnSceneUnloaded?.Invoke(oldScene);
                 }
             }
@@ -160,7 +160,7 @@ namespace KrayonCore
             {
                 _PrimaryScenes.Remove(scene);
                 scene.OnUnload();
-                scene.Clear();
+                scene.Dispose();
                 _scenes.Remove(name);
                 OnSceneUnloaded?.Invoke(scene);
             }

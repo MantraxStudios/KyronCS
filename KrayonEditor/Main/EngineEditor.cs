@@ -74,6 +74,15 @@ namespace KrayonEditor.Main
             _engine.OnFileDrop += OnFilesDropped;
             _engine.OnTryClose += HandleWindowTryClose;
 
+            SceneManager.OnSceneLoaded += _ =>
+            {
+                _editorCamera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+                _editorCamera.Position = _initialCameraPosition;
+                var type = _editorCamera.GetType();
+                type.GetProperty("Yaw")?.SetValue(_editorCamera, _initialCameraYaw);
+                type.GetProperty("Pitch")?.SetValue(_editorCamera, _initialCameraPitch);
+            };
+
             _engine.CreateWindow(WindowConfig.Width, WindowConfig.Height, "Kryon Engine - Editor");
             _engine.Run();
         }
@@ -431,7 +440,12 @@ namespace KrayonEditor.Main
                 GraphicsEngine.Instance.CanClose();
             }
 
-            if (_editorCamera is null || _window is null) return;
+            if (_editorCamera == null)
+            {
+                _editorCamera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+            }
+
+            if (_window is null) return;
 
             HandleInput(dt);
             UpdateFPS(dt);
