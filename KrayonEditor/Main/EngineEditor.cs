@@ -82,6 +82,11 @@ namespace KrayonEditor.Main
 
         private static void AttachGizmos(SceneRenderer sceneRenderer)
         {
+            sceneRenderer.AttachRender("gizmo_grid", (view, projection, cameraPos) =>
+            {
+                GizmoGrid.Draw(view, projection);
+            });
+
             sceneRenderer.AttachRender("gizmo_rigidbody", (view, projection, cameraPos) =>
             {
                 if (ShowAllGizmos)

@@ -2,7 +2,7 @@
   "SceneName": "Entity Scene",
   "GameObjects": [
     {
-      "Id": "3a5a94ca-949c-4b04-9cb2-43e3c84234ba",
+      "Id": "6a4158c6-9b30-465e-abe1-7d3611c09127",
       "Name": "Editor Camera",
       "Tag": "Untagged",
       "Active": true,
@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2067a7fe-7f32-415b-b493-35ae0f0d3a54",
+          "ComponentId": "3d0a1584-3599-473b-bee9-bc87e8481183",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,21 +36,23 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "0c1d95f6-7e1a-4403-84df-409af5c12cc9",
+          "ComponentId": "5270da7d-f2b6-4a9f-8d75-4c0143751df4",
           "Enabled": true,
           "SerializedFields": {
-            "ModelPath": "",
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
             "MaterialPaths": {
               "__type": "Array",
               "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": []
+              "values": [
+                "basic"
+              ]
             }
           }
         }
       ]
     },
     {
-      "Id": "1ac29403-c01a-42e4-bce3-f24d3840fd3e",
+      "Id": "f5be2e17-b2f0-4b70-898a-2fe27d6deab2",
       "Name": "GameObject",
       "Tag": "Untagged",
       "Active": true,
@@ -58,7 +60,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "8f1b548c-1e03-48a9-ada7-01d6596ae8a6",
+          "ComponentId": "fa8391c4-17d3-4fd6-88fa-48f13e7f6b2d",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -84,7 +86,7 @@
         },
         {
           "TypeName": "KrayonCore.Graphics.Camera.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5e21f2e0-48ea-4ea2-8914-a8d21521388a",
+          "ComponentId": "46e20bf2-0f19-4cd5-ae2b-94b25dd3961d",
           "Enabled": true,
           "SerializedFields": {
             "CameraName": "",
@@ -92,8 +94,8 @@
             "RenderToBuffer": true,
             "UseGBuffer": true,
             "UseEmission": true,
-            "BufferWidth": 1136,
-            "BufferHeight": 815,
+            "BufferWidth": 1520,
+            "BufferHeight": 914,
             "ProjectionMode": {
               "__type": "Enum",
               "enumType": "KrayonCore.ProjectionMode, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
@@ -120,56 +122,6 @@
             "ViewportY": 0,
             "ViewportWidth": 1,
             "ViewportHeight": 1
-          }
-        }
-      ]
-    },
-    {
-      "Id": "50e12c3b-0710-4678-9f7e-793387774755",
-      "Name": "New Object",
-      "Tag": "Untagged",
-      "Active": true,
-      "ParentId": null,
-      "Components": [
-        {
-          "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "1676838b-6e1a-4edc-be90-38a8ae21d902",
-          "Enabled": true,
-          "SerializedFields": {
-            "Position": {
-              "__type": "Vector3",
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "Rotation": {
-              "__type": "Quaternion",
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "Scale": {
-              "__type": "Vector3",
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "4f039f9b-2a36-4138-a476-156efbc91108",
-          "Enabled": true,
-          "SerializedFields": {
-            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
-            "MaterialPaths": {
-              "__type": "Array",
-              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "values": [
-                "basic"
-              ]
-            }
           }
         }
       ]

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using KrayonCore.GraphicsData;
 using KrayonCore.Physics;
+using OpenTK.Mathematics;
 
 namespace KrayonCore
 {
@@ -33,6 +34,8 @@ namespace KrayonCore
         public Camera GetMainCamera { get { return Cameras[0]; } }
         public SceneRenderer SelfRenderScene;
         protected bool ItsMyRenderScene = false;
+        public Matrix4 WorldMatrix;
+        public bool HasWorldMatrix;
 
         public GameScene(string name, SceneRenderer RenderScene = null)
         {
@@ -49,9 +52,11 @@ namespace KrayonCore
             {
                 SelfRenderScene = GraphicsEngine.Instance.AddSceneRenderer();
                 ItsMyRenderScene = true;
+                HasWorldMatrix = false;
             }
             else
             {
+                HasWorldMatrix = true;
                 SelfRenderScene = RenderScene;
                 ItsMyRenderScene = false;
             }

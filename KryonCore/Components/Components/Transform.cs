@@ -227,8 +227,13 @@ namespace KrayonCore.Components
         public Matrix4 GetWorldMatrix()
         {
             Matrix4 local = GetLocalMatrix();
+
             if (Parent != null)
                 return local * Parent.GetWorldMatrix();
+
+            if (SelfScene != null && SelfScene.HasWorldMatrix)
+                return local * SelfScene.WorldMatrix;
+
             return local;
         }
 
@@ -237,12 +242,19 @@ namespace KrayonCore.Components
         // -----------------------------------------------------------------------
         public Vector3 GetWorldPosition()
         {
-            if (Parent == null) return Position;
+            if (Parent != null)
+            {
+                Vector4 worldPos = new Vector4(Position, 1f) * Parent.GetWorldMatrix();
+                return worldPos.Xyz;
+            }
 
-            // Transformamos la posición local con la matriz world del padre.
-            // OpenTK: vec4 * matrix  (row-vector × row-major matrix)
-            Vector4 worldPos = new Vector4(Position, 1f) * Parent.GetWorldMatrix();
-            return worldPos.Xyz;
+            if (SelfScene != null && SelfScene.HasWorldMatrix)
+            {
+                Vector4 worldPos = new Vector4(Position, 1f) * SelfScene.WorldMatrix;
+                return worldPos.Xyz;
+            }
+
+            return Position;
         }
 
         public void SetWorldPosition(Vector3 worldPosition)
@@ -266,9 +278,21 @@ namespace KrayonCore.Components
         // -----------------------------------------------------------------------
         public Quaternion GetWorldRotation()
         {
-            if (Parent == null) return Rotation;
-            // Orden correcto: primero aplica la rotación del padre, luego la local.
-            return Parent.GetWorldRotation() * Rotation;
+            if (Parent != null)
+                return Parent.GetWorldRotation() * Rotation;
+
+            if (SelfScene != null && SelfScene.HasWorldMatrix)
+            {
+                // Extraer rotación de la SceneWorldMatrix
+                Vector3 row0 = SelfScene.WorldMatrix.Row0.Xyz.Normalized();
+                Vector3 row1 = SelfScene.WorldMatrix.Row1.Xyz.Normalized();
+                Vector3 row2 = SelfScene.WorldMatrix.Row2.Xyz.Normalized();
+                Matrix3 rotMat = new Matrix3(row0, row1, row2);
+                Quaternion sceneRot = Quaternion.FromMatrix(rotMat);
+                return sceneRot * Rotation;
+            }
+
+            return Rotation;
         }
 
         public void SetWorldRotation(Quaternion worldRotation)
@@ -289,9 +313,23 @@ namespace KrayonCore.Components
         // -----------------------------------------------------------------------
         public Vector3 GetWorldScale()
         {
-            if (Parent == null) return Scale;
-            Vector3 ps = Parent.GetWorldScale();
-            return new Vector3(Scale.X * ps.X, Scale.Y * ps.Y, Scale.Z * ps.Z);
+            if (Parent != null)
+            {
+                Vector3 ps = Parent.GetWorldScale();
+                return new Vector3(Scale.X * ps.X, Scale.Y * ps.Y, Scale.Z * ps.Z);
+            }
+
+            if (SelfScene != null && SelfScene.HasWorldMatrix)
+            {
+                Vector3 sceneScale = new Vector3(
+                    SelfScene.WorldMatrix.Row0.Xyz.Length,
+                    SelfScene.WorldMatrix.Row1.Xyz.Length,
+                    SelfScene.WorldMatrix.Row2.Xyz.Length
+                );
+                return new Vector3(Scale.X * sceneScale.X, Scale.Y * sceneScale.Y, Scale.Z * sceneScale.Z);
+            }
+
+            return Scale;
         }
 
         public void SetWorldScale(Vector3 worldScale)

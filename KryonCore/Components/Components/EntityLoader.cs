@@ -1,4 +1,5 @@
 ﻿using KrayonCore.Components.RenderComponents;
+using KrayonCore.Core;
 using KrayonCore.Core.Attributes;
 using System;
 using System.Collections.Generic;
@@ -49,11 +50,17 @@ namespace KrayonCore.Components
 
         public override void OnWillRenderObject()
         {
+            if (!AppInfo.IsPlayingGame)
+                Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
+
             Scene?.Render();
         }
 
         public override void Update(float deltaTime)
         {
+            if (AppInfo.IsPlayingGame)
+                Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
+
             Scene?.Update(deltaTime);
         }
 
