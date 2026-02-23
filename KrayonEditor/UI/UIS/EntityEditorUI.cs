@@ -1,7 +1,10 @@
 ﻿using ImGuiNET;
 using KrayonCore;
 using KrayonCore.Components.RenderComponents;
+using KrayonCore.Core.Attributes;
 using KrayonCore.Graphics.Camera;
+using KrayonCore.Graphics.GameUI;
+using KrayonEditor.UI;
 using System.Numerics;
 
 namespace KrayonEditor.UI.UIS
@@ -15,6 +18,9 @@ namespace KrayonEditor.UI.UIS
         private bool _firstMouse = true;
         private float _cameraSpeed = 2.5f;
 
+        private GameObject _renamingObject = null;
+        private string _renameBuffer = "";
+
         public override void OnDrawUI()
         {
             ImGui.Begin("Entity Editor", ImGuiWindowFlags.NoScrollbar);
@@ -23,6 +29,7 @@ namespace KrayonEditor.UI.UIS
             ImGui.DockSpace(dockId);
 
             DrawHierarchy();
+            DrawDetails();
             DrawViewport();
 
             ImGui.End();
@@ -33,6 +40,11 @@ namespace KrayonEditor.UI.UIS
             ImGui.SetNextWindowDockID(ImGui.GetID("EntityEditorDock"), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSize(new Vector2(250, 400), ImGuiCond.FirstUseEver);
             ImGui.Begin("Entity Hierarchy");
+
+            if (ImGui.Button("Save Entity"))
+                SceneSaveSystem.SaveScene(Scene, $"{AssetManager.BasePath}/Entity/{Scene.Name}.entity");
+
+            ImGui.SameLine();
 
             if (ImGui.Button("New Scene"))
             {
@@ -51,12 +63,35 @@ namespace KrayonEditor.UI.UIS
 
             if (Scene != null)
             {
+                ImGui.SameLine();
+                if (ImGui.Button("+ Add Object"))
+                {
+                    GameObject newObj = Scene.CreateGameObject();
+                    newObj.Name = "New Object";
+                    _selectedObject = newObj;
+                }
+
+                if (_selectedObject != null)
+                {
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.6f, 0.1f, 0.1f, 1f));
+                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.78f, 0.22f, 0.22f, 1f));
+                    if (ImGui.Button("Delete"))
+                    {
+                        Scene.DestroyGameObject(_selectedObject);
+                        _selectedObject = null;
+                    }
+                    ImGui.PopStyleColor(2);
+                }
+
+                ImGui.Separator();
+
                 var sceneFlags = ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanAvailWidth;
                 if (ImGui.TreeNodeEx($"{Scene.Name}##scene", sceneFlags))
                 {
                     foreach (var go in Scene.GetAllGameObjects())
                     {
-                        if (_Cam.GameObject != go && go.Transform.Parent == null)
+                        if (_Cam != null && _Cam.GameObject != go && go.Transform.Parent == null)
                             DrawGameObjectNode(go);
                     }
                     ImGui.TreePop();
@@ -75,10 +110,29 @@ namespace KrayonEditor.UI.UIS
             if (isSelected) flags |= ImGuiTreeNodeFlags.Selected;
             if (!hasChildren) flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
 
+            if (_renamingObject == go)
+            {
+                ImGui.SetNextItemWidth(-1);
+                if (ImGui.InputText($"##rename_{go.Id}", ref _renameBuffer, 128, ImGuiInputTextFlags.EnterReturnsTrue))
+                {
+                    go.Name = _renameBuffer;
+                    _renamingObject = null;
+                }
+                if (!ImGui.IsItemActive() && !ImGui.IsItemFocused())
+                    _renamingObject = null;
+                return;
+            }
+
             bool nodeOpen = ImGui.TreeNodeEx($"{go.Name}##{go.Id.GetHashCode()}", flags);
 
             if (ImGui.IsItemClicked())
                 _selectedObject = go;
+
+            if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+            {
+                _renamingObject = go;
+                _renameBuffer = go.Name;
+            }
 
             if (hasChildren && nodeOpen)
             {
@@ -86,6 +140,68 @@ namespace KrayonEditor.UI.UIS
                     DrawGameObjectNode(child.GameObject);
                 ImGui.TreePop();
             }
+        }
+
+        private void DrawDetails()
+        {
+            ImGui.SetNextWindowDockID(ImGui.GetID("EntityEditorDock"), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(280, 400), ImGuiCond.FirstUseEver);
+            ImGui.Begin("Details");
+
+            if (_selectedObject == null)
+            {
+                ImGui.TextDisabled("No object selected.");
+                ImGui.End();
+                return;
+            }
+
+            // ── Header ──
+            float avail = ImGui.GetContentRegionAvail().X;
+            float tagW = 90f;
+            float nameW = avail - tagW - ImGui.GetStyle().ItemSpacing.X;
+
+            string name = _selectedObject.Name;
+            ImGui.SetNextItemWidth(nameW);
+            if (ImGui.InputText("##obj_name", ref name, 128))
+                _selectedObject.Name = name;
+
+            ImGui.SameLine();
+            string tag = _selectedObject.Tag;
+            ImGui.SetNextItemWidth(tagW);
+            if (ImGui.InputText("##obj_tag", ref tag, 64))
+                _selectedObject.Tag = tag;
+
+            bool active = _selectedObject.Active;
+            if (ImGui.Checkbox("Active", ref active))
+                _selectedObject.Active = active;
+
+            ImGui.Separator();
+
+            // ── Transform ──
+            ComponentInspector.DrawTransform(_selectedObject.Transform);
+
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            // ── Componentes ──
+            var components = _selectedObject.GetAllComponents().ToList();
+            int idx = 0;
+            foreach (var component in components)
+            {
+                if (component is KrayonCore.Components.Components.Transform) { idx++; continue; }
+                ImGui.PushID($"comp_{idx}");
+                ComponentInspector.DrawComponentWithReflection(component, _selectedObject);
+                ImGui.PopID();
+                idx++;
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+
+            // ── Add Component ──
+            ComponentInspector.DrawAddComponentButton(_selectedObject);
+
+            ImGui.End();
         }
 
         private void DrawViewport()

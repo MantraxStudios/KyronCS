@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
-using KrayonCore;
 
 namespace KrayonCore
 {
@@ -12,14 +11,36 @@ namespace KrayonCore
 
         static ComponentRegistry()
         {
-            Components = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .Where(t =>
-                    t.IsClass &&
-                    !t.IsAbstract &&
-                    t.IsSubclassOf(typeof(Component)))
-                .OrderBy(t => t.Name)
-                .ToList();
+            Components = new List<Type>();
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                IEnumerable<Type> types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    types = ex.Types.Where(t => t != null)!;
+                }
+                catch
+                {
+                    continue;
+                }
+
+                foreach (var t in types)
+                {
+                    try
+                    {
+                        if (t != null && t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(Component)))
+                            Components.Add(t);
+                    }
+                    catch { }
+                }
+            }
+
+            Components = Components.OrderBy(t => t.Name).ToList();
         }
     }
 }

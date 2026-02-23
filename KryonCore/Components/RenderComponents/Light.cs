@@ -158,7 +158,7 @@ namespace KrayonCore.Components.RenderComponents
             if (_currentLight == null || _addedToManager)
                 return;
 
-            var lightManager = GraphicsEngine.Instance.GetSceneRenderer().GetLightManager();
+            var lightManager = SelfScene.SelfRenderScene.GetLightManager();
             if (lightManager == null)
             {
                 Console.WriteLine("[Light] Warning: LightManager not available!");
@@ -198,7 +198,7 @@ namespace KrayonCore.Components.RenderComponents
             if (_currentLight == null || !_addedToManager)
                 return;
 
-            var lightManager = GraphicsEngine.Instance.GetSceneRenderer().GetLightManager();
+            var lightManager = SelfScene.SelfRenderScene.GetLightManager();
             if (lightManager == null)
                 return;
 
@@ -235,7 +235,7 @@ namespace KrayonCore.Components.RenderComponents
             if (_currentLight == null || !_addedToManager)
                 return;
 
-            var lightManager = GraphicsEngine.Instance.GetSceneRenderer().GetLightManager();
+            var lightManager = SelfScene.SelfRenderScene.GetLightManager();
             if (lightManager == null)
                 return;
 

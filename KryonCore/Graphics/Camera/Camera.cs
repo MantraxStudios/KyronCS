@@ -68,8 +68,10 @@ namespace KrayonCore
         private Matrix4 GetPerspectiveMatrix()
         {
             float aspect = AspectRatio > 0 ? AspectRatio : 16f / 9f;
+            float near = Math.Max(NearPlane, 0.01f);
+            float far = Math.Max(FarPlane, near + 0.01f);
             return Matrix4.CreatePerspectiveFieldOfView(
-                MathHelper.DegreesToRadians(Fov), aspect, NearPlane, FarPlane);
+                MathHelper.DegreesToRadians(Fov), aspect, near, far);
         }
 
         private Matrix4 GetOrthographicMatrix()
