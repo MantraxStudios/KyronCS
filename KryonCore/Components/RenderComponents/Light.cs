@@ -65,6 +65,10 @@ namespace KrayonCore.Components.RenderComponents
             {
                 Console.WriteLine("[Light] Warning: No Transform component found!");
             }
+            else
+            {
+                Console.WriteLine("[Light] Transform setup");
+            }
 
             CreateLight();
         }
@@ -269,6 +273,7 @@ namespace KrayonCore.Components.RenderComponents
 
         private void UpdateLightProperties()
         {
+
             if (_currentLight == null)
                 return;
 
@@ -314,6 +319,7 @@ namespace KrayonCore.Components.RenderComponents
                     }
                     break;
             }
+
         }
 
         public LightingSystem.Light GetLight() => _currentLight;

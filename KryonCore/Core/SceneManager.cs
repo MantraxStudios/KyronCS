@@ -12,15 +12,13 @@ namespace KrayonCore
     public static class SceneManager
     {
         private static Dictionary<string, GameScene> _scenes = new Dictionary<string, GameScene>();
-        private static List<GameScene> _PrimaryScenes = new List<GameScene>();
 
         public static event Action<GameScene, string> OnSceneSaved;
         public static event Action<GameScene> OnSceneLoaded;
         public static event Action<GameScene> OnSceneUnloaded;
 
-        public static IReadOnlyList<GameScene> PrimaryScenes => _PrimaryScenes;
-
-        public static GameScene PrimaryScene => _PrimaryScenes.Count > 0 ? _PrimaryScenes[0] : null;
+        public static IReadOnlyList<GameScene> PrimaryScenes => _scenes.Values.ToList();
+        public static GameScene PrimaryScene => _scenes.Count > 0 ? _scenes.Values.First() : null;
         public static byte[] CurrentSceneData;
 
         public static GameScene CreateScene(string name)
@@ -41,7 +39,7 @@ namespace KrayonCore
             if (isFile)
             {
                 if (!additive)
-                    UnloadAllPrimaryScenes();
+                    UnloadAllScenes();
 
                 GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
 
@@ -71,12 +69,9 @@ namespace KrayonCore
                 if (_scenes.ContainsKey(sceneToLoad.Name))
                 {
                     var oldScene = _scenes[sceneToLoad.Name];
-                    if (!_PrimaryScenes.Contains(oldScene))
-                    {
-                        oldScene.OnUnload();
-                        oldScene.Dispose();
-                        OnSceneUnloaded?.Invoke(oldScene);
-                    }
+                    oldScene.OnUnload();
+                    oldScene.Dispose();
+                    OnSceneUnloaded?.Invoke(oldScene);
                 }
 
                 _scenes[sceneToLoad.Name] = sceneToLoad;
@@ -89,22 +84,22 @@ namespace KrayonCore
                     return;
                 }
 
-                sceneToLoad = _scenes[nameOrPath];
-
                 if (!additive)
                 {
-                    UnloadAllPrimaryScenes();
+                    UnloadAllScenes();
                     GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+                    sceneToLoad = _scenes.ContainsKey(nameOrPath) ? _scenes[nameOrPath] : null;
+                    if (sceneToLoad == null) return;
+                }
+                else
+                {
+                    sceneToLoad = _scenes[nameOrPath];
                 }
             }
 
-            if (!_PrimaryScenes.Contains(sceneToLoad))
-            {
-                _PrimaryScenes.Add(sceneToLoad);
-                sceneToLoad.OnLoad();
-                sceneToLoad.Start();
-                OnSceneLoaded?.Invoke(sceneToLoad);
-            }
+            sceneToLoad.OnLoad();
+            sceneToLoad.Start();
+            OnSceneLoaded?.Invoke(sceneToLoad);
 
             foreach (var go in sceneToLoad.GetAllGameObjects())
             {
@@ -114,36 +109,26 @@ namespace KrayonCore
             }
         }
 
-        public static void LoadSceneFromBytes(Byte[] scene_bytes)
+        public static void LoadSceneFromBytes(byte[] scene_bytes)
         {
-            UnloadAllPrimaryScenes();
-
+            UnloadAllScenes();
             GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
 
             GameScene sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
-
             if (sceneToLoad == null) return;
 
             if (_scenes.ContainsKey(sceneToLoad.Name))
             {
                 var oldScene = _scenes[sceneToLoad.Name];
-                if (!_PrimaryScenes.Contains(oldScene))
-                {
-                    oldScene.OnUnload();
-                    oldScene.Dispose();
-                    OnSceneUnloaded?.Invoke(oldScene);
-                }
+                oldScene.OnUnload();
+                oldScene.Dispose();
+                OnSceneUnloaded?.Invoke(oldScene);
             }
 
             _scenes[sceneToLoad.Name] = sceneToLoad;
-
-            if (!_PrimaryScenes.Contains(sceneToLoad))
-            {
-                _PrimaryScenes.Add(sceneToLoad);
-                sceneToLoad.OnLoad();
-                sceneToLoad.Start();
-                OnSceneLoaded?.Invoke(sceneToLoad);
-            }
+            sceneToLoad.OnLoad();
+            sceneToLoad.Start();
+            OnSceneLoaded?.Invoke(sceneToLoad);
 
             foreach (var go in sceneToLoad.GetAllGameObjects())
             {
@@ -153,12 +138,10 @@ namespace KrayonCore
             }
         }
 
-
         public static void UnloadScene(string name)
         {
             if (_scenes.TryGetValue(name, out GameScene scene))
             {
-                _PrimaryScenes.Remove(scene);
                 scene.OnUnload();
                 scene.Dispose();
                 _scenes.Remove(name);
@@ -166,31 +149,35 @@ namespace KrayonCore
             }
         }
 
-        public static void UnloadPrimaryScene(string name)
+        private static void UnloadAllScenes()
         {
-            if (_scenes.TryGetValue(name, out GameScene scene) && _PrimaryScenes.Contains(scene))
-            {
-                _PrimaryScenes.Remove(scene);
-                scene.OnUnload();
-                OnSceneUnloaded?.Invoke(scene);
-            }
-        }
-
-        private static void UnloadAllPrimaryScenes()
-        {
-            foreach (var scene in _PrimaryScenes)
+            foreach (var scene in _scenes.Values)
             {
                 scene.OnUnload();
                 OnSceneUnloaded?.Invoke(scene);
             }
-
-            _PrimaryScenes.Clear();
+            _scenes.Clear();
         }
 
-        public static bool IsSceneActive(string name)
+        public static void RegisterSceneOnly(GameScene scene)
         {
-            return _scenes.TryGetValue(name, out GameScene scene) && _PrimaryScenes.Contains(scene);
+            if (scene == null) return;
+            if (!_scenes.ContainsKey(scene.Name))
+                _scenes[scene.Name] = scene;
+            scene.OnLoad();
+            scene.Start();
+            OnSceneLoaded?.Invoke(scene);
         }
+
+        public static void UnregisterSceneOnly(GameScene scene)
+        {
+            if (scene == null) return;
+            _scenes.Remove(scene.Name);
+            scene.OnUnload();
+            OnSceneUnloaded?.Invoke(scene);
+        }
+
+        public static bool IsSceneActive(string name) => _scenes.ContainsKey(name);
 
         public static GameScene GetScene(string name)
         {
@@ -201,22 +188,19 @@ namespace KrayonCore
         public static void Update(float deltaTime)
         {
             if (!AppInfo.IsPlayingGame) return;
-
-            foreach (var scene in _PrimaryScenes)
+            foreach (var scene in _scenes.Values)
                 scene.Update(deltaTime);
         }
 
         public static void Render()
         {
-            foreach (var scene in _PrimaryScenes)
+            foreach (var scene in _scenes.Values)
                 scene.Render();
         }
 
         public static IEnumerable<GameScene> GetAllScenes() => _scenes.Values;
-
         public static int SceneCount => _scenes.Count;
-
-        public static int PrimarySceneCount => _PrimaryScenes.Count;
+        public static int PrimarySceneCount => _scenes.Count;
 
         #region GameObject Cross-Scene Utilities
 
@@ -232,7 +216,7 @@ namespace KrayonCore
             if (go == null || targetScene == null) return;
 
             GameScene sourceScene = null;
-            foreach (var scene in _PrimaryScenes)
+            foreach (var scene in _scenes.Values)
             {
                 if (scene == targetScene) continue;
                 if (ContainsGameObject(scene, go))
@@ -248,34 +232,24 @@ namespace KrayonCore
                 return;
             }
 
-            if (sourceScene == targetScene) return;
-
             go.Transform.SetParent(null);
-
             sourceScene.RemoveGameObject(go);
             targetScene.AddGameObject(go);
-
             Console.WriteLine($"'{go.Name}' moved from '{sourceScene.Name}' to '{targetScene.Name}'");
         }
 
         public static GameObject FindGameObjectById(Guid id)
         {
-            if (PrimaryScene != null)
-            {
-                foreach (var obj in PrimaryScene.GetAllGameObjects())
-                {
+            foreach (var scene in _scenes.Values)
+                foreach (var obj in scene.GetAllGameObjects())
                     if (obj.Id == id) return obj;
-                }
-            }
             return null;
         }
 
         public static GameScene GetOwnerScene(GameObject go)
         {
-            foreach (var scene in _PrimaryScenes)
-            {
+            foreach (var scene in _scenes.Values)
                 if (ContainsGameObject(scene, go)) return scene;
-            }
             return null;
         }
 
@@ -290,7 +264,6 @@ namespace KrayonCore
                 Console.WriteLine("Error: No hay una escena activa para guardar");
                 return;
             }
-
             SceneSaveSystem.SaveScene(PrimaryScene, filePath);
             OnSceneSaved?.Invoke(PrimaryScene, filePath);
         }
@@ -302,16 +275,13 @@ namespace KrayonCore
                 Console.WriteLine($"Error: No se encontró la escena '{sceneName}'");
                 return;
             }
-
             SceneSaveSystem.SaveScene(scene, filePath);
             OnSceneSaved?.Invoke(scene, filePath);
         }
 
         public static byte[] CloneSceneToBytes(GameScene original)
         {
-            if (original == null)
-                return null;
-
+            if (original == null) return null;
             return SceneSaveSystem.SaveSceneToBytes(original);
         }
 
@@ -326,7 +296,6 @@ namespace KrayonCore
                 SceneSaveSystem.SaveScene(scene, filePath);
                 OnSceneSaved?.Invoke(scene, filePath);
             }
-
             Console.WriteLine($"Se guardaron {_scenes.Count} escenas en '{directoryPath}'");
         }
 
@@ -339,16 +308,13 @@ namespace KrayonCore
             }
 
             var sceneFiles = Directory.GetFiles(directoryPath, "*.scene");
-
             foreach (var filePath in sceneFiles)
             {
                 try
                 {
                     var scene = SceneSaveSystem.LoadScene(filePath);
-
                     if (_scenes.ContainsKey(scene.Name))
                         _scenes[scene.Name].Clear();
-
                     _scenes[scene.Name] = scene;
                 }
                 catch (Exception ex)
@@ -356,7 +322,6 @@ namespace KrayonCore
                     Console.WriteLine($"Error al cargar escena desde '{filePath}': {ex.Message}");
                 }
             }
-
             Console.WriteLine($"Se cargaron {sceneFiles.Length} escenas desde '{directoryPath}'");
         }
 
@@ -367,7 +332,6 @@ namespace KrayonCore
                 Console.WriteLine("Error: Los bytes de la escena son inválidos");
                 return null;
             }
-
             return SceneSaveSystem.LoadScene(sceneBytes, RenderScene);
         }
 

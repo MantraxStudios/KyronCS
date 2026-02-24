@@ -165,12 +165,12 @@ namespace KrayonCore.EventSystem
             return closest;
         }
 
-        // ── Object picking ───────────────────────────────────────────────
-
         public static GameObject GetObjectByRay(Vector3 rayOrigin, Vector3 rayDir)
         {
             GameObject closest = null;
             float closestDist = float.MaxValue;
+
+            if (SceneManager.PrimaryScene == null) return null; 
 
             var objects = SceneManager.PrimaryScene.GetAllGameObjects();
 
@@ -284,6 +284,64 @@ namespace KrayonCore.EventSystem
                     return obj;
             }
             return null;
+        }
+
+        public static GameObject GetObjectByRay(Vector3 rayOrigin, Vector3 rayDir, GameScene scene)
+        {
+            GameObject closest = null;
+            float closestDist = float.MaxValue;
+
+            var objects = scene.GetAllGameObjects();
+
+            for (int i = 0; i < objects.Count; i++)
+            {
+                GameObject obj = objects[i];
+
+                if (obj.Tag == "__internal__") continue;
+
+                Matrix4 world = obj.Transform.GetWorldMatrix();
+                Matrix4 invWorld = Matrix4.Invert(world);
+
+                Vector4 lo4 = new Vector4(rayOrigin, 1.0f) * invWorld;
+                Vector4 le4 = new Vector4(rayOrigin + rayDir, 1.0f) * invWorld;
+
+                Vector3 localOrigin = lo4.Xyz / lo4.W;
+                Vector3 localEnd = le4.Xyz / le4.W;
+                Vector3 localDir = Vector3.Normalize(localEnd - localOrigin);
+
+                MeshRenderer meshRenderer = obj.GetComponent<MeshRenderer>();
+                Model model = meshRenderer?.Model;
+
+                float tLocal;
+
+                if (model != null && model.SubMeshCount > 0)
+                {
+                    Box3 aabb = model.AABB;
+                    float tAABB = RayIntersectsAABB(localOrigin, localDir, aabb.Min, aabb.Max);
+                    if (tAABB >= float.MaxValue) continue;
+                    tLocal = RayIntersectsMesh(localOrigin, localDir, model);
+                }
+                else
+                {
+                    Vector3 halfSize = Vector3.One * 0.5f;
+                    tLocal = RayIntersectsAABB(localOrigin, localDir, -halfSize, halfSize);
+                }
+
+                if (tLocal >= float.MaxValue) continue;
+
+                Vector3 localHit = localOrigin + localDir * tLocal;
+                Vector4 worldHit4 = new Vector4(localHit, 1.0f) * world;
+                Vector3 worldHit = worldHit4.Xyz / worldHit4.W;
+
+                float worldDist = (worldHit - rayOrigin).Length;
+                if (worldDist < closestDist)
+                {
+                    closestDist = worldDist;
+                    closest = obj;
+                }
+            }
+
+            return closest;
         }
     }
 }

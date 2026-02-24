@@ -1,18 +1,18 @@
 ﻿using ImGuiNET;
 using KrayonCore;
+using KrayonCore.Components;
 using KrayonCore.Components.RenderComponents;
 using KrayonCore.Core.Attributes;
-using KrayonCore.Graphics.Camera;
-using KrayonCore.Graphics.GameUI;
-using KrayonEditor.UI;
+using KrayonCore.EventSystem;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace KrayonEditor.UI.UIS
 {
     public class EntityEditorUI : UIBehaviour
     {
         public GameScene Scene;
-        public CameraComponent _Cam;
+        private Camera _editorCamera;
         private GameObject _selectedObject;
 
         private bool _firstMouse = true;
@@ -20,6 +20,33 @@ namespace KrayonEditor.UI.UIS
 
         private GameObject _renamingObject = null;
         private string _renameBuffer = "";
+
+        private string _entitySavePath = null;
+
+        private const string DRAG_DROP_PAYLOAD = "ENTITY_GAMEOBJECT";
+
+        public void OpenEntity(Guid assetGuid)
+        {
+            var asset = AssetManager.Get(assetGuid);
+            if (asset == null) return;
+
+            string fullPath = System.IO.Path.Combine(AssetManager.BasePath, asset.Path);
+            if (_entitySavePath == fullPath && Scene != null) return;
+
+            _entitySavePath = fullPath;
+
+            if (Scene != null)
+                SceneManager.UnregisterSceneOnly(Scene);
+
+            Scene = SceneSaveSystem.LoadScene(fullPath)
+                 ?? SceneManager.CreateScene(System.IO.Path.GetFileNameWithoutExtension(asset.Path));
+
+            SceneManager.RegisterSceneOnly(Scene);
+
+            _selectedObject = null;
+            _editorCamera = Scene.SelfRenderScene.GetCamera();
+            _editorCamera.Position = new OpenTK.Mathematics.Vector3(0, 0, 5);
+        }
 
         public override void OnDrawUI()
         {
@@ -42,56 +69,83 @@ namespace KrayonEditor.UI.UIS
             ImGui.Begin("Entity Hierarchy");
 
             if (ImGui.Button("Save Entity"))
-                SceneSaveSystem.SaveScene(Scene, $"{AssetManager.BasePath}/Entity/{Scene.Name}.entity");
+            {
+                string savePath = _entitySavePath
+                    ?? $"{AssetManager.BasePath}/Entity/{Scene?.Name}.entity";
+                SceneSaveSystem.SaveScene(Scene, savePath);
+            }
 
             ImGui.SameLine();
 
             if (ImGui.Button("New Scene"))
             {
+                if (Scene != null)
+                    SceneManager.UnregisterSceneOnly(Scene);
+
                 Scene = SceneManager.CreateScene("Entity Scene");
+                _entitySavePath = null;
+                SceneManager.RegisterSceneOnly(Scene);
 
-                GameObject obj = Scene.CreateGameObject();
-                obj.Name = "Editor Camera";
-                obj.AddComponent<MeshRenderer>().Start();
-                obj.Transform.Position = new OpenTK.Mathematics.Vector3(0, 0, -5);
-
-                GameObject camObj = Scene.CreateGameObject();
-                _Cam = camObj.AddComponent<CameraComponent>();
-                _Cam.Start();
-                camObj.Transform.Position = new OpenTK.Mathematics.Vector3(0, 0, 5);
+                _selectedObject = null;
+                _editorCamera = Scene.SelfRenderScene.GetCamera();
+                _editorCamera.Position = new OpenTK.Mathematics.Vector3(0, 0, 5);
             }
+
+            ImGui.Separator();
 
             if (Scene != null)
             {
-                ImGui.SameLine();
-                if (ImGui.Button("+ Add Object"))
+                if (_selectedObject != null && ImGui.IsWindowFocused() && ImGui.IsKeyPressed(ImGuiKey.Delete))
                 {
-                    GameObject newObj = Scene.CreateGameObject();
-                    newObj.Name = "New Object";
-                    _selectedObject = newObj;
+                    Scene.DestroyGameObject(_selectedObject);
+                    _selectedObject = null;
                 }
-
-                if (_selectedObject != null)
-                {
-                    ImGui.SameLine();
-                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.6f, 0.1f, 0.1f, 1f));
-                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.78f, 0.22f, 0.22f, 1f));
-                    if (ImGui.Button("Delete"))
-                    {
-                        Scene.DestroyGameObject(_selectedObject);
-                        _selectedObject = null;
-                    }
-                    ImGui.PopStyleColor(2);
-                }
-
-                ImGui.Separator();
 
                 var sceneFlags = ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanAvailWidth;
-                if (ImGui.TreeNodeEx($"{Scene.Name}##scene", sceneFlags))
+                bool sceneOpen = ImGui.TreeNodeEx($"{Scene.Name}##scene", sceneFlags);
+
+                if (ImGui.BeginPopupContextWindow("hierarchy_ctx",
+                    ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems))
+                {
+                    if (ImGui.MenuItem("New Empty Object"))
+                    {
+                        var newObj = Scene.CreateGameObject();
+                        newObj.Name = "New Object";
+                        _selectedObject = newObj;
+                    }
+
+                    if (ImGui.MenuItem("New Object with MeshRenderer"))
+                    {
+                        var newObj = Scene.CreateGameObject();
+                        newObj.Name = "New Mesh Object";
+                        newObj.AddComponent<MeshRenderer>().Start();
+                        _selectedObject = newObj;
+                    }
+
+                    ImGui.EndPopup();
+                }
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    var payload = ImGui.AcceptDragDropPayload(DRAG_DROP_PAYLOAD);
+                    unsafe
+                    {
+                        if (payload.NativePtr != null)
+                        {
+                            Guid draggedId = Marshal.PtrToStructure<Guid>((IntPtr)payload.Data);
+                            var draggedObject = FindObjectInScene(draggedId);
+                            if (draggedObject != null)
+                                draggedObject.Transform.SetParent(null);
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+
+                if (sceneOpen)
                 {
                     foreach (var go in Scene.GetAllGameObjects())
                     {
-                        if (_Cam != null && _Cam.GameObject != go && go.Transform.Parent == null)
+                        if (go.Transform.Parent == null)
                             DrawGameObjectNode(go);
                     }
                     ImGui.TreePop();
@@ -113,7 +167,8 @@ namespace KrayonEditor.UI.UIS
             if (_renamingObject == go)
             {
                 ImGui.SetNextItemWidth(-1);
-                if (ImGui.InputText($"##rename_{go.Id}", ref _renameBuffer, 128, ImGuiInputTextFlags.EnterReturnsTrue))
+                if (ImGui.InputText($"##rename_{go.Id}", ref _renameBuffer, 128,
+                    ImGuiInputTextFlags.EnterReturnsTrue))
                 {
                     go.Name = _renameBuffer;
                     _renamingObject = null;
@@ -134,12 +189,94 @@ namespace KrayonEditor.UI.UIS
                 _renameBuffer = go.Name;
             }
 
+            if (ImGui.BeginPopupContextItem($"ctx_{go.Id}"))
+            {
+                if (ImGui.MenuItem("New Empty Child"))
+                {
+                    var child = Scene.CreateGameObject();
+                    child.Name = "New Object";
+                    child.Transform.SetParent(go.Transform);
+                    _selectedObject = child;
+                }
+
+                if (ImGui.MenuItem("New MeshRenderer Child"))
+                {
+                    var child = Scene.CreateGameObject();
+                    child.Name = "New Mesh Object";
+                    child.AddComponent<MeshRenderer>().Start();
+                    child.Transform.SetParent(go.Transform);
+                    _selectedObject = child;
+                }
+
+                ImGui.Separator();
+
+                if (ImGui.MenuItem("Delete"))
+                {
+                    Scene.DestroyGameObject(go);
+                    if (_selectedObject == go) _selectedObject = null;
+                }
+
+                ImGui.EndPopup();
+            }
+
+            if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.None))
+            {
+                unsafe
+                {
+                    Guid id = go.Id;
+                    IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<Guid>());
+                    Marshal.StructureToPtr(id, ptr, false);
+                    ImGui.SetDragDropPayload(DRAG_DROP_PAYLOAD, ptr, (uint)Marshal.SizeOf<Guid>());
+                    Marshal.FreeHGlobal(ptr);
+                }
+                ImGui.Text($"Moving: {go.Name}");
+                ImGui.EndDragDropSource();
+            }
+
+            if (ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGui.AcceptDragDropPayload(DRAG_DROP_PAYLOAD);
+                unsafe
+                {
+                    if (payload.NativePtr != null)
+                    {
+                        Guid draggedId = Marshal.PtrToStructure<Guid>((IntPtr)payload.Data);
+                        var draggedObject = FindObjectInScene(draggedId);
+                        if (draggedObject != null && draggedObject != go)
+                        {
+                            if (!IsDescendantOf(go, draggedObject))
+                                draggedObject.Transform.SetParent(go.Transform);
+                        }
+                    }
+                }
+                ImGui.EndDragDropTarget();
+            }
+
             if (hasChildren && nodeOpen)
             {
                 foreach (var child in go.Transform.Children)
                     DrawGameObjectNode(child.GameObject);
                 ImGui.TreePop();
             }
+        }
+
+        private GameObject FindObjectInScene(Guid id)
+        {
+            if (Scene == null) return null;
+            foreach (var obj in Scene.GetAllGameObjects())
+                if (obj.Id == id) return obj;
+            return null;
+        }
+
+        private bool IsDescendantOf(GameObject go, GameObject potentialAncestor)
+        {
+            Transform current = go.Transform.Parent;
+            while (current != null)
+            {
+                if (current.GameObject == potentialAncestor) return true;
+                current = current.Parent;
+            }
+            return false;
         }
 
         private void DrawDetails()
@@ -197,7 +334,6 @@ namespace KrayonEditor.UI.UIS
             ImGui.Separator();
 
             ComponentInspector.DrawAddComponentButton(_selectedObject);
-
             ComponentInspector.DrawAssetPickerModal();
 
             ImGui.End();
@@ -208,24 +344,44 @@ namespace KrayonEditor.UI.UIS
             ImGui.SetNextWindowDockID(ImGui.GetID("EntityEditorDock"), ImGuiCond.FirstUseEver);
             ImGui.Begin("Entity Viewport");
 
-            if (Scene != null && _Cam != null)
+            if (Scene != null && _editorCamera != null)
             {
                 var viewportSize = ImGui.GetContentRegionAvail();
-                var fb = _Cam.RenderCamera.GetFinalTextureId(false);
+                var fb = Scene.SelfRenderScene.Buffers.Get("scene");
 
-                if (_Cam.RenderCamera.ViewportWidth != (int)viewportSize.X ||
-                    _Cam.RenderCamera.ViewportHeight != (int)viewportSize.Y)
+                if (fb.Width != (int)viewportSize.X || fb.Height != (int)viewportSize.Y)
                 {
-                    _Cam.ResizeBuffer((int)viewportSize.X, (int)viewportSize.Y);
-                    _Cam.RenderCamera.Camera.UpdateAspectRatio((int)viewportSize.X, (int)viewportSize.Y);
+                    Scene.SelfRenderScene.Resize((int)viewportSize.X, (int)viewportSize.Y);
+                    _editorCamera.AspectRatio = viewportSize.X / viewportSize.Y;
                 }
 
                 Vector2 cursorPos = ImGui.GetCursorScreenPos();
-                ImGui.Image(fb, viewportSize, new Vector2(0, 1), new Vector2(1, 0));
+                ImGui.Image(fb.ColorTexture, viewportSize, new Vector2(0, 1), new Vector2(1, 0));
                 bool isHovered = ImGui.IsItemHovered();
 
                 if (isHovered)
+                {
                     HandleCameraInput();
+
+                    if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && !TransformGizmo.IsHovering)
+                    {
+                        Vector2 relMouse = ImGui.GetMousePos() - cursorPos;
+                        bool inBounds = relMouse.X >= 0 && relMouse.X <= viewportSize.X &&
+                                        relMouse.Y >= 0 && relMouse.Y <= viewportSize.Y;
+
+                        if (inBounds)
+                        {
+                            var tkMouse = new OpenTK.Mathematics.Vector2(relMouse.X, relMouse.Y);
+                            EventSystem.ScreenToWorldRay(tkMouse, _editorCamera,
+                                (int)viewportSize.X, (int)viewportSize.Y,
+                                out OpenTK.Mathematics.Vector3 rayOrigin,
+                                out OpenTK.Mathematics.Vector3 rayDir);
+
+                            var hit = EventSystem.GetObjectByRay(rayOrigin, rayDir, Scene);
+                            _selectedObject = hit == _selectedObject ? null : hit;
+                        }
+                    }
+                }
 
                 DrawGizmo(cursorPos, viewportSize, isHovered);
             }
@@ -235,27 +391,26 @@ namespace KrayonEditor.UI.UIS
 
         private void HandleCameraInput()
         {
-            if (_Cam?.RenderCamera?.Camera is null) return;
+            if (_editorCamera is null) return;
 
             var io = ImGui.GetIO();
-            var camera = _Cam.RenderCamera.Camera;
             float dt = io.DeltaTime;
 
             if (ImGui.IsMouseDown(ImGuiMouseButton.Right))
             {
                 Vector2 delta = io.MouseDelta;
-                if (!_firstMouse)
-                    camera.Rotate(delta.X, -delta.Y);
+                if (!_firstMouse && (delta.X != 0 || delta.Y != 0))
+                    _editorCamera.Rotate(delta.X, -delta.Y);
                 _firstMouse = false;
 
                 float speed = _cameraSpeed * dt * (io.KeyCtrl ? 2.0f : 1.0f);
 
-                if (ImGui.IsKeyDown(ImGuiKey.W)) camera.Move(CameraMovement.Forward, speed);
-                if (ImGui.IsKeyDown(ImGuiKey.S)) camera.Move(CameraMovement.Backward, speed);
-                if (ImGui.IsKeyDown(ImGuiKey.A)) camera.Move(CameraMovement.Left, speed);
-                if (ImGui.IsKeyDown(ImGuiKey.D)) camera.Move(CameraMovement.Right, speed);
-                if (ImGui.IsKeyDown(ImGuiKey.Space)) camera.Move(CameraMovement.Up, speed);
-                if (ImGui.IsKeyDown(ImGuiKey.LeftShift)) camera.Move(CameraMovement.Down, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.W)) _editorCamera.Move(CameraMovement.Forward, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.S)) _editorCamera.Move(CameraMovement.Backward, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.A)) _editorCamera.Move(CameraMovement.Left, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.D)) _editorCamera.Move(CameraMovement.Right, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.Space)) _editorCamera.Move(CameraMovement.Up, speed);
+                if (ImGui.IsKeyDown(ImGuiKey.LeftShift)) _editorCamera.Move(CameraMovement.Down, speed);
             }
             else
             {
@@ -263,12 +418,12 @@ namespace KrayonEditor.UI.UIS
             }
 
             if (io.MouseWheel != 0)
-                camera.Zoom(io.MouseWheel);
+                _editorCamera.Zoom(io.MouseWheel);
         }
 
         private void DrawGizmo(Vector2 cursorPos, Vector2 viewportSize, bool isHovered)
         {
-            if (_selectedObject == null || _Cam == null || !isHovered) return;
+            if (_selectedObject == null || _editorCamera == null || !isHovered) return;
 
             var transform = new GizmoTransform(
                 _selectedObject.Transform.GetWorldPosition(),
@@ -277,8 +432,8 @@ namespace KrayonEditor.UI.UIS
 
             bool modified = TransformGizmo.Draw(
                 ref transform,
-                _Cam.RenderCamera.Camera.GetViewMatrix(),
-                _Cam.RenderCamera.Camera.GetProjectionMatrix(),
+                _editorCamera.GetViewMatrix(),
+                _editorCamera.GetProjectionMatrix(),
                 cursorPos,
                 viewportSize,
                 isHovered);

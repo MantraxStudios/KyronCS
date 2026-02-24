@@ -33,6 +33,7 @@ namespace KrayonCore
         public FrameBufferManager Buffers = new();
         public bool WireframeMode { get; set; } = false;
 
+
         public SceneRenderer() => Initialize();
 
         public void Initialize()

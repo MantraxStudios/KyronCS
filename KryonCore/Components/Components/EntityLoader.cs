@@ -35,7 +35,6 @@ namespace KrayonCore.Components
 
             byte[] bytes = AssetManager.GetBytes(guid);
             Scene = SceneManager.LoadSceneOnlyFromBytes(bytes, SelfScene.SelfRenderScene);
-            Start();
         }
 
         public override void Awake()
@@ -54,8 +53,8 @@ namespace KrayonCore.Components
             {
                 if (!AppInfo.IsPlayingGame && Scene.HasWorldMatrix)
                     Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
-
             }
+
             Scene?.Render();
         }
 

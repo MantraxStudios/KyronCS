@@ -167,7 +167,6 @@ namespace KrayonCore.GraphicsData
 
         internal void InternalResize(int width, int height)
         {
-            // Cada SceneRenderer redimensiona sus propios buffers
             SceneRenderers.ForEach(r => r.Buffers.ResizeAll(width, height));
             SceneRenderers.ForEach(r => r.Resize(width, height));
             OnResize?.Invoke(width, height);

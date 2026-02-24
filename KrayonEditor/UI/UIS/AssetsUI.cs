@@ -1,6 +1,7 @@
 using ImGuiNET;
 using KrayonCore.Core.Attributes;
 using KrayonCore.Editor.Panels;
+using KrayonEditor.UI.UIS;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -594,6 +595,10 @@ namespace KrayonEditor.UI
                 else if (ext == ".animator") 
                 {
                     UIRender.GetUI<AnimatorEditorUI>().OpenAsset(asset.Guid);
+                }
+                else if (ext == ".entity")
+                {
+                    UIRender.GetUI<EntityEditorUI>().OpenEntity(asset.Guid);
                 }
                 //else if (ext == ".ui")
                 //{
