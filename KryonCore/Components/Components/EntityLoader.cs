@@ -50,16 +50,22 @@ namespace KrayonCore.Components
 
         public override void OnWillRenderObject()
         {
-            if (!AppInfo.IsPlayingGame)
-                Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
+            if (Scene != null)
+            {
+                if (!AppInfo.IsPlayingGame && Scene.HasWorldMatrix)
+                    Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
 
+            }
             Scene?.Render();
         }
 
         public override void Update(float deltaTime)
         {
-            if (AppInfo.IsPlayingGame)
-                Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
+            if (Scene != null)
+            {
+                if (AppInfo.IsPlayingGame && Scene.HasWorldMatrix)
+                    Scene.WorldMatrix = GameObject.Transform.GetWorldMatrix();
+            }
 
             Scene?.Update(deltaTime);
         }

@@ -2,7 +2,7 @@
   "SceneName": "Entity Scene",
   "GameObjects": [
     {
-      "Id": "6a4158c6-9b30-465e-abe1-7d3611c09127",
+      "Id": "4c7b09fb-e47b-4a4b-92e2-5683377d2e13",
       "Name": "Editor Camera",
       "Tag": "Untagged",
       "Active": true,
@@ -10,14 +10,14 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "3d0a1584-3599-473b-bee9-bc87e8481183",
+          "ComponentId": "53794915-090c-4919-94cd-4666d9728c1f",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
               "x": 0,
               "y": 0,
-              "z": -5
+              "z": -1.8732321
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "5270da7d-f2b6-4a9f-8d75-4c0143751df4",
+          "ComponentId": "7efb8581-e433-42da-a054-567ef3388b80",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
@@ -52,7 +52,7 @@
       ]
     },
     {
-      "Id": "f5be2e17-b2f0-4b70-898a-2fe27d6deab2",
+      "Id": "b15b5516-1f1f-4229-bd0a-4995f09161f3",
       "Name": "GameObject",
       "Tag": "Untagged",
       "Active": true,
@@ -60,7 +60,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "fa8391c4-17d3-4fd6-88fa-48f13e7f6b2d",
+          "ComponentId": "128fd0e6-6c1d-4fab-9702-0a9cf152ce0d",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -86,7 +86,7 @@
         },
         {
           "TypeName": "KrayonCore.Graphics.Camera.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "46e20bf2-0f19-4cd5-ae2b-94b25dd3961d",
+          "ComponentId": "42ed08d6-ec0a-4910-a4f5-6b94d332dbd9",
           "Enabled": true,
           "SerializedFields": {
             "CameraName": "",
@@ -122,6 +122,56 @@
             "ViewportY": 0,
             "ViewportWidth": 1,
             "ViewportHeight": 1
+          }
+        }
+      ]
+    },
+    {
+      "Id": "56760915-be71-4171-a35d-846dbadbf970",
+      "Name": "New Object",
+      "Tag": "Untagged",
+      "Active": true,
+      "ParentId": null,
+      "Components": [
+        {
+          "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "4c6b0a71-8e8b-4b7f-84a4-15ddf6df5f27",
+          "Enabled": true,
+          "SerializedFields": {
+            "Position": {
+              "__type": "Vector3",
+              "x": 0,
+              "y": 1.5161275,
+              "z": -2.9008293
+            },
+            "Rotation": {
+              "__type": "Quaternion",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "Scale": {
+              "__type": "Vector3",
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "TypeName": "KrayonCore.Components.RenderComponents.MeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+          "ComponentId": "d9f5f6ce-6492-4c53-8b4f-8b7fdfbd3d20",
+          "Enabled": true,
+          "SerializedFields": {
+            "ModelPath": "5892c422-2865-45a6-8320-3a6a50ebd821",
+            "MaterialPaths": {
+              "__type": "Array",
+              "elementType": "System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "values": [
+                "basic"
+              ]
+            }
           }
         }
       ]
