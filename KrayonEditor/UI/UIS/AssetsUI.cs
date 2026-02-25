@@ -57,7 +57,6 @@ namespace KrayonEditor.UI
 
         private float _iconSize = 72f;
         private Dictionary<Guid, TextureLoader> _previewTextures = new();
-        private TextureLoader _unknownIconTexture = null;
 
         private static readonly HashSet<string> _modelExtensions = new(System.StringComparer.OrdinalIgnoreCase)
         {
@@ -67,14 +66,6 @@ namespace KrayonEditor.UI
         public AssetsUI()
         {
             ScenePreviewCapture.StartCapture();
-            LoadUnknownIcon();
-        }
-
-        private void LoadUnknownIcon()
-        {
-            string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "EditorResources", "unknown.png");
-            if (File.Exists(iconPath))
-                _unknownIconTexture = TextureLoader.FromAbsolutePath("unknown_icon", iconPath, false, false);
         }
 
         private class FolderNode
@@ -90,46 +81,55 @@ namespace KrayonEditor.UI
         private IntPtr GetPreviewTexture(AssetRecord asset)
         {
             string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
+            if (!_modelExtensions.Contains(ext)) return IntPtr.Zero;
 
-            if (_modelExtensions.Contains(ext))
+            if (!_previewTextures.TryGetValue(asset.Guid, out var loader))
             {
-                if (!_previewTextures.TryGetValue(asset.Guid, out var loader))
+                string cachePath = $"{AssetManager.TotalBase}/Cache/{asset.Guid}.png";
+                if (File.Exists(cachePath))
                 {
-                    string cachePath = $"{AssetManager.TotalBase}/Cache/{asset.Guid}.png";
-                    if (File.Exists(cachePath))
-                    {
-                        loader = TextureLoader.FromAbsolutePath(asset.Guid.ToString(), cachePath, false, false);
-                        _previewTextures[asset.Guid] = loader;
-                        return (IntPtr)loader.TextureId;
-                    }
-                    return IntPtr.Zero;
+                    loader = TextureLoader.FromAbsolutePath(asset.Guid.ToString(), cachePath, false, false);
+                    _previewTextures[asset.Guid] = loader;
+                    return (IntPtr)loader.TextureId;
                 }
-                return loader != null ? (IntPtr)loader.TextureId : IntPtr.Zero;
+                return IntPtr.Zero;
             }
-
-            return IntPtr.Zero;
+            return loader != null ? (IntPtr)loader.TextureId : IntPtr.Zero;
         }
+
+        private IntPtr GetAssetIcon(string ext) => ext switch
+        {
+            ".cs" => IconManager.GetIcon("script"),
+            ".animator" => IconManager.GetIcon("animator"),
+            ".png" or ".jpg" or ".jpeg" or ".bmp" => IconManager.GetIcon("texture"),
+            ".fbx" or ".obj" or ".gltf" or ".glb" => IconManager.GetIcon("model"),
+            ".entity" => IconManager.GetIcon("prefab"),
+            _ => IntPtr.Zero
+        };
+
+        private Vector4 GetAssetTintColor(string ext) => ext switch
+        {
+            ".cs" => new Vector4(0.4f, 0.8f, 1f, 1f),
+            ".animator" => new Vector4(0.6f, 1f, 0.6f, 1f),
+            ".entity" => new Vector4(1f, 0.8f, 0.4f, 1f),
+            ".png" or ".jpg" or ".jpeg" or ".bmp" => new Vector4(1f, 0.6f, 0.8f, 1f),
+            ".fbx" or ".obj" or ".gltf" or ".glb" => new Vector4(0.85f, 0.85f, 0.85f, 1f),
+            _ => new Vector4(0.8f, 0.8f, 0.8f, 1f)
+        };
 
         public void HandleExternalDrop(string[] externalPaths, string targetFolder = "")
         {
-            if (externalPaths == null || externalPaths.Length == 0)
-                return;
-
+            if (externalPaths == null || externalPaths.Length == 0) return;
             try
             {
                 foreach (string externalPath in externalPaths)
                 {
-                    if (Directory.Exists(externalPath))
-                        ImportExternalFolder(externalPath, targetFolder);
-                    else if (File.Exists(externalPath))
-                        ImportExternalFile(externalPath, targetFolder);
+                    if (Directory.Exists(externalPath)) ImportExternalFolder(externalPath, targetFolder);
+                    else if (File.Exists(externalPath)) ImportExternalFile(externalPath, targetFolder);
                 }
                 MarkDirty();
             }
-            catch (System.Exception ex)
-            {
-                System.Console.WriteLine($"Error importing external drop: {ex.Message}");
-            }
+            catch (System.Exception ex) { System.Console.WriteLine($"Error importing external drop: {ex.Message}"); }
         }
 
         private void ImportExternalFile(string sourceFilePath, string targetFolder)
@@ -137,7 +137,6 @@ namespace KrayonEditor.UI
             string fileName = Path.GetFileName(sourceFilePath);
             string relativePath = string.IsNullOrEmpty(targetFolder) ? fileName : $"{targetFolder}/{fileName}";
             string destPath = Path.Combine(AssetManager.BasePath, relativePath);
-
             if (File.Exists(destPath))
             {
                 string nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
@@ -151,11 +150,9 @@ namespace KrayonEditor.UI
                     counter++;
                 }
             }
-
             string directory = Path.GetDirectoryName(destPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
-
             File.Copy(sourceFilePath, destPath, false);
             AssetManager.Import(relativePath);
         }
@@ -165,7 +162,6 @@ namespace KrayonEditor.UI
             string folderName = new DirectoryInfo(sourceFolderPath).Name;
             string relativePath = string.IsNullOrEmpty(targetFolder) ? folderName : $"{targetFolder}/{folderName}";
             string destPath = Path.Combine(AssetManager.BasePath, relativePath);
-
             if (Directory.Exists(destPath))
             {
                 int counter = 1;
@@ -177,7 +173,6 @@ namespace KrayonEditor.UI
                     counter++;
                 }
             }
-
             CopyDirectory(sourceFolderPath, destPath);
             AssetManager.CreateFolder(targetFolder, folderName);
             ImportFolderContents(relativePath);
@@ -210,11 +205,7 @@ namespace KrayonEditor.UI
         {
             if (!_isVisible) return;
 
-            if (_treeDirty)
-            {
-                RebuildTree();
-                _treeDirty = false;
-            }
+            if (_treeDirty) { RebuildTree(); _treeDirty = false; }
 
             ImGui.Begin("Assets", ref _isVisible);
 
@@ -223,8 +214,7 @@ namespace KrayonEditor.UI
             float rightPanelWidth = panelWidth - leftPanelWidth - 8f;
 
             ImGui.BeginChild("FolderTree", new Vector2(leftPanelWidth, 0));
-            if (_rootNode != null)
-                DrawFolderTreeOnly(_rootNode);
+            if (_rootNode != null) DrawFolderTreeOnly(_rootNode);
             ImGui.EndChild();
 
             ImGui.SameLine();
@@ -271,16 +261,18 @@ namespace KrayonEditor.UI
                                        ImGuiTreeNodeFlags.OpenOnDoubleClick |
                                        ImGuiTreeNodeFlags.SpanAvailWidth;
 
-            if (!hasSubFolders)
-                flags |= ImGuiTreeNodeFlags.Leaf;
-
-            if (_selectedFolder == node.Path)
-                flags |= ImGuiTreeNodeFlags.Selected;
-
-            if (isOpen)
-                flags |= ImGuiTreeNodeFlags.DefaultOpen;
+            if (!hasSubFolders) flags |= ImGuiTreeNodeFlags.Leaf;
+            if (_selectedFolder == node.Path) flags |= ImGuiTreeNodeFlags.Selected;
+            if (isOpen) flags |= ImGuiTreeNodeFlags.DefaultOpen;
 
             ImGui.PushID("tree_" + node.Path);
+
+            IntPtr folderIcon = IconManager.GetIcon("folder");
+            if (folderIcon != IntPtr.Zero)
+            {
+                ImGui.Image(folderIcon, new Vector2(16, 16), Vector2.Zero, Vector2.One, new Vector4(1f, 0.85f, 0.3f, 1f));
+                ImGui.SameLine();
+            }
 
             bool nodeOpen = ImGui.TreeNodeEx(node.DisplayName, flags);
 
@@ -343,8 +335,7 @@ namespace KrayonEditor.UI
 
             if (nodeOpen)
             {
-                foreach (var subfolder in node.SubFolders)
-                    DrawFolderTreeOnly(subfolder);
+                foreach (var subfolder in node.SubFolders) DrawFolderTreeOnly(subfolder);
                 ImGui.TreePop();
             }
 
@@ -359,17 +350,13 @@ namespace KrayonEditor.UI
             float availWidth = ImGui.GetContentRegionAvail().X;
             float cellSize = _iconSize + 24f;
             float labelHeight = ImGui.GetTextLineHeight() * 2f;
-            float cellHeight = _iconSize + labelHeight + 8f;
+            float cellHeight = _iconSize + labelHeight + 12f;
             int columns = Math.Max(1, (int)(availWidth / cellSize));
 
             var allItems = new List<(bool isFolder, FolderNode folder, AssetRecord asset)>();
+            foreach (var subfolder in current.SubFolders) allItems.Add((true, subfolder, null));
+            foreach (var asset in current.Assets) allItems.Add((false, null, asset));
 
-            foreach (var subfolder in current.SubFolders)
-                allItems.Add((true, subfolder, null));
-            foreach (var asset in current.Assets)
-                allItems.Add((false, null, asset));
-
-            Vector2 startPos = ImGui.GetCursorScreenPos();
             Vector2 cursorBase = ImGui.GetCursorPos();
 
             for (int i = 0; i < allItems.Count; i++)
@@ -377,22 +364,18 @@ namespace KrayonEditor.UI
                 int col = i % columns;
                 int row = i / columns;
 
-                Vector2 itemPos = new Vector2(
+                ImGui.SetCursorPos(new Vector2(
                     cursorBase.X + col * cellSize,
                     cursorBase.Y + row * cellHeight
-                );
-
-                ImGui.SetCursorPos(itemPos);
+                ));
 
                 var item = allItems[i];
-                if (item.isFolder)
-                    DrawFolderIcon(item.folder);
-                else
-                    DrawAssetIcon(item.asset);
+                if (item.isFolder) DrawFolderIcon(item.folder);
+                else DrawAssetIcon(item.asset);
             }
 
             int totalRows = (allItems.Count + columns - 1) / columns;
-            ImGui.SetCursorPos(new Vector2(cursorBase.X, cursorBase.Y + totalRows * cellHeight));
+            ImGui.SetCursorPos(new Vector2(cursorBase.X, cursorBase.Y + totalRows * cellHeight + 4f));
             ImGui.Dummy(new Vector2(0, 0));
         }
 
@@ -406,21 +389,19 @@ namespace KrayonEditor.UI
                 : new Vector4(0.25f, 0.25f, 0.25f, 0.5f);
 
             ImGui.PushStyleColor(ImGuiCol.Button, bgColor);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.3f, 0.3f, 0.3f, 0.8f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.35f, 0.35f, 0.35f, 0.9f));
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.26f, 0.59f, 0.98f, 0.6f));
-            ImGui.Button($"##folder_{node.Path}", iconSize);
+
+            IntPtr folderIcon = IconManager.GetIcon("folder");
+            if (folderIcon != IntPtr.Zero)
+                ImGui.ImageButton($"##folder_{node.Path}", folderIcon, iconSize, Vector2.Zero, Vector2.One, Vector4.Zero, new Vector4(1f, 0.85f, 0.3f, 1f));
+            else
+                ImGui.Button($"##folder_{node.Path}", iconSize);
+
             ImGui.PopStyleColor(3);
 
-            var btnMin = ImGui.GetItemRectMin();
-            var btnMax = ImGui.GetItemRectMax();
-            var center = new Vector2((btnMin.X + btnMax.X) * 0.5f, (btnMin.Y + btnMax.Y) * 0.5f);
-            string symbol = "[ ]";
-            var symbolSize = ImGui.CalcTextSize(symbol);
-            ImGui.GetWindowDrawList().AddText(
-                new Vector2(center.X - symbolSize.X * 0.5f, center.Y - symbolSize.Y * 0.5f),
-                ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 0.85f, 0.3f, 1f)),
-                symbol
-            );
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip(node.DisplayName);
 
             if (ImGui.IsItemClicked()) _selectedFolder = node.Path;
             if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
@@ -452,13 +433,21 @@ namespace KrayonEditor.UI
                 ImGui.EndDragDropTarget();
             }
 
-            // Label centrado debajo del botón
-            Vector2 labelPos = new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 2f);
+            if (ImGui.BeginDragDropSource())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(node.Path);
+                unsafe { fixed (byte* ptr = bytes) ImGui.SetDragDropPayload("FOLDER_PATH", (IntPtr)ptr, (uint)bytes.Length); }
+                ImGui.Text(node.DisplayName);
+                ImGui.EndDragDropSource();
+            }
+
+            var itemMin = ImGui.GetItemRectMin();
+            var itemMax = ImGui.GetItemRectMax();
             string label = TruncateLabel(node.DisplayName, _iconSize);
             float textWidth = ImGui.CalcTextSize(label).X;
-            float textX = labelPos.X + (_iconSize - textWidth) * 0.5f;
+            float textX = itemMin.X + (_iconSize - textWidth) * 0.5f;
             ImGui.GetWindowDrawList().AddText(
-                new Vector2(textX, labelPos.Y),
+                new Vector2(textX, itemMax.Y + 3f),
                 ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f)),
                 label
             );
@@ -470,44 +459,46 @@ namespace KrayonEditor.UI
         {
             ImGui.PushID("asset_" + asset.Guid.ToString());
 
+            string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
             Vector2 iconSize = new Vector2(_iconSize, _iconSize);
             Vector4 bgColor = _selectedAsset == asset.Guid
                 ? new Vector4(0.26f, 0.59f, 0.98f, 0.4f)
                 : new Vector4(0.18f, 0.18f, 0.18f, 0.8f);
 
             IntPtr previewPtr = GetPreviewTexture(asset);
-            bool hasPreview = previewPtr != IntPtr.Zero;
+            IntPtr iconPtr = previewPtr != IntPtr.Zero ? previewPtr : GetAssetIcon(ext);
+            Vector4 tint = previewPtr != IntPtr.Zero ? Vector4.One : GetAssetTintColor(ext);
 
             ImGui.PushStyleColor(ImGuiCol.Button, bgColor);
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.3f, 0.3f, 0.3f, 0.8f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.35f, 0.35f, 0.35f, 0.9f));
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.26f, 0.59f, 0.98f, 0.6f));
 
-            if (hasPreview)
-                ImGui.ImageButton($"##asset_{asset.Guid}", previewPtr, iconSize);
+            if (iconPtr != IntPtr.Zero)
+                ImGui.ImageButton($"##asset_{asset.Guid}", iconPtr, iconSize, Vector2.Zero, Vector2.One, Vector4.Zero, tint);
             else
-                ImGui.Button($"##asset_{asset.Guid}", iconSize);
-
-            ImGui.PopStyleColor(3);
-
-            if (!hasPreview)
             {
+                ImGui.Button($"##asset_{asset.Guid}", iconSize);
                 var btnMin = ImGui.GetItemRectMin();
                 var btnMax = ImGui.GetItemRectMax();
                 var center = new Vector2((btnMin.X + btnMax.X) * 0.5f, (btnMin.Y + btnMax.Y) * 0.5f);
-                string symbol = GetAssetSymbol(Path.GetExtension(asset.Path)?.ToLowerInvariant());
-                var symbolSize = ImGui.CalcTextSize(symbol);
+                string symbol = "?";
+                var symSize = ImGui.CalcTextSize(symbol);
                 ImGui.GetWindowDrawList().AddText(
-                    new Vector2(center.X - symbolSize.X * 0.5f, center.Y - symbolSize.Y * 0.5f),
-                    ImGui.ColorConvertFloat4ToU32(GetAssetSymbolColor(Path.GetExtension(asset.Path)?.ToLowerInvariant())),
+                    new Vector2(center.X - symSize.X * 0.5f, center.Y - symSize.Y * 0.5f),
+                    ImGui.ColorConvertFloat4ToU32(new Vector4(0.7f, 0.7f, 0.7f, 1f)),
                     symbol
                 );
             }
+
+            ImGui.PopStyleColor(3);
+
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip(Path.GetFileName(asset.Path));
 
             if (ImGui.IsItemClicked()) _selectedAsset = asset.Guid;
 
             if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
-                string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
                 if (ext == ".cs") { string fp = Path.GetFullPath(Path.Combine(AssetManager.BasePath, asset.Path)); if (File.Exists(fp)) OpenVSCodeProject(fp); else OpenVSCodeProject(); }
                 else if (ext == ".animator") UIRender.GetUI<AnimatorEditorUI>().OpenAsset(asset.Guid);
                 else if (ext == ".entity") UIRender.GetUI<EntityEditorUI>().OpenEntity(asset.Guid);
@@ -515,7 +506,6 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginPopupContextItem($"AssetCtx_{asset.Guid}"))
             {
-                string ext = Path.GetExtension(asset.Path)?.ToLowerInvariant();
                 if (ext == ".cs" && ImGui.MenuItem("Open Project")) OpenVSCodeProject();
                 if (ext == ".animator" && ImGui.MenuItem("Open Animator Editor")) UIRender.GetUI<AnimatorEditorUI>().OpenAsset(asset.Guid);
                 if (ext == ".cs" || ext == ".animator") ImGui.Separator();
@@ -532,12 +522,13 @@ namespace KrayonEditor.UI
                 ImGui.EndDragDropSource();
             }
 
-            Vector2 labelPos = new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 2f);
+            var itemMin = ImGui.GetItemRectMin();
+            var itemMax = ImGui.GetItemRectMax();
             string label = TruncateLabel(Path.GetFileName(asset.Path), _iconSize);
             float textWidth = ImGui.CalcTextSize(label).X;
-            float textX = labelPos.X + (_iconSize - textWidth) * 0.5f;
+            float textX = itemMin.X + (_iconSize - textWidth) * 0.5f;
             ImGui.GetWindowDrawList().AddText(
-                new Vector2(textX, labelPos.Y),
+                new Vector2(textX, itemMax.Y + 3f),
                 ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f)),
                 label
             );
@@ -553,38 +544,11 @@ namespace KrayonEditor.UI
             return text + "..";
         }
 
-        private string GetAssetSymbol(string ext) => ext switch
-        {
-            ".cs" => "C#",
-            ".animator" => "ANIM",
-            ".entity" => "ENT",
-            ".png" or ".jpg" or ".jpeg" or ".bmp" => "IMG",
-            ".fbx" or ".obj" or ".gltf" or ".glb" => "?",
-            ".wav" or ".mp3" or ".ogg" => "SFX",
-            ".mat" => "MAT",
-            _ => "?"
-        };
-
-        private Vector4 GetAssetSymbolColor(string ext) => ext switch
-        {
-            ".cs" => new Vector4(0.4f, 0.8f, 1f, 1f),
-            ".animator" => new Vector4(0.6f, 1f, 0.6f, 1f),
-            ".entity" => new Vector4(1f, 0.8f, 0.4f, 1f),
-            ".png" or ".jpg" or ".jpeg" or ".bmp" => new Vector4(1f, 0.6f, 0.8f, 1f),
-            ".fbx" or ".obj" or ".gltf" or ".glb" => new Vector4(0.7f, 0.7f, 0.7f, 1f),
-            ".wav" or ".mp3" or ".ogg" => new Vector4(0.8f, 0.5f, 1f, 1f),
-            _ => new Vector4(0.8f, 0.8f, 0.8f, 1f)
-        };
-
         private FolderNode FindNode(FolderNode root, string path)
         {
             if (root == null) return null;
             if (root.Path == path) return root;
-            foreach (var sub in root.SubFolders)
-            {
-                var found = FindNode(sub, path);
-                if (found != null) return found;
-            }
+            foreach (var sub in root.SubFolders) { var found = FindNode(sub, path); if (found != null) return found; }
             return null;
         }
 
@@ -607,16 +571,13 @@ namespace KrayonEditor.UI
                 return node;
             }
 
-            foreach (var folder in AssetManager.AllFolders())
-                GetOrCreate(folder.Path);
-
+            foreach (var folder in AssetManager.AllFolders()) GetOrCreate(folder.Path);
             foreach (var asset in AssetManager.All())
             {
                 int lastSlash = asset.Path.LastIndexOf('/');
                 string folderPath = lastSlash < 0 ? "" : asset.Path.Substring(0, lastSlash);
                 GetOrCreate(folderPath).Assets.Add(asset);
             }
-
             SortNode(_rootNode);
         }
 
@@ -624,59 +585,15 @@ namespace KrayonEditor.UI
         {
             node.SubFolders.Sort((a, b) => string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase));
             node.Assets.Sort((a, b) => string.Compare(Path.GetFileName(a.Path), Path.GetFileName(b.Path), System.StringComparison.OrdinalIgnoreCase));
-            foreach (var child in node.SubFolders)
-                SortNode(child);
-        }
-
-        private void DrawFolderNode(FolderNode node)
-        {
-            bool hasChildren = node.SubFolders.Count > 0 || node.Assets.Count > 0;
-            bool isOpen = _openFolders.Contains(node.Path);
-
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.OpenOnArrow |
-                                       ImGuiTreeNodeFlags.OpenOnDoubleClick |
-                                       ImGuiTreeNodeFlags.SpanAvailWidth;
-
-            if (!hasChildren) flags |= ImGuiTreeNodeFlags.Leaf;
-            if (_selectedFolder == node.Path) flags |= ImGuiTreeNodeFlags.Selected;
-            if (isOpen) flags |= ImGuiTreeNodeFlags.DefaultOpen;
-
-            ImGui.PushID(node.Path);
-            bool nodeOpen = ImGui.TreeNodeEx(node.DisplayName, flags);
-
-            if (ImGui.IsItemClicked() && !ImGui.IsItemToggledOpen())
-                _selectedFolder = node.Path;
-
-            if (nodeOpen && !isOpen) _openFolders.Add(node.Path);
-            else if (!nodeOpen && isOpen) _openFolders.Remove(node.Path);
-
-            if (nodeOpen)
-            {
-                foreach (var subfolder in node.SubFolders) DrawFolderNode(subfolder);
-                foreach (var asset in node.Assets) DrawAssetNode(asset);
-                ImGui.TreePop();
-            }
-            ImGui.PopID();
-        }
-
-        private void DrawAssetNode(AssetRecord asset)
-        {
-            ImGui.PushID(asset.Guid.ToString());
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanAvailWidth;
-            if (_selectedAsset == asset.Guid) flags |= ImGuiTreeNodeFlags.Selected;
-            ImGui.TreeNodeEx(Path.GetFileName(asset.Path), flags);
-            if (ImGui.IsItemClicked()) _selectedAsset = asset.Guid;
-            ImGui.PopID();
+            foreach (var child in node.SubFolders) SortNode(child);
         }
 
         private void DrawNewAnimatorPopup()
         {
             if (_showNewAnimatorPopup) { ImGui.OpenPopup("New Animator Controller##Popup"); _showNewAnimatorPopup = false; }
-
             var viewport = ImGui.GetMainViewport();
             ImGui.SetNextWindowPos(viewport.GetCenter(), ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
             ImGui.SetNextWindowSize(new Vector2(350, 0), ImGuiCond.Appearing);
-
             bool popupOpen = true;
             if (ImGui.BeginPopupModal("New Animator Controller##Popup", ref popupOpen, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
             {
@@ -689,9 +606,7 @@ namespace KrayonEditor.UI
                 string previewPath = string.IsNullOrEmpty(_newAnimatorFolder) ? fileName : $"{_newAnimatorFolder}/{fileName}";
                 string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
                 bool alreadyExists = File.Exists(fullPath);
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-                ImGui.Text($"Path: {previewPath}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f)); ImGui.Text($"Path: {previewPath}"); ImGui.PopStyleColor();
                 if (alreadyExists) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f)); ImGui.Text("A file with this name already exists."); ImGui.PopStyleColor(); }
                 if (!validName) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f)); ImGui.Text("Invalid file name."); ImGui.PopStyleColor(); }
                 ImGui.Spacing(); ImGui.Separator(); ImGui.Spacing();
@@ -710,8 +625,7 @@ namespace KrayonEditor.UI
             try
             {
                 string directory = Path.GetDirectoryName(fullPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) Directory.CreateDirectory(directory);
                 string content = System.Text.Json.JsonSerializer.Serialize(
                     new KrayonCore.Animation.AnimatorControllerData { Name = _newAnimatorName, DefaultState = "", Parameters = new(), States = new() },
                     new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
@@ -751,9 +665,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
                 string previewPath = string.IsNullOrEmpty(_newScriptFolder) ? $"{_newScriptName}.cs" : $"{_newScriptFolder}/{_newScriptName}.cs";
                 string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
                 bool alreadyExists = File.Exists(fullPath);
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-                ImGui.Text($"Path: {previewPath}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f)); ImGui.Text($"Path: {previewPath}"); ImGui.PopStyleColor();
                 if (alreadyExists) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f)); ImGui.Text("A file with this name already exists."); ImGui.PopStyleColor(); }
                 if (!validName) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f)); ImGui.Text("Invalid file name."); ImGui.PopStyleColor(); }
                 ImGui.Spacing(); ImGui.Separator(); ImGui.Spacing();
@@ -772,8 +684,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
             try
             {
                 string directory = Path.GetDirectoryName(fullPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) Directory.CreateDirectory(directory);
                 string content = DefaultScriptTemplate.Replace("{SCRIPT_NAME}", _newScriptName);
                 File.WriteAllText(fullPath, content);
                 AssetManager.Import(relativePath);
@@ -800,9 +711,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
                 string previewPath = string.IsNullOrEmpty(_newFolderParent) ? _newFolderName : $"{_newFolderParent}/{_newFolderName}";
                 string fullPath = Path.Combine(AssetManager.BasePath, previewPath);
                 bool alreadyExists = Directory.Exists(fullPath);
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-                ImGui.Text($"Path: {previewPath}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f)); ImGui.Text($"Path: {previewPath}"); ImGui.PopStyleColor();
                 if (alreadyExists) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f)); ImGui.Text("A folder with this name already exists."); ImGui.PopStyleColor(); }
                 if (!validName) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.6f, 0.2f, 1f)); ImGui.Text("Invalid folder name."); ImGui.PopStyleColor(); }
                 ImGui.Spacing(); ImGui.Separator(); ImGui.Spacing();
@@ -831,9 +740,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
                 bool enterPressed = ImGui.InputText("##RenameAsset", ref _renameAssetNewName, 128, ImGuiInputTextFlags.EnterReturnsTrue);
                 bool validName = !string.IsNullOrWhiteSpace(_renameAssetNewName) && _renameAssetNewName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
                 string finalName = _renameAssetNewName + _renameAssetExtension;
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-                ImGui.Text($"Final: {finalName}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f)); ImGui.Text($"Final: {finalName}"); ImGui.PopStyleColor();
                 bool nameConflict = false;
                 if (_assetToRename.HasValue && validName)
                 {
@@ -879,9 +786,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
                 bool validName = !string.IsNullOrWhiteSpace(_renameFolderNewName) && _renameFolderNewName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
                 string parentPath = _folderToRename.Contains('/') ? string.Join("/", _folderToRename.Split('/').SkipLast(1)) : "";
                 string previewPath = string.IsNullOrEmpty(parentPath) ? _renameFolderNewName : $"{parentPath}/{_renameFolderNewName}";
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
-                ImGui.Text($"Path: {previewPath}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f)); ImGui.Text($"Path: {previewPath}"); ImGui.PopStyleColor();
                 string newFullPath = Path.Combine(AssetManager.BasePath, previewPath);
                 bool alreadyExists = Directory.Exists(newFullPath) && previewPath != _folderToRename;
                 if (alreadyExists) { ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.4f, 0.4f, 1f)); ImGui.Text("A folder with this name already exists."); ImGui.PopStyleColor(); }
@@ -915,9 +820,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
             if (ImGui.BeginPopupModal("Delete Asset##Popup", ref popupOpen, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
             {
                 ImGui.Text("Are you sure you want to delete:");
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.8f, 0.3f, 1f));
-                ImGui.Text($"  {_assetToDeleteName}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.8f, 0.3f, 1f)); ImGui.Text($"  {_assetToDeleteName}"); ImGui.PopStyleColor();
                 ImGui.Text("This action cannot be undone.");
                 ImGui.Spacing(); ImGui.Separator(); ImGui.Spacing();
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1f));
@@ -949,9 +852,7 @@ public class {SCRIPT_NAME} : KrayonBehaviour
             if (ImGui.BeginPopupModal("Delete Folder##Popup", ref popupOpen, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove))
             {
                 ImGui.Text("Are you sure you want to delete folder:");
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.8f, 0.3f, 1f));
-                ImGui.Text($"  {_folderToDeleteName}");
-                ImGui.PopStyleColor();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.8f, 0.3f, 1f)); ImGui.Text($"  {_folderToDeleteName}"); ImGui.PopStyleColor();
                 ImGui.Text("All contents will be permanently deleted.");
                 ImGui.Spacing(); ImGui.Separator(); ImGui.Spacing();
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1f));
