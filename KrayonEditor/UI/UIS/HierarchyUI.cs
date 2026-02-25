@@ -2,6 +2,7 @@
 using KrayonCore;
 using KrayonCore.Components;
 using KrayonEditor.Main;
+using KrayonEditor.Utilities;
 using System;
 using System.Runtime.InteropServices;
 

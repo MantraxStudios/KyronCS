@@ -154,6 +154,7 @@ namespace KrayonCore
             }
 
             _scenes[sceneToLoad.Name] = sceneToLoad;
+            GraphicsEngine.Instance.CurrentSceneRendering = sceneToLoad.SelfRenderScene;
             sceneToLoad.OnLoad();
             sceneToLoad.Start();
             OnSceneLoaded?.Invoke(sceneToLoad);

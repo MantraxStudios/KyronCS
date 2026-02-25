@@ -1,9 +1,9 @@
 {
-  "Enabled": true,
+  "Enabled": false,
   "ColorCorrectionEnabled": true,
-  "Brightness": 1,
-  "Contrast": 1.28,
-  "Saturation": 1.29,
+  "Brightness": 0.2,
+  "Contrast": 0.34,
+  "Saturation": 1.03,
   "ColorFilter": {
     "X": 1,
     "Y": 1,
@@ -15,7 +15,7 @@
   "BloomIntensity": 10,
   "BloomRadius": 1.7,
   "GrainEnabled": true,
-  "GrainIntensity": 0.008,
+  "GrainIntensity": 0.097,
   "GrainSize": 5,
   "SSAOEnabled": false,
   "SSAOKernelSize": 64,

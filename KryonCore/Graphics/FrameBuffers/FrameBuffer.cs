@@ -27,6 +27,7 @@ namespace KrayonCore.Graphics.FrameBuffers
         public int PositionTexture => _positionTexture;
         public int NormalTexture => _normalTexture;
         public bool UseGBuffer => _useGBuffer;
+        public int Handle => _fbo;
 
         // ── Constructor ──────────────────────────────────────────────────────
         public FrameBuffer(int width, int height, bool useEmission = false, bool useGBuffer = false)

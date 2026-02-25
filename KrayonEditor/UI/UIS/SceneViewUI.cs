@@ -105,6 +105,7 @@ namespace KrayonEditor.UI
                     {
                         AppInfo.IsPlayingGame = false;
                         SceneManager.LoadSceneFromBytes(AppInfo._RuntimeScene);
+
                         Console.WriteLine("Stop Scene");
                     }
 

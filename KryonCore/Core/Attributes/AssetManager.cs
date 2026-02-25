@@ -829,6 +829,13 @@ namespace KrayonCore.Core.Attributes
                 Directory.CreateDirectory(dir);
         }
 
+        public static IEnumerable<Guid> GetAllModelGuids()
+        {
+            return _assets.Values
+                .Where(a => a.Path.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase))
+                .Select(a => a.Guid);
+        }
+
         public static IEnumerable<AssetRecord> GetAllScenes()
             => _assets.Values.Where(a => a.Type == "Scene" || a.Path.EndsWith(".scene", StringComparison.OrdinalIgnoreCase));
 

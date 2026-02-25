@@ -13,6 +13,8 @@ using KrayonCore.GraphicsData;
 using KrayonCore.UI;
 using KrayonCore.Utilities;
 using KrayonEditor.UI;
+using KrayonEditor.Utilities;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
