@@ -1,8 +1,8 @@
 using KrayonCore;
 using KrayonCore.Animation;
-using KrayonCore.Components.Components;
 using KrayonCore.Core;
 using KrayonCore.Core.Components;
+using KrayonCore.Components;
 using KrayonCore.Core.Input;
 using KrayonCore.GraphicsData;
 using OpenTK.Mathematics;
@@ -26,7 +26,7 @@ public class PlayerController : KrayonBehaviour
     public override void Start()
     {
         _body    = GameObject.Transform.GetComponent<Rigidbody>();
-        _Camera  = SceneManager.ActiveScene.FindGameObjectWithTag("MainCamera").Transform;
+        _Camera  = SceneManager.PrimaryScene.FindGameObjectWithTag("MainCamera").Transform;
         GraphicsEngine.Instance.Window.CursorState = OpenTK.Windowing.Common.CursorState.Grabbed;
     }
 

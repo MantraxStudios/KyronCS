@@ -89,7 +89,7 @@ namespace KrayonEditor.UI
                 }
             }
 
-            Console.WriteLine($"IconManager: Icon '{name}' not found or not loaded");
+            //Console.WriteLine($"IconManager: Icon '{name}' not found or not loaded");
             return IntPtr.Zero;
         }
 

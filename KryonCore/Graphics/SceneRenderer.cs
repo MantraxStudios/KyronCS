@@ -1,6 +1,7 @@
 using KrayonCore.Animation;
 using KrayonCore.Components;
 using KrayonCore.Components.RenderComponents;
+using KrayonCore.Core;
 using KrayonCore.Core.Rendering;
 using KrayonCore.Graphics.FrameBuffers;
 using KrayonCore.Graphics.GameUI;
@@ -49,12 +50,15 @@ namespace KrayonCore
             Buffers.Create("scene", 1280, 720, useEmission: true, useGBuffer: true);
             Buffers.Create("postProcess", 1280, 720, useEmission: false, useGBuffer: false);
 
-            var mainCam = ManagerCams.Create("main", new Vector3(0, 0, 5),
-                WindowConfig.Width / (float)WindowConfig.Height, priority: 0);
-            mainCam._OwnerBuffers = Buffers;
-            mainCam.SetTargetBuffer("scene", "postProcess");
+            if (!AppInfo.IsCompiledGame)
+            {
+                var mainCam = ManagerCams.Create("main", new Vector3(0, 0, 5),
+                    WindowConfig.Width / (float)WindowConfig.Height, priority: 0);
+                mainCam._OwnerBuffers = Buffers;
+                mainCam.SetTargetBuffer("scene", "postProcess");
+            }
 
-            Console.WriteLine($"Esta Escena Tiene un total de {ManagerCams.Count} camaras");
+            //Console.WriteLine($"Esta Escena Tiene un total de {ManagerCams.Count} camaras");
         }
 
         public void RegisterRenderer<T>(T renderer) where T : class
@@ -178,7 +182,7 @@ namespace KrayonCore
             var target = renderCam.GetTargetBuffer() ?? Buffers.TryGet("scene");
             if (target is null) return;
 
-            Console.WriteLine($"[Render] cam={renderCam.Name} target={target.GetHashCode()} meshes={_meshRenderers.Count}");
+            // Console.WriteLine($"[Render] cam={renderCam.Name} target={target.GetHashCode()} meshes={_meshRenderers.Count}");
 
             target.Bind();
             GL.Viewport(

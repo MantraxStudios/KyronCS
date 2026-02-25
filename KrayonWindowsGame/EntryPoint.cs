@@ -12,6 +12,7 @@ namespace KrayonEditor
         {
             AssetManager.TotalBase = "";
             AppInfo.IsCompiledGame = true;
+            AppInfo.IsPlayingGame = true;
             EngineLoader.Run();
         }
     }
