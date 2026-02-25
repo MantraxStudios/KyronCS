@@ -59,7 +59,7 @@ namespace KrayonCore.Components.RenderComponents
             UnloadCanvas();
             if (string.IsNullOrEmpty(_canvasPath)) return;
 
-            var sceneRenderer = GraphicsEngine.Instance?.GetSceneRenderer();
+            var sceneRenderer = SelfScene.SelfRenderScene;
             if (sceneRenderer is null)
             {
                 Console.WriteLine("[UICanvasRenderer] SceneRenderer no disponible todavia.");

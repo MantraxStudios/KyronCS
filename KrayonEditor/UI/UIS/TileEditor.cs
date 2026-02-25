@@ -148,9 +148,7 @@ namespace KrayonEditor.UI
                 if (ImGui.BeginMenu("File"))
                 {
                     if (ImGui.MenuItem("Save Configuration", "Ctrl+S"))
-                    {
                         _showSaveDialog = true;
-                    }
                     if (ImGui.MenuItem("Load Configuration", "Ctrl+O"))
                     {
                         RefreshConfigurationList();
@@ -158,9 +156,7 @@ namespace KrayonEditor.UI
                     }
                     ImGui.Separator();
                     if (ImGui.MenuItem("Save as Startup"))
-                    {
                         SaveStartupConfiguration();
-                    }
                     ImGui.EndMenu();
                 }
                 ImGui.EndMenuBar();
@@ -235,9 +231,7 @@ namespace KrayonEditor.UI
                         }
 
                         if (ImGui.IsItemHovered() && ImGui.IsMouseClicked(ImGuiMouseButton.Right))
-                        {
                             ImGui.OpenPopup("ConfigContextMenu");
-                        }
 
                         if (ImGui.BeginPopup("ConfigContextMenu"))
                         {
@@ -256,9 +250,7 @@ namespace KrayonEditor.UI
                 ImGui.EndChild();
 
                 if (ImGui.Button("Cancel", new Vector2(-1, 30)))
-                {
                     _showLoadDialog = false;
-                }
             }
             ImGui.End();
             ImGui.PopStyleColor();
@@ -285,12 +277,10 @@ namespace KrayonEditor.UI
                 };
 
                 string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-                string filePath = Path.Combine(ConfigPath, $"{name}.json");
-                File.WriteAllText(filePath, json);
+                File.WriteAllText(Path.Combine(ConfigPath, $"{name}.json"), json);
 
                 _currentConfigName = name;
                 RefreshConfigurationList();
-
                 Console.WriteLine($"[TileEditor] ✓ Configuration saved: {name}");
             }
             catch (Exception ex)
@@ -310,9 +300,7 @@ namespace KrayonEditor.UI
                     return;
                 }
 
-                string json = File.ReadAllText(filePath);
-                var config = JsonSerializer.Deserialize<TileConfiguration>(json);
-
+                var config = JsonSerializer.Deserialize<TileConfiguration>(File.ReadAllText(filePath));
                 if (config != null)
                 {
                     _materialPath = config.MaterialPath;
@@ -375,9 +363,7 @@ namespace KrayonEditor.UI
                 };
 
                 string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-                string filePath = Path.Combine(ConfigPath, "Startup.json");
-                File.WriteAllText(filePath, json);
-
+                File.WriteAllText(Path.Combine(ConfigPath, "Startup.json"), json);
                 Console.WriteLine($"[TileEditor] ✓ Startup configuration saved");
             }
             catch (Exception ex)
@@ -393,9 +379,7 @@ namespace KrayonEditor.UI
                 string filePath = Path.Combine(ConfigPath, "Startup.json");
                 if (File.Exists(filePath))
                 {
-                    string json = File.ReadAllText(filePath);
-                    var config = JsonSerializer.Deserialize<TileConfiguration>(json);
-
+                    var config = JsonSerializer.Deserialize<TileConfiguration>(File.ReadAllText(filePath));
                     if (config != null)
                     {
                         _materialPath = config.MaterialPath;
@@ -406,7 +390,6 @@ namespace KrayonEditor.UI
                         _selectedTileY = config.SelectedTileY;
                         _objectName = config.ObjectNamePrefix;
                         _gridSnapSize = config.GridSnapSize;
-
                         Console.WriteLine($"[TileEditor] ✓ Startup configuration loaded");
                     }
                 }
@@ -420,13 +403,11 @@ namespace KrayonEditor.UI
         private void RefreshConfigurationList()
         {
             _savedConfigurations.Clear();
-
             try
             {
                 if (Directory.Exists(ConfigPath))
                 {
-                    var files = Directory.GetFiles(ConfigPath, "*.json");
-                    foreach (var file in files)
+                    foreach (var file in Directory.GetFiles(ConfigPath, "*.json"))
                     {
                         string fileName = Path.GetFileNameWithoutExtension(file);
                         if (fileName != "Startup")
@@ -455,7 +436,6 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            // Control + Mouse Wheel para ajustar Z position
             if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl))
             {
                 float mouseWheel = ImGui.GetIO().MouseWheel;
@@ -467,21 +447,21 @@ namespace KrayonEditor.UI
             }
 
             var mouseState = GraphicsEngine.Instance.GetMouseState();
-            var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
-            int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
-            int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+            var editorRenderer = GraphicsEngine.Instance.CurrentSceneRendering;
+            var camera = editorRenderer.GetCamera();
+            var sceneBuffer = editorRenderer.Buffers.TryGet("scene");
+            int screenWidth = sceneBuffer?.Width ?? 1280;
+            int screenHeight = sceneBuffer?.Height ?? 720;
 
             System.Numerics.Vector2 globalMousePos = ImGui.GetMousePos();
             System.Numerics.Vector2 sceneWindowPos = EditorActions.ViewPortPosition;
             System.Numerics.Vector2 relativeMousePos = new System.Numerics.Vector2(
                 globalMousePos.X - sceneWindowPos.X,
-                globalMousePos.Y - sceneWindowPos.Y
-            );
+                globalMousePos.Y - sceneWindowPos.Y);
 
             OpenTK.Mathematics.Vector2 openTKMousePos = new OpenTK.Mathematics.Vector2(
                 relativeMousePos.X,
-                relativeMousePos.Y
-            );
+                relativeMousePos.Y);
 
             EventSystem.ScreenToWorldRay(openTKMousePos, camera, screenWidth, screenHeight,
                 out OpenTK.Mathematics.Vector3 rayOrigin, out OpenTK.Mathematics.Vector3 rayDir);
@@ -547,8 +527,7 @@ namespace KrayonEditor.UI
         {
             if (_previewObject != null)
             {
-                var scene = SceneManager.PrimaryScene;
-                scene?.DestroyGameObject(_previewObject);
+                SceneManager.PrimaryScene?.DestroyGameObject(_previewObject);
                 _previewObject = null;
             }
         }
@@ -569,9 +548,7 @@ namespace KrayonEditor.UI
             ImGui.SetNextItemWidth(-80);
             ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.18f, 0.20f, 0.26f, 1f));
             if (ImGui.InputTextWithHint("##MatPath", "e.g. spritesheet_player", ref _materialPath, 512, ImGuiInputTextFlags.EnterReturnsTrue))
-            {
                 LoadMaterial();
-            }
             ImGui.PopStyleColor();
 
             ImGui.SameLine();
@@ -583,9 +560,7 @@ namespace KrayonEditor.UI
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, ColAccent with { W = 0.55f });
             ImGui.PushStyleColor(ImGuiCol.Text, ColAccent);
             if (ImGui.Button("Load", new Vector2(70, 0)))
-            {
                 LoadMaterial();
-            }
             ImGui.PopStyleColor(4);
 
             if (!canLoad) ImGui.EndDisabled();
@@ -625,22 +600,16 @@ namespace KrayonEditor.UI
             ImGui.TextColored(ColMuted, "PPU");
             ImGui.SetNextItemWidth(85);
             if (ImGui.InputFloat("##PPU", ref _pixelsPerUnit))
-            {
                 _pixelsPerUnit = Math.Max(0.1f, _pixelsPerUnit);
-            }
 
             ImGui.SameLine();
             ImGui.TextColored(ColMuted, "Snap");
             ImGui.SetNextItemWidth(85);
             if (ImGui.InputFloat("##Snap", ref _gridSnapSize))
-            {
                 _gridSnapSize = Math.Max(0.1f, _gridSnapSize);
-            }
 
             if (_tilesPerRow > 0 && _tilesPerColumn > 0)
-            {
                 ImGui.TextColored(ColMuted, $"Grid: {_tilesPerRow} x {_tilesPerColumn} tiles | PPU: {_pixelsPerUnit:F1} | Snap: {_gridSnapSize:F1}");
-            }
         }
 
         private void DrawTileGrid()
@@ -675,9 +644,7 @@ namespace KrayonEditor.UI
                 for (int x = 0; x < _tilesPerRow; x++)
                 {
                     if (currentRowTiles > 0)
-                    {
                         ImGui.SameLine(0, PAD);
-                    }
 
                     ImGui.PushID(tileIndex);
 
@@ -686,8 +653,7 @@ namespace KrayonEditor.UI
                     var dl = ImGui.GetWindowDrawList();
 
                     bool isSelected = (_selectedTileX == x && _selectedTileY == y);
-                    uint bgColor = isSelected ? C(ColAccentDim) : C(ColBgPanel);
-                    dl.AddRectFilled(cellMin, cellMax, bgColor, 5f);
+                    dl.AddRectFilled(cellMin, cellMax, isSelected ? C(ColAccentDim) : C(ColBgPanel), 5f);
 
                     var (u0, v0, u1, v1) = GetTileUV(x, y);
                     dl.AddImage(_textureId, cellMin, cellMax, new Vector2(u0, v0), new Vector2(u1, v1));
@@ -710,9 +676,8 @@ namespace KrayonEditor.UI
                     }
                     else
                     {
-                        uint borderColor = isSelected ? C(ColAccent) : C(ColBorder);
-                        float borderWidth = isSelected ? 2f : 1f;
-                        dl.AddRect(cellMin, cellMax, borderColor, 5f, ImDrawFlags.None, borderWidth);
+                        dl.AddRect(cellMin, cellMax, isSelected ? C(ColAccent) : C(ColBorder),
+                            5f, ImDrawFlags.None, isSelected ? 2f : 1f);
                     }
 
                     if (ImGui.IsItemClicked())
@@ -728,9 +693,7 @@ namespace KrayonEditor.UI
                     currentRowTiles++;
 
                     if (currentRowTiles >= tilesPerRowInView)
-                    {
                         currentRowTiles = 0;
-                    }
                 }
             }
 
@@ -752,7 +715,6 @@ namespace KrayonEditor.UI
             {
                 ImGui.TextColored(ColSuccess, $"✓ Selected Tile: [{_selectedTileX}, {_selectedTileY}]");
                 ImGui.TextColored(ColMuted, $"Material: {_materialPath} | Size: {_tileWidth}x{_tileHeight}px | PPU: {_pixelsPerUnit:F1}");
-
                 ImGui.Spacing();
 
                 ImGui.TextColored(ColMuted, "Object Name");
@@ -770,9 +732,7 @@ namespace KrayonEditor.UI
                 ImGui.PushStyleColor(ImGuiCol.ButtonActive, ColSuccess with { W = 0.65f });
                 ImGui.PushStyleColor(ImGuiCol.Text, ColSuccess);
                 if (ImGui.Button("Create", new Vector2(80, 26)))
-                {
                     CreateSpriteObject();
-                }
                 ImGui.PopStyleColor(4);
 
                 if (!canCreate) ImGui.EndDisabled();
@@ -784,8 +744,7 @@ namespace KrayonEditor.UI
                 ImGui.PushStyleColor(ImGuiCol.ButtonHovered, paintColor with { W = 0.45f });
                 ImGui.PushStyleColor(ImGuiCol.ButtonActive, paintColor with { W = 0.65f });
                 ImGui.PushStyleColor(ImGuiCol.Text, paintColor);
-                string paintLabel = _paintMode ? "Stop Paint" : "Paint Mode";
-                if (ImGui.Button(paintLabel, new Vector2(120, 26)))
+                if (ImGui.Button(_paintMode ? "Stop Paint" : "Paint Mode", new Vector2(120, 26)))
                 {
                     _paintMode = !_paintMode;
                     if (!_paintMode)
@@ -823,7 +782,6 @@ namespace KrayonEditor.UI
                 gameObject.Name = _objectName;
 
                 var sprite = gameObject.AddComponent<SpriteRenderer>();
-
                 sprite.MaterialPath = _materialPath;
                 sprite.TileWidth = _tileWidth;
                 sprite.TileHeight = _tileHeight;
@@ -833,10 +791,6 @@ namespace KrayonEditor.UI
                 sprite.Start();
 
                 Console.WriteLine($"[TileEditor] ✓ Created object '{_objectName}' with tile [{_selectedTileX}, {_selectedTileY}]");
-                Console.WriteLine($"[TileEditor]   Material: {_materialPath}");
-                Console.WriteLine($"[TileEditor]   Tile Size: {_tileWidth}x{_tileHeight}");
-                Console.WriteLine($"[TileEditor]   Pixels Per Unit: {_pixelsPerUnit}");
-
                 IncrementObjectName();
             }
             catch (Exception ex)
@@ -852,14 +806,12 @@ namespace KrayonEditor.UI
             {
                 string prefix = _objectName.Substring(0, lastUnderscore + 1);
                 string suffix = _objectName.Substring(lastUnderscore + 1);
-
                 if (int.TryParse(suffix, out int number))
                 {
                     _objectName = prefix + (number + 1);
                     return;
                 }
             }
-
             _objectName += "_1";
         }
 
@@ -868,13 +820,10 @@ namespace KrayonEditor.UI
             var avail = ImGui.GetContentRegionAvail();
             string line1 = "No material loaded";
             string line2 = "Enter a material name above and click Load";
-
             var s1 = ImGui.CalcTextSize(line1);
             var s2 = ImGui.CalcTextSize(line2);
-
             ImGui.SetCursorPos(new Vector2((avail.X - s1.X) * 0.5f, avail.Y * 0.5f - 20));
             ImGui.TextColored(new Vector4(0.6f, 0.65f, 0.75f, 1f), line1);
-
             ImGui.SetCursorPos(new Vector2((avail.X - s2.X) * 0.5f, avail.Y * 0.5f));
             ImGui.TextColored(ColMuted, line2);
         }
@@ -902,7 +851,6 @@ namespace KrayonEditor.UI
                 tempSprite.MaterialPath = _materialPath;
                 _loadAttempts = 0;
                 tempSprite.Start();
-
                 Console.WriteLine($"[TileEditor] Loading material: {_materialPath}");
             }
             catch (Exception ex)
@@ -934,11 +882,7 @@ namespace KrayonEditor.UI
                 {
                     _loadedMaterial = material;
                     CalculateGrid();
-
-                    Console.WriteLine($"[TileEditor] ✓ Material loaded successfully: {_materialPath}");
-                    Console.WriteLine($"[TileEditor] Texture size: {_textureWidth}x{_textureHeight}");
-                    Console.WriteLine($"[TileEditor] TextureId: {_textureId}");
-
+                    Console.WriteLine($"[TileEditor] ✓ Material loaded: {_materialPath} ({_textureWidth}x{_textureHeight}) Id:{_textureId}");
                     CleanupTempObject();
                 }
             }
@@ -953,8 +897,7 @@ namespace KrayonEditor.UI
         {
             if (_tempLoaderObject != null)
             {
-                var scene = SceneManager.PrimaryScene;
-                scene?.DestroyGameObject(_tempLoaderObject);
+                SceneManager.PrimaryScene?.DestroyGameObject(_tempLoaderObject);
                 _tempLoaderObject = null;
             }
             _loadAttempts = 0;

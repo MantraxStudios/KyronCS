@@ -29,9 +29,6 @@ namespace KrayonCore
         public event Action OnComponentAdded;
         public event Action OnComponentRemoved;
 
-        public List<Camera> Cameras { get; private set; }
-
-        public Camera GetMainCamera { get { return Cameras[0]; } }
         public SceneRenderer SelfRenderScene;
         protected bool ItsMyRenderScene = false;
         public Matrix4 WorldMatrix;

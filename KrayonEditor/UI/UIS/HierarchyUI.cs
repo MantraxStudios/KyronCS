@@ -11,16 +11,10 @@ namespace KrayonEditor.UI
     {
         private const string DRAG_DROP_PAYLOAD_TYPE = "GAMEOBJECT_HIERARCHY";
 
-        // Payload extendido: ID del GameObject + nombre de la escena origen
         private struct DragPayload
         {
             public Guid ObjectId;
-            // El nombre de la escena se pasa como contexto estático para evitar
-            // serializar strings en el payload nativo de ImGui
         }
-
-        // Guardamos la escena origen durante el drag (sólo válido en el mismo frame/sesión)
-        private static string _dragSourceSceneName = null;
 
         public override void OnDrawUI()
         {
@@ -28,7 +22,6 @@ namespace KrayonEditor.UI
 
             ImGui.Begin("Hierarchy", ref _isVisible);
 
-            // ── Botones de creación rápida ──────────────────────────────────
             if (ImGui.Button("+ Create Empty"))
                 EditorActions.CreateEmptyGameObject();
 
@@ -39,22 +32,17 @@ namespace KrayonEditor.UI
 
             ImGui.Separator();
 
-            // ── Iterar todas las escenas primarias ──────────────────────────
-            var scenes = SceneManager.PrimaryScenes;
+            var primaryScene = SceneManager.PrimaryScene;
 
-            if (scenes.Count == 0)
+            if (primaryScene == null)
             {
-                ImGui.TextDisabled("No active scenes.");
+                ImGui.TextDisabled("No active scene.");
             }
             else
             {
-                foreach (var scene in scenes)
-                {
-                    DrawSceneNode(scene);
-                }
+                DrawSceneNode(primaryScene);
             }
 
-            // ── Menú contextual global (clic derecho en área vacía) ─────────
             if (ImGui.BeginPopupContextWindow("hierarchy_context", ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems))
             {
                 if (ImGui.BeginMenu("Light"))
@@ -76,9 +64,6 @@ namespace KrayonEditor.UI
             ImGui.End();
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        //  Dibuja el nodo raíz de una escena
-        // ═══════════════════════════════════════════════════════════════════
         private void DrawSceneNode(GameScene scene)
         {
             ImGuiTreeNodeFlags sceneFlags =
@@ -92,7 +77,6 @@ namespace KrayonEditor.UI
                 sceneFlags
             );
 
-            // Drop target en la raíz → quitar padre al objeto arrastrado
             if (ImGui.BeginDragDropTarget())
             {
                 var payload = ImGui.AcceptDragDropPayload(DRAG_DROP_PAYLOAD_TYPE);
@@ -101,15 +85,12 @@ namespace KrayonEditor.UI
                     if (payload.NativePtr != null)
                     {
                         Guid draggedId = Marshal.PtrToStructure<Guid>((IntPtr)payload.Data);
-                        var draggedObject = FindObjectInScene(scene, draggedId)
-                                         ?? FindObjectInAnyScene(draggedId);
+                        var draggedObject = FindObjectInScene(scene, draggedId);
 
                         if (draggedObject != null)
                         {
-                            // Si viene de otra escena, moverlo a esta
-                            MoveObjectToScene(draggedObject, scene);
                             draggedObject.Transform.SetParent(null);
-                            EngineEditor.LogMessage($"{draggedObject.Name} moved to root of '{scene.Name}'");
+                            EngineEditor.LogMessage($"{draggedObject.Name} moved to root");
                         }
                     }
                 }
@@ -130,9 +111,6 @@ namespace KrayonEditor.UI
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        //  Dibuja el nodo de un GameObject (recursivo)
-        // ═══════════════════════════════════════════════════════════════════
         private void DrawGameObjectNode(GameObject go, GameScene ownerScene)
         {
             bool isSelected = EditorActions.SelectedObject == go;
@@ -151,10 +129,8 @@ namespace KrayonEditor.UI
             if (ImGui.IsItemClicked())
                 EditorActions.SelectedObject = go;
 
-            // ── Drag source ────────────────────────────────────────────────
             if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.None))
             {
-                _dragSourceSceneName = ownerScene.Name;   // guardamos la escena origen
                 unsafe
                 {
                     Guid id = go.Id;
@@ -167,7 +143,6 @@ namespace KrayonEditor.UI
                 ImGui.EndDragDropSource();
             }
 
-            // ── Drop target ────────────────────────────────────────────────
             if (ImGui.BeginDragDropTarget())
             {
                 var payload = ImGui.AcceptDragDropPayload(DRAG_DROP_PAYLOAD_TYPE);
@@ -176,22 +151,18 @@ namespace KrayonEditor.UI
                     if (payload.NativePtr != null)
                     {
                         Guid draggedId = Marshal.PtrToStructure<Guid>((IntPtr)payload.Data);
-                        var draggedObject = FindObjectInAnyScene(draggedId);
+                        var draggedObject = FindObjectInScene(ownerScene, draggedId);
 
                         if (draggedObject != null && draggedObject != go)
                         {
                             if (!IsDescendantOf(go, draggedObject))
                             {
-                                // Mover a la escena destino si es diferente
-                                MoveObjectToScene(draggedObject, ownerScene);
                                 draggedObject.Transform.SetParent(go.Transform);
-                                EngineEditor.LogMessage(
-                                    $"{draggedObject.Name} is now child of {go.Name} in '{ownerScene.Name}'");
+                                EngineEditor.LogMessage($"{draggedObject.Name} is now child of {go.Name}");
                             }
                             else
                             {
-                                EngineEditor.LogMessage(
-                                    $"Cannot make {go.Name} child of its own descendant!");
+                                EngineEditor.LogMessage($"Cannot make {go.Name} child of its own descendant!");
                             }
                         }
                     }
@@ -199,7 +170,6 @@ namespace KrayonEditor.UI
                 ImGui.EndDragDropTarget();
             }
 
-            // ── Menú contextual ────────────────────────────────────────────
             if (ImGui.BeginPopupContextItem($"context_{go.Id}"))
             {
                 if (ImGui.MenuItem("Duplicate"))
@@ -214,22 +184,6 @@ namespace KrayonEditor.UI
                         child.SetParent(null);
                 }
 
-                // Sub-menú para mover a otra escena
-                var scenes = SceneManager.PrimaryScenes;
-                if (scenes.Count > 1 && ImGui.BeginMenu("Move to Scene"))
-                {
-                    foreach (var targetScene in scenes)
-                    {
-                        if (targetScene == ownerScene) continue;
-                        if (ImGui.MenuItem(targetScene.Name))
-                        {
-                            MoveObjectToScene(go, targetScene);
-                            EngineEditor.LogMessage($"{go.Name} moved to scene '{targetScene.Name}'");
-                        }
-                    }
-                    ImGui.EndMenu();
-                }
-
                 if (ImGui.MenuItem("Delete") && go.Tag != "MainCamera")
                 {
                     EditorActions.DeleteGameObject(go);
@@ -240,7 +194,6 @@ namespace KrayonEditor.UI
                 ImGui.EndPopup();
             }
 
-            // ── Hijos recursivos ───────────────────────────────────────────
             if (hasChildren && nodeOpen)
             {
                 foreach (var child in go.Transform.Children)
@@ -250,29 +203,6 @@ namespace KrayonEditor.UI
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        //  Helpers
-        // ═══════════════════════════════════════════════════════════════════
-
-        /// <summary>
-        /// Mueve un GameObject de su escena actual a la escena destino.
-        /// Si ya pertenece a la escena destino, no hace nada.
-        /// </summary>
-        private void MoveObjectToScene(GameObject go, GameScene targetScene)
-        {
-            foreach (var scene in SceneManager.PrimaryScenes)
-            {
-                if (scene == targetScene) continue;
-                if (scene.ContainsGameObject(go))
-                {
-                    scene.RemoveGameObject(go);
-                    targetScene.AddGameObject(go);
-                    return;
-                }
-            }
-        }
-
-        /// <summary>Busca un GameObject por ID en una escena concreta.</summary>
         private GameObject FindObjectInScene(GameScene scene, Guid id)
         {
             foreach (var obj in scene.GetAllGameObjects())
@@ -280,21 +210,6 @@ namespace KrayonEditor.UI
             return null;
         }
 
-        /// <summary>Busca un GameObject por ID en todas las escenas activas.</summary>
-        private GameObject FindObjectInAnyScene(Guid id)
-        {
-            foreach (var scene in SceneManager.PrimaryScenes)
-            {
-                var result = FindObjectInScene(scene, id);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Devuelve true si <paramref name="go"/> es descendiente de
-        /// <paramref name="potentialAncestor"/>.
-        /// </summary>
         private bool IsDescendantOf(GameObject go, GameObject potentialAncestor)
         {
             Transform current = go.Transform.Parent;

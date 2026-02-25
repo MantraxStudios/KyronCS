@@ -143,7 +143,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void Awake()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+            SelfScene.SelfRenderScene.RegisterRenderer(this);
 
             _isReadyToRender = false;
 
@@ -755,7 +755,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void OnDestroy()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+            SelfScene.SelfRenderScene.UnregisterRenderer(this);
 
             _material = null;
             _baseMaterial = null;

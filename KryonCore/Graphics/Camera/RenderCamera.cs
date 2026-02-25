@@ -25,7 +25,7 @@ namespace KrayonCore
 
         // ── Clear ────────────────────────────────────────────────────────────
         public CameraClearMode ClearMode { get; set; } = CameraClearMode.SolidColor;
-        public Color4 ClearColor { get; set; } = new Color4(0.1f, 0.1f, 0.1f, 1f);
+        public Color4 ClearColor { get; set; } = new Color4(0.5f, 0.5f, 0.5f, 1f);
 
         // ── Viewport normalizado (0-1) ────────────────────────────────────────
         public float ViewportX { get; set; } = 0f;
@@ -33,6 +33,8 @@ namespace KrayonCore
         public float ViewportWidth { get; set; } = 1f;
         public float ViewportHeight { get; set; } = 1f;
         public GameScene _Scene;
+        // Buffer manager de fallback cuando la cámara no pertenece a ninguna escena (ej: cámara main inicial)
+        public FrameBufferManager? _OwnerBuffers;
 
         // ── Constructor ──────────────────────────────────────────────────────
         public RenderCamera(string name, Vector3 position, float aspectRatio, int priority = 0)
@@ -71,16 +73,19 @@ namespace KrayonCore
 
         // ── Acceso a buffers ─────────────────────────────────────────────────
 
+        private FrameBufferManager? ResolveBuffers()
+            => _Scene?.SelfRenderScene.Buffers ?? _OwnerBuffers;
+
         /// <summary>Buffer de escena (con GBuffer). Aquí renderiza el SceneRenderer.</summary>
         public FrameBuffer? GetTargetBuffer()
             => TargetBufferName is not null
-                ? _Scene.SelfRenderScene.Buffers.TryGet(TargetBufferName)
+                ? ResolveBuffers()?.TryGet(TargetBufferName)
                 : null;
 
         /// <summary>Buffer de post-proceso. Resultado final que se muestra.</summary>
         public FrameBuffer? GetPostProcessBuffer()
             => PostProcessBufferName is not null
-                ? _Scene.SelfRenderScene.Buffers.TryGet(PostProcessBufferName)
+                ? ResolveBuffers()?.TryGet(PostProcessBufferName)
                 : null;
 
         /// <summary>
@@ -100,20 +105,26 @@ namespace KrayonCore
 
         public void ResizeBuffer(int width, int height)
         {
+            var buffers = ResolveBuffers();
+            if (buffers is null) return;
+
             if (TargetBufferName is not null)
-                _Scene.SelfRenderScene.Buffers.Resize(TargetBufferName, width, height);
+                buffers.Resize(TargetBufferName, width, height);
 
             if (PostProcessBufferName is not null)
-                _Scene.SelfRenderScene.Buffers.Resize(PostProcessBufferName, width, height);
+                buffers.Resize(PostProcessBufferName, width, height);
         }
 
         public void Dispose()
         {
+            var buffers = ResolveBuffers();
+            if (buffers is null) return;
+
             if (TargetBufferName is not null)
-                _Scene.SelfRenderScene.Buffers.Remove(TargetBufferName);
+                buffers.Remove(TargetBufferName);
 
             if (PostProcessBufferName is not null)
-                _Scene.SelfRenderScene.Buffers.Remove(PostProcessBufferName);
+                buffers.Remove(PostProcessBufferName);
         }
     }
 }

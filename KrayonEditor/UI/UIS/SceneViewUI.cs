@@ -14,21 +14,6 @@ namespace KrayonEditor.UI
 {
     public class SceneViewUI : UIBehaviour
     {
-        public GraphicsEngine? Engine
-        {
-            get
-            {
-                return GraphicsEngine.Instance;
-            }
-        }
-        public Camera? MainCamera
-        {
-            get
-            {
-                return Engine.GetSceneRenderer().GetCamera();
-            }
-        }
-
         public float EditorCameraSpeed { get; set; } = 5.0f;
         public Vector2 LastViewportSize { get; set; }
 
@@ -36,6 +21,7 @@ namespace KrayonEditor.UI
         private static readonly Vector4 ActiveButtonHoveredColor = new(0.4f, 0.6f, 0.9f, 1.0f);
         private static readonly Vector4 ActiveButtonPressedColor = new(0.2f, 0.4f, 0.7f, 1.0f);
         private static readonly Vector2 ToolbarIconSize = new(20, 20);
+
         public SceneViewUI()
         {
             IconManager.Initialize();
@@ -56,10 +42,6 @@ namespace KrayonEditor.UI
             DrawGameViewPort();
             ImGui.End();
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  TOOLBAR
-        // ─────────────────────────────────────────────────────────────────────
 
         private void DrawToolbar()
         {
@@ -93,10 +75,6 @@ namespace KrayonEditor.UI
             ImGui.SetCursorPosY(savedY);
             ImGui.SameLine();
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  TRANSFORM BUTTONS
-        // ─────────────────────────────────────────────────────────────────────
 
         private void DrawTransformButtons()
         {
@@ -138,11 +116,11 @@ namespace KrayonEditor.UI
 
             DrawGizmoButton(
                 "##WireMode",
-                !GraphicsEngine.Instance.GetSceneRenderer().WireframeMode ? "model" : "wireframe",
+                !GraphicsEngine.Instance.CurrentSceneRendering.WireframeMode ? "model" : "wireframe",
                 "Change wire o triangle render",
                 () =>
                 {
-                    GraphicsEngine.Instance.GetSceneRenderer().ToggleWireframe();
+                    GraphicsEngine.Instance.CurrentSceneRendering.ToggleWireframe();
                 }
             );
 
@@ -150,11 +128,11 @@ namespace KrayonEditor.UI
 
             DrawGizmoButton(
                 "##Camera",
-                GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ProjectionMode == ProjectionMode.Orthographic ? "cameraOrtho" : "cameraProj",
+                GraphicsEngine.Instance.CurrentSceneRendering.GetCamera().ProjectionMode == ProjectionMode.Orthographic ? "cameraOrtho" : "cameraProj",
                 "Change camera mode",
                 () =>
                 {
-                    GraphicsEngine.Instance.GetSceneRenderer().GetCamera().ToggleProjectionMode();
+                    GraphicsEngine.Instance.CurrentSceneRendering.GetCamera().ToggleProjectionMode();
                 }
             );
             ImGui.SameLine();
@@ -210,10 +188,6 @@ namespace KrayonEditor.UI
                 ImGui.SetTooltip(tooltip);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  SPACE BUTTON
-        // ─────────────────────────────────────────────────────────────────────
-
         private void DrawSpaceButton()
         {
             bool isWorld = TransformGizmo.CurrentSpace == GizmoSpace.World;
@@ -233,10 +207,6 @@ namespace KrayonEditor.UI
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip(isWorld ? "Switch to Local Space" : "Switch to World Space");
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  SNAP CONTROLS
-        // ─────────────────────────────────────────────────────────────────────
 
         private void DrawSnapControls()
         {
@@ -281,7 +251,6 @@ namespace KrayonEditor.UI
             ImGui.Text("Snap Settings");
             ImGui.Separator();
 
-            // FIX: variables locales en lugar de pasar propiedades como ref
             float translateSnap = TransformGizmo.TranslateSnapValue;
             if (ImGui.DragFloat("Position Snap", ref translateSnap, 0.05f, 0.01f, 10.0f, "%.2f"))
                 TransformGizmo.TranslateSnapValue = translateSnap;
@@ -305,10 +274,6 @@ namespace KrayonEditor.UI
 
             ImGui.EndPopup();
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  VFX BUTTON
-        // ─────────────────────────────────────────────────────────────────────
 
         private void DrawVFXButton()
         {
@@ -351,7 +316,6 @@ namespace KrayonEditor.UI
                 if (ImGui.Checkbox("Enable##CC", ref cc)) pp.ColorCorrectionEnabled = cc;
                 ImGui.Spacing();
 
-                // FIX: variables locales para cada propiedad de pp
                 float brightness = pp.Brightness;
                 if (ImGui.SliderFloat("Brightness", ref brightness, -1.0f, 1.0f, "%.2f"))
                     pp.Brightness = brightness;
@@ -437,13 +401,9 @@ namespace KrayonEditor.UI
             ImGui.EndPopup();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  CAMERA SPEED
-        // ─────────────────────────────────────────────────────────────────────
-
         private void DrawCameraSpeed()
         {
-            if (MainCamera == null) return;
+            if (SceneManager.PrimaryScene.SelfRenderScene.GetCamera() == null) return;
 
             ImGui.Text("Speed:");
             ImGui.SameLine();
@@ -453,10 +413,6 @@ namespace KrayonEditor.UI
             if (ImGui.DragFloat("##speed", ref speed, 0.1f, 0.1f, 10.0f, "%.1f"))
                 EditorCameraSpeed = speed;
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  GAME VIEWPORT
-        // ─────────────────────────────────────────────────────────────────────
 
         private void DrawGameViewPort()
         {
@@ -515,34 +471,32 @@ namespace KrayonEditor.UI
             ImGui.Dummy(viewportSize);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  SCENE VIEWPORT
-        // ─────────────────────────────────────────────────────────────────────
-
         private void DrawViewport()
         {
             Vector2 viewportSize = ImGui.GetContentRegionAvail();
             if (viewportSize.X <= 0 || viewportSize.Y <= 0) return;
 
+            SceneRenderer sceneRenderer = GraphicsEngine.Instance.CurrentSceneRendering;
+            var sceneBuffer = sceneRenderer.Buffers.TryGet("scene");
+
             if (LastViewportSize != viewportSize)
             {
                 LastViewportSize = viewportSize;
 
-                Engine?.ResizeFrameBuffer("scene", (int)viewportSize.X, (int)viewportSize.Y);
-                Engine?.ResizeFrameBuffer("postProcess", (int)viewportSize.X, (int)viewportSize.Y);
+                if (sceneBuffer != null)
+                    sceneBuffer.Resize((int)viewportSize.X, (int)viewportSize.Y);
 
-                if (MainCamera != null)
-                    MainCamera.AspectRatio = viewportSize.X / viewportSize.Y;
+                if (SceneManager.PrimaryScene.SelfRenderScene.GetCamera() != null)
+                    SceneManager.PrimaryScene.SelfRenderScene.GetCamera().AspectRatio = viewportSize.X / viewportSize.Y;
             }
 
-            var frameBuffer = Engine?.GetSceneFrameBuffer();
-            if (frameBuffer == null) return;
+            if (sceneBuffer == null) return;
 
             Vector2 cursorPos = ImGui.GetCursorScreenPos();
             EditorActions.ViewPortPosition = cursorPos;
             EditorActions.ViewPortPositionOrigin = cursorPos;
 
-            ImGui.Image(frameBuffer.ColorTexture, viewportSize, new Vector2(0, 1), new Vector2(1, 0));
+            ImGui.Image(sceneBuffer.ColorTexture, viewportSize, new Vector2(0, 1), new Vector2(1, 0));
             EditorActions.IsHoveringScene = ImGui.IsItemHovered();
             bool isHovered = EditorActions.IsHoveringScene;
 
@@ -565,9 +519,9 @@ namespace KrayonEditor.UI
                     }
                     else
                     {
-                        Camera camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
-                        int screenW = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
-                        int screenH = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+                        Camera camera = sceneRenderer.GetCamera();
+                        int screenW = sceneBuffer.Width;
+                        int screenH = sceneBuffer.Height;
                         float gridSize = 1.0f;
 
                         EventSystem.ScreenToWorldRay(tkMouse, camera, screenW, screenH,
@@ -583,9 +537,9 @@ namespace KrayonEditor.UI
                 }
             }
 
-            EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, MainCamera);
+            EditorGizmos.DrawOrientationGizmo(cursorPos, viewportSize, SceneManager.PrimaryScene.SelfRenderScene.GetCamera());
 
-            if (EditorActions.SelectedObject != null && MainCamera != null && EditorActions.IsHoveringScene)
+            if (EditorActions.SelectedObject != null && SceneManager.PrimaryScene.SelfRenderScene.GetCamera() != null && EditorActions.IsHoveringScene)
             {
                 var transform = new GizmoTransform(
                     EditorActions.SelectedObject.Transform.GetWorldPosition(),
@@ -594,8 +548,8 @@ namespace KrayonEditor.UI
 
                 bool modified = TransformGizmo.Draw(
                     ref transform,
-                    MainCamera.GetViewMatrix(),
-                    MainCamera.GetProjectionMatrix(),
+                    SceneManager.PrimaryScene.SelfRenderScene.GetCamera().GetViewMatrix(),
+                    SceneManager.PrimaryScene.SelfRenderScene.GetCamera().GetProjectionMatrix(),
                     cursorPos,
                     viewportSize,
                     isHovered);
@@ -608,10 +562,6 @@ namespace KrayonEditor.UI
                 }
             }
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  CAMERA HELPERS
-        // ─────────────────────────────────────────────────────────────────────
 
         private RenderCamera? GetGameCamera()
         {
@@ -644,10 +594,6 @@ namespace KrayonEditor.UI
             bool ppEnabled = GraphicsEngine.Instance?.PostProcessing?.Enabled == true;
             return cam.GetFinalTextureId(ppEnabled);
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  HELPERS
-        // ─────────────────────────────────────────────────────────────────────
 
         private static void PushActiveButtonColors()
         {

@@ -34,19 +34,27 @@ namespace KrayonCore
         public bool WireframeMode { get; set; } = false;
 
 
-        public SceneRenderer() => Initialize();
+        public string Name { get; }
+
+        public SceneRenderer(string name = "default")
+        {
+            Name = name;
+            Initialize();
+        }
 
         public void Initialize()
         {
             _lightManager = new LightManager();
-            
+
             Buffers.Create("scene", 1280, 720, useEmission: true, useGBuffer: true);
             Buffers.Create("postProcess", 1280, 720, useEmission: false, useGBuffer: false);
 
-            ManagerCams.Create("main", new Vector3(0, 0, 5),
+            var mainCam = ManagerCams.Create("main", new Vector3(0, 0, 5),
                 WindowConfig.Width / (float)WindowConfig.Height, priority: 0);
+            mainCam._OwnerBuffers = Buffers;
+            mainCam.SetTargetBuffer("scene", "postProcess");
 
-            Console.WriteLine($"Esta Escena Tiene un total de {ManagerCams.Count}");
+            Console.WriteLine($"Esta Escena Tiene un total de {ManagerCams.Count} camaras");
         }
 
         public void RegisterRenderer<T>(T renderer) where T : class
@@ -113,22 +121,40 @@ namespace KrayonCore
         public UICanvas? GetCanvas(string name) => UICanvasManager.Get(name);
 
         public void Update(float deltaTime) => UICanvasManager.Update(deltaTime);
+
         public void Resize(int width, int height)
         {
             Buffers.ResizeAll(width, height);
             ManagerCams.ResizeAll(width, height);
         }
+
         public Camera GetCamera() => ManagerCams.Main?.Camera
             ?? throw new InvalidOperationException("No hay cámara principal registrada.");
+
         public LightManager GetLightManager() => _lightManager;
+
         public void ToggleWireframe() => WireframeMode = !WireframeMode;
         public void SetWireframeMode(bool val) => WireframeMode = val;
+
         public int GetRegisteredRenderersCount()
             => _skyboxRenderers.Count + _meshRenderers.Count +
                _animatedMeshRenderers.Count + _spriteRenderers.Count + _tileRenderers.Count;
+
         public (int skybox, int mesh, int animatedMesh, int sprite, int tile) GetRendererCounts()
             => (_skyboxRenderers.Count, _meshRenderers.Count,
                 _animatedMeshRenderers.Count, _spriteRenderers.Count, _tileRenderers.Count);
+
+        public int GetFinalTextureId(bool postProcessEnabled)
+        {
+            var mainCam = ManagerCams.Main;
+            if (mainCam is not null)
+                return mainCam.GetFinalTextureId(postProcessEnabled);
+
+            if (postProcessEnabled)
+                return Buffers.TryGet("postProcess")?.ColorTexture ?? 0;
+            else
+                return Buffers.TryGet("scene")?.ColorTexture ?? 0;
+        }
 
         public void Shutdown()
         {
@@ -151,6 +177,8 @@ namespace KrayonCore
         {
             var target = renderCam.GetTargetBuffer() ?? Buffers.TryGet("scene");
             if (target is null) return;
+
+            Console.WriteLine($"[Render] cam={renderCam.Name} target={target.GetHashCode()} meshes={_meshRenderers.Count}");
 
             target.Bind();
             GL.Viewport(

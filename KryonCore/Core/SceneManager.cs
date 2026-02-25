@@ -12,21 +12,47 @@ namespace KrayonCore
     public static class SceneManager
     {
         private static Dictionary<string, GameScene> _scenes = new Dictionary<string, GameScene>();
+        private static bool _initialized = false;
 
         public static event Action<GameScene, string> OnSceneSaved;
         public static event Action<GameScene> OnSceneLoaded;
         public static event Action<GameScene> OnSceneUnloaded;
 
         public static IReadOnlyList<GameScene> PrimaryScenes => _scenes.Values.ToList();
-        public static GameScene PrimaryScene => _scenes.Count > 0 ? _scenes.Values.First() : null;
+        public static GameScene PrimaryScene
+        {
+            get
+            {
+                EnsureInitialized();
+                return _scenes.Count > 0 ? _scenes.Values.First() : null;
+            }
+        }
         public static byte[] CurrentSceneData;
+
+        private static void EnsureInitialized()
+        {
+            if (_initialized) return;
+            _initialized = true;
+
+            if (_scenes.Count == 0)
+            {
+                var defaultScene = CreateScene("MainScene");
+                defaultScene.OnLoad();
+                defaultScene.Start();
+                OnSceneLoaded?.Invoke(defaultScene);
+            }
+        }
 
         public static GameScene CreateScene(string name)
         {
             if (_scenes.ContainsKey(name))
                 return _scenes[name];
 
-            GameScene scene = new GameScene(name);
+            GameScene scene = new GameScene(name, null);
+
+            if (GraphicsEngine.Instance.CurrentSceneRendering == null)
+                GraphicsEngine.Instance.CurrentSceneRendering = scene.SelfRenderScene;
+
             _scenes[name] = scene;
             return scene;
         }
@@ -41,7 +67,7 @@ namespace KrayonCore
                 if (!additive)
                     UnloadAllScenes();
 
-                GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+                GraphicsEngine.Instance.CurrentSceneRendering.ClearAllRenderers();
 
                 if (AppInfo.IsCompiledGame)
                 {
@@ -87,7 +113,7 @@ namespace KrayonCore
                 if (!additive)
                 {
                     UnloadAllScenes();
-                    GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+                    GraphicsEngine.Instance.CurrentSceneRendering.ClearAllRenderers();
                     sceneToLoad = _scenes.ContainsKey(nameOrPath) ? _scenes[nameOrPath] : null;
                     if (sceneToLoad == null) return;
                 }
@@ -97,6 +123,7 @@ namespace KrayonCore
                 }
             }
 
+            GraphicsEngine.Instance.CurrentSceneRendering = sceneToLoad.SelfRenderScene;
             sceneToLoad.OnLoad();
             sceneToLoad.Start();
             OnSceneLoaded?.Invoke(sceneToLoad);
@@ -112,7 +139,8 @@ namespace KrayonCore
         public static void LoadSceneFromBytes(byte[] scene_bytes)
         {
             UnloadAllScenes();
-            GraphicsEngine.Instance.GetSceneRenderer().ClearAllRenderers();
+
+            GraphicsEngine.Instance.CurrentSceneRendering.ClearAllRenderers();
 
             GameScene sceneToLoad = SceneSaveSystem.LoadScene(scene_bytes);
             if (sceneToLoad == null) return;
@@ -157,6 +185,7 @@ namespace KrayonCore
                 OnSceneUnloaded?.Invoke(scene);
             }
             _scenes.Clear();
+            _initialized = false;
         }
 
         public static void RegisterSceneOnly(GameScene scene)

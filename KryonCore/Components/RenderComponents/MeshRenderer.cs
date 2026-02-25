@@ -88,16 +88,6 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void Awake()
         {
-            if (SelfScene == null)
-            {
-                Console.WriteLine($"La Escena Fue Null: {GraphicsEngine.Instance.SceneRenderers.Count}");
-            }
-
-            if (SelfScene.SelfRenderScene == null)
-            {
-                Console.WriteLine($"La Escena Render Fue Null: {GraphicsEngine.Instance.SceneRenderers.Count}");
-            }
-
             SelfScene.SelfRenderScene.RegisterRenderer(this);
 
             foreach (var item in MaterialPaths)

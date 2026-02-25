@@ -31,7 +31,7 @@ namespace KrayonCore.Components.RenderComponents
             }
         }
 
-        [ToStorage]
+        [ToStorage, Color]
         public Vector3 Color { get; set; } = Vector3.One;
 
         [ToStorage, Range(0.0f, 1000.0f)]

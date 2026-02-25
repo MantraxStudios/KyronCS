@@ -38,7 +38,7 @@ namespace KrayonCore.Animation
 
         public override void Awake()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+            SelfScene.SelfRenderScene.RegisterRenderer(this);
 
             if (!string.IsNullOrEmpty(ModelPath))
             {
@@ -129,7 +129,7 @@ namespace KrayonCore.Animation
 
         public override void OnDestroy()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+            SelfScene.SelfRenderScene.UnregisterRenderer(this);
             _model?.Dispose();
             _model = null;
         }

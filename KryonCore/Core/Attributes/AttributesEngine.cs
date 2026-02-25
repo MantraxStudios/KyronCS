@@ -27,6 +27,9 @@ namespace KrayonCore
         }
     }
 
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public sealed class ColorAttribute : Attribute { }
+
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class RangeAttribute : Attribute
     {

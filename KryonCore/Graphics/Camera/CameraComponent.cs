@@ -139,7 +139,7 @@ namespace KrayonCore.Graphics.Camera
             set { _clearMode = value; if (_renderCamera is not null) _renderCamera.ClearMode = value; }
         }
 
-        [ToStorage]
+        [ToStorage, Color]
         public Vector4 ClearColor
         {
             get => _clearColor;
@@ -260,7 +260,7 @@ namespace KrayonCore.Graphics.Camera
         // ── Privados ─────────────────────────────────────────────────────────
         private void CreateAndRegisterCamera()
         {
-            var name = SelfScene.Name;
+            var name = EffectiveName;
 
             if (SelfScene.SelfRenderScene.ManagerCams.Has(name))
             {

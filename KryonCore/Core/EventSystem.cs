@@ -9,13 +9,6 @@ namespace KrayonCore.EventSystem
     {
         private const int STRIDE = 14;
 
-        // ── UI Hit Test ──────────────────────────────────────────────────
-
-        /// <summary>
-        /// Devuelve el UIElement visible más al frente (mayor ZOrder) que
-        /// contiene <paramref name="screenPos"/>, o null si ninguno lo hace.
-        /// Recorre todos los canvas del SceneRenderer en orden de SortOrder.
-        /// </summary>
         public static UIElement? GetUIElementAt(Vector2 screenPos)
         {
             foreach (var canvas in UICanvasManager.All().OrderByDescending(c => c.SortOrder))
@@ -32,14 +25,8 @@ namespace KrayonCore.EventSystem
             return null;
         }
 
-        /// <summary>
-        /// Devuelve true si <paramref name="screenPos"/> cae sobre cualquier
-        /// elemento de UI visible/habilitado. Útil para bloquear el raycast 3D.
-        /// </summary>
         public static bool IsPointerOverUI(Vector2 screenPos)
             => GetUIElementAt(screenPos) is not null;
-
-        // ── Screen → World Ray ───────────────────────────────────────────
 
         public static void ScreenToWorldRay(Vector2 screenPos, Camera camera,
             int screenWidth, int screenHeight,
@@ -60,8 +47,6 @@ namespace KrayonCore.EventSystem
             rayOrigin = near3;
             rayDirection = Vector3.Normalize(far3 - near3);
         }
-
-        // ── Ray vs AABB ──────────────────────────────────────────────────
 
         private static float RayIntersectsAABB(Vector3 origin, Vector3 dir,
             Vector3 aabbMin, Vector3 aabbMax)
@@ -109,8 +94,6 @@ namespace KrayonCore.EventSystem
             return tMin >= 0 ? tMin : tMax;
         }
 
-        // ── Ray vs Triangle (Möller–Trumbore) ───────────────────────────
-
         private static float RayIntersectsTriangle(Vector3 origin, Vector3 dir,
             Vector3 v0, Vector3 v1, Vector3 v2)
         {
@@ -135,8 +118,6 @@ namespace KrayonCore.EventSystem
             float t = f * Vector3.Dot(edge2, q);
             return t > EPSILON ? t : float.MaxValue;
         }
-
-        // ── Ray vs Mesh ──────────────────────────────────────────────────
 
         private static float RayIntersectsMesh(Vector3 localOrigin, Vector3 localDir, Model model)
         {
@@ -170,7 +151,7 @@ namespace KrayonCore.EventSystem
             GameObject closest = null;
             float closestDist = float.MaxValue;
 
-            if (SceneManager.PrimaryScene == null) return null; 
+            if (SceneManager.PrimaryScene == null) return null;
 
             var objects = SceneManager.PrimaryScene.GetAllGameObjects();
 
@@ -224,21 +205,15 @@ namespace KrayonCore.EventSystem
             return closest;
         }
 
-        // ── Unified entry point ──────────────────────────────────────────
-
-        /// <summary>
-        /// Intenta clickear un objeto 3D. Si el cursor está sobre un elemento
-        /// de UI devuelve null automáticamente (la UI consume el evento).
-        /// </summary>
         public static GameObject OnClickObject(Vector2 viewportMousePos)
         {
-            // ── UI primero: si hay un elemento de UI bajo el cursor, bloquear ──
             if (IsPointerOverUI(viewportMousePos))
                 return null;
 
-            Camera camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
-            int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
-            int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+            SceneRenderer sceneRenderer = GraphicsEngine.Instance.CurrentSceneRendering;
+            Camera camera = sceneRenderer.GetCamera();
+            int screenWidth = sceneRenderer.Buffers.TryGet("scene")?.Width ?? 1280;
+            int screenHeight = sceneRenderer.Buffers.TryGet("scene")?.Height ?? 720;
 
             ScreenToWorldRay(viewportMousePos, camera, screenWidth, screenHeight,
                 out Vector3 rayOrigin, out Vector3 rayDir);
@@ -246,14 +221,13 @@ namespace KrayonCore.EventSystem
             return GetObjectByRay(rayOrigin, rayDir);
         }
 
-        // ── Legacy helpers ───────────────────────────────────────────────
-
         public static Vector2 ScreenToWorldPosition(Vector2 screenPos)
         {
-            Vector3 cameraPos = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().Position;
-            float orthoSize = GraphicsEngine.Instance.GetSceneRenderer().GetCamera().OrthoSize;
-            int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
-            int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+            SceneRenderer sceneRenderer = GraphicsEngine.Instance.CurrentSceneRendering;
+            Vector3 cameraPos = sceneRenderer.GetCamera().Position;
+            float orthoSize = sceneRenderer.GetCamera().OrthoSize;
+            int screenWidth = sceneRenderer.Buffers.TryGet("scene")?.Width ?? 1280;
+            int screenHeight = sceneRenderer.Buffers.TryGet("scene")?.Height ?? 720;
 
             float aspect = (float)screenWidth / screenHeight;
             float width = orthoSize * aspect;

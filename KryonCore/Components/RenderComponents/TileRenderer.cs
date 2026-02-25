@@ -102,7 +102,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void Awake()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+            SelfScene.SelfRenderScene.RegisterRenderer(this);
 
             Console.WriteLine($"[TileRenderer] Awake llamado en {GameObject?.Name ?? "Unknown"}");
 
@@ -613,7 +613,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void OnDestroy()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+            SelfScene.SelfRenderScene.UnregisterRenderer(this);
 
             CancelGeneration();
 

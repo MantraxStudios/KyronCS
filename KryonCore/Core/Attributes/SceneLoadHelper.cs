@@ -22,7 +22,7 @@ namespace KrayonEditor.UI
                 return;
             }
 
-            var renderer = GraphicsEngine.Instance?.GetSceneRenderer();
+            var renderer = GraphicsEngine.Instance?.SceneRenderers[0];
             if (renderer == null)
             {
                 Console.WriteLine("[SceneLoadHelper] Error: SceneRenderer no disponible");

@@ -28,7 +28,7 @@ namespace KrayonCore.Components.RenderComponents
         private float _lastRadius = 500.0f;
         private bool _needsMeshRebuild = false;
 
-        [ToStorage]
+        [ToStorage, MaterialRef]
         public string MaterialPath
         {
             get => _materialPath;
@@ -62,7 +62,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void Awake()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.RegisterRenderer(this);
+            SelfScene.SelfRenderScene.RegisterRenderer(this);
 
             _isReadyToRender = false;
 
@@ -430,7 +430,7 @@ namespace KrayonCore.Components.RenderComponents
 
         public override void OnDestroy()
         {
-            GraphicsEngine.Instance?.GetSceneRenderer()?.UnregisterRenderer(this);
+            SelfScene.SelfRenderScene.UnregisterRenderer(this);
 
             _material = null;
             _sphereMesh?.Dispose();

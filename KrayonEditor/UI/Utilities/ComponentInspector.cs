@@ -848,6 +848,7 @@ namespace KrayonEditor.UI
             if (val == null) { DrawLabelValue(prop.Name, "null"); return; }
 
             var range = prop.GetCustomAttribute<KrayonCore.RangeAttribute>();
+            bool isColor = prop.GetCustomAttribute<ColorAttribute>() != null;
 
             if (t == typeof(bool))
             {
@@ -891,19 +892,27 @@ namespace KrayonEditor.UI
             else if (t == typeof(Vector3))
             {
                 Vector3 v = (Vector3)val; BeginFieldRow(prop.Name);
-                if (ImGui.DragFloat3($"##{prop.Name}", ref v, 0.01f)) prop.SetValue(comp, v);
+                bool changed = isColor
+                    ? ImGui.ColorEdit3($"##{prop.Name}", ref v)
+                    : ImGui.DragFloat3($"##{prop.Name}", ref v, 0.01f);
+                if (changed) prop.SetValue(comp, v);
             }
             else if (t == typeof(OpenTK.Mathematics.Vector3))
             {
                 var otk = (OpenTK.Mathematics.Vector3)val;
                 Vector3 v = new(otk.X, otk.Y, otk.Z); BeginFieldRow(prop.Name);
-                if (ImGui.DragFloat3($"##{prop.Name}", ref v, 0.01f))
-                    prop.SetValue(comp, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
+                bool changed = isColor
+                    ? ImGui.ColorEdit3($"##{prop.Name}", ref v)
+                    : ImGui.DragFloat3($"##{prop.Name}", ref v, 0.01f);
+                if (changed) prop.SetValue(comp, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
             }
             else if (t == typeof(Vector4))
             {
                 Vector4 v = (Vector4)val; BeginFieldRow(prop.Name);
-                if (ImGui.InputFloat4($"##{prop.Name}", ref v)) prop.SetValue(comp, v);
+                bool changed = isColor
+                    ? ImGui.ColorEdit4($"##{prop.Name}", ref v)
+                    : ImGui.InputFloat4($"##{prop.Name}", ref v);
+                if (changed) prop.SetValue(comp, v);
             }
             else if (t == typeof(Quaternion))
             {
@@ -935,6 +944,7 @@ namespace KrayonEditor.UI
             if (val == null) { DrawLabelValue(field.Name, "null"); return; }
 
             var range = field.GetCustomAttribute<KrayonCore.RangeAttribute>();
+            bool isColor = field.GetCustomAttribute<ColorAttribute>() != null;
 
             if (t == typeof(bool))
             {
@@ -978,19 +988,27 @@ namespace KrayonEditor.UI
             else if (t == typeof(Vector3))
             {
                 Vector3 v = (Vector3)val; BeginFieldRow(field.Name);
-                if (ImGui.DragFloat3($"##{field.Name}", ref v, 0.01f)) field.SetValue(comp, v);
+                bool changed = isColor
+                    ? ImGui.ColorEdit3($"##{field.Name}", ref v)
+                    : ImGui.DragFloat3($"##{field.Name}", ref v, 0.01f);
+                if (changed) field.SetValue(comp, v);
             }
             else if (t == typeof(OpenTK.Mathematics.Vector3))
             {
                 var otk = (OpenTK.Mathematics.Vector3)val;
                 Vector3 v = new(otk.X, otk.Y, otk.Z); BeginFieldRow(field.Name);
-                if (ImGui.DragFloat3($"##{field.Name}", ref v, 0.01f))
-                    field.SetValue(comp, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
+                bool changed = isColor
+                    ? ImGui.ColorEdit3($"##{field.Name}", ref v)
+                    : ImGui.DragFloat3($"##{field.Name}", ref v, 0.01f);
+                if (changed) field.SetValue(comp, new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z));
             }
             else if (t == typeof(Vector4))
             {
                 Vector4 v = (Vector4)val; BeginFieldRow(field.Name);
-                if (ImGui.InputFloat4($"##{field.Name}", ref v)) field.SetValue(comp, v);
+                bool changed = isColor
+                    ? ImGui.ColorEdit4($"##{field.Name}", ref v)
+                    : ImGui.InputFloat4($"##{field.Name}", ref v);
+                if (changed) field.SetValue(comp, v);
             }
             else if (t == typeof(Quaternion))
             {
@@ -1096,8 +1114,9 @@ namespace KrayonEditor.UI
             Type elemT = prop.PropertyType.GetElementType()!;
             Array? arr = val as Array;
             bool isMaterialRef = prop.GetCustomAttribute<MaterialRefAttribute>() != null;
+            bool isColor = prop.GetCustomAttribute<ColorAttribute>() != null;
             if (!ImGui.TreeNodeEx($"{prop.Name}##arrp", ImGuiTreeNodeFlags.SpanAvailWidth)) return;
-            DrawArrayControls(ref arr, elemT, v => prop.SetValue(comp, v), isMaterialRef);
+            DrawArrayControls(ref arr, elemT, v => prop.SetValue(comp, v), isMaterialRef, isColor);
             ImGui.TreePop();
         }
 
@@ -1106,12 +1125,13 @@ namespace KrayonEditor.UI
             Type elemT = field.FieldType.GetElementType()!;
             Array? arr = val as Array;
             bool isMaterialRef = field.GetCustomAttribute<MaterialRefAttribute>() != null;
+            bool isColor = field.GetCustomAttribute<ColorAttribute>() != null;
             if (!ImGui.TreeNodeEx($"{field.Name}##arrf", ImGuiTreeNodeFlags.SpanAvailWidth)) return;
-            DrawArrayControls(ref arr, elemT, v => field.SetValue(comp, v), isMaterialRef);
+            DrawArrayControls(ref arr, elemT, v => field.SetValue(comp, v), isMaterialRef, isColor);
             ImGui.TreePop();
         }
 
-        private static void DrawArrayControls(ref Array? arr, Type elemT, Action<Array> setter, bool isMaterialRef = false)
+        private static void DrawArrayControls(ref Array? arr, Type elemT, Action<Array> setter, bool isMaterialRef = false, bool isColor = false)
         {
             int size = arr?.Length ?? 0;
             ImGui.SetNextItemWidth(80f);
@@ -1124,10 +1144,21 @@ namespace KrayonEditor.UI
                 arr = na;
             }
             if (arr == null) return;
-            for (int i = 0; i < arr.Length; i++) { ImGui.PushID(i); DrawArrayElement(arr, i, elemT, isMaterialRef); ImGui.PopID(); }
+
+            bool anyChanged = false;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                ImGui.PushID(i);
+                bool changed = DrawArrayElement(arr, i, elemT, isMaterialRef, isColor);
+                if (changed) anyChanged = true;
+                ImGui.PopID();
+            }
+
+            if (anyChanged)
+                setter(arr);
         }
 
-        private static void DrawArrayElement(Array arr, int i, Type elemT, bool isMaterialRef = false)
+        private static bool DrawArrayElement(Array arr, int i, Type elemT, bool isMaterialRef = false, bool isColor = false)
         {
             object? val = arr.GetValue(i);
             if (elemT == typeof(string))
@@ -1136,19 +1167,47 @@ namespace KrayonEditor.UI
                 string nv = isMaterialRef
                     ? DrawMaterialStringField($"[{i}]", sv)
                     : DrawAssetStringField($"[{i}]", sv);
-                if (nv != sv) arr.SetValue(nv, i);
+                if (nv != sv) { arr.SetValue(nv, i); return true; }
+                return false;
             }
-            else if (elemT == typeof(int)) { int v = val != null ? (int)val : 0; BeginFieldRow($"[{i}]"); if (ImGui.InputInt($"##el{i}", ref v, 0)) arr.SetValue(v, i); }
-            else if (elemT == typeof(float)) { float v = val != null ? (float)val : 0f; BeginFieldRow($"[{i}]"); if (ImGui.DragFloat($"##el{i}", ref v, 0.01f)) arr.SetValue(v, i); }
-            else if (elemT == typeof(bool)) { bool v = val != null && (bool)val; BeginFieldRow($"[{i}]"); if (ImGui.Checkbox($"##el{i}", ref v)) arr.SetValue(v, i); }
-            else if (elemT == typeof(Vector2)) { Vector2 v = val != null ? (Vector2)val : Vector2.Zero; BeginFieldRow($"[{i}]"); if (ImGui.DragFloat2($"##el{i}", ref v, 0.01f)) arr.SetValue(v, i); }
-            else if (elemT == typeof(Vector3)) { Vector3 v = val != null ? (Vector3)val : Vector3.Zero; BeginFieldRow($"[{i}]"); if (ImGui.DragFloat3($"##el{i}", ref v, 0.01f)) arr.SetValue(v, i); }
+            else if (elemT == typeof(int))
+            {
+                int v = val != null ? (int)val : 0; BeginFieldRow($"[{i}]");
+                if (ImGui.InputInt($"##el{i}", ref v, 0)) { arr.SetValue(v, i); return true; }
+            }
+            else if (elemT == typeof(float))
+            {
+                float v = val != null ? (float)val : 0f; BeginFieldRow($"[{i}]");
+                if (ImGui.DragFloat($"##el{i}", ref v, 0.01f)) { arr.SetValue(v, i); return true; }
+            }
+            else if (elemT == typeof(bool))
+            {
+                bool v = val != null && (bool)val; BeginFieldRow($"[{i}]");
+                if (ImGui.Checkbox($"##el{i}", ref v)) { arr.SetValue(v, i); return true; }
+            }
+            else if (elemT == typeof(Vector2))
+            {
+                Vector2 v = val != null ? (Vector2)val : Vector2.Zero; BeginFieldRow($"[{i}]");
+                if (ImGui.DragFloat2($"##el{i}", ref v, 0.01f)) { arr.SetValue(v, i); return true; }
+            }
+            else if (elemT == typeof(Vector3))
+            {
+                Vector3 v = val != null ? (Vector3)val : Vector3.Zero; BeginFieldRow($"[{i}]");
+                bool changed = isColor ? ImGui.ColorEdit3($"##el{i}", ref v) : ImGui.DragFloat3($"##el{i}", ref v, 0.01f);
+                if (changed) { arr.SetValue(v, i); return true; }
+            }
             else if (elemT == typeof(OpenTK.Mathematics.Vector3))
             {
                 var otk = val != null ? (OpenTK.Mathematics.Vector3)val : OpenTK.Mathematics.Vector3.Zero;
                 Vector3 v = new(otk.X, otk.Y, otk.Z); BeginFieldRow($"[{i}]");
-                if (ImGui.DragFloat3($"##el{i}", ref v, 0.01f))
-                    arr.SetValue(new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z), i);
+                bool changed = isColor ? ImGui.ColorEdit3($"##el{i}", ref v) : ImGui.DragFloat3($"##el{i}", ref v, 0.01f);
+                if (changed) { arr.SetValue(new OpenTK.Mathematics.Vector3(v.X, v.Y, v.Z), i); return true; }
+            }
+            else if (elemT == typeof(Vector4))
+            {
+                Vector4 v = val != null ? (Vector4)val : Vector4.Zero; BeginFieldRow($"[{i}]");
+                bool changed = isColor ? ImGui.ColorEdit4($"##el{i}", ref v) : ImGui.InputFloat4($"##el{i}", ref v);
+                if (changed) { arr.SetValue(v, i); return true; }
             }
             else if (elemT == typeof(GameObject))
                 DrawObjectRefField($"[{i}]", val as GameObject, go => arr.SetValue(go, i));
@@ -1156,6 +1215,8 @@ namespace KrayonEditor.UI
                 DrawMaterialRefField($"[{i}]", val as KrayonCore.Material, mat => arr.SetValue(mat, i));
             else
                 DrawLabelValue($"[{i}]", val?.ToString() ?? "null");
+
+            return false;
         }
 
         public static void DrawObjectRefField(string label, GameObject? current, Action<GameObject?> setter)

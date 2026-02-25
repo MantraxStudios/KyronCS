@@ -197,10 +197,10 @@ namespace KrayonEditor.UI
             DrawSaveDialog();
             DrawOpenDialog();
             DrawOverwriteConfirmDialog();
-            DrawQuickSaveConfirmDialog();  // NUEVO: Diálogo para Ctrl+S
+            DrawQuickSaveConfirmDialog();
             HandleKeyboardShortcuts();
 
-            if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) && ImGui.IsKeyPressed(ImGuiKey.S) && !ImGui.IsKeyDown(ImGuiKey.MouseRight))
+            if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) && ImGui.IsKeyReleased(ImGuiKey.S) && !ImGui.IsKeyDown(ImGuiKey.MouseRight) && EditorActions.IsHoveringScene)
             {
                 if (!AppInfo.IsPlayingGame)
                 {
@@ -401,7 +401,7 @@ namespace KrayonEditor.UI
         {
             try
             {
-                var renderer = GraphicsEngine.Instance?.GetSceneRenderer();
+                var renderer = GraphicsEngine.Instance?.CurrentSceneRendering;
                 if (renderer == null)
                 {
                     EngineEditor.LogMessage("Warning: No se pudo obtener el SceneRenderer para guardar materiales");

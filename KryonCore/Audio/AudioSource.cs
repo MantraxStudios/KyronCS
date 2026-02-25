@@ -131,7 +131,7 @@ namespace KrayonCore.Core.Components
             if (ThisAudio == null || ThisAudio.IsStopped) return;
 
             // Update listener from camera
-            var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+            var camera = SelfScene.SelfRenderScene.GetCamera();
             GraphicsEngine.Instance.Audio.UpdateListener(
                 camera.Position.X, camera.Position.Y, camera.Position.Z,
                 camera.Front.X, camera.Front.Y, camera.Front.Z,

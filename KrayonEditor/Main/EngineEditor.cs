@@ -71,13 +71,14 @@ namespace KrayonEditor.Main
 
         private static void RefreshEditorState()
         {
-            _editorCamera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+            _renderer = GraphicsEngine.Instance.CurrentSceneRendering;
+            _editorCamera = _renderer.GetCamera();
             _editorCamera.Position = _initialCameraPosition;
             var type = _editorCamera.GetType();
             type.GetProperty("Yaw")?.SetValue(_editorCamera, _initialCameraYaw);
             type.GetProperty("Pitch")?.SetValue(_editorCamera, _initialCameraPitch);
 
-            AttachGizmos(GraphicsEngine.Instance.GetSceneRenderer());
+            AttachGizmos(_renderer);
         }
 
         private static void AttachGizmos(SceneRenderer sceneRenderer)
@@ -199,7 +200,7 @@ namespace KrayonEditor.Main
             LogMessage("  Ctrl+R               - Reset Camera");
             LogMessage("================================");
 
-            _renderer = _engine!.GetSceneRenderer();
+            _renderer = GraphicsEngine.Instance.CurrentSceneRendering;
             _window = _engine.Window;
             _imguiController = new ImGuiController(WindowConfig.Width, WindowConfig.Height);
 
@@ -210,7 +211,7 @@ namespace KrayonEditor.Main
 
             EditorUI.Initialize();
             SetupCamera();
-            AttachGizmos(_engine.GetSceneRenderer());
+            AttachGizmos(_renderer);
         }
 
         private static void HandleUpdate(float dt)
@@ -221,7 +222,8 @@ namespace KrayonEditor.Main
             if (EditorActions.IsDirty) GraphicsEngine.Instance.CantNoClose();
             else GraphicsEngine.Instance.CanClose();
 
-            _editorCamera ??= GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
+            _renderer ??= GraphicsEngine.Instance.CurrentSceneRendering;
+            _editorCamera ??= _renderer.GetCamera();
 
             if (_window is null) return;
 
@@ -235,9 +237,11 @@ namespace KrayonEditor.Main
 
             var globalMouse = ImGui.GetMousePos();
             var vpOrigin = EditorActions.ViewPortPosition;
-            var vpSize = new Vector2(
-                GraphicsEngine.Instance.GetSceneFrameBuffer().Width,
-                GraphicsEngine.Instance.GetSceneFrameBuffer().Height);
+
+            var sceneBuffer = _renderer.Buffers.TryGet("scene");
+            var vpSize = sceneBuffer is not null
+                ? new Vector2(sceneBuffer.Width, sceneBuffer.Height)
+                : new Vector2(1280, 720);
 
             UIInputManager.SetKeyboardState(GraphicsEngine.Instance.GetKeyboardState().GetSnapshot());
             UIInputManager.SetMousePosFromViewport(
@@ -259,9 +263,12 @@ namespace KrayonEditor.Main
 
             try
             {
-                var camera = GraphicsEngine.Instance.GetSceneRenderer().GetCamera();
-                int screenWidth = GraphicsEngine.Instance.GetSceneFrameBuffer().Width;
-                int screenHeight = GraphicsEngine.Instance.GetSceneFrameBuffer().Height;
+                var editorRenderer = GraphicsEngine.Instance.CurrentSceneRendering;
+                var camera = editorRenderer.GetCamera();
+                var sceneBuffer = editorRenderer.Buffers.TryGet("scene");
+                int screenWidth = sceneBuffer?.Width ?? 1280;
+                int screenHeight = sceneBuffer?.Height ?? 720;
+
                 var globalMouse = ImGui.GetMousePos();
                 var sceneOrigin = EditorActions.ViewPortPosition;
 
@@ -279,6 +286,7 @@ namespace KrayonEditor.Main
 
         private static void HandleRender(float dt) => _imguiController?.Render();
         private static void HandleResize(int w, int h) => _imguiController?.WindowResized(w, h);
+
         private static void HandleClose()
         {
             _imguiController?.Dispose();
@@ -342,7 +350,7 @@ namespace KrayonEditor.Main
             _lastX = mouse.X;
             _lastY = mouse.Y;
 
-            var camera = GraphicsEngine.Instance?.GetSceneRenderer().GetCamera();
+            var camera = GraphicsEngine.Instance.CurrentSceneRendering.GetCamera();
             if (mouse.IsButtonDown(MouseButton.Right) && camera?.IsPerspective == true && EditorActions.IsHoveringScene)
                 _editorCamera!.Rotate(xOffset, yOffset);
         }

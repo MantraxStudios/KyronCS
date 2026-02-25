@@ -28,16 +28,11 @@ namespace KrayonCore.GraphicsData
         private InputSystem? _inputSystem;
         public readonly AudioManager Audio = new();
 
-        private const string SceneBufferName = "scene";
-        private const string PostProcessBufferName = "postProcess";
-
         public MaterialManager Materials => _materials;
         public InputSystem? Input => _inputSystem;
         public PostProcessingSettings? PostProcessing => _fullscreenQuad?.GetSettings();
         public GameWindow? Window => _window;
 
-        // Buffers del editor (SceneRenderer[0])
-        public FrameBufferManager Buffers => GetSceneRenderer().Buffers;
         public List<SceneRenderer> SceneRenderers { get; } = new();
 
         public event Action? OnLoad;
@@ -48,6 +43,7 @@ namespace KrayonCore.GraphicsData
         public event Action<TextInputEventArgs>? OnTextInput;
         public event Action<string[]>? OnFileDrop;
         public event Action? OnTryClose;
+        public SceneRenderer CurrentSceneRendering;
 
         public GraphicsEngine()
         {
@@ -85,18 +81,9 @@ namespace KrayonCore.GraphicsData
 
         public KeyboardState GetKeyboardState() => _window?.KeyboardState ?? default;
         public MouseState GetMouseState() => _window?.MouseState ?? default;
-        public SceneRenderer GetSceneRenderer() => SceneRenderers[0];
+        public SceneRenderer? GetSceneRenderer(string name)
+                => SceneRenderers.FirstOrDefault(r => r.Name == name);
 
-        public FrameBuffer GetSceneFrameBuffer()
-        {
-            bool ppEnabled = _fullscreenQuad?.GetSettings().Enabled == true;
-            return ppEnabled
-                ? Buffers.Get(PostProcessBufferName)
-                : Buffers.Get(SceneBufferName);
-        }
-
-        public void ResizeFrameBuffer(string name, int width, int height) => Buffers.Resize(name, width, height);
-        public void ResizeAllFrameBuffers(int width, int height) => Buffers.ResizeAll(width, height);
         public void CanClose() => GameWindowInternal.CanIClose = true;
         public void CantNoClose() => GameWindowInternal.CanIClose = false;
 
@@ -116,11 +103,7 @@ namespace KrayonCore.GraphicsData
             AssetManager.Initialize();
             CSharpScriptManager.Instance.Initialize();
 
-            if (SceneManager.PrimaryScene is null)
-            {
-                SceneManager.CreateScene("DefaultScene");
-                SceneManager.LoadScene("DefaultScene");
-            }
+            SceneManager.CreateScene("Empty Scene");
 
             _materials.LoadMaterialsData();
             CreateDefaultMaterials();
@@ -167,7 +150,6 @@ namespace KrayonCore.GraphicsData
 
         internal void InternalResize(int width, int height)
         {
-            SceneRenderers.ForEach(r => r.Buffers.ResizeAll(width, height));
             SceneRenderers.ForEach(r => r.Resize(width, height));
             OnResize?.Invoke(width, height);
         }
@@ -177,7 +159,6 @@ namespace KrayonCore.GraphicsData
             SceneManager.PrimaryScene?.OnUnload();
             _fullscreenQuad?.Dispose();
             _screenQuad?.Dispose();
-            // Cada SceneRenderer tiene sus propios buffers, se limpian en Shutdown
             SceneRenderers.ForEach(r => r.Shutdown());
             Audio.Dispose();
             OnClose?.Invoke();
@@ -208,18 +189,21 @@ namespace KrayonCore.GraphicsData
         {
             if (_fullscreenQuad is null || !_fullscreenQuad.GetSettings().Enabled) return;
 
-            // Solo aplica al primer SceneRenderer (el del editor)
             var editorRenderer = SceneRenderers.FirstOrDefault();
             if (editorRenderer is null) return;
 
-            var scene = editorRenderer.Buffers.TryGet(SceneBufferName);
-            var postProcess = editorRenderer.Buffers.TryGet(PostProcessBufferName);
-            if (scene is null || postProcess is null) return;
+            foreach (var renderCam in editorRenderer.ManagerCams.GetRenderOrder())
+            {
+                if (!renderCam.PostProcessingEnabled) continue;
 
-            var camera = editorRenderer.GetCamera();
-            ApplyPostProcess(scene, postProcess,
-                camera.GetProjectionMatrix(),
-                camera.GetViewMatrix());
+                var sceneBuffer = renderCam.GetTargetBuffer();
+                var ppBuffer = renderCam.GetPostProcessBuffer();
+                if (sceneBuffer is null || ppBuffer is null) continue;
+
+                ApplyPostProcess(sceneBuffer, ppBuffer,
+                    renderCam.Camera.GetProjectionMatrix(),
+                    renderCam.Camera.GetViewMatrix());
+            }
         }
 
         private void ApplyPostProcess(FrameBuffer source, FrameBuffer dest, Matrix4 projection, Matrix4 view)
@@ -254,27 +238,18 @@ namespace KrayonCore.GraphicsData
 
             if (AppInfo.IsCompiledGame)
             {
-                // Todos los SceneRenderers son de juego, tomar la primera cámara de cada uno
                 foreach (var sceneRenderer in SceneRenderers)
                 {
-                    var cam = sceneRenderer.ManagerCams.GetRenderOrder().FirstOrDefault();
-                    if (cam is null) continue;
-
-                    int tex = cam.GetFinalTextureId(ppEnabled);
+                    int tex = sceneRenderer.GetFinalTextureId(ppEnabled);
                     if (tex != 0) _screenQuad.Render(tex);
                 }
             }
             else
             {
-                // Editor: SceneRenderer[0] es el editor, [1+] son escenas de juego
-                // En el viewport del editor se muestra el [0]
                 var editorRenderer = SceneRenderers.FirstOrDefault();
                 if (editorRenderer is null) return;
 
-                int finalTex = ppEnabled
-                    ? editorRenderer.Buffers.TryGet(PostProcessBufferName)?.ColorTexture ?? 0
-                    : editorRenderer.Buffers.TryGet(SceneBufferName)?.ColorTexture ?? 0;
-
+                int finalTex = editorRenderer.GetFinalTextureId(ppEnabled);
                 if (finalTex != 0) _screenQuad.Render(finalTex);
             }
         }

@@ -591,5 +591,35 @@ namespace KrayonCore
                 _disposed = true;
             }
         }
+
+
+        public float[] GetCombinedVertices()
+        {
+            if (_combinedMesh == null)
+                return null;
+            return _combinedMesh.GetVertices();
+        }
+
+        /// <summary>
+        /// Obtiene los índices del mesh combinado.
+        /// Retorna un array de uint con los índices de los triángulos.
+        /// </summary>
+        public uint[] GetCombinedIndices()
+        {
+            if (_combinedMesh == null)
+                return null;
+            return _combinedMesh.GetIndices();
+        }
+
+        /// <summary>
+        /// Obtiene el bounding box del modelo.
+        /// Útil para optimizar culling y detección de colisiones.
+        /// </summary>
+        public Box3 GetBoundingBox()
+        {
+            if (!_aabbCalculated)
+                CalculateAABB();
+            return _aabb;
+        }
     }
 }
