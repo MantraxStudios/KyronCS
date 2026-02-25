@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using KrayonCore.Physics;
+using KrayonCore.Components.RenderComponents;
 
 namespace KrayonCore
 {
@@ -84,6 +85,18 @@ namespace KrayonCore
                     if (_isInitialized) RecreatePhysicsBody();
                 }
             }
+        }
+
+        /// <summary>
+        /// Si es true, extrae automáticamente los vértices del MeshRenderer del mismo
+        /// GameObject para los shapes Mesh y ConvexHull.
+        /// </summary>
+        private bool _autoExtractMesh = true;
+        [ToStorage]
+        public bool AutoExtractMesh
+        {
+            get => _autoExtractMesh;
+            set => _autoExtractMesh = value;
         }
 
         [ToStorage] public float Mass { get; set; } = 1.0f;
@@ -241,6 +254,61 @@ namespace KrayonCore
             return Vector3.Transform(_colliderOffset, worldRot);
         }
 
+        /// <summary>
+        /// Extrae vértices (posiciones) e índices del MeshRenderer del mismo GameObject.
+        /// Itera sobre cada sub-mesh individualmente y aplica el offset de vértices
+        /// correcto a los índices, evitando el bug de CombineSubMeshes donde los
+        /// índices de sub-meshes múltiples no se desplazan correctamente.
+        /// Los vértices están en el espacio local normalizado del modelo.
+        /// </summary>
+        private bool TryExtractMeshData(
+            out System.Numerics.Vector3[] vertices,
+            out uint[] indices)
+        {
+            vertices = null;
+            indices = null;
+
+            if (!_autoExtractMesh) return false;
+
+            var renderer = GameObject.GetComponent<MeshRenderer>();
+            if (renderer?.Model == null) return false;
+
+            var model = renderer.Model;
+            if (model._subMeshes == null || model._subMeshes.Count == 0) return false;
+
+            var allVerts   = new System.Collections.Generic.List<System.Numerics.Vector3>();
+            var allIndices = new System.Collections.Generic.List<uint>();
+            uint vertexOffset = 0;
+
+            foreach (var subMesh in model._subMeshes)
+            {
+                var mesh = subMesh?.Mesh;
+                if (mesh == null) continue;
+
+                float[] rawVerts   = mesh.GetVertices();
+                uint[]  rawIndices = mesh.GetIndices();
+                if (rawVerts == null || rawIndices == null) continue;
+
+                int vCount = rawVerts.Length / 14;
+                for (int i = 0; i < vCount; i++)
+                    allVerts.Add(new System.Numerics.Vector3(
+                        rawVerts[i * 14],
+                        rawVerts[i * 14 + 1],
+                        rawVerts[i * 14 + 2]));
+
+                foreach (uint idx in rawIndices)
+                    allIndices.Add(idx + vertexOffset);
+
+                vertexOffset += (uint)vCount;
+            }
+
+            if (allVerts.Count < 3 || allIndices.Count < 3) return false;
+
+            vertices = allVerts.ToArray();
+            indices  = allIndices.ToArray();
+            return true;
+        }
+
         private void CreatePhysicsBody()
         {
             if (GameObject?.Scene?.PhysicsWorld == null)
@@ -308,6 +376,39 @@ namespace KrayonCore
                         physicsWorld.LayerRegistry.SetLayer(_staticHandle.Value, _layer);
                         break;
                     }
+
+                case ShapeType.Mesh:
+                    {
+                        if (TryExtractMeshData(out var meshVerts, out var meshIndices))
+                        {
+                            _staticHandle = physicsWorld.CreateStaticMesh(
+                                meshVerts, meshIndices, ToNumerics(finalSize),
+                                position, rotation, _layer);
+                        }
+                        else
+                        {
+                            // Sin MeshRenderer → fallback a Box
+                            _staticHandle = physicsWorld.CreateStaticBox(
+                                ToNumerics(finalSize), position, rotation, _layer);
+                        }
+                        break;
+                    }
+
+                case ShapeType.ConvexHull:
+                    {
+                        if (TryExtractMeshData(out var hullVerts, out _))
+                        {
+                            _staticHandle = physicsWorld.CreateStaticConvexHull(
+                                hullVerts, ToNumerics(finalSize),
+                                position, rotation, _layer);
+                        }
+                        else
+                        {
+                            _staticHandle = physicsWorld.CreateStaticBox(
+                                ToNumerics(finalSize), position, rotation, _layer);
+                        }
+                        break;
+                    }
             }
         }
 
@@ -334,6 +435,27 @@ namespace KrayonCore
                         finalSize.Y, finalSize.X, position, rotation,
                         isDynamic, Mass, SleepThreshold, _layer);
                     break;
+
+                case ShapeType.Mesh:
+                    // Triangle mesh no soporta cuerpos dinámicos → usar ConvexHull automáticamente
+                case ShapeType.ConvexHull:
+                    {
+                        if (TryExtractMeshData(out var hullVerts, out _))
+                        {
+                            _bodyHandle = physicsWorld.CreateConvexHullBody(
+                                hullVerts, ToNumerics(finalSize),
+                                position, rotation,
+                                isDynamic, Mass, SleepThreshold, _layer);
+                        }
+                        else
+                        {
+                            // Sin MeshRenderer → fallback a Box
+                            _bodyHandle = physicsWorld.CreateBox(
+                                ToNumerics(finalSize), position, rotation,
+                                isDynamic, Mass, SleepThreshold, _layer);
+                        }
+                        break;
+                    }
             }
 
             if (_bodyHandle.HasValue)
@@ -680,5 +802,5 @@ namespace KrayonCore
     }
 
     public enum BodyMotionType { Static, Kinematic, Dynamic }
-    public enum ShapeType { Box, Sphere, Capsule }
+    public enum ShapeType { Box, Sphere, Capsule, Mesh, ConvexHull }
 }

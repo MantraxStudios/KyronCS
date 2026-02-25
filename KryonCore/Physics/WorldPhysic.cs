@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using BepuPhysics;
 using BepuPhysics.Collidables;
+using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuPhysics.CollisionDetection;
 using BepuPhysics.Constraints;
 using BepuUtilities;
@@ -336,10 +337,11 @@ namespace KrayonCore.Physics
         public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b,
             ref float speculativeMargin)
         {
-            return a.Mobility == CollidableMobility.Dynamic
-                || b.Mobility == CollidableMobility.Dynamic
-                || Shared.TriggerRegistry.IsTrigger(a)
-                || Shared.TriggerRegistry.IsTrigger(b);
+            // Permitir cualquier par donde al menos uno NO sea estático.
+            // El bug original excluía Kinematic vs Static (p.ej. character controller vs suelo mesh).
+            bool eitherIsTrigger = Shared.TriggerRegistry.IsTrigger(a) || Shared.TriggerRegistry.IsTrigger(b);
+            bool staticStatic = a.Mobility == CollidableMobility.Static && b.Mobility == CollidableMobility.Static;
+            return !staticStatic || eitherIsTrigger;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -451,6 +453,10 @@ namespace KrayonCore.Physics
         private PoseIntegratorCallbacks _poseIntegrator;
         private readonly List<BodyHandle> _dynamicBodies = new();
         private readonly List<StaticHandle> _staticBodies = new();
+
+        // Mesh/ConvexHull shapes require manual memory cleanup via BufferPool
+        private readonly Dictionary<int, Action> _bodyShapeCleanup = new();
+        private readonly Dictionary<int, Action> _staticShapeCleanup = new();
 
         private float _accumulator;
         private const float FixedTimeStep = 1f / 60f;
@@ -629,6 +635,144 @@ namespace KrayonCore.Physics
             return handle;
         }
 
+        // ── Mesh Collider ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Crea un colisionador de malla triangular estática (concave, Static only).
+        /// El parámetro <paramref name="scale"/> escala los vértices en espacio local
+        /// del shape (equivale al worldScale × shapeSize del Rigidbody).
+        /// </summary>
+        public StaticHandle CreateStaticMesh(
+            Vector3[] vertices,
+            uint[] indices,
+            in Vector3 scale,
+            in Vector3 position,
+            in Quaternion rotation,
+            PhysicsLayer layer = PhysicsLayer.Static)
+        {
+            int triangleCount = indices.Length / 3;
+            // Duplicar triángulos con winding invertido para colisión two-sided.
+            // BepuPhysics Mesh es one-sided: sin esto, objetos pasan a través
+            // si el winding del modelo no coincide con la convención esperada.
+            _bufferPool.Take<Triangle>(triangleCount * 2, out var triangles);
+
+            for (int i = 0; i < triangleCount; i++)
+            {
+                var v0 = vertices[indices[i * 3]];
+                var v1 = vertices[indices[i * 3 + 1]];
+                var v2 = vertices[indices[i * 3 + 2]];
+                triangles[i * 2]     = new Triangle(v0, v1, v2); // winding original
+                triangles[i * 2 + 1] = new Triangle(v0, v2, v1); // winding invertido
+            }
+
+            // Usar alias BepuMesh para evitar conflicto con KrayonCore.Mesh
+            var bepuMesh = new BepuMesh(triangles, scale, _bufferPool);
+            var shapeIndex = _simulation.Shapes.Add(bepuMesh);
+
+            var handle = _simulation.Statics.Add(
+                new StaticDescription(new RigidPose(position, rotation), shapeIndex));
+
+            _staticBodies.Add(handle);
+            LayerRegistry.SetLayer(handle, layer);
+
+            var capturedIndex = shapeIndex;
+            _staticShapeCleanup[handle.Value] = () =>
+            {
+                ref var s = ref _simulation.Shapes.GetShape<BepuMesh>(capturedIndex.Index);
+                s.Dispose(_bufferPool);
+                _simulation.Shapes.Remove(capturedIndex);
+            };
+
+            return handle;
+        }
+
+        /// <summary>
+        /// Crea un cuerpo (dinámico o cinemático) con forma de convex hull.
+        /// El parámetro <paramref name="scale"/> escala los puntos antes de computar el hull.
+        /// </summary>
+        public BodyHandle CreateConvexHullBody(
+            Vector3[] points,
+            in Vector3 scale,
+            in Vector3 position,
+            in Quaternion rotation,
+            bool isDynamic,
+            float mass = 1f,
+            float sleepThreshold = DefaultSleepThreshold,
+            PhysicsLayer layer = PhysicsLayer.Default)
+        {
+            _bufferPool.Take<Vector3>(points.Length, out var buffer);
+            for (int i = 0; i < points.Length; i++)
+                buffer[i] = new Vector3(points[i].X * scale.X, points[i].Y * scale.Y, points[i].Z * scale.Z);
+
+            // BepuPhysics 2.4.0: ConvexHullHelper.CreateShape tiene 4 parámetros
+            ConvexHullHelper.CreateShape(buffer, _bufferPool, out _, out var hull);
+            _bufferPool.Return(ref buffer);
+
+            var shapeIndex = _simulation.Shapes.Add(hull);
+
+            BodyHandle handle;
+            if (isDynamic)
+            {
+                var inertia = hull.ComputeInertia(mass);
+                handle = _simulation.Bodies.Add(BodyDescription.CreateDynamic(
+                    new RigidPose(position, rotation), inertia, shapeIndex, sleepThreshold));
+            }
+            else
+            {
+                handle = _simulation.Bodies.Add(BodyDescription.CreateKinematic(
+                    new RigidPose(position, rotation), shapeIndex, sleepThreshold));
+            }
+
+            _dynamicBodies.Add(handle);
+            LayerRegistry.SetLayer(handle, layer);
+
+            var capturedIndex = shapeIndex;
+            _bodyShapeCleanup[handle.Value] = () =>
+            {
+                ref var h = ref _simulation.Shapes.GetShape<ConvexHull>(capturedIndex.Index);
+                h.Dispose(_bufferPool);
+                _simulation.Shapes.Remove(capturedIndex);
+            };
+
+            return handle;
+        }
+
+        /// <summary>
+        /// Crea un colisionador convex hull estático.
+        /// </summary>
+        public StaticHandle CreateStaticConvexHull(
+            Vector3[] points,
+            in Vector3 scale,
+            in Vector3 position,
+            in Quaternion rotation,
+            PhysicsLayer layer = PhysicsLayer.Static)
+        {
+            _bufferPool.Take<Vector3>(points.Length, out var buffer);
+            for (int i = 0; i < points.Length; i++)
+                buffer[i] = new Vector3(points[i].X * scale.X, points[i].Y * scale.Y, points[i].Z * scale.Z);
+
+            // BepuPhysics 2.4.0: 4 parámetros
+            ConvexHullHelper.CreateShape(buffer, _bufferPool, out _, out var hull);
+            _bufferPool.Return(ref buffer);
+
+            var shapeIndex = _simulation.Shapes.Add(hull);
+            var handle = _simulation.Statics.Add(
+                new StaticDescription(new RigidPose(position, rotation), shapeIndex));
+
+            _staticBodies.Add(handle);
+            LayerRegistry.SetLayer(handle, layer);
+
+            var capturedIndex = shapeIndex;
+            _staticShapeCleanup[handle.Value] = () =>
+            {
+                ref var h = ref _simulation.Shapes.GetShape<ConvexHull>(capturedIndex.Index);
+                h.Dispose(_bufferPool);
+                _simulation.Shapes.Remove(capturedIndex);
+            };
+
+            return handle;
+        }
+
         public void RemoveBody(BodyHandle handle)
         {
             if (_simulation.Bodies.BodyExists(handle))
@@ -638,6 +782,12 @@ namespace KrayonCore.Physics
                 TriggerRegistry.Unregister(collidableId);
                 EventSystem.UnregisterHandler(collidableId);
                 LayerRegistry.RemoveBody(handle);
+
+                if (_bodyShapeCleanup.TryGetValue(handle.Value, out var cleanup))
+                {
+                    cleanup();
+                    _bodyShapeCleanup.Remove(handle.Value);
+                }
 
                 _simulation.Bodies.Remove(handle);
                 _dynamicBodies.Remove(handle);
@@ -653,6 +803,12 @@ namespace KrayonCore.Physics
                 TriggerRegistry.Unregister(collidableId);
                 EventSystem.UnregisterHandler(collidableId);
                 LayerRegistry.RemoveStatic(handle);
+
+                if (_staticShapeCleanup.TryGetValue(handle.Value, out var cleanup))
+                {
+                    cleanup();
+                    _staticShapeCleanup.Remove(handle.Value);
+                }
 
                 _simulation.Statics.Remove(handle);
                 _staticBodies.Remove(handle);
@@ -676,16 +832,26 @@ namespace KrayonCore.Physics
             foreach (var handle in _dynamicBodies)
             {
                 if (_simulation.Bodies.BodyExists(handle))
+                {
+                    if (_bodyShapeCleanup.TryGetValue(handle.Value, out var cleanup))
+                        cleanup();
                     _simulation.Bodies.Remove(handle);
+                }
             }
             _dynamicBodies.Clear();
+            _bodyShapeCleanup.Clear();
 
             foreach (var handle in _staticBodies)
             {
                 if (_simulation.Statics.StaticExists(handle))
+                {
+                    if (_staticShapeCleanup.TryGetValue(handle.Value, out var cleanup))
+                        cleanup();
                     _simulation.Statics.Remove(handle);
+                }
             }
             _staticBodies.Clear();
+            _staticShapeCleanup.Clear();
 
             TriggerRegistry.Clear();
             EventSystem.Clear();

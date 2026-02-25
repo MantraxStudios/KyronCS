@@ -17,6 +17,10 @@ namespace KrayonEditor.UI
             public Guid ObjectId;
         }
 
+        private GameObject _renamingObject = null;
+        private string _renameBuffer = string.Empty;
+        private bool _focusRenameField = false;
+
         public override void OnDrawUI()
         {
             if (!_isVisible) return;
@@ -116,6 +120,7 @@ namespace KrayonEditor.UI
         {
             bool isSelected = EditorActions.SelectedObject == go;
             bool hasChildren = go.Transform.Children.Count > 0;
+            bool isRenaming = _renamingObject == go;
 
             ImGuiTreeNodeFlags flags =
                 ImGuiTreeNodeFlags.OpenOnArrow |
@@ -125,10 +130,69 @@ namespace KrayonEditor.UI
             if (isSelected) flags |= ImGuiTreeNodeFlags.Selected;
             if (!hasChildren) flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
 
+            if (isRenaming)
+            {
+                if (!hasChildren)
+                    ImGui.Indent();
+
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+
+                if (_focusRenameField)
+                {
+                    ImGui.SetKeyboardFocusHere();
+                    _focusRenameField = false;
+                }
+
+                bool confirmed = ImGui.InputText(
+                    $"##rename_{go.Id}",
+                    ref _renameBuffer,
+                    128,
+                    ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll
+                );
+
+                bool clickedElsewhere = !ImGui.IsItemActive() && !ImGui.IsItemHovered() && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+                bool pressedEscape = ImGui.IsKeyPressed(ImGuiKey.Escape);
+
+                if (confirmed || clickedElsewhere)
+                {
+                    if (!string.IsNullOrWhiteSpace(_renameBuffer))
+                    {
+                        go.Name = _renameBuffer.Trim();
+                        EngineEditor.LogMessage($"Renamed to {go.Name}");
+                    }
+                    _renamingObject = null;
+                    _renameBuffer = string.Empty;
+                }
+                else if (pressedEscape)
+                {
+                    _renamingObject = null;
+                    _renameBuffer = string.Empty;
+                }
+
+                if (!hasChildren)
+                    ImGui.Unindent();
+
+                return;
+            }
+
             bool nodeOpen = ImGui.TreeNodeEx($"{go.Name}##{go.Id.GetHashCode()}", flags);
 
-            if (ImGui.IsItemClicked())
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
                 EditorActions.SelectedObject = go;
+
+            if (ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+            {
+                _renamingObject = go;
+                _renameBuffer = go.Name;
+                _focusRenameField = true;
+            }
+
+            if (isSelected && ImGui.IsKeyPressed(ImGuiKey.F2))
+            {
+                _renamingObject = go;
+                _renameBuffer = go.Name;
+                _focusRenameField = true;
+            }
 
             if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.None))
             {
@@ -173,6 +237,13 @@ namespace KrayonEditor.UI
 
             if (ImGui.BeginPopupContextItem($"context_{go.Id}"))
             {
+                if (ImGui.MenuItem("Rename"))
+                {
+                    _renamingObject = go;
+                    _renameBuffer = go.Name;
+                    _focusRenameField = true;
+                }
+
                 if (ImGui.MenuItem("Duplicate"))
                 {
                     go.Clone(true);
