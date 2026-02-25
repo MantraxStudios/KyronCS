@@ -10,7 +10,7 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "116be9f0-83da-44a6-bbff-a69f145cb5c9",
+          "ComponentId": "757f6ab2-e699-48ef-9cd8-16c67b679554",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
@@ -36,7 +36,7 @@
         },
         {
           "TypeName": "KrayonCore.Animation.Animator, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "2f0f5bc1-857a-40be-8e9e-cb11fff602c7",
+          "ComponentId": "b2512e13-3980-46da-8eb6-8c79914dcbf4",
           "Enabled": true,
           "SerializedFields": {
             "ControllerGuid": "6f743029-3e0d-473e-a8ae-db07d65c634f",
@@ -45,7 +45,7 @@
         },
         {
           "TypeName": "KrayonCore.Animation.AnimatedMeshRenderer, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "119fc602-f3a5-4435-bfa2-810b4e0ff8f5",
+          "ComponentId": "eae55f52-cd09-47a3-9cb5-e847a702e953",
           "Enabled": true,
           "SerializedFields": {
             "ModelPath": "9717286d-694e-44a5-91f4-c379a5196189",
@@ -73,14 +73,14 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "22073c78-5e5c-4465-bcb0-d7d2e9393079",
+          "ComponentId": "60f2a463-3612-4787-9325-e0db02e54718",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": 0,
-              "y": 2,
-              "z": 0
+              "x": -4.2208943,
+              "y": 2.5641742,
+              "z": -2.3419926
             },
             "Rotation": {
               "__type": "Quaternion",
@@ -99,7 +99,7 @@
         },
         {
           "TypeName": "KrayonCore.Components.RenderComponents.Light, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "0419b5cf-ee4f-4fd0-8d51-5d91a48eac8f",
+          "ComponentId": "50463268-c5b8-4b44-87ec-5bdcceb0e944",
           "Enabled": true,
           "SerializedFields": {
             "Type": {
@@ -113,7 +113,7 @@
               "y": 1,
               "z": 1
             },
-            "Intensity": 1,
+            "Intensity": 16.47,
             "Constant": 1,
             "Linear": 0.09,
             "Quadratic": 0.032,
@@ -132,12 +132,12 @@
       "Components": [
         {
           "TypeName": "KrayonCore.Components.Transform, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "67e041e7-e287-4122-bc6f-df9a2b2ab799",
+          "ComponentId": "c526c1c8-8914-4711-af86-233eaf0deb5b",
           "Enabled": true,
           "SerializedFields": {
             "Position": {
               "__type": "Vector3",
-              "x": -4,
+              "x": -4.083405,
               "y": 1.1,
               "z": 3
             },
@@ -158,11 +158,11 @@
         },
         {
           "TypeName": "KrayonCore.Graphics.Camera.CameraComponent, KrayonCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-          "ComponentId": "84da543a-0351-4f8f-83ac-bd1905112f7f",
+          "ComponentId": "fd1702c1-123b-4604-8382-8fb6f581cf86",
           "Enabled": true,
           "SerializedFields": {
             "CameraName": "",
-            "Priority": 0,
+            "Priority": -18,
             "RenderToBuffer": true,
             "UseGBuffer": true,
             "UseEmission": true,

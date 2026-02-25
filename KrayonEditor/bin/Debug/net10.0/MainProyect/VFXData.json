@@ -1,8 +1,8 @@
 {
-  "Enabled": false,
+  "Enabled": true,
   "ColorCorrectionEnabled": true,
   "Brightness": 0.2,
-  "Contrast": 0.34,
+  "Contrast": 1,
   "Saturation": 1.03,
   "ColorFilter": {
     "X": 1,
@@ -10,13 +10,13 @@
     "Z": 1
   },
   "BloomEnabled": true,
-  "BloomThreshold": 1.11,
+  "BloomThreshold": 1.44,
   "BloomSoftThreshold": 0.5,
   "BloomIntensity": 10,
   "BloomRadius": 1.7,
   "GrainEnabled": true,
-  "GrainIntensity": 0.097,
-  "GrainSize": 5,
+  "GrainIntensity": 0.174,
+  "GrainSize": 1.9,
   "SSAOEnabled": false,
   "SSAOKernelSize": 64,
   "SSAORadius": 2,

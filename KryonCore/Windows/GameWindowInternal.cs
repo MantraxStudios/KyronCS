@@ -146,6 +146,8 @@ namespace KrayonCore.GraphicsData
 
             if (!CanIClose)
                 e.Cancel = true;
+            else if (AppInfo.IsCompiledGame)
+                e.Cancel = false;
         }
 
         private void OnWindowClosing(System.ComponentModel.CancelEventArgs e)
@@ -154,6 +156,8 @@ namespace KrayonCore.GraphicsData
 
             if (!CanIClose)
                 e.Cancel = true;
+            else if (AppInfo.IsCompiledGame)
+                e.Cancel = false;
         }
 
         public void OnStartRender() => OnLoadRender?.Invoke();
